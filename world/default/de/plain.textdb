@@ -1720,7 +1720,7 @@ _warning_usage_notify
 |Syntax: /notify <nickname> [ i(mmediate),d(elayed),D(elayedMore) ]
 
 _warning_usage_acquaintance
-|Syntax: /ignore oder /show <person>
+|Syntax: /ignore oder /display <person>
 
 _warning_usage_mandate
 |Syntax: /mand(ate) «Scherge»
@@ -1746,6 +1746,18 @@ _warning_usage_my
 
 _warning_usage_unalias
 |Syntax: /unalias <Aliasname>
+
+_warning_usage_kill
+|Syntax: /kill <Person> [<Nachricht>]
+
+_warning_usage_warn
+|Syntax: /warn <Person> [<Nachricht>]
+
+_echo_kill
+|[_entity] gekillt.
+
+_echo_warn
+|[_entity] verwarnt.
 
 _warning_usage_invite
 |Syntax: /invite <Person>

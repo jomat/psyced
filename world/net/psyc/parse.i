@@ -1,5 +1,5 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: parse.i,v 1.357 2008/12/18 17:45:45 lynx Exp $
+// $Id: parse.i,v 1.358 2008/12/27 00:42:04 lynx Exp $
 //
 #ifndef FORK
 
@@ -1135,7 +1135,7 @@ vamixed startParse(string a) {
 			    "Could not instantiate PSYC parser. Weird.");
 			QUIT
 		}
-		if (isServer()) o->greet();
+		// if (isServer()) o->greet();
 		o->feed("|\n");
 		return 1;
 	}

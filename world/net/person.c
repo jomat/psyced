@@ -2648,22 +2648,28 @@ quit(immediate, variant) {
 	}
 #ifndef	_flag_disable_module_presence
 	switch(v("scheme")) {
-	// psyc clients are supposed to always explicitely set
-	// a user's presence status. this is probably too blue-eyed
-	// and needs a /set'ting at least. maybe we should have a
-	// setting to skip over all of the following decisions -
-	// like a delayed unavailability automation.
-	case "psyc":
 	// jabber/user:quit() is called on @type 'unavailable'
 	// so it relies on quit() to announce offline status
 	//case "jabber":
+	//	break;
 # ifdef _flag_enable_manual_announce_telnet
 	case "tn":
+		break;
 # endif
 # ifdef _flag_enable_manual_announce_IRC
 	case "irc":
-# endif
 		break;
+# endif
+	// psyc clients are supposed to explicitely set a user's presence
+	// status before exiting, if the user wishes so. only if they are
+	// not performing a clean exit, we will presume that an OFFLINE
+	// availability is appropriate. maybe a separate AVAILABILITY_LOST
+	// value would be nice. and we should have a delayed unavailability
+	// automation feature here to avoid frequent relogin announcements.
+	case "psyc":
+		if (variant != "_disconnect") break;
+		// fall thru in case of _disconnect
+		// which indicates, we died an irregular death
 	default:
 # ifdef CACHE_PRESENCE
 		//announce(AVAILABILITY_OFFLINE, 0, ask4upd8s == 0);

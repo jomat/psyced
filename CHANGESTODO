@@ -1,4 +1,4 @@
-$Id: CHANGESTODO,v 1.1649 2008/11/29 12:38:48 lynx Exp $ vim:nosmarttab 
+$Id: CHANGESTODO,v 1.1650 2008/12/30 12:35:00 lynx Exp $ vim:nosmarttab 
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 This file contains TODO and CHANGES (at EOF) rolled into one.
 Essentially: whenever you fix something, move that line to the end of file.
@@ -12,6 +12,7 @@ ________________________________________________________________________
 - remote IRC place does not send names listing on /join
 - remote IRC /part shows no reaction at first attempt
     +++ not limited to IRC!! thx marenz
+- /set multiplace should be ignored for rich accesses
 
 - XMPP: first reply to a stranger's remote psyc message did not show up in psi
 

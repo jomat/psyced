@@ -257,7 +257,7 @@ xmlparse(a) {
 # ifdef JABBER_TRANSPARENCY
 				ixbuf = lasta = 0;
 				innerxml = ixbuf;
-#endif
+# endif
                                 // handle stuff
                                 funcall(nodeHandler, currentnode);
                                 currentnode = 0;

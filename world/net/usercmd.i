@@ -1,5 +1,5 @@
 //						    vim:noexpandtab:syntax=lpc
-// $Id: usercmd.i,v 1.698 2008/11/27 13:22:27 lynx Exp $
+// $Id: usercmd.i,v 1.699 2008/12/27 00:42:04 lynx Exp $
 //
 // usercmd is normally just a part of the user object focused on implementing
 // the user command set. it can also be used for implementing a subset of
@@ -1367,17 +1367,21 @@ cmd(a, args, dest, command) {
 		case "warn":
 		case "kill":
 			if (sizeof(args) > 1) ob = find_person(args[1]);
-			t = sizeof(args) > 2 ? ARGS(2) : 0;
-
-			printf("%s %O %O: %s\n\n", a, ob, t,
-				ob ? "executed" : "no such person");
+			else {
+				w("_warning_usage_"+a,
+				  "Usage: /"+a+" <nick> [<message>]");
+				return 1;
+			}
 			if (ob) {
+				t = sizeof(args) > 2 ? ARGS(2) : 0;
 				// log first, after kill ob will be 0
 				log_file("BEHAVIOUR", "[%s] %O %ss %O: %O\n",
 				  ctime(), ME, a, ob, t);
-				// call_other(ob, a, t);
+				w("_echo_"+a, "[_entity] "+a+"ed.", ([
+					"_entity": ob ]));
 				ob -> sanction(a, t);
-			}
+			} else w("_error_unknown_name_user", 0, ([
+				 "_nick_target": args[1] ]));
 			return 1;
 		case "config":
 			if (sizeof(args) < 3) return
@@ -2295,13 +2299,19 @@ protected friend(rm, entity, ni, trustee) {
                         // the entity is an xmpp or icq or whatever uniform
                         if (stringp(entity))
                             deregister_context(ME, entity);
-			if (friends[entity]) {
-				// TODO: gender support
-				sendmsg(entity, "_notice_friendship_removed",
-			"[_nick] deletes [_possessive] friendship with you.",
-				    ([ "_nick": MYNICK, "_possessive": "the" ]) );
-				m_delete(friends, entity);
-			}
+			// this does not consider the case when we just
+			// offered a friendship to a person. XMPP behaviour
+			// is to let the other side know about our "mistake".
+			// if noone has hard feelings about this, we should
+			// choose to behave compatibly, which in this case
+			// simply means to remove this if check.
+			//if (friends[entity]) {
+			sendmsg(entity, "_notice_friendship_removed",
+		"[_nick] deletes [_possessive] friendship with you.",
+						// TODO: gender support
+			    ([ "_nick": MYNICK, "_possessive": "the" ]) );
+			m_delete(friends, entity);
+			//}
 			return 1;
 		}
 		w("_error_unknown_friendship",
