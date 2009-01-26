@@ -1,4 +1,4 @@
-// $Id: interserver.c,v 1.12 2008/03/11 15:13:58 lynx Exp $ vim:syntax=lpc
+// $Id: interserver.c,v 1.13 2008/10/01 10:59:24 lynx Exp $ vim:syntax=lpc
 //
 // common things for interserver jabber.. included or maybe later inherited by 
 // active.c and gateway.c. i am sure fippo will find some more nice things to
@@ -35,7 +35,7 @@ int clean_up(int refcount) {
 	// and is therefore the correct way to timeout a connection.
 	PT(("%O cleaning up: closing stream\n", ME))
 	// close the stream according to XEP 0190
-	emit("</stream:stream>");
+	emitraw("</stream:stream>");
 	// flag says the stream is in closing phase and nothing may be
 	// delivered on it. but we aren't enforcing this. TODO!
 	flags |= TCP_PENDING_DISCONNECT;

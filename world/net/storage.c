@@ -1,4 +1,4 @@
-// $Id: storage.c,v 1.24 2008/04/12 22:57:17 lynx Exp $ // vim:syntax=lpc
+// $Id: storage.c,v 1.26 2008/12/16 11:58:52 lynx Exp $ // vim:syntax=lpc
 //
 // common subclass for anything that uses persistent data storage
 //
@@ -6,6 +6,14 @@
 
 #include <net.h>
 #include <errno.h>
+
+// should you like to do a completely different implementation of
+// net/storage, just #define _implementation_net_storage in local.h
+// to point to it
+#ifdef _implementation_net_storage
+# include _implementation_net_storage
+#else
+
 
 #ifndef STORAGE_SQL_OBJECT
 # ifdef STORAGE_SQLITE
@@ -24,7 +32,8 @@ protected mapping _v;
 vInit() { _v = ([]); }
 
 v(k, c) {
-	D2( raise_error("old ->v() method used\n"); )
+	// happens in net/irc/common .. you should generally avoid this
+	P2(("->v(%O) method used in %O\n", k, ME))
 	if (c) _v[k] = c;
 	return _v[k];
 }
@@ -165,3 +174,5 @@ protected save(file) {
 
 void create() { if (!_v && clonep(ME)) vInit(); }
 
+
+#endif // _implementation_net_storage

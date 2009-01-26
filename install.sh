@@ -3,7 +3,7 @@
 # but if that's not true, try a bash or ksh here.
 #
 # psyced installation script
-# $Id: install.sh,v 1.159 2008/03/23 19:27:13 lynx Exp $
+# $Id: install.sh,v 1.165 2008/10/16 13:07:13 lynx Exp $
 #
 # original version by oswald!osw@ld.pages.de on IRCnet, 22aug00
 # heavy improvements by heldensaga and psyc://psyced.org/~lynX
@@ -29,20 +29,25 @@ rm="rm"
 #exit="echo [debug] Not exiting."
 #rm="echo [debug] Not removing"
 
+DATA_PERM="700"
+BASE_PERM="700"
+CONF_PERM="700"
+UMASK="7"
+
 hi="[1m"
 lo="[m"
 
-# take a guess wether we are on a gentoo? like -x /etc/portage?
-#echo ""
-#echo "${hi}!!INFO FOR GENTOO USERS!!${lo}"
-cat <<EOT
-If you are running gentoo, you should try out our brand new ebuilds
+if test -d "/etc/portage"
+then
+	cat <<EOT
+${hi}!!INFO FOR GENTOO USERS!!${lo}
+If you are running gentoo/portage, you should try out our beautiful ebuilds
 at http://www.psyced.org/files/gentoo.tar.bz2 --- They are also in the
 data.tar. Unpack it, then go into the config/gentoo directory and run make. 
 
 EOT
-
-sleep 1
+	sleep 2
+fi
 
 if test -e .config
 then
@@ -85,12 +90,26 @@ fi
 
 echo ""
 yacc=`which yacc`
-if test "$yacc" = ""
+bison=`which bison`
+if test "$yacc" = "" -a "$bison" = ""
 then
+	# tjgillies says: on fedora bison doen't symlink to yacc
 	echo "Please install 'yacc' or 'bison' on this system."
 	$exit
 fi
-echo "Using $yacc during the compilation process."
+#echo "Using '$bison' or '$yacc' during the compilation process."
+
+if test -f "/usr/include/openssl/ssl.h"
+then
+	tls="y"
+else
+	tls="n"
+	echo ""
+	echo "${hi}Warning: ${lo}You are apparently missing the OpenSSL header files!"
+	echo "If you're on debian/ubuntu you may have to 'apt-get install libssl-dev' now"
+	echo "or your psyclpc will compile without support for encryption."
+	sleep 2
+fi
 
 ask() {
 	echo ""
@@ -213,6 +232,7 @@ else
 		BASE_DIR="/usr/local/psyced"
 	fi
 	CONFIG_DIR="/etc/psyc"
+	CONF_PERM="750"
 fi
 
 get BASE_DIR 
@@ -227,6 +247,11 @@ then
 	$exit
 fi
 
+# one day we should seperate variable files from static files better
+LOG_DIR="$BASE_DIR/log"
+DATA_DIR="$BASE_DIR/data"
+LIB_DIR="$BASE_DIR/world"
+
 echo ""
 echo "psyconf will automatically search /etc/psyc for psyced.ini."
 echo "If you plan to put this file anywhere else, you will have to"
@@ -235,15 +260,6 @@ echo "pass it as the argument to psyconf."
 get CONFIG_DIR 
 ask "PSYCED configuration directory" CONFIG_DIR
 echo "[config directory is set to $CONFIG_DIR]"
-
-# one day we should seperate variable files from static files better
-LOG_DIR="$BASE_DIR/log"
-DATA_DIR="$BASE_DIR/data"
-LIB_DIR="$BASE_DIR/world"
-DATA_PERM="700"
-PERMISSIONS="700"
-UMASK="7"
-
 echo ""
 # setting up ARCH_DIR directly because there is no need to bother the
 # user with such a detail. if you think we should, then fix all the
@@ -580,11 +596,13 @@ echo ""
 echo "${hi}PSYCED ENCRYPTED PROTOCOL SERVICES${lo}"
 
 echo ""
-echo "With either openssl or gnutls installed, your driver may provide TLS/SSL."
+#echo "With either openssl or gnutls installed, your driver may provide TLS/SSL."
+echo "With openssl libs installed, your driver should provide TLS/SSL."
+echo "If you don't have it installed, you must say 'n' here."
 echo "Would you like to configure any ports for TLS-enhanced protocols?"
 
-get TLS_YN "y"
-ask "Do you love TLS cryptography" TLS_YN
+get TLS_YN $tls
+ask "Let's use some TLS cryptography" TLS_YN
 # das ganze tls-geviech macht nur sinn, wenn man cert und privkey hat
 # ergo die pfade fuer die abfragen und dann entscheiden, ob...
 
@@ -835,6 +853,9 @@ fi
 # nen snapshot. dank pkggen kein großes problem.
 get WANT_CVSUP "n"
 
+# would be soooo smart if we'd ask for update before we even enter
+# the install.sh interview because frequently there is a better
+# install.sh in the repo worth running instead. TODO
 echo ""
 echo ""
 echo "The version you are about to install is considered stable,"
@@ -1012,15 +1033,22 @@ _config_HTTP = ${HTTPCONFIG_10}
 ; For development, _console_debug is extremely useful,
 ; for regular service it is better to have output in files.
 _console_debug = $CONSOLE_10
-; '1' gives you interesting output. '2' or '3' is debug. '0' is tranquility.
+; '0' is tranquility unless something serious happens. best choice.
+; '1' gives you slightly interesting output and LPC development debug.
+; '2' or '3' is too much and too detailed. we only use this as _extra_debug.
 _level_debug = $DEBUG
-; Have errors logged to an extra psyced.debug file
-_use_file_debug = $FILE_10
+; Advanced extra debug flags for the psyclpc command line. You can debug
+; specific parts of psyced like for example the textdb subsystem by adding
+; -DDtext=2 here. You can figure out which other parts of psyced are debuggable
+; by doing a "grep -r 'define DEBUG D' ." in the world directory.
+;_extra_debug = 
 
 ; We create files that are editable by the psyc group
 _umask = $UMASK
 
 EOT
+#; Have errors logged to an extra psyced.debug file
+#_use_file_debug = $FILE_10
 
 # this here is no longer an option.. as PSYC uses UTF-8 on the wire.
 #
@@ -1044,7 +1072,7 @@ fi
 if test ! -d $BASE_DIR
 then
 	echo "Creating $BASE_DIR..."
-	if mkdir -m $PERMISSIONS -p $BASE_DIR 2> /dev/null
+	if mkdir -m $BASE_PERM -p $BASE_DIR 2> /dev/null
 	then
 		:
 	else
@@ -1062,7 +1090,7 @@ fi
 if test ! -d $CONFIG_DIR
 then
 	echo "Creating $CONFIG_DIR..."
-	if mkdir -m $PERMISSIONS -p $CONFIG_DIR 2> /dev/null
+	if mkdir -m $CONF_PERM -p $CONFIG_DIR 2> /dev/null
 	then
 		:
 	else
@@ -1184,7 +1212,7 @@ EOF
 			cp $i $ARCH_DIR/$i
 			chown $USER $ARCH_DIR/$i
 			chgrp $GROUP $ARCH_DIR/$i
-			chmod $PERMISSIONS $ARCH_DIR/$i
+			chmod $BASE_PERM $ARCH_DIR/$i
 			chmod u+x $ARCH_DIR/$i
 		done
 		cd ..
@@ -1216,28 +1244,14 @@ cd "$BASE_DIR"
 cp -rp "$BASE_DIR/local" "/tmp/local$$" 2> /dev/null
 rm -f $BASE_DIR/local 2> /dev/null
 
-# used to be a symlink, but cvs update could replace your local.h with
-# the stupid example from the cvs, so let's better copy it.
+# we previously tried to use symlinks or even partial symlinks for
+# unmodified files only, but it can result in cvs collisions and
+# headaches. so far the plain copy approach is best.
 #
-cp -rp "$BASE_DIR/config/default" "$BASE_DIR/local"
+cp -rp "$BASE_DIR/config/blueprint" "$BASE_DIR/local"
 #
 # let's make sure it won't happen again   ;)
 rm -rf "$BASE_DIR/local/CVS"
-#
-# no no no let's better not copy it, so we can cvs update unmodified
-# files like path.h although cvs up should NEVER replace the locally
-# modified local.h.
-#ln -s "config/default" "$BASE_DIR/local"
-# that doesn't work either.. he tries to join changes between default
-# local.h and current one, resulting in collisions.
-#
-# let's make symlinks of each file, then replace the ones we really
-# need locally..
-#
-#mkdir "$BASE_DIR/local"
-#ln -s config/default/README config/default/*.h "$BASE_DIR/local"
-# this one gives us headaches
-#rm "$BASE_DIR/local/CVS"
 
 if test "$RUNTIME_OUTPUT" = "files"
 then
@@ -1272,12 +1286,17 @@ echo "Setting permissions for program files..."
 
 chown -R $USER $BASE_DIR
 chgrp -R $GROUP $BASE_DIR
-chmod -R $PERMISSIONS $BASE_DIR
+# does this mark all files executable, even .c?
+chmod -R $BASE_PERM $BASE_DIR
 chmod -R u+x $BASE_DIR/bin 
 
 echo "Setting permissions for data and log files..."
 
 chmod -R $DATA_PERM $BASE_DIR/data $BASE_DIR/log
+
+echo "Setting $GROUP group on configuration files..."
+
+chgrp -R $GROUP $CONFIG_DIR
 
 # and now we'll see if perl is installed :)
 bin/psyconf psyced.ini

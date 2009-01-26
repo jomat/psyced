@@ -1,11 +1,18 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: slave.c,v 1.58 2008/03/21 12:35:40 lynx Exp $
+// $Id: slave.c,v 1.59 2008/04/22 22:43:56 lynx Exp $
 //
 // generic context slave as described in a posting to psyc-dev years ago.
 // it receives the single copy of a message sent out by the group master
 // and fans it out to local recipients. that's why local recipients need
 // to create and join this manager when they enter a room.
 //
+
+// local debug messages - turn them on by using psyclpc -DDcontext=<level>
+#ifdef Dcontext
+# undef DEBUG
+# define DEBUG Dcontext
+#endif
+
 #include <net.h>
 #include <presence.h>
 

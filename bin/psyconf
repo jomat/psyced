@@ -6,7 +6,7 @@
 # psyconf(8)  - tool that generates psyc configuration
 #		files out of a common psyced.ini
 #
-# $Id: psyconf,v 1.75 2008/02/08 11:44:57 lynx Exp $
+# $Id: psyconf,v 1.80 2008/10/26 15:24:01 lynx Exp $
 
 =head1 NAME
 
@@ -59,7 +59,7 @@ sub say {
 	use Getopt::Std;
 	&getopt;
 
-	print STDERR '$Id: psyconf,v 1.75 2008/02/08 11:44:57 lynx Exp $', "\n";
+	print STDERR '$Id: psyconf,v 1.80 2008/10/26 15:24:01 lynx Exp $', "\n";
 
 	my $conf = shift || 'psyced.ini';
 	$conf = '/etc/psyc/psyced.ini' unless -r $conf;
@@ -127,31 +127,39 @@ sub say {
 	my $config = $c{_basic_path_configuration} || $base;
 	# this isn't taking $ARCH_DIR from install.sh into account
 	# but maybe it shouldn't anyway..
+	say "Looking for driver in $arch/$driver\n";
 	unless (-x $arch && -x "$arch/$driver") {
 		$arch = "$base/bin-$_type_system";
+		say "Looking for driver in $arch/$driver\n";
 		unless (-x $arch && -x "$arch/$driver") {
 			$arch = "$base/bin-linux";
+			say "Looking for driver in $arch/$driver\n";
 			if (-x $arch && -x "$arch/$driver") {
 				say "\nBug in $0: We didn't find $base/bin-linux in the appropriate way.\nThat's not nice. Continuing however.\n"
 			} elsif (not -x ($arch = "$base/bin") && -x "$arch/$driver") {
+				say "Looking for driver in $arch/$driver\n";
 				# bad place for psyclpc really..
 				# since it is usually of no commandline use
 				# but where else should psyclpc.ebuild
 				# install it? in /opt/psyclpc? for two files?
 				$arch = "/usr/sbin";
+				say "Looking for driver in $arch/$driver\n";
 				# the following is very unlikely to happen:
 				die <<X unless -x $arch && -x "$arch/$driver";
-could not find any directory containing $driver.
+Could not find any directory containing $driver.
 X
 			}
 		}
 	}
+	say "Found driver in $arch/$driver\n";
 
 	my $user = $c{_basic_system_user} || 'daemon';
 	my ($login,$pass,$uid,$gid) = getpwnam($user)
 	    or die "uid '$user' not defined on this system";
 	# this doesn't mean psyconf is intended to run as $user too!!
-	say "psyced will later be running as user $user ($uid:$gid)\n";
+	say "psyced must later be running as user $user ($uid:$gid)\n";
+	# will automatically, when started via etc/init.d but if you
+	# start it manually, you have to switch to that user yourself
 
 	my $ho = $c{_basic_host_name} || $ENV{HOST} || 'psyc';
 	my $chatname = $c{_basic_nick_server} ||
@@ -259,6 +267,7 @@ X
 // CAUTION! This file has been generated using $0.
 // Don't edit unless you are no longer going to use the configuration tool.
 // Edit $conf instead, then run $0 again.
+// If you want to tune psyced, edit local.h instead!
 
 X
 	if ( $c{_optional_config_HTTP} ) {
@@ -365,25 +374,33 @@ X
 #WARNING: Because of some funny bug the driver will probably not bind properly
 #to _basic_host_IP as it also needs _basic_host_name and _basic_host_domain
 #to be provided. Hopefully this shortcoming will soon be history.
-#In the meantime please re-edit the psyconf.ini to provide all variables.
+#In the meantime please re-edit the psyced.ini to provide all variables.
 	print STDERR <<X if $hc == 1;
 
 WARNING: _basic_host_IP, _basic_host_name and _basic_host_domain need to be
 provided together as the driver won't figure out the proper name for the IP
-number or vice versa. Please re-edit the psyconf.ini to provide all variables.
+number or vice versa. Please re-edit the psyced.ini to provide all variables.
 
 X
 	if ($c{_protocols_use_encryption}) {
-		$psyced .= " --tls-key $config/$c{_basic_path_PEM_key}"
-		    if $c{_basic_path_PEM_key};
-		$psyced .= " --tls-cert $config/$c{_basic_path_PEM_certificate}"
-		    if $c{_basic_path_PEM_certificate};
-		$psyced .= " --tls-trustdirectory $config/$c{_basic_path_trust}"
-		    if $c{_basic_path_trust};
+		my $t = $c{_basic_path_PEM_key};
+		if ($t) {
+			$t = "$config/$t" unless $t =~ m#^/#;
+			$psyced .= " --tls-key $t";
+		}
+		if ($t = $c{_basic_path_PEM_certificate}) {
+			$t = "$config/$t" unless $t =~ m#^/#;
+			$psyced .= " --tls-cert $t";
+		}
+		if ($t = $c{_basic_path_trust}) {
+			$t = "$config/$t" unless $t =~ m#^/#;
+			$psyced .= " --tls-trustdirectory $t";
+		}
 # ldmud doesn't support this yet
 #		$psyced .= " --tlscrldirectory $config/$c{_basic_path_revocation}"
 #		    if $c{_basic_path_revocation};
 	}
+	$psyced .= ' '. $c{_optional_extra_debug} if $c{_optional_extra_debug};
 
 	# you can divert UDP if you know what you are doing.
 	my $portUDP = $c{_protocols_port_UDP} || $c{_protocols_port_PSYC};
@@ -544,6 +561,12 @@ X
 	close O;
 	chmod 0744, $t;
 	chown $uid, $gid, $t if $uid;
+
+# TODO: generate a psyced.gdb file kind of like this
+	print <<X if 0;
+file /bin/psyclpc
+run -DDEBUG=1 -u 4404 4404 2323 6667 5222 9999 etc. whatever flags necessary
+X
 
 # PSYCED INIT.D SCRIPT
 	$t = "$base/etc";

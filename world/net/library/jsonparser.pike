@@ -1,5 +1,5 @@
 // vim:syntax=lpc
-// $Id: jsonparser.pike,v 1.2 2006/10/25 17:50:11 lynx Exp $
+// $Id: jsonparser.pike,v 1.5 2008/08/05 12:21:34 lynx Exp $
 // 
 // I really hate those comments.
 //
@@ -107,6 +107,9 @@ PROTECTED void back() {
 		myIndex -= 1;
 }
 
+#ifndef GAMMA
+// funny.. we already have two better ways to do hex2int than this:
+//
 /// <summary>
 /// Get the hex value of a character (base16).
 /// </summary>
@@ -130,6 +133,7 @@ PROTECTED int dehexchar(int c) {
 	}
 	return -1;
 }
+#endif
 
 /// <summary>
 /// Determine if the source string still contains characters that next() can consume.
@@ -331,12 +335,17 @@ PROTECTED varargs string unescape(string s)
 		if (c == '+') {
 			c = ' ';
 		} else if (c == '%' && (i + 2 < len)) {
+#ifndef GAMMA
 			int d = dehexchar(s[i+1]);
 			int e = dehexchar(s[i+2]);
 			if (d >= 0 && e >= 0) {
 				c = (d*16 + e);
 				i += 2;
 			}
+#else
+			i += 2;
+			c = hex2int(s[i-1 .. i]);
+#endif
 		}
 		sb+=int2char(c);
 	}

@@ -1,13 +1,10 @@
-// $Id: active.c,v 1.395 2008/04/01 09:38:26 lynx Exp $ // vim:syntax=lpc:ts=8
-
-#include <net.h>
-#include <sys/time.h>
-#include <url.h>
+// $Id: active.c,v 1.404 2008/10/26 17:24:57 lynx Exp $ // vim:syntax=lpc:ts=8
 
 // a jabber thing which actively connects something
 #define NO_INHERIT
 #include "jabber.h"
 #undef NO_INHERIT
+#include <url.h>
 
 #ifdef ERQ_WITHOUT_SRV
 # define hostname host	// hostname contains the name before SRV resolution
@@ -39,9 +36,9 @@ volatile int dialback_outgoing;
 
 tls_logon(); // prototype
 
-#ifdef NOT_EXPERIMENTAL // not strictly necessary, but more spec conformant
+// not strictly necessary, but more spec conformant
 quit() {
-	emit("</stream:stream>");
+	emitraw("</stream:stream>");
 #ifdef _flag_log_sockets_XMPP
 	D0( log_file("RAW_XMPP", "\n%O: shutting down, quit called\n", ME); )
 #endif
@@ -49,7 +46,6 @@ quit() {
 				// matter on an outgoing-only socket
 	//destruct(ME);
 }
-#endif
 
 sGateway(gw, ho, id) {
     // TODO: ho is obsolete
@@ -68,7 +64,7 @@ removeGateway(gw, id) {
 start_dialback() {
     string source_host, key;
 
-    source_host = NAMEPREP(JABBER_HOST);
+    source_host = NAMEPREP(_host_XMPP);
     key = DIALBACK_KEY(streamid, hostname, source_host);
 
     P3(("%O: starting dialback from %O to %O\n", ME, source_host, hostname))
@@ -137,7 +133,7 @@ handle_stream_features(XMLNode node) {
 //		&& !config(XMPP + hostname, "_tls_invalid")
        ){
 	// may use tls unless we already do so
-	emit("<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>");
+	emitraw("<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>");
 	nodeHandler = #'handle_starttls;
 	return;
     }
@@ -177,11 +173,11 @@ handle_stream_features(XMLNode node) {
 #ifndef _flag_disable_authentication_external_XMPP
 	if (mechs["EXTERNAL"]) {
 	    // TODO we should check that the name in our 
-	    // certificate is equal to JABBER_HOST
+	    // certificate is equal to _host_XMPP
 	    // but so should the other side!
 	    emit("<auth mechanism='EXTERNAL' "
 		 "xmlns='" NS_XMPP "xmpp-sasl'>" +
-		 encode_base64(JABBER_HOST)
+		 encode_base64(_host_XMPP)
 		 + "</auth>");
 	    return;
 	} else
@@ -191,7 +187,7 @@ handle_stream_features(XMLNode node) {
 	    PT(("jabber/active requesting to do digest md5\n"))
 	    emit("<auth mechanism='DIGEST-MD5' "
 		 "xmlns='" NS_XMPP "xmpp-sasl>" +
-		 encode_base64(JABBER_HOST) +
+		 encode_base64(_host_XMPP) +
 		 "</auth>");
 	    return;
 
@@ -201,7 +197,7 @@ handle_stream_features(XMLNode node) {
 #ifdef SWITCH2PSYC
     else if (node["/switch"]) {	// should check scheme
 	PT(("upgrading %O from XMPP to PSYC.\n", ME))
-	emit("<switching xmlns='http://switch.psyced.org'>"
+	emitraw("<switching xmlns='http://switch.psyced.org'>"
 		"<scheme>psyc</scheme>"
 	     "</switching>");
 	return;
@@ -235,6 +231,11 @@ disconnected(remainder) {
     // nothing else happening here? no reconnect?
     // TODO: what about the dialback Q if any?
     ::disconnected(remainder);
+    // let's call this a special case of good will:
+    // hopefully a sending side socket close operation
+    if (remainder == "</stream:stream>") return 1;
+    // we could forward remainder to feed(), but we haven't seen any other
+    // cases of content than the one above.
     return flags & TCP_PENDING_DISCONNECT;
 }
 
@@ -259,18 +260,20 @@ static int logon(int failure) {
 	emit("<stream:stream xmlns:stream='http://etherx.jabber.org/streams' "
 	     "xmlns='jabber:server' xmlns:db='jabber:server:dialback' "
 	     "to='" + hostname + "' "
-	     "from='" + NAMEPREP(JABBER_HOST) + "' "
+	     "from='" + NAMEPREP(_host_XMPP) + "' "
 	     "xml:lang='en' "
 	     "version='1.0'>");
-#ifdef NOT_EXPERIMENTAL // not strictly necessary, but more spec conformant
+#if 1 // not strictly necessary, but more spec conformant
     } else if (!qSize(me)) { // no retry for dialback-only
-	P0(("notify gateways %O of failure\n", gateways))
 	if (sizeof(dialback_queue) > 1) {
 	    P0(("tell fippo that sizeof(dialback queue) was > 1\n"))
 	}
-	foreach(string id, mixed gw : gateways) {
-	    if (objectp(gw)) {
-		gw->remote_connection_failed();
+	if (sizeof(gateways)) {
+	    P0(("%O notifies gateways %O of failure\n", ME, gateways))
+	    foreach(string id, mixed gw : gateways) {
+		if (objectp(gw)) {
+		    gw->remote_connection_failed();
+		}
 	    }
 	}
 	dialback_queue = 0;
@@ -286,7 +289,8 @@ static int logon(int failure) {
 #ifdef WANT_S2S_TLS
 tls_logon(result) {
     if (result < 0) {
-	PT(("%O tls_logon %d\n", ME, result))
+	P1(("%O tls_logon %d: %O\n", ME, result, tls_error(result) ))
+	// would be nice to insert the tls_error() message here.. TODO
 	connect_failure("_encrypt", "Problems setting up an encrypted circuit");
     } else if (result == 0) {
 	// we need to check the certificate
@@ -304,12 +308,12 @@ tls_logon(result) {
 				       "contains %O/%O",
 				       hostname, cert["2.5.4.3"],
 				       cert["2.5.29.17:1.3.6.1.5.5.7.8.5"]));
-#else
-		P1(("TLS: %s presented a certificate with unexpected identity.\n", hostname))
-		P2(("%O\n", cert))
 #endif
 #ifdef _flag_log_bogus_certificates
 		log_file("CERTS", S("%O %O %O id?\n", ME, hostname, cert));
+#else
+		P1(("TLS: %s presented a certificate with unexpected identity.\n", hostname))
+		P2(("%O\n", cert))
 #endif
 #if 0 //def _flag_reject_bogus_certificates
 		QUIT
@@ -321,12 +325,12 @@ tls_logon(result) {
 		monitor_report("_error_untrusted_certificate",
 			       sprintf("%O certificate could not be verified",
 				       hostname));
-#else
-		P1(("TLS: %s presented untrusted certificate.\n", hostname))
-		P2(("%O\n", cert))
 #endif
 #ifdef _flag_log_bogus_certificates
 		log_file("CERTS", S("%O %O %O\n", ME, hostname, cert));
+#else
+		P1(("TLS: %s presented untrusted certificate.\n", hostname))
+		P2(("%O\n", cert))
 #endif
 #if 0 //def _flag_reject_bogus_certificates
 		// QUIT is wrong...
@@ -375,7 +379,7 @@ jabberMsg(XMLNode node) {
 	     * Server MUST terminate both the XML stream and the 
 	     * underlying TCP connection. 
 	     */
-	    emit("</stream:stream>");
+	    emitraw("</stream:stream>");
 	    remove_interactive(ME);
 	    connect_failure("_dialback", "dialback gone wrong");
 	}
@@ -390,7 +394,7 @@ jabberMsg(XMLNode node) {
 				   node["@type"]);
 	    // probably we can delete this...
 	    m_delete(gateways, t);
-#ifdef NOT_EXPERIMENTAL // not strictly necessary, but more spec conformant
+#if 1 // not strictly necessary, but more spec conformant
 	} else if (member(gateways, t)) {
 	    P0(("%O found gateway for %O, but it is not an object: %O\n",
 		ME, t, o))
@@ -413,7 +417,7 @@ jabberMsg(XMLNode node) {
 	    emit("<stream:stream xmlns:stream='http://etherx.jabber.org/streams' "
 		 "xmlns='jabber:server' xmlns:db='jabber:server:dialback' "
 		 "to='" + hostname + "' "
-		 "from='" + NAMEPREP(JABBER_HOST) + "' "
+		 "from='" + NAMEPREP(_host_XMPP) + "' "
 		 "xml:lang='en' "
 		 "version='1.0'>");
 	    authenticated = 1;
@@ -435,7 +439,7 @@ jabberMsg(XMLNode node) {
 		data = sasl_parse(t);
 		PT(("extracted %O\n", data))
 
-		data["username"] = JABBER_HOST;
+		data["username"] = _host_XMPP;
 		secret = config(XMPP + hostname, "_secret_shared");
 		unless(secret) {
 		    // mh... this is a problem!
@@ -444,13 +448,13 @@ jabberMsg(XMLNode node) {
 		}
 		data["cnonce"] = RANDHEXSTRING;
 		data["nc"] = "00000001";
-		data["digest-uri"] = "xmpp/" JABBER_HOST;
+		data["digest-uri"] = "xmpp/" _host_XMPP;
 
 		response = sasl_calculate_digestMD5(data, secret, 0);
 
 		// ok, the username is our hostname
 		// note: qop must not be quoted, as we are 'client'
-		t = "username=\"" JABBER_HOST "\","
+		t = "username=\"" _host_XMPP "\","
 		    "realm=\"" + data["realm"] + "\","
 		    "nonce=\"" + data["nonce"] + "\","
 		    "cnonce=\"" + data["cnonce"] + "\","
@@ -584,7 +588,7 @@ int msg(string source, string mc, string data,
 	if (interactive() && ready && dialback_outgoing == 0) {
 	    start_dialback();
 	}
-#if JABBER_HOST == SERVER_HOST
+#if _host_XMPP == SERVER_HOST
       // we can only do this if mkjid patches the psyc host into jabber host
       // but that is terrifically complicated and requires parsing of things
       // we already knew.. so let's simply enqueue with object id and reject
@@ -596,7 +600,7 @@ int msg(string source, string mc, string data,
 #else
 	// is this a bad idea? not sure.. we'll see..
 	// if i don't have this here, a "tell lynX where it happened" will
-	// be triggered from here -- best to never use JABBER_HOST really ;)
+	// be triggered from here -- best to never use _host_XMPP really ;)
 	vars["_source"] = source;
 	// behaviour has changed.. so maybe we don't need this any longer TODO
 #endif

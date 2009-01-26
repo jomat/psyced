@@ -1,9 +1,14 @@
-// $Id: text.c,v 1.87 2008/02/25 10:54:01 lynx Exp $ // vim:syntax=lpc
+// $Id: text.c,v 1.92 2008/12/01 11:31:32 lynx Exp $ // vim:syntax=lpc
 //
 // text database handler
 //
 // cloned on demand by compile_object in master.c
 // accessed by all sorts of items using the textc.c
+
+#ifdef Dtext
+# undef DEBUG
+# define DEBUG Dtext
+#endif
 
 #include <net.h>
 #include <lang.h>
@@ -30,7 +35,7 @@ volatile mapping fs;
 
 link() { return _v; }
 
-#ifdef EXPERIMENTAL
+#ifdef EXPERIMENTAL	// not being used anywhere currently
 renderDB() {
 	string k, t;
 	string out = "<PSYC:TEXTDB> ## vim:syntax=mail\n";
@@ -55,7 +60,7 @@ renderDB() {
 parseDB(string in, string filename) {
 	string e, mc;
 
-	//P0(("%O parseDB %s\n", ME, filename))
+	P2(("%O parseDB %s\n", ME, filename))
 	unless (sscanf(in, "<PSYC:TEXTDB>%s\n\n%s", e, in))
 	    raise_error("garbage in "+ filename +" header\n");
 	// comments are permitted after the file tag until the
@@ -77,12 +82,25 @@ parseDB(string in, string filename) {
 			    "%s\n", filename, mc))
 		}
 # endif
+# ifdef NEW_LINE
+# echo NEW_LINE currently doesn't work as it breaks the ## comment syntax
+		// Odd server stuff: "# shut up"
+		// should i pursue fixing NEW_LINE or keep the trailcutting
+		// business..? since only net/jabber does the chomp() it's not
+		// a big deal.. however NEW_LINE is the way to ensure that
+		// psyced does not modify outgoing data that *intentionally*
+		// had an extra trailing newline! so at some point we should
+		// probably get this stuff working.  TODO
+		fs[mc] = replace(e, "\n|", "\n");
+# else
 		fs[mc] = replace(e, "\n|", "\n") + "\n";
+#endif
 	    } else unless(e == "") {
 		// allow one trailing newline in database format
 		P0(("ERROR in %s after %O: %O...\n", filename, mc,
 		    strlen(e) > 23? e[.. 23] : e))
 	    }
+	    P4(("parseDB %O into %O for %O\n", e, fs[mc], mc))
 	}
 	return ME;
 # else
@@ -219,7 +237,7 @@ lookup(string mc, mixed fmt, object ghost, object curse) {
 # endif
 	    fs[mc] = in;
 #else
-	    P4(("No template for %s: %s\n", path, mc));
+	    P4(("DB: No template for %s: %s\n", path, mc));
 # if DEBUG > 0
 	    // this warns us, when we forgot to integrate a .fmt file
 	    file = path + replace(mc[1..], "_", "/") + ".fmt";
@@ -299,14 +317,14 @@ lookup(string mc, mixed fmt, object ghost, object curse) {
 #ifndef SERVER_HOST
 #define SERVER_HOST __HOST_IP_NUMBER__	// never happens
 #endif
-#ifdef JABBER_HOST
+#ifdef _host_XMPP
 				in = before + SERVER_HOST + after;
 				break;
 #else
-#define JABBER_HOST SERVER_HOST
+#define _host_XMPP SERVER_HOST
 #endif
 			case "VAR_server_XMPP":
-				in = before + JABBER_HOST + after;
+				in = before + _host_XMPP + after;
 				break;
 			case "VAR_server_uniform":
 				in = before + query_server_unl() + after;
@@ -341,7 +359,7 @@ lookup(string mc, mixed fmt, object ghost, object curse) {
 				else
 				if (ghost) in= ghost-> lookup("_"+code);
 				else in= lookup("_"+code);
-				unless (in) in = before + after;
+				if (!in || !strlen(in)) in = before + after;
 				else in = before + chomp(in) + after;
 			}
 			if (in == "" || in == "\n") {
@@ -462,6 +480,7 @@ lookup(string mc, mixed fmt, object ghost, object curse) {
 #endif /* NOTEXTCACHE */
             }
 	}
+	P4(("DB lookup in %O finally returns %O\n", ME, fmt))
 	return fmt;
 }
 

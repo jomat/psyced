@@ -1,9 +1,10 @@
 <PSYC:TEXTDB> ## vim:syntax=html
 ## as yet undocumented/unfinalized: detach attach offline online
 ## and /set identities
+### Check utf-8: Praise Atatürk!
 
 _HTML_tail
-|</td></tr></table>
+|</span></td></tr></table>
 
 _HTML_head
 |<script><!--
@@ -44,8 +45,7 @@ _HTML_head
 |--></style>
 |
 |<body bgcolor="#333333" text="#cccccc" link="#669966" vlink="#ccffcc">
-|<table width="80%" height="100%"><tr><td>
-|
+|<table width="80%" height="100%"><tr><td><span id="content">
 
 _HTML_info_split
 |<hr noshade>
@@ -1004,6 +1004,15 @@ _PAGES_user_settings_changed
 |Settings changed.<br />
 |<a href="?username=[_username]&password=[_password]">continue</a>
 
+_PAGES_error
+|<title>error [_code]</title>
+|{_HTML_head}
+|
+|<h1 id="code">[_code]</h1>
+|<div id="comment">[_comment]</div>
+|
+|{_HTML_tail}
+
 _PAGES_group_scratchpad
 |<title>scratchpad for [_nick_place]@{_VAR_host}</title>
 |
@@ -1322,13 +1331,22 @@ _PAGES_login
 |	setTimeout("Plf.submit()", 1234)
 |</script>
 |<form name="Plf" action="examine">
-|## piccolo spazio pubblicità
+|## piccolo spazio pubblicitÃ 
 |<input type="hidden" name="visit" value="psyced.org">
 |</form>
 |{_echo_login_web}
 
 _echo_login_web
 |You are being logged in.
+
+_PAGES_start_description_anonymous
+|<title>{_MISC_server_software}: examine profile for [_nick]</title>
+|<body class="Pe">
+|[_HTML_photo]
+|[_FORM_start]
+
+_PAGES_end_description_anonymous
+|[_FORM_end]</body>
 
 _PAGES_start_description
 |<title>{_MISC_server_software}: examine profile on {_VAR_host}</title>
@@ -1382,7 +1400,7 @@ _HTML_examine_display
 
 _HTML_examine_buttons_start
 |## SELF? whatever.. text needs to be intlized
-|<p class="Peb"><a id="Pebh" href="javascript:hom()">HOME</a> &nbsp;
+|<p class="Peb"><a id="Pebh" href="javascript:hom()">{_TEXT_button_home}</a> &nbsp;
 
 _HTML_examine_buttons_end
 |</p>
@@ -1403,21 +1421,24 @@ _HTML_examine_friend_delete
 _HTML_examine_friend_new
 |&nbsp; <a id="Pebf" href="javascript:cmd('FRIEND [_nick]')">{_TEXT_button_friend_new}</a>
 
+_HTML_examine_button_call
+|&nbsp; &nbsp; <a id="Pebf" href="javascript:cmd('CALL [_nick]')">{_TEXT_button_call}</a>
+
 _HTML_call
 |<object width="[_amount_width_object]" height="[_amount_height_object]">
 |<param name="movie" value="[_path_object_local]"></param>
-|<param name="bgcolor" value="#cc9999" />
-|<embed src="[_path_object_local]?bgcolor=#ff6666" type="application/x-shockwave-flash" width="[_amount_width_object]" height="[_amount_height_object]"></embed>
+|<param name="bgcolor" value="{_MISC_color_bg_call}" />
+|<embed src="[_path_object_local]?bgcolor={_MISC_color_bg_call}" type="application/x-shockwave-flash" width="[_amount_width_object]" height="[_amount_height_object]"></embed>
 |</object><object width="[_amount_width_object]" height="[_amount_height_object]">
 |<param name="movie" value="[_path_object]"></param>
-|## <param name="bgcolor" value="#9999cc"></param>
+|## <param name="bgcolor" value="{_MISC_color_bg_call}"></param>
 |## <param name="user" value="[_nick]"></param>
 |## <param name="expiry" value="[_time_expire]"></param>
 |## <param name="role" value="[_role]"></param>
 |## <param name="jack" value="[_check_call]"></param>
 |## <param name="server" value="[_uniform_server_media]"></param>
-|<param name="flashVars" value="bgcolor=#9999cc&user=[_nick]&expiry=[_time_expire]&role=[_role]&jack=[_check_call]&server=[_uniform_server_media]"></param>
-|<embed src="[_path_object]" flashVars="bgcolor=#66ff66&user=[_nick]&expiry=[_time_expire]&role=[_role]&jack=[_check_call]&server=[_uniform_server_media]" type="application/x-shockwave-flash" width="[_amount_width_object]" height="[_amount_height_object]"></embed>
+|<param name="flashVars" value="bgcolor={_MISC_color_bg_call}&user=[_nick]&expiry=[_time_expire]&role=[_role]&jack=[_check_call]&server=[_uniform_server_media]"></param>
+|<embed src="[_path_object]" flashVars="bgcolor={_MISC_color_bg_call}&user=[_nick]&expiry=[_time_expire]&role=[_role]&jack=[_check_call]&server=[_uniform_server_media]" type="application/x-shockwave-flash" width="[_amount_width_object]" height="[_amount_height_object]"></embed>
 |</object>
 
 _HTML_call_OLD
@@ -1429,20 +1450,37 @@ _HTML_call_OLD
 |<embed src="[_path_object]?ns0Name=(0)&stream=([_nick])[_time_expire][_role][_check_call]&url=[_uniform_server_media]" type="application/x-shockwave-flash" width="[_amount_width_object]" height="[_amount_height_object]"></embed>
 |</object>
 
+_list_description_each_item_NOTES
+|## this currently produces a <table>. alice suggests something like
+|<div><p class='var' style='display:block;float:left;width:200px'>var</p><p class='value' style='display:block;float:left;width:400px;'>value</p><br class='cleaner' style='clear:both'></div>
+|## maybe like this? (with css accordingly)
+|<div id="[_key]"><span class="ldpek">[_name_key]</span><span class="ldpev">[_value]</span></div>
+|## or stick to the old table..?
+|<tr id="[_key]"><td>[_name_key]</td><td>[_value]</td></tr>
+|## do we want to do ._meth #ldpek { ... } in the css?
+|<tr id="[_key]"><td class="ldpek">[_name_key]</td><td class="ldpev">[_value]</td></tr>
+
+_list_description_each_item
+|<span id="[_key]"><span class="ldpek">[_name_key]</span> <span class="ldpev">[_value]</span><br></span>
+
 _list_description_each
-|## would be nice to have <tr id='_meth'> so we can do
-|## ._meth #ldpek { ... } in the css, but that requires a
-|## switch to psyctext at least when rendering to html.. maybe someday..
 |<tr><td class="ldpek">%s</td><td class="ldpev">%s</td></tr>
 
 _list_description_image
 |<img class="ldpi" src="data:[_type_image];base64,[_image_base64]">
 
 _list_description_on
+|<div class="ldp">
+|<div class="ldpc">{_TEXT_description_nick}</div>
+
+_list_description_off
+|</div>
+
+_list_description_on_table
 |<table class="ldp" border=0>
 |<tr class="ldpc"><th colspan=2>{_TEXT_description_nick}:</th></tr>
 
-_list_description_off
+_list_description_off_table
 |</table>
 
 _echo_execute_web

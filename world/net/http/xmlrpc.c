@@ -1,4 +1,4 @@
-// $Id: xmlrpc.c,v 1.23 2008/03/11 13:42:26 lynx Exp $ // vim:syntax=lpc
+// $Id: xmlrpc.c,v 1.24 2008/04/22 22:43:14 lynx Exp $ // vim:syntax=lpc
 //
 // TODO: shares to much code with url fetcher
 // 	 in the ideal world this would only contain marshal/unmarshal code
@@ -6,8 +6,8 @@
 // 	 possibly we can come up with an marshal/unmarshal api and use
 // 	 the same framework for xml-rpc, soap and other things
 //
-#include <net.h>
 #include <ht/http.h>
+#include <net.h>
 #include <url.h>
 #include <xml.h>
 
@@ -95,7 +95,7 @@ void request(string method, mixed params, closure cb) { // TODO: errback API
 
 int logon(int arg) {
 	buffer = "";
-	httpheaders = ([ ]);
+	headers = ([ ]);
 	http_status = 500;
 
 	// this is all not https: compatible..
@@ -189,18 +189,18 @@ mixed unMarshal(XMLNode parsed) {
     }
 }
 
-void disconnected(remainder) {
+int disconnected(string remainder) {
     mixed *args;
 
-    httpheaders["_fetchtime"] = isotime(ctime(time()), 1);
-    if (httpheaders["last-modified"])
-	    modificationtime = httpheaders["last-modified"];
-    if (httpheaders["etag"]) 
-	    etag = httpheaders["etag"]; // heise does not work with etag
+    headers["_fetchtime"] = isotime(ctime(time()), 1);
+    if (headers["last-modified"])
+	    modificationtime = headers["last-modified"];
+    if (headers["etag"]) 
+	    etag = headers["etag"]; // heise does not work with etag
 
     fetched = buffer;
-    fheaders = httpheaders;
-    buffer = httpheaders = 0;
+    fheaders = headers;
+    buffer = headers = 0;
     fetching = 0;
     if (pointerp(args)) // no fault
 	funcall(callback, args...);

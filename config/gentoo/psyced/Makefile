@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.16 2008/01/27 12:27:15 lynx Exp $
+# $Id: Makefile,v 1.20 2008/11/20 13:45:58 lynx Exp $
 #
 # This Makefile serves the purpose to produce the files ebuild needs to be
 # happy. So it is an ebuildbuilder. Targets are: ebuild, Manifest and clean.
@@ -9,7 +9,7 @@
 # emerge. From nothing. fischerspooner rocks.   -lynX
 
 P=psyced
-V=20080116
+V=20081120
 
 # this part can be executed once the ebuild is in portage
 

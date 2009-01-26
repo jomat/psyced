@@ -1,8 +1,15 @@
-// $Id: connect.c,v 1.49 2008/03/29 20:05:32 lynx Exp $ // vim:syntax=lpc
+// $Id: connect.c,v 1.54 2008/12/10 22:53:33 lynx Exp $ // vim:syntax=lpc
 //
 // net/connect: generic handler for active connections
 // most methods are intended for overloading except for the connect2()
 //
+
+// local debug messages - turn them on by using psyclpc -DDconnect=<level>
+#ifdef Dconnect
+# undef DEBUG
+# define DEBUG Dconnect
+#endif
+
 #include <net.h>
 #include <errno.h>
 
@@ -24,9 +31,14 @@ protected connect_failure(mc, text) {
 protected int logon(int failure) {
 	if (is_connecting == "s") {
 		is_connecting = 0;
-		P1(("%O connected to %O from %O. TLS requested.\n", ME,
+#if __EFUN_DEFINED__(tls_init_connection)
+		P2(("%O connected to %O from %O. TLS requested.\n", ME,
 		     query_ip_number(ME), query_mud_port(ME)))
 		tls_init_connection(ME, #'logon);
+#else
+		connect_failure("_unsafe", "security not available");
+		return 0;
+#endif
 	}
 	is_connecting = 0;
 	if (failure == -1 || !interactive(ME)) {
@@ -54,6 +66,9 @@ protected int logon(int failure) {
 #endif
 	unless (hostCheck(query_ip_number(ME), query_mud_port(ME)))
 	    return block();
+#if __EFUN_DEFINED__(enable_telnet)
+	enable_telnet(0, ME);
+#endif
 	return 1;
 }
 
@@ -77,7 +92,7 @@ protected canonical_host(cane, ip, host) {
 private connect2(ip, port, host) {
 	int rc;
 
-	P2(("%O connect2(%O, %O, %O) == %O\n", ME, ip, port, host, chost(ip)))
+	P3(("%O connect2(%O, %O, %O) == %O\n", ME, ip, port, host, chost(ip)))
 	unless (stringp(ip)) {
 		connect_failure("_resolve", host+" does not resolve");
 		return;
@@ -97,11 +112,11 @@ private connect2(ip, port, host) {
 	    return;
 	}
 #if __EFUN_DEFINED__(net_connect)
-	P2(("REALLY calling net_connect(%O, %O)\n", ip, port))
+	P3(("REALLY calling net_connect(%O, %O)\n", ip, port))
 	rc = net_connect(ip, port);
 	switch(rc) {
 	case 0:
-		P2(("%O connecting(%O, %O, %O) == %O\n",
+		P3(("%O connecting(%O, %O, %O) == %O\n",
 		     ME, ip, port, host, chost(ip)))
 		break;
 	case EMFILE:
@@ -151,6 +166,8 @@ connect(host, port, transport) {
 }
 
 disconnected(remaining) {
+	P2(("%O got disconnected(%O). it was %s connected.\n", ME, remaining,
+	    query_once_interactive(ME) ? "once" : "never"))
 	connect_failure("_disconnect", "lost connection");
 	return 0;   // unexpected
 }

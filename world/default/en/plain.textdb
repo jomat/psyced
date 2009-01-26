@@ -1,4 +1,5 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
+## Check utf-8: Praise Atatürk!
 
 _message
 |[_nick] sends you: [_data]
@@ -17,6 +18,9 @@ _prefix
 
 _URL_help
 |http://help.pages.de
+
+_URL_project
+|http://www.psyced.org
 
 _MISC_color
 |{_MISC_color_text}
@@ -246,6 +250,9 @@ _TEXT_time_age
 _TEXT_time_alive
 |Last time alive
 
+_TEXT_address_zone_time
+|Time zone
+
 _TEXT_contact_telephone
 |Telephone
 
@@ -334,6 +341,12 @@ _TEXT_action_away
 
 _TEXT_action_does
 |does
+
+_TEXT_button_home
+|HOME
+
+_TEXT_button_call
+|PHONE CALL
 
 _TEXT_button_friend_new
 |MAKE FRIENDSHIP
@@ -519,6 +532,30 @@ _request_description_vCard
 _request_friendship_implied
 |## no output
 
+_request_call_link
+|[_nick] would like to speak to you. Use [_page_call] to answer the call.
+
+_echo_call
+|Phone conversation request issued to [_nick_target].
+
+_warning_usage_call
+|Usage: /call <person>
+
+_notice_answer_call
+|Your request has been accepted.
+
+_notice_answer_call_link
+|Your request has been accepted. Use [_page_call] to start the phone call.
+
+_notice_answer_call_click
+|Your phone call request has been clicked upon.
+
+_notice_reject_call_click
+|Your phone call request has been rejected.
+
+_notice_reject_call
+|Your phone call request has been rejected.
+
 _notice_requested_status_person
 |[_source] is checking your presence.
 
@@ -530,6 +567,9 @@ _status_place_nick_local
 
 _status_place_nick_local_none
 |You aren't masquerading yet. What are you waiting for?
+
+_error_necessary_membership
+|You need to enter [_nick_place] first.
 
 _error_place_silent_configuration_topic
 |This room is not for talking. [_topic]
@@ -606,9 +646,12 @@ _failure_unavailable_service_version
 _failure_unavailable_service_description
 |Requesting description of [_nick_target] is not possible.
 
+_failure_invalid_route
+|Invalid route to [_target_relay] detected in [_context_relay]'s context.
+
 _failure_unsupported_function_root
 |[_nick] does not provide [_method_relay].
-|Are you sure you want to talk to me?
+|## Are you sure you want to talk to me?
 
 _failure_unsupported_function_whisper
 |Routing private messages through groupchat managers is dangerous to your privacy and therefore disallowed. Please communicate with the person directly.
@@ -647,6 +690,9 @@ _message_friends
 _message_echo_private
 |You tell [_nick_target]: [_data]
 
+_message_echo_private_annotate
+|Notice to [_nick_target]: [_data]
+
 _message_echo_public
 |You say: [_data]
 
@@ -666,7 +712,7 @@ _message_echo_public_text_action
 |[_nick] [_action]: [_data]
 
 _message_echo_public_text_action_magnify
-|««« {_message_echo_private_text_action} »»»
+|Â«Â«Â« {_message_echo_private_text_action} Â»Â»Â»
 
 _message_echo_public_text_action_reduce
 |[_nick] [_action] {_TEXT_something}.
@@ -690,7 +736,7 @@ _message_public_action
 |[_nick] [_action].
 
 _message_public_magnify
-|««« {_message_public} »»»
+|Â«Â«Â« {_message_public} Â»Â»Â»
 
 _message_public_important
 |===> {_message_public}
@@ -726,7 +772,7 @@ _message_public_other_action_possessive
 |In [_nick_place]: [_nick]'s [_action_possessive].
 
 _message_public_action_magnify
-|««« {_message_public_action} »»»
+|Â«Â«Â« {_message_public_action} Â»Â»Â»
 
 _message_public_action_important
 |===> {_message_public_action}
@@ -738,7 +784,7 @@ _message_public_action_reduce
 |[_nick] {_TEXT_action_does} {_TEXT_something}.
 
 _message_public_question_magnify
-|««« {_message_public_question} »»»
+|Â«Â«Â« {_message_public_question} Â»Â»Â»
 
 _message_public_question_pending
 |{_TEXT_pending} [_nick] {_TEXT_action_asks}: [_data]
@@ -768,7 +814,7 @@ _message_private_action
 |[_nick] [_action].
 
 _message_private_magnify
-|««« {_message_private} »»»
+|Â«Â«Â« {_message_private} Â»Â»Â»
 
 _message_private_reduce
 |[_nick] {_TEXT_action_tells} you {_TEXT_something}.
@@ -780,7 +826,7 @@ _message_private_ask
 |[_nick] {_TEXT_action_asks} you: [_data]
 
 _message_private_ask_magnify
-|««« {_message_private_ask} »»»
+|Â«Â«Â« {_message_private_ask} Â»Â»Â»
 
 _message_private_ask_reduce
 |[_nick] {_TEXT_action_asks} you {_TEXT_something}.
@@ -789,7 +835,7 @@ _message_private_text_action
 |[_nick] [_action]: [_data]
 
 _message_private_action_magnify
-|««« {_message_private_action} »»»
+|Â«Â«Â« {_message_private_action} Â»Â»Â»
 
 _message_private_action_reduce
 |[_nick] does {_TEXT_something} to you.
@@ -798,7 +844,7 @@ _echo_wake
 |Trying to wake [_nick_target].
 
 _notice_login
-|Welcome on the [_name_network] network, [_nick]. ([_page_network])
+|Welcome on [_name_network], [_source].
 
 _request_attention_wake
 |[_nick] seeks your attention. WAKE[_beep]UP!
@@ -826,6 +872,12 @@ _notice_logon_last
 
 _notice_place_leave
 |[_nick] leaves [_nick_place].
+
+_notice_examine_web_person
+|[_nick] inspected on [_web_on] coming from [_web_from].
+
+_notice_examine_web_place
+|[_nick_place] inspected on [_web_on] coming from [_web_from].
 
 _notice_place_examine_web
 |[_nick_place] inspected on [_web_on] coming from [_web_from].
@@ -1252,7 +1304,7 @@ _notice_authentication
 |Yes, that's me!
 
 _notice_processing_authentication
-|Wait a minute, I have to ask somebody.
+|Proof of [_source]'s identity is delayed.
 
 _notice_unlink
 |[_location] unlinked from [_identification].
@@ -1375,12 +1427,19 @@ _notice_friendship_removed_implied
 _status_place_identification
 |PSYC Identification of [_nick_place]: [_identification]
 
+_status_place_topic
+|Topic by [_nick]: [_topic]
+
 _status_place_topic_none
 |No topic is set in [_nick_place].
 
 _status_place_topic_official
 |## Announcement:
 |[_topic]
+
+_status_place_topic_author
+|## Only appears on IRC access
+|Topic set by [_nick] at [_time_place].
 
 _status_description_time
 |[_nick] has been alive about [_time_idle] ago.

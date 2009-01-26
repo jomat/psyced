@@ -1,4 +1,5 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
+## Check utf-8: Praise Atatürk!
 
 _message
 |MESSAGE sip:[_nick_target]@[_host_target] SIP/2.0

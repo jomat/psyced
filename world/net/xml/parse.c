@@ -1,8 +1,14 @@
-// $Id: parse.c,v 1.51 2008/03/29 20:36:44 lynx Exp $ // vim:syntax=lpc
+// $Id: parse.c,v 1.54 2008/05/17 07:26:53 lynx Exp $ // vim:syntax=lpc
 //
 // this code is employed to parse both XML and XMPP.
 // if expat has been provided at compiling time, it will try to use it.
 //
+
+// local debug messages - turn them on by using psyclpc -DDxml=<level>
+#ifdef Dxml
+# undef DEBUG
+# define DEBUG Dxml
+#endif
 
 // until you fix that TODO (please do!)
 #undef __EXPAT__
@@ -11,7 +17,7 @@
 volatile XMLNode currentnode = 0;
 volatile XMLNode *nodestack = ({ });
 volatile int length = 0;
-closure nodeHandler = #'jabberMsg;
+volatile closure nodeHandler = #'jabberMsg;
 # ifdef JABBER_TRANSPARENCY
 volatile string innerxml, lasta, ixbuf;
 # endif
@@ -208,7 +214,7 @@ xmlparse(a) {
                         currentnode = newnode;
                 }
                 currentnode[Tag] = tag;
-#if 1//def EXPERIMENTAL // yay, things change fast!
+#if 1
 # ifndef JABBER_PARSE
 		// this will still not be able to handle something like
 		//	<img src='18072006.jpg' alt="5er &amp; s'Weggli" />

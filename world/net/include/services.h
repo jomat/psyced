@@ -21,6 +21,7 @@
 #define	HTTPS_SERVICE		443	// http over TLS/SSL
 #define	SMTPS_SERVICE		465
 #define	NNTPS_SERVICE		563	// nntp over TLS/SSL
+#define	FLASHPOL_SERVICE	843	// flash crossdomain policy server
 #define	TELNETS_SERVICE		992
 #define	IRCS_SERVICE		994	// irc protocol over TLS/SSL
 #define	POP3S_SERVICE		995

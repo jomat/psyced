@@ -1,4 +1,4 @@
-// $Id: output.c,v 1.18 2007/09/18 08:37:56 lynx Exp $ // vim:syntax=lpc
+// $Id: output.c,v 1.20 2008/08/05 12:21:33 lynx Exp $ // vim:syntax=lpc
 //
 // binary output functions, used by user.c and psyc/server.c
 
@@ -58,7 +58,7 @@ int emit(string message) {
 // right now no purpose in classic psyc server
 printStyle(mc) { return ([]); }
 
-#ifndef EXPERIMENTAL
+#ifndef GAMMA
 // p() is for "unimportant" output
 //
 // each user.c should override this method with its own variant

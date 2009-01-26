@@ -1,5 +1,5 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: parse.i,v 1.345 2008/04/15 19:36:44 lynx Exp $
+// $Id: parse.i,v 1.357 2008/12/18 17:45:45 lynx Exp $
 //
 #ifndef FORK
 
@@ -171,7 +171,7 @@ private int conclude() {
         // if (abbrev("_INTERNAL", lastvar)) not necessary because
         // the following check only allows lowercase for now
 	if (
-#ifdef EXPERIMENTAL
+#ifdef GAMMA
 	    !legal_keyword(lastvar)
 #else
 	    // very relaxed strategy
@@ -275,7 +275,9 @@ varargs void diminish(string vname, vastring vvalue) {
 
 vamixed parse(string a) {
 	int i;
-	string vname, vvalue, vdata;
+	string vname, vdata;
+	mixed vvalue;
+
 #ifdef _flag_log_sockets_PSYC
 	log_file("RAW_PSYC", "%O «\t%s\n", ME, a);
 #endif
@@ -316,6 +318,11 @@ vamixed parse(string a) {
 		}
 		if (vname != "") {
 			conclude();
+#ifdef GAMMA
+			// intermediate hack in lack of real type support
+			// which needs to be done in net/spyc
+			if (abbrev("_time", vname)) vvalue = to_int(vvalue);
+#endif
 			cvars[lastvar = vname] = vvalue;
 #ifdef SYSTEM_SECRET
 			unless (vcheck) {
@@ -452,7 +459,7 @@ vamixed parse(string a) {
 #ifdef BITKOENIG_SYNTAX
 		sscanf(a, "%s %s", a, buffer);
 #endif
-#ifdef EXPERIMENTAL
+#ifdef GAMMA
 		if (!legal_keyword(a))
 #else
 		// pretty inefficient strategy here
@@ -601,7 +608,10 @@ vamixed getdata(string a) {
 		// Authenticated
 		} else if (qAuthenticated(NAMEPREP(u[UHost]))) {
 			if (u[UTransport] && (u[UTransport] !=
-			    tls_query_connection_state() ? "s" : "c")) {
+#  if __EFUN_DEFINED__(tls_query_connection_state)
+			    tls_query_connection_state() ? "s" :
+#  endif
+			    "c")) {
 				P1(("%O sends me wrong transport %O in %O\n",
 				    ME, u[UTransport], t))
 				croak("_error_invalid_uniform_transport",
@@ -613,25 +623,27 @@ vamixed getdata(string a) {
 				P2(("%O has accepted %O by qAuthenticated auth\n", ME, t))
 				deliver(0, 0, mc, buffer, cvars);
 			}
+#  if __EFUN_DEFINED__(tls_query_connection_state)
 		} else if (tls_query_connection_state()) {
-#  ifdef _flag_report_bogus_certificates
+#   ifdef _flag_report_bogus_certificates
 			monitor_report("_warning_invalid_host_certificate",
 			    S("%O presented an uncertified host %O.",
 			      ME, u[UHost]));
-#  else
+#   else
 			P1(("%O presented an uncertified host %O.",
 			      ME, u[UHost]))
-#  endif
-#  ifdef _flag_log_bogus_certificates
+#   endif
+#   ifdef _flag_log_bogus_certificates
 			log_file("CERTS", S("%O %O %O\n",
 				    ME, u[UHost], tls_certificate(ME, 0)));
-#  endif
+#   endif
 	// vs. _flag_reject_bogus_certificates huh?
-#  ifndef _flag_allow_invalid_host_certificate
+#   ifndef _flag_allow_invalid_host_certificate
 			croak("_error_invalid_host_certificate",
 			     "[_host] is not an authenticated source host.",
 			     ([ "_host": u[UHost] ]));
 			QUIT
+#   endif
 #  endif
 # endif
 		// fippo suggests we should have a protocol that enables
@@ -826,17 +838,14 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
 		// hier was rumzuhacken? vermutlich kann man es nicht
 		// oben zuweisen, muss also in ein create()
 #endif
-#ifdef TRANSMITTING_FAKE_TIME_IS_A_CAPITAL_CRIME
-		// first of all we can not allow _time, since that is
-		// used internally for last-log functionality and would
-		// irritate the showLog() mechanism in user.c
-		//
-		m_delete(cvars, "_time");
-#endif
-		//
 		// this may only be set by user:msg()
 		m_delete(cvars, "_nick_verbatim");
-
+		// psyced never acts as multiplexing client proxy (as yet)
+		// so we have no reason to accept this from elsewhere
+		// and risk to forward it somewhere (we could aswell rename
+		// into _INTERNAL_target_forward to ensure it not causing
+		// an outgoing security problem and still be available)
+		m_delete(cvars, "_target_forward");
 #ifdef PSYC_TCP
 # ifdef REPATCHING
                 next_input_to(#'parse);
@@ -898,7 +907,7 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
 			// lowercase policy
 			source = lower_case(t);
 		    }
-#ifndef NOT_EXPERIMENTAL
+#if 0
 		} else {
 			source = "psyc://"+peeraddr+"/";
 # ifdef REPATCHING
@@ -906,7 +915,9 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
 # endif
 #endif
 		}
-		// can this safely move into one of the ifs above? TODO
+		// checking _source_XXX etc should be generically done using a
+		// flag in the routing vars share thing..
+		// also, can these safely move into one of the ifs above? TODO
 		if (t = cvars["_source_relay"]) {
 		    // recognize local psyc object
 		    if (t = psyc_object(t)) {
@@ -916,6 +927,17 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
 		    } else if (stringp(t)) {
 		       	// otherwise: lowercase policy
 			cvars["_source_relay"] = lower_case(t);
+		    }
+		}
+		if (t = cvars["_source_identification"]) {
+		    // recognize local psyc object
+		    if (t = psyc_object(t)) {
+			P2(("local _source_identification %O for %O from %O, cont %O\n",
+			     t, mc, source, context))
+			cvars["_source_identification"] = t;
+		    } else if (stringp(t)) {
+		       	// otherwise: lowercase policy
+			cvars["_source_identification"] = lower_case(t);
 		    }
 		}
 		P3(("parse1: source is %O, context is %O\n", source, context))
@@ -1103,9 +1125,7 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
 vamixed startParse(string a) {
 	if (a == ".") {		// old S_GLYPH_PACKET_DELIMITER
 		restart();
-# ifdef NOT_EXPERIMENTAL
 		if (isServer()) greet();
-# endif
 	}
 # ifdef SPYC_PATH
 	else if (a == "|") {	// new S_GLYPH_PACKET_DELIMITER
@@ -1115,7 +1135,8 @@ vamixed startParse(string a) {
 			    "Could not instantiate PSYC parser. Weird.");
 			QUIT
 		}
-		o->feed(a);
+		if (isServer()) o->greet();
+		o->feed("|\n");
 		return 1;
 	}
 # endif
@@ -1149,11 +1170,13 @@ vamixed startParse(string a) {
 		PT(("PSYC startParse got %O from %O\n", a, query_ip_number()))
 		croak("_error_syntax_initialization",
 		    "The protocol begins with a dot on a line by itself.");
+		// experiencing a loop here, because some implementations
+		// try immediate reconnect. idea: in most places where we
+		// QUIT we should put the tcp link on hold instead, and
+		// close it only several seconds later. TODO
 		QUIT
 	}
-#ifdef NOT_EXPERIMENTAL
 	pvars["_INTERNAL_source"] = "psyc://"+peeraddr+"/";
-#endif
         next_input_to(#'parse);
         return 1;
 }

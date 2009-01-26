@@ -84,4 +84,7 @@
 #define TLS_HASH_MD5       (6)
 #define TLS_HASH_RIPEMD160 (7)
 
+/* autodetect feature: when no TLS is found on socket, this code is returned */
+#define	ERR_TLS_NOT_DETECTED	-31337
+
 #endif /* LPC_TLS_H */

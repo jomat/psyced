@@ -1,4 +1,4 @@
-// $Id: server.c,v 1.85 2007/11/27 16:13:41 lynx Exp $ // vim:syntax=lpc
+// $Id: server.c,v 1.86 2008/10/16 13:07:13 lynx Exp $ // vim:syntax=lpc
 //
 // IRC protocol receptionist
 //
@@ -41,6 +41,7 @@ parse(a) {
 	if (ME) next_input_to(#'parse);
 }
 
+// allow for nickserv syntax somehow?
 promptForPassword() {
 	// string me;
 	//

@@ -1,4 +1,4 @@
-// $Id: auto.h,v 1.14 2007/09/07 09:07:32 lynx Exp $ // vim:syntax=lpc:ts=8
+// $Id: auto.h,v 1.15 2008/04/18 13:34:39 lynx Exp $ // vim:syntax=lpc:ts=8
 #define _INCLUDE_AUTO_H
 
 // first identify the driver
@@ -47,8 +47,3 @@
 // more useful perlisms
 #define	chop(STRING)	slice_from_end(STRING, 0, 2)
 #define	chomp(STRING)	(char_from_end(STRING, 1) == '\n' ? chop(STRING) : STRING)
-
-// extracts hh:mm:ss format from ctime output
-#define	hhmmss(CTIME)	CTIME[11..18]
-// extracts hh:mm format from ctime output (for idle times)
-#define	hhmm(CTIME)	CTIME[11..15]

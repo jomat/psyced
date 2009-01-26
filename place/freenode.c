@@ -1,5 +1,5 @@
 #include <net.h>
-#define NAME "freeNode"
+#define NAME "freenode"
 
 // 
 // «freenode:TomSawyer» TomSawyer sagt Dir: you're able to talk to me, not because I'm an admin, but because I have /msg nickserv set unfiltered on
@@ -12,7 +12,8 @@
 
 #ifdef BRAIN
 # echo BRAIN: connecting to freenode IRC server
-# define CONNECT_IRC	"irc." NAME ".net"
+//# define CONNECT_IRC	"irc." NAME ".net"
+# define CONNECT_IRC	"calvino.freenode.net"
 //# define CHAT_CHANNEL	"esp"
 //# define CHAT_CHANNEL	"23c3"
 # define PASS_IRC	IRCGATE_FREENODE

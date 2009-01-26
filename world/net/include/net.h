@@ -1,4 +1,4 @@
-// $Id: net.h,v 1.142 2008/04/11 18:48:26 lynx Exp $ // vim:syntax=lpc:ts=8
+// $Id: net.h,v 1.148 2008/07/26 10:54:30 lynx Exp $ // vim:syntax=lpc:ts=8
 #ifndef _INCLUDE_NET_H
 #define _INCLUDE_NET_H
 
@@ -34,6 +34,41 @@
 # else
 #  include "/local/config.h"
 # endif
+#endif
+
+// switching to UTF-8 should work now (if you keep .fmt files disabled!)
+#ifndef SYSTEM_CHARSET
+# define SYSTEM_CHARSET	"UTF-8"
+//define SYSTEM_CHARSET	"ISO-8859-15"
+#endif
+
+#if defined(SYSTEM_CHARSET) && SYSTEM_CHARSET != "UTF-8"
+# define TO_UTF8(s) convert_charset((s), SYSTEM_CHARSET, "UTF-8")
+# define FROM_UTF8(s) convert_charset((s), "UTF-8", SYSTEM_CHARSET)
+#else
+# define TO_UTF8(s) (s)
+# define FROM_UTF8(s) (s)
+#endif
+
+// this stuff is so popular.. can i really put it anywhere else?
+#ifndef DEFAULT_CONTENT_TYPE
+# define DEFAULT_CONTENT_TYPE	"text/html; charset=" SYSTEM_CHARSET
+#endif
+
+#if __EFUN_DEFINED__(stringprep)
+// stringprep needs utf8 arguments
+// this results in lots of conversions some of which look like
+// system->utf­>system->utf. luckily UTF8 is our system charset.
+// so FROM_UTF8 and TO_UTF8 are normally nullmacros (see above)
+# include <idn.h>
+// beware, these macros dont have error handling...
+# define NODEPREP(s) FROM_UTF8(stringprep(TO_UTF8(s), STRINGPREP_XMPP_NODEPREP))
+# define NAMEPREP(s) FROM_UTF8(stringprep(TO_UTF8(s), STRINGPREP_NAMEPREP))
+# define RESOURCEPREP(s) FROM_UTF8(stringprep(TO_UTF8(s), STRINGPREP_XMPP_RESOURCEPREP))
+#else
+# define NODEPREP(s) lower_case(s)
+# define NAMEPREP(s) lower_case(s)
+# define RESOURCEPREP(s) (s)
 #endif
 
 #include "debug.h"
@@ -88,42 +123,8 @@
 # else
 #  define HTTPS_URL 0	// so that you can do
 			//   ((tls_available() && HTTPS_URL) || HTTP_URL)
+                        // ... what about ifdef __TLS__ ?
 # endif
-#endif
-
-// switching to UTF-8 should work now (if you keep .fmt files disabled!)
-#ifndef SYSTEM_CHARSET
-# define SYSTEM_CHARSET	"UTF-8"
-//define SYSTEM_CHARSET	"ISO-8859-15"
-#endif
-
-#if defined(SYSTEM_CHARSET) && SYSTEM_CHARSET != "UTF-8"
-# define TO_UTF8(s) convert_charset((s), SYSTEM_CHARSET, "UTF-8")
-# define FROM_UTF8(s) convert_charset((s), "UTF-8", SYSTEM_CHARSET)
-#else
-# define TO_UTF8(s) (s)
-# define FROM_UTF8(s) (s)
-#endif
-
-// this stuff is so popular.. can i really put it anywhere else?
-#ifndef DEFAULT_CONTENT_TYPE
-# define DEFAULT_CONTENT_TYPE	"text/html; charset=" SYSTEM_CHARSET
-#endif
-
-#if __EFUN_DEFINED__(stringprep)
-// stringprep needs utf8 arguments
-// this results in lots of conversions some of which look like
-// system->utf­>system->utf. luckily UTF8 is our system charset.
-// so FROM_UTF8 and TO_UTF8 are normally nullmacros (see above)
-# include <idn.h>
-// beware, these macros dont have error handling...
-# define NODEPREP(s) FROM_UTF8(stringprep(TO_UTF8(s), STRINGPREP_XMPP_NODEPREP))
-# define NAMEPREP(s) FROM_UTF8(stringprep(TO_UTF8(s), STRINGPREP_NAMEPREP))
-# define RESOURCEPREP(s) FROM_UTF8(stringprep(TO_UTF8(s), STRINGPREP_XMPP_RESOURCEPREP))
-#else
-# define NODEPREP(s) lower_case(s)
-# define NAMEPREP(s) lower_case(s)
-# define RESOURCEPREP(s) (s)
 #endif
 
 #ifdef MUD
@@ -140,6 +141,10 @@
 
 #ifndef DEFAULT_USER_OBJECT
 # define DEFAULT_USER_OBJECT	PSYC_PATH "user"
+#endif
+
+#ifndef MAX_VISIBLE_USERS
+# define MAX_VISIBLE_USERS 44
 #endif
 
 #ifndef PRO_PATH
@@ -196,18 +201,18 @@
 // wir können viel herumphilosophieren was richtig wäre, aber tatsächlich
 // effizienter verteilen werden wir auf kurze sicht eh nicht, so lets use this:
 # define SMART_UNICAST_FRIENDS
-# define NOT_EXPERIMENTAL   // code that was experimental just until recently
 # define SIGS
 # define SWITCH2PSYC
 # define WANT_S2S_TLS
 # define WANT_S2S_SASL
-# define TRUSTINESS
 # define ENTER_MEMBERS
 # define PERSISTENT_MASTERS
 # define NEW_LINK
 # define NEW_UNLINK
 # define NEW_RENDER
+# define MUCSUC
 #endif
+#define GAMMA   // code that has left BETA and is in production use
 
 #ifndef _flag_disable_log_hosts
 # define _flag_log_hosts
@@ -217,7 +222,6 @@
 	// fippo's brilliant single-user channel emulation for jabber MUCs
 	// unfortunately it provides no advantages over the old method, yet.
 	// would be cool to cache a member list at least!  TODO
-# define MUCSUC
 # define PERSISTENT_SLAVES
 // efine IRC_FRIENDCHANNEL  // hopelessly needs more work
 # ifdef HTTP_PATH
@@ -240,6 +244,6 @@
 #endif
 
 // still using rawp anywhere?
-#define	rawp(TEXT) { P1(("rawp? "+TEXT)) emit(TEXT); }
+//#define	rawp(TEXT) { P1(("rawp? "+TEXT)) emit(TEXT); }
 
 #endif

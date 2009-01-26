@@ -1,5 +1,5 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: master.c,v 1.142 2008/02/24 16:36:59 lynx Exp $
+// $Id: master.c,v 1.143 2008/04/22 22:43:56 lynx Exp $
 //
 // this is a simpler version of group/master, and it is actually in use
 // [actual as in effectively, not current, which is the german meaning]
@@ -18,6 +18,12 @@
 // context sounds more abstract than a group? i wouldn't say that a user's
 // context delivering presence subscriptions is a "group", but it certainly
 // is a "context."
+
+// local debug messages - turn them on by using psyclpc -DDcontext=<level>
+#ifdef Dcontext
+# undef DEBUG
+# define DEBUG Dcontext
+#endif
 
 #include <net.h>
 #include <person.h>

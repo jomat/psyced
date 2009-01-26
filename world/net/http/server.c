@@ -1,7 +1,8 @@
-// $Id: server.c,v 1.58 2008/03/11 13:42:25 lynx Exp $ // vim:syntax=lpc
+// $Id: server.c,v 1.64 2008/05/13 09:51:07 lynx Exp $ // vim:syntax=lpc
 //
 // yes, psyced is also a web server, like every decent piece of code.  ;)
 //
+#include <ht/http.h>
 #include <net.h>
 #include <server.h>
 #include <text.h>
@@ -20,7 +21,7 @@ parse_url(input);
 parse_header(input);
 devNull();
 
-qScheme() { return "none"; }
+qScheme() { return "html"; }
 
 logon() {
     D2(D("»»» New SmallHTTP user\n");)
@@ -122,6 +123,7 @@ process() {
     int done = 1;
 
     // take defaults from cookie, then override by query string
+    // lynXism cookie behaviour, normal one is below
     t = headers["cookie"];
     P4(("found cookie: %O\n", t))
     if (t && sscanf(t, "psyced=\"%s\"", t)) {
@@ -129,6 +131,24 @@ process() {
 	query = parse_query(query, t);
 	P4(("parsed cookie: %O\n", query))
     }
+#ifdef GENERIC_COOKIES	// we might need them someday..?
+    // if within the same domain other cookies are being used, like
+    // by including google-analytics, then we might be receiving them
+    // here and have no friggin' idea what they are good for.
+    // thus: we *need* a way to ensure a cookie is our own.
+    // FIXME: this is not really compliant 
+    else if (t) {
+	mapping cook = ([ ]);
+	string k, v;
+	while(t && sscanf(t, "%s=%s;%t%s", k, v, t) >= 2) {
+	    cook[k] = v;
+	}
+	if (sscanf(t, "%s=%s", k, v))
+	    cook[lower_case(k)] = v; // case insensitive
+	cook[0] = headers["cookie"]; // save cookie-string
+	headers["cookie"] = cook;
+    }
+#endif
     if (sscanf(url, "%s?%s", file, qs)) {
 	P3(("got query: %O\n", qs))
 	query = parse_query(query, qs);

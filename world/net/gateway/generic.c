@@ -1,4 +1,4 @@
-// $Id: generic.c,v 1.36 2008/02/08 12:53:25 lynx Exp $ // vim:syntax=lpc
+// $Id: generic.c,v 1.39 2008/07/12 19:48:39 lynx Exp $ // vim:syntax=lpc
 //
 // this is a generic robot that provides a few commands to interface
 // a centralistic messaging system to the PSYC. since the commercial
@@ -24,7 +24,6 @@ volatile object psycer;
 volatile string joe, joe_nick;
 volatile mixed joe_unl;
 volatile mapping talk = ([]);
-volatile closure sort_by_name;
 
 queryLastServed() { return joe; }
 
@@ -84,6 +83,7 @@ static help() {
 	reply("This gateway is operated by " WEBMASTER_EMAIL);
 	    // " on "+ SERVER_UNL);
 #endif
+	reply("My PSYC Identification is "+ psyc_name(ME));
 //	reply("Can you imagine this is the new version of the first ever IRC bot written in LPC?");
 	reply("Available commands: WHO, STATUS, TELL/MSG, TALK/QUERY, HELP");
 }
@@ -140,21 +140,17 @@ static who() {
         mixed idle;
         string desc;
 
-	unless (closurep(sort_by_name)) 
-		sort_by_name = lambda(({ 'a, 'b}),
-			({ (#',),
-			 ({ CL_NIF, ({ #'mappingp, 'a }), ({ #'return, 0 }) }),
-			 ({ CL_NIF, ({ #'mappingp, 'b }), ({ #'return, 1 }) }),
-			 ({ #'return, ({ (#'>),
-				       ({ CL_LOWER_CASE, ({ (#'||), ({ CL_INDEX, 'a, "name" }), "" }) }),
-				       ({ CL_LOWER_CASE, ({ (#'||), ({ CL_INDEX, 'b, "name" }), "" }) }),
-				       }) })
-			 }));
-
 	reply("--- /who of local users of "+ SERVER_UNL);
 	u = objects_people();
 	all = sizeof(u) < 23;
-	u = sort_array(u->qPublicInfo(all), sort_by_name);
+	// same code in usercmd.i
+	u = sort_array(u->qPublicInfo(all), (:
+		unless (mappingp($1)) return 0;
+		unless (mappingp($2)) return 1;
+		PT(("%O got %O vs %O\n", ME, $1, $2))
+		return  lower_case($1["name"] || "") >
+			lower_case($2["name"] || ""); 
+	:) );
 	foreach (uv : u) if (mappingp(uv)) {
 		desc = uv["me"];
 		if (desc || all) {

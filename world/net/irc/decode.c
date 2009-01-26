@@ -1,10 +1,11 @@
-// $Id: decode.c,v 1.28 2008/01/21 10:25:12 lynx Exp $ // vim:syntax=lpc
+// $Id: decode.c,v 1.30 2008/07/28 20:30:48 lynx Exp $ // vim:syntax=lpc
 //
 // generic CTCP implementation, also includes color code filter.
 // msa (Markku Savela, if i remember the spelling right) came up
 // with the crazy idea of using binary code 1 as the escape code
 // for CTCP, so we put that code into the variable msa.
 //
+#include "irc.h"
 #include <net.h>
 
 volatile string msa, msare, cc, bc, uc;
@@ -45,7 +46,7 @@ version(text, target, req, srcnick, source) {
 		sendmsg(target, "_request_version",
 		     "[_nick] requests your version.",
 		    ([ "_nick" : srcnick ]), source );
-#ifndef NO_IRC_AUTO_REQUEST_VERSION
+#ifndef _flag_disable_request_version_IRC
 	} else if (target == query_server_unl()) {
 		if (text) vSet("agent", text);
 #endif

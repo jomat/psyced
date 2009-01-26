@@ -30,4 +30,11 @@
 #define PSYCPARSE_STATE_BLOCKED 2
 #define PSYCPARSE_STATE_GREET 3
 
+#define DISPATCHERROR(reason) { \
+    debug_message("SPYC DISPATCH ERROR: " reason);    \
+    croak("_error_dispatch", "dispatch error: "       \
+	    reason);                                   \
+    return;                                           \
+}
+
 #include <psyc.h>

@@ -1,5 +1,5 @@
 //						    vim:noexpandtab:syntax=lpc
-// $Id: usercmd.i,v 1.663 2008/04/11 10:37:25 lynx Exp $
+// $Id: usercmd.i,v 1.698 2008/11/27 13:22:27 lynx Exp $
 //
 // usercmd is normally just a part of the user object focused on implementing
 // the user command set. it can also be used for implementing a subset of
@@ -43,8 +43,6 @@
 #include <url.h>
 #include <services.h>
 #include <status.h>
-
-volatile closure sort_by_name;
 
 #ifndef cmdchar
 volatile mixed cmdchar;
@@ -108,6 +106,7 @@ input(a, dest) {
 		parsecmd(a[1..], dest);
 		return 1;
 	}
+#ifndef _flag_disable_character_action
 	// mud-style emote
 	if (a[0] == actchar) {
 	    if (strlen(a) > 3) {
@@ -129,6 +128,7 @@ input(a, dest) {
 		}
 	    }
 	}
+#endif
 #ifdef USER_PROGRAM
 	// check for irc on every input? wär schöner wenn wir anders
 	// sicherstellen dass die variable nie gesetzt wird.  -lynx
@@ -154,6 +154,8 @@ parsecmd(command, dest) {
 # include <sys/strings.h>
 //# define TRIM_RIGHT 2
 	command = trim(trim(command, TRIM_RIGHT), TRIM_LEFT, cmdchar);
+	// did trimming leave us with nothing?
+	unless (strlen(command)) return 0;
 #else
 	// strip leading slashes
 	while (command[0] == cmdchar) command = command[1..];
@@ -232,13 +234,6 @@ cmd(a, args, dest, command) {
 	case "meine":
 		action(ARGS(1), dest, "_possessive");
 		break;
-	case "na":
-	case "names":
-	case "people":
-	//se "ppl":
-	case "p":
-		people();
-		break;
 	case "cls":
 	case "clear":
 	case "clearscreen":
@@ -251,7 +246,16 @@ cmd(a, args, dest, command) {
 		return 1;
 # endif
 #endif
+#ifndef _flag_disable_query_server
+	case "na":
+	case "names":
+	case "people":
+	//se "ppl":
+	case "p":
+		people();
+		break;
 	case "lusers":
+#ifndef BETA
 		if (sizeof(args) > 1 && is_formal(args[1])) {
 		    sendmsg(args[1], "_request_user_amount", 
 			    "[_nick] would like to know how many users you have.",
@@ -259,13 +263,45 @@ cmd(a, args, dest, command) {
 		} else {
 		    // wozu selber erzeugen? der code oben würde/sollte das an
 		    // rootMsg() schicken, welches auch ein _status_user_amount
-		    // erzeugen sollte.. no?
+		    // erzeugen sollte.. no? ausserdem sind die vars und
+		    // das fmt unterschiedlich. und fast derselbe käse steht
+		    // nochmal in net/irc/common... TODO
 		    w("_status_user_amount",
 		      "There are [_amount_users] users on this server.",
 			 ([ "_amount_users" : amount_people() ]) );
 		}
+#else
+		if (sizeof(args) > 1 && is_formal(args[1])) t = args[1];
+		else t = "/";
+		sendmsg(t, "_request_user_amount", 
+		    "[_nick] would like to know how many users you have.",
+		    ([ "_nick" : MYNICK ]), 0, origin, #'msg);
+#endif
 		break;
-#ifdef USER_PROGRAM
+# ifdef __BOOT_TIME__
+        case "up":
+        case "uptime":  
+        case "boottime":
+		t = __BOOT_TIME__;
+		w("_info_time_boot", "[_source_host] up since [_time_boot] "
+				    "([_time_boot_duration]).\nLoad average: "
+				  "[_system_load_average].", ([
+				    "_source_host": SERVER_HOST,
+				    "_time_boot": isotime(t, 1),
+				    "_time_boot_duration": timedelta(time()-t),
+				    "_system_load_average":
+					 query_load_average() ]) );
+		return 1;
+# endif          
+	case "w":
+	case "who":
+# ifdef USER_PROGRAM
+		if (sizeof(args) > 1) examine(args[1]);
+		else
+# endif
+		    who();
+		return 1;
+# ifdef USER_PROGRAM
 	case "disco":
 		if (sizeof(args) > 1 && is_formal(args[1])) {
 		    sendmsg(args[1], "_request_list_feature",
@@ -294,11 +330,7 @@ cmd(a, args, dest, command) {
 		    w("_warning_usage_registerservice", "Usage: /registerservice <gateway> [<username> <password>]");
                 }
                 break;
-	case "ping":
-		if (sizeof(args) >= 2) ping(args[1], ARGS(2));
-		else w("_warning_usage_ping",
-		       "Usage: /ping <entity> [<timestamp>]");
-		break;
+# endif
 #endif
 	case "info":
 		showStatus(VERBOSITY_COMMAND_STATUS_INFO);
@@ -319,9 +351,6 @@ cmd(a, args, dest, command) {
 		//showStatus(VERBOSITY_COMMAND_MEMBERS);
                 showRoom(1);
 		return 1;
-	case "presence":
-                showMyPresence(1);
-		return 1;
 	case "version":
 	case "vers":
 	case "ver":
@@ -336,7 +365,10 @@ cmd(a, args, dest, command) {
 			    "_version": SERVER_VERSION,
 			    "_version_server": SERVER_DESCRIPTION,
 			    "_version_driver": DRIVER_VERSION,
-			    "_page_server_software": _PAGE_SERVER_SOFTWARE
+			    "_page_server_software": _PAGE_SERVER_SOFTWARE,
+			    // required for RFC 1459 compliance
+			    "_degree_debug": DEBUG,
+			    "_host_server": SERVER_HOST
 		    ]) );
 		} else {
                     mapping rv = ([ "_nick" : MYNICK ]);
@@ -369,37 +401,25 @@ cmd(a, args, dest, command) {
 			    ([ "_nick" : MYNICK ]), origin, 0, #'msg);
 		}
 		return 1;
-#ifdef __BOOT_TIME__            
-        case "up":
-        case "uptime":  
-        case "boottime":
-		t = __BOOT_TIME__;
-		w("_info_time_boot", CHATNAME " up since [_time_boot] "
-				    "([_time_boot_duration]).\nLoad average: "
-				  "[_system_load_average].", ([
-				    "_time_boot": isotime(t, 1),
-				    "_time_boot_duration": timedelta(time()-t),
-				    "_system_load_average":
-					 query_load_average() ]) );
-		return 1;
-#endif          
-	case "w":
-	case "who":
 #ifdef USER_PROGRAM
-		if (sizeof(args) > 1) examine(args[1]);
-		else
-#endif
-		    who();
-		return 1;
-#ifdef USER_PROGRAM
-# if HAS_PORT(HTTPS_PORT, HTTP_PATH) || HAS_PORT(HTTP_PORT, HTTP_PATH)
+	case "ping":
+		if (sizeof(args) >= 2) ping(args[1], ARGS(2));
+		else w("_warning_usage_ping",
+		       "Usage: /ping <entity> [<timestamp>]");
+		break;
+# ifndef _flag_disable_module_trust
+#  if HAS_PORT(HTTPS_PORT, HTTP_PATH) || HAS_PORT(HTTP_PORT, HTTP_PATH)
 	case "login":
 		makeToken();
 	case "surf":
 		unless (v("token")) makeToken();
 		w("_request_open_page_login",
 		  "Please open [_page_login] to login.", ([
-		    "_page_login" : ((tls_available() && HTTPS_URL) || HTTP_URL)
+		    "_page_login" : (
+#ifdef __TLS__
+				     (tls_available() && HTTPS_URL) ||
+#endif
+				     HTTP_URL)
 		   + NET_PATH "http/login?user="+ MYNICK
 		   +"&token="+ v("token") +
 			    (v("language") ? "&lang="+ v("language") : "")
@@ -413,19 +433,24 @@ cmd(a, args, dest, command) {
 		w("_request_open_page_edit",
 		  "Please open [_page_edit] to change your settings.",
 		  ([ "_token" : t,
-		     "_page_edit" : ((tls_available() && HTTPS_URL) || HTTP_URL)
+		     "_page_edit" : (
+#ifdef __TLS__
+				     (tls_available() && HTTPS_URL) ||
+#endif
+				     HTTP_URL)
 		    + NET_PATH "http/edit?user="+ MYNICK
 		    +"&token="+ t +
 			    (v("language") ? "&lang="+ v("language") : "")
 			    ]) );
 		return 1;
-# else
+#  else
 	case "login":
 	case "edit":
 	case "surf":
 		w("_failure_disabled_function_HTTP",
           "Sorry, but web functions have been disabled on this server.");
 		return 1;
+#  endif
 # endif
 	case "whois":
 # ifdef IRC_PATH
@@ -462,7 +487,7 @@ cmd(a, args, dest, command) {
 		    if (member(raliases, converted)) {
 			w("_error_duplicate_alias",
 			  "[_alias] is already pointing to [_address], you "
-			  "cannot add a second alias for that target.",
+			  "cannot add a second name for that target.",
 			  ([ "_alias" : raliases[converted],
 			     "_address" : converted,
 			     "_new": t
@@ -477,8 +502,8 @@ cmd(a, args, dest, command) {
 		    // that) can issue the right NICKchange-messages to the
 		    // client.
 		    if (t3 = aliases[t2]) {
-			w("_echo_alias_removed", "[_alias] "
-			  "pointing to [_address] has been removed.",
+			w("_echo_alias_removed", "Alias [_alias] "
+			  "for [_address] now removed.",
 			  ([ "_alias" : t2,
 			     "_address" : t3 ]));
 			m_delete(v("aliases"), raliases[t3]);
@@ -514,7 +539,7 @@ cmd(a, args, dest, command) {
 			  "[_short].", ([ "_short" : t,
 					 "_long" : t2 ]));
 		    } else w("_warning_usage_alias",
-				 "Usage: /alias <aliasname> <address>");
+				 "Usage: /alias <newnick> <uniform-of-person>");
 		}
 		return 1;
 	case "unal":
@@ -532,13 +557,13 @@ cmd(a, args, dest, command) {
 			// to the new target.
 			if (query) query = 0;
 
-			w("_echo_alias_removed", "[_alias] "
-			  "pointing to [_address] has been removed.",
+			w("_echo_alias_removed", "Alias [_alias] "
+			  "for [_address] now removed.",
 			  ([ "_alias" : t2,
 			     "_address" : t ]));
 			save();
 		}
-		else w("_warning_usage_unalias", "Usage: /unalias <aliasname>");
+		else w("_warning_usage_unalias", "Usage: /unalias <nick>");
 		return 1;
 #endif
 		// undocumented compatibility
@@ -576,6 +601,7 @@ cmd(a, args, dest, command) {
 		walk("E");
 		break;
 #endif
+#ifndef _flag_disable_module_authentication
 //	"manual" authentication.. probably doesn't work because the
 //	recipient will have a hard time figuring out what it's about without
 //	vars.. so the proper way to do this is to request a /token ahead.
@@ -583,6 +609,7 @@ cmd(a, args, dest, command) {
 		if (sizeof(args) > 1)
 		    returnAuthentication(6, ARGS(1), 0);
 		break;
+#endif
 	// here we go:
         case "token":
         case "makenonce":
@@ -597,6 +624,24 @@ cmd(a, args, dest, command) {
 # ifndef TELEPHONY_EXPIRY
 #  define TELEPHONY_EXPIRY (60*60)
 # endif
+	case "answer":
+		if (sizeof(args) > 1) {
+			t = NET_PATH "http/call"->answer(args[1], 1);
+			if (stringp(t)) w("_status_established_call",
+			    "Call with [_nick] established.",
+			    ([ "_nick": t ]));
+			else w("_error_invalid_call", "Invalid call.");
+		} else w("_warning_usage_answer", "Usage: /answer <sid>");
+		break;
+	case "reject":
+		if (sizeof(args) > 1) {
+			t = NET_PATH "http/call"->answer(args[1], 0);
+			if (stringp(t)) w("_status_rejected_call",
+			    "Call with [_nick] rejected.",
+			    ([ "_nick": t ]));
+			else w("_error_invalid_call", "Invalid call.");
+		} else w("_warning_usage_reject", "Usage: /reject <sid>");
+		break;
 	case "call":
 		// this is how the current stuff works:
 		//
@@ -609,43 +654,36 @@ cmd(a, args, dest, command) {
 		// are just for decoration - there is no way a combination
 		// of expiry and nickname could result in the same string.
 		//
-		t3 = time() + TELEPHONY_EXPIRY;
-		t = hmac(TLS_HASH_SHA256, TELEPHONY_SECRET, "U"+t3+":"+MYNICK);
-		P1(("hmac/call %O for %O\n", t, "U"+t3+":"+MYNICK))
-		t2 = "?user="+ MYNICK +"&expiry="+ t3 +"&jack="+t;
+		t = ([]);
+		t["_time_expire"] = t3 = time() + TELEPHONY_EXPIRY;
+		t["_check_call"] = t2 = hmac(TLS_HASH_SHA256,
+				       	TELEPHONY_SECRET, "U"+t3+":"+MYNICK);
+		P1(("hmac/call %O for %O\n", t2, "U"+t3+":"+MYNICK))
+		t2 = "?user="+ MYNICK +"&expiry="+ t3 +"&jack="+ t2;
 		t3 = NET_PATH "http/call"->make_session(MYNICK, t3, t);
-		if (sizeof(args) > 2) t = 0;
-		else if (sizeof(args) == 2) t = more = args[1];
-		else t = more;
-		if (t) {
-			if (tell(t, "[_nick] would like to speak to you. "
-				    "Use [_page_talk] to answer the call.",
-				    0, 0, "_request_talk_link", ([
-			  "_page_talk":
-				((tls_available() && HTTPS_URL) || HTTP_URL)
-				   + NET_PATH +"http/call?sid=" + t3,
-# ifdef TELEPHONY_SERVER    
-			  "_uniform_talk": TELEPHONY_SERVER + t2,
+		t["_token_call"] = t3;
+		t["_page_call"] = (
+#ifdef __TLS__
+				     (tls_available() && HTTPS_URL) ||
+#endif
+				   HTTP_URL) + NET_PATH +"http/call?sid=" + t3;
+# ifdef TELEPHONY_SERVER
+		t["_uniform_call"] = TELEPHONY_SERVER + t2;
 # endif
-			])))
-			    w("_echo_call",
-		  "Phone conversation request issued to [_nick_target].", ([
-				"_nick_target": t,
-			    ]));
-//			w("_info_talk_link",
-//		 "Your link to a call to [_nick_target] is [_page_talk].", ([
-//			    "_page_talk": t2, "_nick_target": t,
-//			    "_uniform_talk": t3, ]));
-		} else w("_warning_usage_call", "Usage: /call <person>");
+		if (sizeof(args) > 2) t3 = 0;
+		else if (sizeof(args) == 2) t3 = more = args[1];
+		else t3 = more;
+		if (t3) {
+			if (tell(t3, 0, 0, 0, "_request_call_link", t))
+			    w("_echo_call", 0, ([ "_nick_target": t3, ]));
+#if 0 // do we want this?
+			t["_nick_target"] = t3;
+			w("_info_call_link",
+		 "Your link to a call to [_nick_target] is [_page_call].", t);
+#endif
+		} else w("_warning_usage_call");
 		break;
 #endif
-	case "shout":
-	case "cast":
-	case "friendcast":
-		if (sizeof(args) > 1) friendcast(0, ARGS(1));
-                else w("_warning_usage_shout",
-		    "Usage: /shout <message-to-your-friends>");
-		break;
 //#ifndef ADVERTISE_PSYCERS
 // pointless to de-activate lastlog, as it is shown for
 // new messages at login automatically.. and then the bug
@@ -800,6 +838,7 @@ cmd(a, args, dest, command) {
 		teleport(v("home") || DEFPLACE, "_home", 0, v("multiplace"));
 		    //	 ARGS(1)
 		break;
+#ifndef _flag_disable_place_enter_automatic
 	case "subscribe":
 	case "sub":
 		subscribe(sizeof(args) > 2 ? SUBSCRIBE_PERMANENT :
@@ -820,6 +859,7 @@ cmd(a, args, dest, command) {
 				([ "_nick": MYNICK ]), origin);
 		}
 		break;
+#endif // _flag_disable_place_enter_automatic
 #if 0
 	case "look":
 	case "l":
@@ -870,13 +910,11 @@ cmd(a, args, dest, command) {
 		break;
         // etwas hässlich so.. aber was will man sonst? beim zweiten versuch?
         // oder gar als flag von /leave?
-//#ifndef NOT_EXPERIMENTAL
         case "forceleave": // delete the membership from places mapping
                 if (member(places, (t = sizeof(args) < 2 ? place : args[1]))) {
                     m_delete(places, t);
                 }
                 // fall thru
-//#endif
 	case "unenter":         // and the protocol should follow.. unenter!
 	case "leave":
 	case "part":
@@ -890,8 +928,6 @@ cmd(a, args, dest, command) {
 #endif
 			     , 1);
 		break;
-#ifdef NOT_EXPERIMENTAL // PRO_PATH //def EXPERIMENTAL
-        // fippo thinks this doesn't work, so we disable it
 	case "connect":
 	case "con":
 	//case "nick":
@@ -910,7 +946,6 @@ cmd(a, args, dest, command) {
 		connect(args[1], ARGS(2));
 		// if everything goes well we don't get here
 		break;
-#endif
 	case "g":
 	case "gr":
 	case "greet":
@@ -1024,6 +1059,18 @@ cmd(a, args, dest, command) {
                 // disconnect() handler will clean you out!
                 // fall thru
 #endif
+#ifndef _flag_disable_module_friendship
+	case "shout":
+	case "cast":
+	case "friendcast":
+		if (sizeof(args) > 1) friendcast(0, ARGS(1));
+                else w("_warning_usage_shout",
+		    "Usage: /shout <message-to-your-friends>");
+		break;
+# ifndef _flag_disable_module_presence
+	case "presence":
+                showMyPresence(1);
+		return 1;
 	case "offline":
 		announce(AVAILABILITY_OFFLINE, 1, 1, ARGS(1));
 		return 1;
@@ -1110,6 +1157,7 @@ cmd(a, args, dest, command) {
 		// this command is normally accessed as /mynick
 		// as it behaves similarely to /me
 		return motto(ARGS(1));
+# endif /* _flag_disable_module_presence */
 	case "cancel":
 	case "can":
 		if (sizeof(args) < 2) w("_warning_usage_cancel",
@@ -1302,6 +1350,7 @@ cmd(a, args, dest, command) {
 		    ]) );
 		}
 		break;
+#endif /* _flag_disable_module_friendship */
 	// contributed by saga@symlynX.com
 	case "wake":
 		if (sizeof(args) != 2) return wake(0);
@@ -1425,6 +1474,7 @@ cmd(a, args, dest, command) {
 			debug_info(5, "objects", "/log/objects.dump");
 			// command("dumpallobj");
 			return 1;
+		case "update":	    // apilosov feels it should be /update  ;)
 		case "recompile":
 		case "reload":
 		case "load":
@@ -1470,9 +1520,11 @@ cmd(a, args, dest, command) {
 			       	([ "_nick": MYNICK ]), origin);
 			return 1;
 		}
-#ifndef RELAY
+	    // should we allow for /help still? if (a == "help") ...
+#if !defined(RELAY) && !defined(_flag_disable_info_commands)
 # define MYTEMP	"[_page_help] provides Manual and Helpdesk."
 		t = T("_URL_help", "http://help.pages.de");
+	// consider _flag_enable_unauthenticated_message_private here?
 # ifdef USER_PROGRAM
 		if (IS_NEWBIE) w("_info_commands_newbie", "\
 Commands: go, me, who, p(eople), bye.\n" MYTEMP,
@@ -1503,7 +1555,6 @@ request(source, mc, vars, data) {
 	P2(("»»> request(%O) %O from %O in %O (%O)\n",
 	    mc, data, source, ME, vars))
 	PSYC_TRY(mc) {
-#ifdef NOT_EXPERIMENTAL
 // quite dubious choice of method names.. sigh
 case "_message_private":
 case "_private":
@@ -1512,15 +1563,19 @@ case "_tell":
                 tell(vars["_person"] || vars["_focus"],
 		     data, 0, vars["_action"], 0);
                 return 1;
+case "_message":
+                if (vars["_person"]) {
+			tell(vars["_person"], data, 0, vars["_action"], 0);
+			return 1;
+		}
+		// else.. fall thru
 case "_message_public":
 case "_public":
 case "_speak":
-                speak(data, 0, vars["_group"] || vars["_focus"]);
+                if (data) speak(data, 0, vars["_group"] || vars["_focus"]);
+		else if (vars["_action"]) action(vars["_action"],
+					    vars["_group"] || vars["_focus"]);
                 return 1;
-case "_message":
-                speak(data, vars["_person"], vars["_group"]);
-                return 1;
-#endif
 case "_cast":
                 friendcast(vars["_method"], data, vars, // redundant for now
                            vars["_amount_friendivity"]);
@@ -1667,6 +1722,7 @@ case "_friend": // tmp
 		friend(0, 0, vars["_nick_person"] || vars["_person"],
 			     vars["_trustee"]);
 		return 1;
+#ifndef _flag_disable_module_presence
 case "_presence":
 		P3(("%O with %O\n", mc, vars))
 		if ((t = vars["_degree_mood"]) && intp(t))
@@ -1679,6 +1735,7 @@ case "_presence":
                 P1(("got invalid %O: %O, %O\n", mc, vars, data))
 		// complain about missing args?
 		return 0;
+#endif // _flag_disable_module_presence
 case "_list_peers_JSON":
 		listAcq(PPL_JSON);
 		return 1;
@@ -1856,6 +1913,7 @@ private talk(to, handleAliases) {
 tell(pal, what, palo, how, mc, tv) {
 	string deaPal; // dealiased pal
 
+#ifndef _flag_enable_unauthenticated_message_private
 	if (IS_NEWBIE) {
 #ifdef VOLATILE
 		w("_error_unavailable_function_here",
@@ -1867,6 +1925,7 @@ tell(pal, what, palo, how, mc, tv) {
 		vDel("query");
 		return;
 	}
+#endif
 #ifdef ALIASES
         // this also allows for /alias MEP MunichElectropunk
        deaPal = aliases[lower_case(pal)] || pal;
@@ -1922,6 +1981,9 @@ tell(pal, what, palo, how, mc, tv) {
         // side, but it is copied back in the echo so you are
         // actually providing this for yourself..
 	unless (tv) tv = ([]);
+#ifdef _flag_enable_measurement_network_latency
+	tv["_time_sent"] = time();
+#endif
 	tv["_nick"] = MYNICK;
 	tv["_nick_target"] = pal;
 	if (how) tv["_action"] = how;
@@ -1966,7 +2028,12 @@ friendcast(mc, data, vars, friendivity) {
         // but doesn't make much sense as long as we cannot sort out dupes
         //if (friendivity) vars["_amount_friendivity"] = friendivity;
         if (castmsg(mc || "_message_friends", data, vars))
+#ifdef BETA
+	    // to put the echo into lastlog, we need to msg it to ourselves
+            msg(0, mc? "_echo"+mc : "_message_echo_friends", data, vars);
+#else
             w(mc? "_echo"+mc : "_message_echo_friends", data, vars);
+#endif
 }
 
 // should we run all /cmds thru this, so it's simply /laugh ?
@@ -2005,7 +2072,7 @@ action(m, dest, posse) {
 		return 1;
 	}
 #endif
-#if 0 // EXPERIMENTAL ... actually.. elridion.. we don't understand you
+#if 0 // ... actually.. elridion.. we don't understand you
 	// this is absolutely extremely necessary to work with psyc-users
 	if (place && v("place"))
 #else
@@ -2032,13 +2099,12 @@ action(m, dest, posse) {
 }
 
 #ifdef USER_PROGRAM
-// the third argument is not being used anywhere
 protected speak(a, dest, room) {
 	if (dest) {
 		tell(dest, a);
 		return 1;
 	}
-#if 0 // the third argument is not being used anywhere
+#if 1 // the third argument is being used by _request_do_message only
 	if (room) {
 	    mixed t;
 
@@ -2151,6 +2217,7 @@ protected invite(nick, vars) {
 }
 
 #ifdef USER_PROGRAM
+# ifndef _flag_disable_module_friendship
 // two ways to call this:
 // the gui style is	friend(deleteflag, entity, optlNick))
 // the cmdline style is	friend(deleteflag, 0, nickname)
@@ -2168,8 +2235,13 @@ protected friend(rm, entity, ni, trustee) {
 		return;
 	}
 	if (stringp(entity)) {
-		unless (stringp(ni) && strlen(ni))
-		    t = lower_case(ni = entity);
+		PT(("string entity %O provided in friend() - ignoring %O\n",
+		    entity, ni))
+//		unless (stringp(ni) && strlen(ni)) {
+			t = lower_case(ni = entity);
+//		} else {
+//			raise_error("entity provided with nickname\n");
+//		}
 	} else {
 		unless (stringp(ni) && strlen(ni)) return;
 #ifdef ALIASES
@@ -2177,8 +2249,9 @@ protected friend(rm, entity, ni, trustee) {
 #else
 		t = lower_case(ni);
 #endif
-		if (is_formal(t)) entity = t;
-		else unless (entity = summon_person(t, load_name())) {
+		if (rm != 2) {
+		    if (is_formal(t)) entity = t;
+		    else unless (entity = summon_person(t, load_name())) {
 			w("_error_unknown_name_user",
 			    "Cannot reach [_nick_target].",
 			     ([ "_nick_target": ni ]) );
@@ -2191,6 +2264,7 @@ protected friend(rm, entity, ni, trustee) {
 			// summonen lassen aber trotzdem rausmüssen?
 			// ist mir bisher nicht unterlaufen..
 			return;
+		    }
 		}
 	}
 	// doesn't strictly belong into here. flag == 2 means to
@@ -2293,7 +2367,7 @@ protected friend(rm, entity, ni, trustee) {
 #endif
 		break;
 	case PPL_NOTIFY_PENDING:
-#ifdef NOT_EXPERIMENTAL
+#if 1
 		w("_warning_pending_friendship",
 		    "You already have initiated a friendship with [_nick], "
 		    "but let's reinforce that...",
@@ -2307,7 +2381,7 @@ protected friend(rm, entity, ni, trustee) {
 		return;
 #endif
 	default:
-#ifdef NOT_EXPERIMENTAL
+#if 1
 		w("_warning_duplicate_friendship",
 "You already have a friendship with [_nick], but let's be sure about it...",
 		  ([ "_nick": ni ]) );
@@ -2331,6 +2405,7 @@ protected friend(rm, entity, ni, trustee) {
 	  "[_nick] kindly asks for your friendship.", t);
 	return 1;
 }
+# endif // _flag_disable_module_friendship
 #endif
 
 static wake(entity) {
@@ -2436,7 +2511,7 @@ static examine(pal, target, trustee, tag, format) {
 		}
 		//else target = find_person(pal);
 		else if (target = summon_person(t, load_name())) {
-#ifdef NOT_EXPERIMENTAL
+#if 1
 			if (target->online(1) == 0) target = 0;
 #else
 			if (target->isNewbie() && !target->online()) target = 0;
@@ -2560,6 +2635,9 @@ checkVar(key, value) {
 		    pr(t[0], t[1]);
 		    return;
 		}
+# ifdef PASSWORDSET
+		value = PASSWORDSET(value, MYLOWERNICK);
+# endif
 #endif
 		break;
 	case "stylesheet":
@@ -2713,7 +2791,7 @@ checkVar(key, value) {
 		break;
 	case "echo":
 		unless (value == "off" || value == "on") value = "-";
-                ASSIGN_SHOWECHO(v("scheme"), value)
+                ASSIGN_SHOWECHO(value, v("scheme"))
 		break;
 	case "greeting":
 		unless (value == "off" || value == "on") value = "-";
@@ -3103,13 +3181,13 @@ static recompile(args, reload) {
 		}
                 if (myplace) place = o;
 	}
-	if (s != "") {
+	if (strlen(s)) {
 		if (reload)
-		    w("_echo_recompile", "Recompiling [_classes]",
-			([ "_classes": s ]) );
+		    w("_echo_recompile", "Recompiling [_classes].",
+			([ "_classes": chop(s) ]) );
 		else
-		    w("_echo_destruct", "Destructing [_classes]",
-			([ "_classes": s ]) );
+		    w("_echo_destruct", "Destructing [_classes].",
+			([ "_classes": chop(s) ]) );
 	}
 	return 1;
 }
@@ -3269,10 +3347,9 @@ static placeRequest(where, mc, leave, quiet, morevars) {
 		    // call out a forced leave
                         cb = (: 
                               return msg($1, $2, $3, $4); :);
-# ifdef NOT_EXPERIMENTAL
                         // we use our right to leave the context ourselves
                         // after informing the place..
-#  ifdef EXPERIMENTAL
+# ifdef GAMMA
                         // <fippo> but that makes any _notice_place_leave run
 			// into the filter so i comment it out
                         leavePlace(where);
@@ -3281,7 +3358,6 @@ static placeRequest(where, mc, leave, quiet, morevars) {
 			// fippo is probably right, that it doesn't operate
 			// correctly when this is in place, either.
 			// TODOOOOOOOOOOOOOOOOOOOOOOOOOOOOO!!!!!!
-#  endif
 # endif
 		}
 #endif
@@ -3331,8 +3407,7 @@ teleport(where, mcv, quiet, stay, morevars) {
 #else                        
 				 "_request_leave"
 #endif
-				 +mcv,
-				    "[_nick] requests his right to leave.",
+				 +mcv, "[_nick] leaves.",
 				    ([ "_nick" : MYNICK, ]) );
                         // should vDel & =0 move outta here?
                         // dont think so.. but..
@@ -3403,50 +3478,30 @@ showStatus(verbosity) {
 		   "_place_invitation": v("invitationplace") || "-" ]) );
 	if (verbosity & VERBOSITY_FRIENDS_DETAILS) showFriends(1);
 	else if (verbosity & VERBOSITY_FRIENDS) showFriends(0);
+# ifndef _flag_disable_module_presence
 	if (verbosity & VERBOSITY_PRESENCE_DETAILS) showMyPresence(1);
 	else if (verbosity & VERBOSITY_PRESENCE) showMyPresence(0);
+# endif
 #endif
 }
 
-/*
-sort_by_name(a, b) {
-	unless (mappingp(a)) return 0;
-	unless (mappingp(b)) return 1;
-#if 0
-	a = lower_case(a["name"] || "");
-	b = lower_case(b["name"] || "");
-	D(S("sorting: %O %O %O\n", a, a > b, b));
-	return a > b;
-#else
-	return lower_case(a["name"] || "") > lower_case(b["name"] || "");
-#endif
-} */
-
-// pro/http has its own version with htquoted data
+#ifndef _flag_disable_query_server
 who() {
 	mapping uv;
 	mixed* u;
 	int all;
 	string desc;
 
-	// elridion.. du kennst dich doch damit aus...
-	// warum bricht an dieser stelle die vim syntaxerkennung zusammen?
-        unless (closurep(sort_by_name))
-                sort_by_name = lambda(({ 'a, 'b}),
-                        ({ (#',),
-                         ({ CL_NIF, ({ #'mappingp, 'a }), ({ #'return, 0 }) }),
-                         ({ CL_NIF, ({ #'mappingp, 'b }), ({ #'return, 1 }) }),
-                         ({ #'return, ({ (#'>),
-                                       ({ CL_LOWER_CASE, ({ (#'||), ({ CL_INDEX, 'a, "name" }), "" }) }), 
-                                       ({ CL_LOWER_CASE, ({ (#'||), ({ CL_INDEX, 'b, "name" }), "" }) }),
-                                       }) })
-                         }));
-
-//	u = users();
 	u = objects_people();
         PT(("objects_people %O\n", u))
 	all = sizeof(u) < 23;
-	u = sort_array(u->qPublicInfo(all), sort_by_name);
+	// same code in gateway/generic and http/user
+	u = sort_array(u->qPublicInfo(all), (:
+		unless (mappingp($1)) return 0;
+		unless (mappingp($2)) return 1;
+		return	lower_case($1["name"] || "") >
+			lower_case($2["name"] || "");
+	:) );
 	foreach (uv : u) if (mappingp(uv)) {
 		desc = uv["me"];
 		if (desc || all) {
@@ -3519,6 +3574,7 @@ people() {
 		      ([ "_amount_invisibles": invisibles ]) );
 	return 1;
 }
+#endif // _flag_disable_query_server
 
 #ifdef USER_PROGRAM
 morph(user, nick, pw) {

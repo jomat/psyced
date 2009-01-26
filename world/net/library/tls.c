@@ -7,12 +7,6 @@ mapping tls_certificate(object who, int longnames) {
     cert = ([ ]);
 #if __EFUN_DEFINED__(tls_check_certificate)
 # ifdef WANT_S2S_SASL
-/*
- * some platforms (notably cygwin) still have a problem executing the following
- * #if ... even psyclpc bails out with an "illegal unary operator in #if"
- * which is nonsense. i simplify this by ifdeffing for psyclpc.
- */
-//#  if (__VERSION_MAJOR__ == 3 && __VERSION_MICRO__ > 712) || __VERSION_MAJOR__ > 3
 #  ifdef __psyclpc__
 #   if __EFUN_DEFINED__(enable_binary) // happens to be committed at the same time
     extra = tls_check_certificate(who, 2);

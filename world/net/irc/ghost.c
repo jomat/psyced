@@ -1,4 +1,4 @@
-// $Id: ghost.c,v 1.8 2007/08/27 16:54:13 lynx Exp $
+// $Id: ghost.c,v 1.9 2008/04/24 15:19:36 lynx Exp $
 //
 // <lynX> ghost users serve the purpose of implementing all the features of
 // a PSYC/Jabber identity for users of an IRC network whose identities are
@@ -15,7 +15,7 @@ volatile object relay;
 
 #include "user.c"
 
-emit(string output) {   
+protected int emit(string output) {   
 	unless (relay) {
 		//relay = RELAY_OBJECT -> load();
 		relay = find_object(RELAY_OBJECT);

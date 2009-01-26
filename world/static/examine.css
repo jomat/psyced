@@ -18,7 +18,7 @@
 	padding: 4;
 	border: 1px solid #f33;
 }
-input,select,textarea {
+.Pe form input,select,textarea {
 	background: black;
 	color: #f33;
 	font-size: 9;
@@ -32,19 +32,38 @@ input,select,textarea {
 }
 .ldp {
 	font-size: 9;
+	font-weight: normal;
 	border: 3px dashed #333;
-	background: #666;
+	background: #933;
 	padding: 3;
 	margin: 44;
+        width: 562;
 }
 .ldpc {
 	background: #f33;
 	color: black;
 	font-size: 12;
+        width: 555;
+        padding: 3;
 }
-.ldp tr {
+.ldp br {
+        clear: both;
+}       
+.ldp span span {
+        float: left;
+        padding: 2;
+        margin: 1;
 }
 .ldp td {
 	background: black;
 	padding: 7;
 }
+.ldpek {
+	background: #966;
+	width: 150;
+}
+.ldpev {
+	background: black;
+	width: 400;
+}
+

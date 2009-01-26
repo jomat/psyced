@@ -1,5 +1,5 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: parse.c,v 1.24 2008/03/29 16:00:02 fippo Exp $
+// $Id: parse.c,v 1.30 2008/12/18 18:16:14 lynx Exp $
 //
 #include "psyc.h"
 #include <net.h>
@@ -63,8 +63,8 @@ void resume_parse() {
 
 // input data to the buffer
 void feed(string data) {
-# ifdef _flag_log_sockets_PSYC
-    log_file("RAW_PSYC", "» %O\n%s\n", ME, data);
+# ifdef _flag_log_sockets_SPYC
+    log_file("RAW_SPYC", "« %O\n%s\n", ME, data);
 # endif
     buffer += data;
 
@@ -82,7 +82,7 @@ varargs mixed croak(string mc, string data, vamapping vars, vamixed source) {
 
 
 // called when a complete packet has arrived
-void done(mixed header_vars, mixed varops, mixed method, mixed body) {
+void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
     parser_reset();
 }
 
@@ -128,7 +128,7 @@ void parse_header() {
 	    buffer = buffer[2..];
 	    hvars = process_header(tvars);
 	    tvars = ({ });
-	    done(hvars, tvars, 0, 0);
+	    dispatch(hvars, tvars, 0, 0);
 	} else {
             // this one is sth like |whatever
             // actually this should be noglyph i think
@@ -174,7 +174,7 @@ void parse_header() {
 	    break;
 	case '\n': // deletion
 	    // this is currently implemented as "vvalue is 0" internally
-	    // and must handled in done() when merging
+	    // and must handled in dispatch() when merging
 	    buffer = buffer[1..];
 	    break;
 	default:
@@ -273,6 +273,9 @@ void parse_content() {
     int fit;
     string method, body;
 
+    // at this point we should check for relaying, then potentially
+    // route the data without parsing it.. TODO
+
     parse_psyc();
     // ASSERT strlen(buffer)
     if (body_buffer[0] == C_LINEFEED) {
@@ -282,7 +285,7 @@ void parse_content() {
     // FIXME: i am not sure if this is correct...
     if (body_buffer == S_GLYPH_PACKET_DELIMITER) {
 	P0(("encountered packet delimiter in packet body? how's that?\n"))
-	done(hvars, tvars, 0, 0);
+	dispatch(hvars, tvars, 0, 0);
 	return;
     }
     fit = sscanf(body_buffer, "%.1s\n%.0s", method, body_buffer);
@@ -295,7 +298,7 @@ void parse_content() {
     // mhmm... why does body_buffer still contain the newline?
     // because the newline is by definition not part of the body!
     if (strlen(body_buffer)) body = body_buffer[..<2];
-    done(hvars, tvars, method, body);
+    dispatch(hvars, tvars, method, body);
 }
 
 // buffer content until complete
@@ -304,19 +307,25 @@ void parse_content() {
 // 	the packet
 void buffer_content() {
     int t;
-    if (body_len && strlen(buffer) >= body_len + 3) {
-	// make sure that the packet is properly terminated
-	if (buffer[body_len..body_len+2] != "\n" DELIM) {
-	    PARSEERROR("binary packet delimiter")
+    if (body_len) {
+	if (strlen(buffer) >= body_len + 3) {
+	    // make sure that the packet is properly terminated
+	    if (buffer[body_len..body_len+2] != "\n" DELIM) {
+		PARSEERROR("packet delimiter after binary body not found")
+	    }
+	    body_buffer = buffer[..body_len];
+	    buffer = buffer[body_len+3..];
+	    parse_content();
+	} else {
+	    P4(("buffer_content: waiting for more binary data\n"))
 	}
-	body_buffer = buffer[..body_len];
-	buffer = buffer[body_len+3..];
-	parse_content();
     } else if ((t = strstr(buffer, "\n" DELIM)) != -1) { 
 	body_buffer = buffer[..t];
 	buffer = buffer[t+3..];
 	parse_content();
+	P4(("buffer_content: packet complete\n"))
     } else {
+	P4(("buffer_content: waiting for more plain data. buffer %O vs %O\n", to_array(buffer), to_array("\n" DELIM)))
     }
 }
 
@@ -327,6 +336,7 @@ void first_response() {
 
 // parser stepping function
 void step() {
+    P3(("%O step: state %O, buffer %O\n", ME, state, buffer))
     if (!strlen(buffer))
 	return;
     switch(state) {
@@ -345,7 +355,7 @@ void step() {
 	    return;
 	if (buffer[0..1] == DELIM) {
 	    state = PSYCPARSE_STATE_HEADER;
-	    buffer = buffer[2..];
+	    buffer = buffer[2 ..];
 	    first_response();
 	    step();
 	} else {

@@ -1,7 +1,7 @@
 // vim:syntax=lpc
 // info: to unfold and view the complete file, hit zR in your vim command mode.
 //
-// $Id: dns.c,v 1.112 2008/03/29 20:05:32 lynx Exp $
+// $Id: dns.c,v 1.113 2008/09/12 15:54:39 lynx Exp $
 //
 // {{{ meta-bla about foldmethod=marker
 // <lynX> hm.. find ich folding jetzt eher nützlich oder lästig? muss ich
@@ -53,9 +53,9 @@ volatile mapping localhosts = ([
 #endif
 // the hostnames need to be in lowercase... lets do it later
 //  SERVER_HOST : 1,
-#if defined(JABBER_HOST)
-# if JABBER_HOST != SERVER_HOST
-//  JABBER_HOST : 1,
+#if defined(_host_XMPP)
+# if _host_XMPP != SERVER_HOST
+//  _host_XMPP : 1,
 # endif
 #endif
 ]);

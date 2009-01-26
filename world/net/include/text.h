@@ -6,7 +6,6 @@
 virtual inherit NET_PATH "textc";
 #endif
 
-
 // #ifndef DEBUG
 #if 1
 # define T(mc, fmt) \

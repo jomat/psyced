@@ -1,4 +1,4 @@
-// $Id: master.c,v 1.61 2008/03/11 16:15:15 lynx Exp $ // vim:syntax=lpc:ts=8
+// $Id: master.c,v 1.66 2008/07/20 21:26:04 lynx Exp $ // vim:syntax=lpc:ts=8
 //
 #ifdef INIT_FILE
 #undef INIT_FILE
@@ -11,6 +11,12 @@ mixed valid_write(string path, string eff_user, string call, object caller);
 
 // bei amylaar und ldmud braucht master.c den absoluten pfad..
 #include "/local/config.h"
+
+#ifdef Dmaster
+# undef DEBUG
+# define DEBUG Dmaster
+#endif
+
 #include NET_PATH "include/net.h"
 #include DRIVER_PATH "sys/driver_hook.h"
 #include DRIVER_PATH "sys/debug_message.h"
@@ -19,7 +25,7 @@ mixed valid_write(string path, string eff_user, string call, object caller);
 #ifdef PRO_PATH
 inherit PRO_PATH "master";
 #else
-# include DRIVER_PATH "master/psycmuve.i"
+inherit DRIVER_PATH "master/accept";
 #endif
 #include DRIVER_PATH "master/classic.i"
 
@@ -177,23 +183,26 @@ void disconnect(object ob, string remaining) {
 	string host = query_ip_name(ob);
 	string name = object_name(ob);
 
-	PT(("disconnected: %O from %O%s\n", ob, host,
+	// happens when first clone fails:
+	unless (ob && objectp(ob) && ob != ME) return;
+	// this disconnect was expected behaviour:
+	if (ob->disconnected(remaining)) return;
+	// unexpected disconnection.
+	//
+	// disconnected() must return true when the
+	// socket disconnection was expected and is no
+	// cause for concern. if we got here, it is.
+	//
+	// 'remaining' is empty in most cases, still
+	// we don't output 'remaining' on console
+	// as it occasionally triggers a utf8 conversion error
+	// instead we drop this into a logfile
+	SIMUL_EFUN_FILE -> log_file("DISC", "%O %O %O\n",
+				    name, host, remaining);
+
+	P2(("Unexpected disconnect in %s from %O%s\n", name, host,
 	    remaining && strlen(remaining) ?
 	      " with "+ strlen(remaining) +" bytes remaining" : ""))
-					// happens when first clone fails
-	unless (ob && objectp(ob) && ob != ME) return;
-	unless (ob->disconnected(remaining)) {
-		// disconnected() must return true when the
-		// socket disconnection was expected and is no
-		// cause for concern. if we got here, it is.
-		//
-		// 'remaining' is empty in most cases, still
-		// we don't output 'remaining' on console
-		// as it occasionally triggers a utf8 conversion error
-		// instead we drop this into a logfile
-		SIMUL_EFUN_FILE -> log_file("DISC", "%O %O %O\n",
-					    name, host, remaining);
-	}
 }
 
 // even though the name of the function is weird, this is the
@@ -217,7 +226,7 @@ void receive_udp(string host, string msg, int port) {
 	case '|':
 		unless (spycd) {
 			spycd = SPYC_PATH "udp" -> load();
-			PT(("SPYC UDP daemon created.\n"))
+			P1(("SPYC UDP daemon created.\n"))
 			unless (spycd) return;
 		}
 		spycd -> parseUDP(host, port, msg);
@@ -226,7 +235,7 @@ void receive_udp(string host, string msg, int port) {
 	case '.':
 		unless (psycd) {
 			psycd = PSYC_PATH "udp" -> load();
-			PT(("PSYC UDP daemon created.\n"))
+			P1(("PSYC UDP daemon created.\n"))
 			unless (psycd) return;
 		}
 		psycd -> parseUDP (host,port,msg);

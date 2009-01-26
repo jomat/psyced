@@ -1,19 +1,12 @@
 #include <net.h>
 
-/* a cache for the remote muc 
+/* a slave for the remote muc 
  * yes, this is for a SINGLE person
  * yes, that's horrible
  *
  * at least we get to implement a member list and
  * even /history if we'd like to have that..  ;)
  */
-
-// FIXME: should set "owner nick" and tag so 
-// 	we can detect when the remote room does not 
-// 	support tagging or when we are kicked
-// 	and this could even do echo detection
-// 	NOTE: this should work when using the
-// 		isecho check
 
 object owner;
 mapping membercache = ([ ]);
@@ -49,6 +42,8 @@ castmsg(source, method, data, mapping vars) {
     case "_notice_place_leave":
 	if (isecho) {
 	    // got kicked or room does not support tagging
+	    // this works already for kick, but it might be nice to do that 
+	    // as a KICK for irc
 	    P0(("%O left via _notice_place_leave, this is strange\n", vars["_context"]))
 	}
 	m_delete(membercache, source);
@@ -63,6 +58,5 @@ castmsg(source, method, data, mapping vars) {
 }
 
 mapping qMembers() {
-    P4(("membercache is %O\n", membercache))
     return m_indices(membercache);
 }

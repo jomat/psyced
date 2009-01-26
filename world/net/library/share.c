@@ -1,4 +1,4 @@
-// $Id: share.c,v 1.20 2008/02/10 11:31:10 lynx Exp $ // vim:syntax=lpc
+// $Id: share.c,v 1.25 2008/12/04 14:20:52 lynx Exp $ // vim:syntax=lpc
 //
 // verrry simple way to keep single sets of data for all kinds of purposes.
 //
@@ -21,8 +21,8 @@
 
 // share already contains "preset" data sets
 volatile mapping share = ([
-	// 'mmp vars' belongs into here aswell.. TODO
 #ifdef JABBER_PATH
+# ifndef _flag_disable_module_presence
 	"jabber2avail": ([
 		0	: AVAILABILITY_HERE,
 		"chat"	: AVAILABILITY_TALKATIVE,
@@ -45,6 +45,8 @@ volatile mapping share = ([
 		8	:	"excited",		// not bright
 		9	:	"invincible",		// not nirvana
 	]),
+# endif // _flag_disable_module_presence
+# ifndef _flag_disable_query_server
 	"disco_identity" : ([
 			    "administrator" 	: "admin",
 			    "newbie" 		: "anonymous",
@@ -69,13 +71,17 @@ volatile mapping share = ([
 			    "private"		: "muc_hidden",
 			    "persistent"	: "muc_persistent",
 			    "temporary"		: "muc_temporary",
+#ifndef _flag_disable_registration_XMPP
 			    "registration"	: "jabber:iq:register",
+#endif
 			    "offlinestorage"	: "msgoffline",
 			    "version"		: "jabber:iq:version",
 			    "lasttime"		: "jabber:iq:last",
 			    "time"		: "jabber:iq:time",
 	]),
+# endif // _flag_disable_query_server
 #endif
+#ifndef _flag_disable_module_presence
 	// even if _degree_availability says it all, we still need
 	// a string to feed to the textdb - even if it were only internal
 	"avail2mc": ([
@@ -103,7 +109,9 @@ volatile mapping share = ([
 		8	:	"_bright",
 		9	:	"_nirvana",
 	]),
-// see peers.h for these
+#endif // _flag_disable_module_presence
+#ifndef _flag_disable_module_friendship
+	// see peers.h for these
 	"ppl2psyc": ([
 		PPL_DISPLAY :	"_display",
 		PPL_NOTIFY  :	"_notification",
@@ -125,11 +133,12 @@ volatile mapping share = ([
 		PPL_NOTIFY_OFFERED	:	"_offered",
 		PPL_NOTIFY_NONE		:	"_none",
 	]),
+#endif
 	// this table defines variable names to go into the routing layer
 	// of PSYC. default is to handle them locally in the routing layer
 	// PSYC_ROUTING_MERGE means to merge them into end-to-end vars at
 	// parsing time. PSYC_ROUTING_RENDER to accept and render them from
-	// application provided vars.
+	// application provided vars. same data structure also in Net::PSYC.pm
 	"routing": ([
 	       "_amount_fragments" : PSYC_ROUTING,
 	       "_context" : PSYC_ROUTING + PSYC_ROUTING_MERGE,
@@ -153,6 +162,8 @@ volatile mapping share = ([
 		    PSYC_ROUTING + PSYC_ROUTING_MERGE + PSYC_ROUTING_RENDER,
 #endif
 	       "_target" : PSYC_ROUTING + PSYC_ROUTING_MERGE,
+	       "_target_forward" : PSYC_ROUTING + PSYC_ROUTING_MERGE
+				    + PSYC_ROUTING_RENDER,	// new!
 	       "_target_relay" : PSYC_ROUTING + PSYC_ROUTING_MERGE,
 	       "_understand_modules" : PSYC_ROUTING,
 	       "_using_modules" : PSYC_ROUTING,

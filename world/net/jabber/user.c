@@ -1,4 +1,4 @@
-// $Id: user.c,v 1.293 2008/04/15 19:18:12 lynx Exp $ // vim:syntax=lpc:ts=8
+// $Id: user.c,v 1.303 2008/09/12 15:54:39 lynx Exp $ // vim:syntax=lpc:ts=8
 #include "jabber.h"
 #include "user.h"
 #include "person.h"
@@ -6,9 +6,9 @@
 #include <peers.h>
 
 // important to #include user.h first
-// then we also repatch JABBER_HOST so disco.c does the right thing for us
-#undef JABBER_HOST
-#define JABBER_HOST SERVER_HOST
+// then we also repatch _host_XMPP so disco.c does the right thing for us
+#undef _host_XMPP
+#define _host_XMPP SERVER_HOST
 
 volatile string prefix;	// used anywhere?
 volatile string tag;
@@ -42,6 +42,7 @@ msg(source, mc, data, mapping vars, showingLog) {
     int ret;
     string jid, buddy;
     string packet;
+    mixed t;
 
     P2(("%s beim jabber:user:msg\n", mc))
     // net/group/master says we should copy vars if we need to
@@ -124,11 +125,25 @@ msg(source, mc, data, mapping vars, showingLog) {
 	mc = "_notice_place_leave";
     }
     switch (mc) {
-#ifndef EXPERIMENTAL
+    case "_status_person_present":
+    case "_status_person_present_implied":
     case "_status_person_absent":
     case "_status_person_absent_recorded":
-	return;
-#endif
+	PT(("%O got %O\n", ME, mc))
+
+	// actually.. we never send _time_idle with this
+        if (member(vars, "_time_idle")) {
+            t = vars["_time_idle"];
+            if (stringp(t)) {
+                t = to_int(t);
+                PT(("_time_idle %O == %O, right?\n", vars["_time_idle"], t))
+            }
+            t = gmtime(time() - t);
+            vars["_INTERNAL_time_jabber"] = JABBERTIME(t);
+        } else {
+            vars["_INTERNAL_time_jabber"] = JABBERTIME(gmtime(time()));
+        }
+	break;
     case "_notice_friendship_established":
 	// TODO:
 	// it should be checked that this request is valid
@@ -270,7 +285,7 @@ presence(XMLNode node) {
     if (!isplacemsg && getchild(node, "x", "http://jabber.org/protocol/muc#user")) {
 	isplacemsg = 2;
     }
-    /* directed presence */
+#ifndef _flag_disable_presence_directed_XMPP
     if (node["@to"]) {
 	target = jid2unl(node["@to"]);
 	if (isplacemsg) {
@@ -279,54 +294,56 @@ presence(XMLNode node) {
 	    if (node["@type"] == "unavailable") {
 		P2(("requesting to leave %O\n", target))
 		placeRequest(target,
-#ifdef SPEC                  
+# ifdef SPEC                  
                              "_request_context_leave"
-#else                        
+# else                        
                              "_request_leave"
-#endif
+# endif
                             , 1);	
 		place = 0; // should we do it when we receive the notice?
 			  // anyway, w/out this we show up as still being
 			 // in that room in /p
 	    } else {
-#ifdef ENTER_MEMBERS
+# ifdef ENTER_MEMBERS
 		// TODO: this might be needed and should work for remote rooms
 		// doing it in local rooms is a bad idea
 		if (is_formal(target))
 		    placeRequest(target,
-# ifdef SPEC
+#  ifdef SPEC
                          "_request_context_enter"
-# else
+#  else
                          "_request_enter"
-# endif
+#  endif
                         "_again", 0, 1, ([
 			"_nick" : MYNICK,
 			"_nick_local" : u[UResource]
 			]));
 		else
 		    placeRequest(target,
-# ifdef SPEC
+#  ifdef SPEC
                                  "_request_context_enter"
-# else
+#  else
                                  "_request_enter"
-# endif
+#  endif
                                  "_again", 0, 1);
-#else
+# else
 		P2(("teleporting to %O\n", target))
 		teleport(target, "_join", 0, 1);
-#endif
+# endif
 	    }
+# ifndef _flag_disable_module_friendship
 	} else if (node["@type"] == "subscribe") {
 	    // was: friend(({ jid2unl(node["@to"]) }), 0);
 	    friend(0, jid2unl(node["@to"]));
 	} else if (node["@type"] == "unsubscribe") {
 	    friend(1, jid2unl(node["@to"]));
+# endif // _flag_disable_module_friendship
 	} else if (abbrev(XMPP, target)) {
 	    // if the person is not on our buddylist,
 	    // this is usually a muc join
 	    // but i am not sure if there are other uses of
 	    // presence in jabber
-#ifdef JABBER_TRANSPARENCY
+# ifdef JABBER_TRANSPARENCY
 	    mapping vars = ([ "_nick" : MYNICK ]);
 	    mixed *u = parse_uniform(XMPP + node["@to"]);
 	    P3(("jtranz presence to %O\n", target))
@@ -339,7 +356,7 @@ presence(XMLNode node) {
 //	    unless(mappingp(presence_out)) presence_out = ([ ]);
 	    vars["_jabber_XML"] = innerxml;
 
-	    // TODO: wir fliegen wir mit JABBER_HOST auf die 
+	    // TODO: wir fliegen wir mit _host_XMPP auf die 
 	    // 	NASE. 
 	    //	wir muessen die resource in die vars stecken...
 	    vars["_INTERNAL_source_jabber"] = myjidresource;
@@ -356,14 +373,15 @@ presence(XMLNode node) {
 			"[_nick] is sending you a jabber presence.",
 			vars);
 	    }
-#endif
+# endif
 	} else {
 	// TODO: what can we do in this case?
 	// we can look at our buddylist, if target is a member 
 	// then this is a directed presence
 	}
     } /* end of directed presence handling */
-
+#endif // _flag_disable_presence_directed_XMPP
+#ifdef AVAILABILITY_AWAY
     else if (node["/show"]) { 
 	// else this is one of the so-called "presence broadcasts"
 	// we will never support stupid broadcasts although we could 
@@ -393,6 +411,7 @@ presence(XMLNode node) {
 	// TODO: quiet?
 	announce(AVAILABILITY_HERE);
     }
+#endif // AVAILABILITY_AWAY
 }
 
 
@@ -592,6 +611,7 @@ iq(XMLNode node) {
 	    break;
 	}
 	break;
+#if !defined(REGISTERED_USERS_ONLY) && !defined(_flag_disable_registration_XMPP)
     case "jabber:iq:register":
 	switch(node["@type"]) {
 	case "get":
@@ -632,6 +652,7 @@ iq(XMLNode node) {
 	case "error":
 	    break;
 	}
+#endif // jabber:iq:register
     case "jabber:iq:roster":
 	switch(node["@type"]) {
 	case "get":
@@ -716,8 +737,10 @@ iq(XMLNode node) {
 	    helper = helper["/item"];
 	    if (helper && helper["@subscription"] == "remove") {
 		string buddy = jid2unl(helper["@jid"]);
+#ifndef _flag_disable_module_friendship
 		P2(("remove %O from roster\n", helper["@jid"]))
 		friend(1, buddy);
+#endif
 		m_delete(xbuddylist, buddy);
 		emit(sprintf("<iq type='result' id='%s'/>", tag));
 	    } else {
@@ -806,11 +829,14 @@ iq(XMLNode node) {
 	}
 	break;
     case "http://jabber.org/protocol/disco#items":
+    // send a list of rooms to the client
 	switch(node["@type"]) {
 	case "get":
 	    if (!node["@to"]) 
+		// "my" places - let person.c handle this
 		sendmsg(ME, "_request_list_item", 0, vars);
 	    else if (is_localhost(lower_case(node["@to"]))) 
+		// server's places - let root.c handle this
 		sendmsg("/", "_request_list_item", 0, vars);
 	    /* else... TODO */
 	    break;
@@ -833,6 +859,9 @@ iq(XMLNode node) {
 				 "<query xmlns='jabber:iq:private'>"
 				 "<storage xmlns='storage:bookmarks'>",
 				 tag);
+		// hey wait.. we are sending the list of places here..
+		// why is it i have never seen a jabber client actually
+		// executing autojoins?  FIXME
 		if (v("subscriptions")) 
 		    foreach (string s in v("subscriptions")) {
 			string jid;
@@ -1078,7 +1107,7 @@ string jid2unl(string jid) {
 	return node;
     }
 # if 1
-    else if (ISPLACEMSG(node)) {
+    else if (strlen(node) && ISPLACEMSG(node)) {
 	return "psyc://" + host + "/@" + PREFIXFREE(node);
     }
 # endif
@@ -1199,12 +1228,17 @@ w(string mc, string data, mapping vars, mixed source) {
     case "_notice_list_feature_place":
     case "_notice_list_feature_server":
     case "_notice_list_feature_newsfeed":
+#ifndef _flag_disable_query_server
 	mixed id2jabber = shared_memory("disco_identity");
 	mixed feat2jabber = shared_memory("disco_features");
+	unless (mappingp(id2jabber)) return 1;
 	vars["_identity"] = id2jabber[vars["_identity"]] || vars["_identity"];
 	vars["_list_feature"] = implode(map(vars["_list_feature"], 
-					     (: return "<feature var='" + feat2jabber[$1] + "'/>"; :)), "");
+	     (: return "<feature var='" + feat2jabber[$1] + "'/>"; :)), "");
 	break;
+#else
+	return 1;
+#endif
     case "_notice_list_item":
 	t = "";
 	// same stuff in user.c (what happened to code sharing?)

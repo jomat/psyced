@@ -1,4 +1,4 @@
-// $Id: legal.c,v 1.16 2008/02/10 14:27:17 lynx Exp $ // vim:syntax=lpc
+// $Id: legal.c,v 1.18 2008/07/26 10:54:31 lynx Exp $ // vim:syntax=lpc
 #include <net.h>
 
 // legal nickname/placename test..
@@ -21,7 +21,7 @@ string legal_name(string n) {
 	}
 #endif
 	// this saves applet/user from malfunction!
-	if (index("!=-", n[0]) != -1) {
+	if (index("!=-0123456789", n[0]) != -1) {
 		P1(("not legal_name: %O has !=- as first char.\n", n))
 		return 0;
 	}
@@ -49,7 +49,8 @@ array(string) legal_password(string pw, string nick) {
 		return ({ "_error_illegal_password_size",
 		    "That password is too short.\n" });
 
-	if (index(pw, '<') != -1 || index(pw, '>') != -1)
+	if (index(pw, '<') != -1 || index(pw, '>') != -1 ||
+	    index(pw, ' ') != -1)
 		return ({ "_error_illegal_password_characters",
 		    "Password contains illegal characters.\n" });
 

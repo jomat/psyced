@@ -1,6 +1,6 @@
+#include "jabber.h"
 #include <net.h>
 #include <url.h>
-#include "jabber.h"
 
 // just renderMembers
 #include NET_PATH "members.i"
@@ -37,9 +37,9 @@ int msg(string source, string mc, string data,
 	// ignore these
 	return 1;
 	break;
-    case "_request_description": // wir sollten uns da auf eins einigen :)
-    case "_request_examine": // needs a tag also... probably all _request's do
-	mc = "_request_examine_vCard";
+    case "_request_examine": // don't use this, please remove in 2009
+    case "_request_description": // this is the one.
+	mc = "_request_description_vCard";	// pending rename.. TODO
 	unless (vars["_tag"]) vars["_tag"] = RANDHEXSTRING;
 	source->chain_callback(vars["_tag"], (:
 		if ($3["@type"] == "result") {
@@ -245,6 +245,7 @@ int msg(string source, string mc, string data,
 				$2 });
 			:));
 	break;
+#ifndef _flag_disable_module_authentication
     case "_request_authentication":
 	// TODO: XEP 0070 says we should use <message/> when the recipient is a bare jid
 	// 	but I prefer the iq method
@@ -255,6 +256,8 @@ int msg(string source, string mc, string data,
 			return ({ $1, "_error_invalid_authentication", 0, $2 });
 			:));
 	break;
+#endif
+#ifndef _flag_disable_query_server
     case "_notice_list_feature":
     case "_notice_list_feature_person":
     case "_notice_list_feature_place":
@@ -266,6 +269,7 @@ int msg(string source, string mc, string data,
 	vars["_list_feature"] = implode(map(vars["_list_feature"], 
 					     (: return "<feature var='" + feat2jabber[$1] + "'/>"; :)), "");
 	break;
+#endif
     case "_notice_list_item":	
 	t = "";
 	// same stuff in user.c (what happened to code sharing?)
@@ -513,6 +517,10 @@ int msg(string source, string mc, string data,
 #endif
 		if ($3["@type"] == "error") {
 		    // FIXME: could remove context
+		    //
+		    // also, we should implement the full choice of errors and
+		    // map them to appropriate psyc errors.. instead we just
+		    // have this silly lazy coder's message:
 		    return ({ t, "_failure_place_enter_XMPP", 
 			    "[_nick_place] could not be entered for jabberish reasons.",
 			    $2 });
@@ -557,6 +565,9 @@ int msg(string source, string mc, string data,
 	else if (abbrev("_failure_redirect", mc)) {
 	    if (vars["_tag_reply"]) { // wild guess that it is an iq then 
 		mc = "_jabber_iq_error";
+// <lynX> was spricht dagegen _failure_redirect als <redirect/> auszugeben?
+// <fippo> ich denke nicht, dass es irgendwer vernünftig implementiert...
+//	außerdem musst du die jid des raumes in dem konkreten fall rausfinden
 		vars["_jabber_XML"] = "<error type='modify'><gone xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><text xmlns='urn:ietf:params:xml:ns:xmpp-stanzas' xml:lang='en'>" + psyctext(data, vars) + "</text></error>";
 	    }
 	}

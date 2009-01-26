@@ -1,9 +1,11 @@
-// $Id: server.c,v 1.98 2008/04/15 19:36:44 lynx Exp $ // vim:syntax=lpc
+// $Id: server.c,v 1.102 2008/08/05 12:15:11 lynx Exp $ // vim:syntax=lpc
 //
 // the thing that answers on port 4404 of psyced.
 
+#include "common.h"
 #include <net.h>
 #include <services.h>
+
 #define NO_INHERIT
 #include <server.h>
 
@@ -69,18 +71,18 @@ disconnected(remaining) {
 static varargs int block(vastring mc, vastring reason) {
 	P0(("Server blocked TCP PSYC connection from %O in %O (%O).\n",
 	    query_ip_number(ME), ME, mc))
-#ifdef BETA
-# define BETA_REDIR ""
+#ifdef SYMLYNX
+# define TEST_REDIR ""
 # define TEXT_REDIR ""
 #else
-# define BETA_REDIR ":_source_redirect\tpsyc://beta.ve.symlynX.com\n"
-# define TEXT_REDIR "Try the [_source_redirect] server instead!\n"
+# define TEST_REDIR ":_source_redirect\tpsyc://ve.symlynX.com\n"
+# define TEXT_REDIR "Try the test server at [_source_redirect] instead!\n"
 #endif
 	unless(mc) mc = "_error_illegal_source";
 	unless(reason) reason = "";
 	emit(".\n\
 \n\
-" BETA_REDIR + mc +"\n\
+" TEST_REDIR + mc +"\n\
 Sorry, my configuration does not allow me to talk to you.\n\
 "+ reason +"\n\
 " TEXT_REDIR "\
@@ -96,7 +98,7 @@ static void resolved(mixed host) {
 	mixed uni, psycip;
 
 	unless (stringp(host)) {
-#if 1 //ndef BETA
+#if 1 //ndef SYMLYNX
 		if (host == -2) {
 			monitor_report("_warning_invalid_hostname",
 				S("%O: %O has an invalid IN PTR", ME,
@@ -127,7 +129,7 @@ static void resolved(mixed host) {
 			return;
 		}
 #else
-		// we sent them to beta, so let beta be easy on them
+		// we sent them to the test server, so let it be easy on them
 		host = peerip;
 #endif
 	}
@@ -158,7 +160,7 @@ static void resolved(mixed host) {
 	if (peerport && peerport != PSYC_SERVICE) peeraddr += ":"+peerport;
 	netloc = "psyc://"+peeraddr+"/";
 	register_target( netloc );
-#if 1 // OPTIONAL
+#ifndef _flag_disable_module_authentication // OPTIONAL
 	// should this server be connected to a psyc client, then the new
 	// resolved name of the connection may have to be recognized as
 	// location for the person. finally this code should be unnecessary
@@ -173,14 +175,12 @@ static void resolved(mixed host) {
 		// cleanup? are you sure we will never need this again?
 		register_location(psycip, 0); //cleanup
 	}
-	    
-#endif
+#endif // _flag_disable_module_authentication
+
 	// PIKE TPD: says psyc://127.0.0.1/ here .. should say
 	//		  psyc://localhost:-23232/ instead
 	P2(("%O resolves as %O (UNI %O)\n", ME, netloc, uni))
-#ifndef NOT_EXPERIMENTAL
-	greet();
-#endif
+	// in the old days: greet();
 }
 
 int logon(int nothing) {

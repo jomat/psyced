@@ -1,11 +1,17 @@
-// $Id: lastlog.c,v 1.28 2008/04/12 22:57:17 lynx Exp $ // vim:syntax=lpc
+// $Id: lastlog.c,v 1.29 2008/07/17 17:09:15 lynx Exp $ // vim:syntax=lpc
 //
 // generic implementation of a log of last messages,
 // also known as lastlog in irc tradition
 // stores log in a non-static variable ready for save_object
 // used by user.c for /log and storic.c for /history in rooms
 // memory allocation could be improved in a similar way to net/queue.c
-//
+
+// local debug messages - turn them on by using psyclpc -DDlastlog=<level>
+#ifdef Dlastlog
+# undef DEBUG
+# define DEBUG Dlastlog
+#endif
+
 #include <net.h>
 
 protected array(mixed) _log;

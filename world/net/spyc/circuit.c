@@ -1,5 +1,5 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: circuit.c,v 1.33 2008/03/29 16:00:02 fippo Exp $
+// $Id: circuit.c,v 1.38 2008/10/14 19:02:29 lynx Exp $
 
 #include "psyc.h"
 #include <net.h>
@@ -62,7 +62,7 @@ varargs mixed croak(string mc, string data, vamapping vars, vamixed source) {
 }
 
 // gets called during socket logon
-int logon(int success) {
+int logon(int failure) {
     sAuthHosts(([ ])); // reset authhosts 
     legal_senders = ([ ]);
     instate = ([ "_INTERNAL_origin" : ME]);
@@ -119,7 +119,11 @@ int logon(int success) {
 
     peerip = query_ip_number(ME) || "127.0.0.1";
 
+#if __EFUN_DEFINED__(enable_binary)
     enable_binary(ME);
+#else
+# echo Driver compiled without enable_binary() - PSYC functionality warning!
+#endif
     input_to(#'feed, INPUT_IGNORE_BANG);
     
     call_out(#'quit, 90);
@@ -185,206 +189,8 @@ mapping process_header(mixed varops) {
     return vars;
 }
 
-// handling of packets received
-void done(mixed header_vars, mixed varops, mixed method, mixed body) {
-    string vname;
-    mixed vop; // value operation
-    mapping vars;
-    string t;
-
-    // check that method is a valid keyword
-    if (method && !legal_keyword(method)) {
-	CIRCUITERROR("non legal method");
-    }
-    // copy() + occasional double modifier ops should be more
-    // efficient than merge at every packet --lynX
-    // no one cares about "efficiency" here. please proof your 
-    // bold statements with benchmarks anyway
-    vars = header_vars + instate;
-
-    // FIXME: this can happen earlier, e.g. in parse.c after
-    // 		process_header
-    // check _source/_context
-    // this check can be skipped if _source and _context are empty
-    if ((t = vars["_context"] || vars["_source"])) {
-        array(mixed) u;
-        unless (u = parse_uniform(t)) {
-            CIRCUITERROR("logical source is not an uniform\n")
-        }
-        unless (qAuthenticated(NAMEPREP(u[UHost]))) {
-            CIRCUITERROR("non-authenticated host\n")
-        }
-    }
-    // check that _target is hosted by us
-    // this check can be skipped if _target is not set 
-    if ((t = vars["_target"])) {
-        array(mixed) u;
-        unless (u = parse_uniform(t)) {
-            CIRCUITERROR("target is not an uniform\n")
-        }
-	// FIXME relaying support here?
-        if (!(is_localhost(u[UHost])) || u[UHost] == "localhost") {
-            CIRCUITERROR("target is not configured on this server\n")
-	}
-    }
-    // FIXME: i dont like this block... maybe we decode each variable 
-    // 		when setting it?
-    // 		that would also fit with 0 as varname deletion
-    // 		below
-    foreach(vop : varops) {
-	vname = vop[0];
-	// TODO unpack _amount
-	// TODO unpack _time
-	if (abbrev("_list", vname)) {
-	    mixed plist = list_parse(vop[2]);
-	    if (plist == -1) {
-		CIRCUITERROR("could not parse list");
-	    }
-	    vop[2] = plist;
-	}
-    }
-
-    // FIXME deliver packet
-    // this should be a separate function
-    PT(("vars is %O\n", vars))
-    PT(("method %O\nbody %O\n", method, body))
-    PT(("packet done\n"))
-    // delivery rules as usual, but
-    if (vars["_context"]) {
-	mixed context;
-	mixed context_state;
-	mixed source, target; 
-
-	if (vars["_source"]) {
-	    P0(("invalid _context %O with _source %O\n",
-		context, vars["_source"]))
-	    CIRCUITERROR("invalid usage of context with _source");
-	} 
-
-	context = find_context(vars["_context"]);
-	if (!objectp(context)) {
-	    P0(("context %O not found?!\n", vars["_context"]))
-	    return;
-	}
-	context_state = context->get_state();
-
-	// apply varops to context state
-	foreach(vop : varops) {
-	    vname = vop[0];
-	    if (!legal_keyword(vname) || abbrev("_INTERNAL", vname)) {
-		CIRCUITERROR("illegal varname in psyc")
-	    }
-
-	    switch(vop[1]) { // the glyph
-	    case C_GLYPH_MODIFIER_SET:
-		vars[vname] = vop[2];
-		break;
-	    case C_GLYPH_MODIFIER_ASSIGN:
-		vars[vname] = context_state[vname] = vop[2];
-		break;
-	    case C_GLYPH_MODIFIER_AUGMENT:
-		if (!abbrev("_list", vname)) {
-		    CIRCUITERROR("psyc modifier + with non-list arg")
-		}
-		// FIXME: duplicates?
-		context_state[vname] += vop[2];
-		PT(("current state is %O, augment %O\n", context_state[vname], vop[2]))
-		break;
-	    case C_GLYPH_MODIFIER_DIMINISH:
-		if (!abbrev("_list", vname)) {
-		    CIRCUITERROR("psyc modifier + with non-list arg")
-		}
-		PT(("current state is %O, diminish %O\n", context_state[vname], vop[2]))
-		foreach(mixed item : vop[2])
-		    context_state[vname] -= ({ item });
-		PT(("after dim: %O\n", context_state[vname]))
-		break;
-	    case C_GLYPH_MODIFIER_QUERY:
-		CIRCUITERROR("psyc modifier ? not implemented")
-		break;
-	    }
-	}
-	vars = vars + context_state;
-	// FIXME: is it legal to do this if this has _target?
-	// 	there should be no mods then anyway
-	context->commit_state(context_state);
-
-
-	if (vars["_target"]) {
-	    // FIXME: delivery copycat from below
-	    // beware: source is set to 0 here as it may not be present
-	    target = find_psyc_object(parse_uniform(vars["_target"]));
-	    PT(("target is %O\n", target))
-	    // FIXME: net/entity can not yet deal with 0 method
-	    //
-	    if (objectp(context)) {
-		context->msg(0, method || "", body, vars, 0, target);
-	    } else {
-		// FIXME: proper croak back to sender here
-		P0(("context %O for unicast to %O not found???\n", target))
-	    }
-	} else {
-	    if (vars["_source_relay"]) {
-		mixed localrelay;
-		if ((localrelay = psyc_object(vars["_source_relay"]))) {
-		    P0(("local relay %O\n", localrelay))
-		    vars["_source_relay"] = localrelay;
-		} else { // NORMALIZE UNIFORM
-		    vars["_source_relay"] = lower_case(vars["_source_relay"]);
-		}
-	    }
-	    if (objectp(context)) {
-		// do we need more local object detection here?
-		context -> castmsg(source, method || "", body, vars); 
-	    } else {
-		// empty contexts are not bad currently
-		// in the current implementation it only means that no one 
-		// interested in that context is online right now
-		// FIXME: lines above are about the old stuff where we did
-		// 	not have context state
-	    }
-	}
-    } else {
-	if (!vars["_target"] && !vars["_source"]) {
-	    circuit_msg(method, vars, body); 
-	} else {
-	    string source;
-	    mixed target;
-	    if (!vars["_source"]) {
-		// FIXME: where to set netloc in active
-		if (!netloc) { // set in sender after _request_features
-		    // FIXME: this is wrong
-		    CIRCUITERROR("Did you forget to request circuit features?");
-		}
-		source = netloc; 
-	    } else {
-		// FIXME: a macro NORMALIZE_UNIFORM that may do lower_case please
-		// 		not a simple lower_case
-		source = lower_case(vars["_source"]);
-	    }
-	    // source was checked either via x509 or dns before
-	    // so it is 'safe' to do this
-	    register_target(source);
-
-
-	    // deliver FIXME same code above
-	    if (!vars["_target"]) {
-		target = find_object(NET_PATH "root");
-	    } else {
-		target = find_psyc_object(parse_uniform(vars["_target"]));
-	    }
-	    PT(("target is %O\n", target))
-	    // FIXME: net/entity can not yet deal with 0 method
-	    if (objectp(target))
-		target->msg(source, method || "", body, vars);
-	    else {
-		// FIXME: proper croak back to sender here
-		P0(("target %O not found???\n", target))
-	    }
-	}
-    }
-    ::done(header_vars, varops, method, body);
-}
+#define PSYC_TCP
+#include "dispatch.i"
 
 // request sender authentication and/or target acknowledgement 
 // from the remote side
@@ -486,8 +292,8 @@ varargs int msg(string source, string mc, string data,
 
     unless(vars) vars = ([ ]);
     buf = psyc_render(source, mc, data, vars, showingLog, target);
-#ifdef _flag_log_sockets_PSYC
-    log_file("RAW_PSYC", "» %O\n%s\n", ME, buf);
+#ifdef _flag_log_sockets_SPYC
+    log_file("RAW_SPYC", "» %O\n%s\n", ME, buf);
 #endif
     return emit(buf);
 }

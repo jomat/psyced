@@ -1,4 +1,4 @@
-// $Id: proto.h,v 1.20 2007/09/30 17:06:11 lynx Exp $ // vim:syntax=lpc:ts=8
+// $Id: proto.h,v 1.22 2008/05/07 10:50:29 lynx Exp $ // vim:syntax=lpc:ts=8
 //
 // sometimes prototypes are needed. i keep them here and include
 // them also in the files that *define* the function so that the
@@ -14,7 +14,9 @@
 void dns_resolve(string hostname, closure callback, varargs array(mixed) extra);
 void dns_rresolve(string ip, closure callback, varargs array(mixed) extra);
 #endif
+#ifndef hex2int
 int hex2int(string hex);
+#endif
 varargs string isotime(mixed ctim, int long);
 int legal_host(string ip, int port, string scheme, int udpflag);
 #ifdef varargs
@@ -37,9 +39,11 @@ string timedelta(int secs);
 
 #else
 
-// danny, do you really need this?
 void _psyc_dns_resolve(string hostname, closure callback, varargs array(mixed) extra);
 void _psyc_dns_rresolve(string ip, closure callback, varargs array(mixed) extra);
+#ifndef hex2int
+int _psyc_hex2int(string hex);
+#endif
 int _psyc_legal_host(string ip, int port, string scheme, int udpflag);
 #ifdef varargs
 void _psyc_log_file(string file,string str,
@@ -47,11 +51,16 @@ void _psyc_log_file(string file,string str,
 #else
 void _psyc_log_file(string file, string str, varargs array(mixed) args);
 #endif
+string _psyc_make_json(mixed d);
 void _psyc_monitor_report(string mc, string text);
 object* _psyc_objects_people();
+varargs string _psyc_psyc_name(mixed source, vastring localpart);
 string _psyc_query_server_unl();
 varargs mixed _psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
             mixed source, int showingLog, closure callback, varargs array(mixed) extra);
+varargs void _psyc_shout(mixed who, string what, string text, mapping vars);
+varargs int _psyc_server_shutdown(string reason, int restart, int pass);
+string _psyc_timedelta(int secs);
 
 #endif
 

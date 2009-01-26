@@ -1,4 +1,4 @@
-// $Id: reply.h,v 1.9 2006/01/13 20:28:57 lynx Exp $ // vim:syntax=lpc
+// $Id: reply.h,v 1.10 2008/07/27 21:27:07 lynx Exp $ // vim:syntax=lpc
 //
 
 // many useful and broken numerics have been added since the IRC RFCs
@@ -86,6 +86,7 @@
 #define RPL_NOTOPIC         "331" // determine the channel topic, one of two
 #define RPL_TOPIC           "332" // replies is sent. If the topic is set,
 				 // RPL_TOPIC is sent back else RPL_NOTOPIC.
+// ... we also employ "333" for delivering author and timestamp
 
 #define RPL_INVITING        "341" // Returned by the server to indicate that
 				 // the attempted INVITE message was

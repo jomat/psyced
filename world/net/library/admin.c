@@ -1,4 +1,4 @@
-// $Id: admin.c,v 1.26 2007/08/20 12:25:23 lynx Exp $ // vim:syntax=lpc
+// $Id: admin.c,v 1.27 2008/10/07 12:27:25 lynx Exp $ // vim:syntax=lpc
 //
 // admin functions and shutdown procedure
 //
@@ -42,7 +42,7 @@ varargs int server_shutdown(string reason, int restart, int pass) {
 #ifdef DEFAULT_SHUTDOWN_REASON
 	reason = DEFAULT_SHUTDOWN_REASON;
 #else
-	reason = CHATNAME " is performing a quick full twist double "
+	reason = SERVER_HOST " is performing a quick full twist double "
 	         "salto backwards.";
 #endif
     }

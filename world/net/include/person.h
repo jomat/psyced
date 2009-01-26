@@ -1,4 +1,4 @@
-// $Id: person.h,v 1.27 2007/09/18 09:49:17 lynx Exp $ // vim:syntax=lpc:ts=8
+// $Id: person.h,v 1.29 2008/07/26 10:54:30 lynx Exp $ // vim:syntax=lpc:ts=8
 //
 #ifndef _INCLUDE_PERSON_H
 #define _INCLUDE_PERSON_H
@@ -15,7 +15,7 @@
 #define FRIEND_NICK		0
 #define FRIEND_AVAILABILITY	1
 
-#if !defined(VOLATILE) && !defined(RELAY)
+#if !defined(VOLATILE) && !defined(RELAY) && !defined(_flag_disable_module_nickspace)
 # define ALIASES
 #endif
 
@@ -56,6 +56,15 @@
 #define CALC_IDLE_TIME(t) \
 	t = time() - v("aliveTime");\
 	t = t < 30 ? 0 : t < 300 ? 300 : (t + random(200) - 100);
+
+
+// used by myLogAppend below:
+#ifndef _limit_amount_log
+# define _limit_amount_log 777
+#endif
+#ifndef _limit_amount_log_persistent
+# define _limit_amount_log_persistent 100
+#endif
 
 // should "new" become part of the lastlog.c mechanism? how?
 // should we simply use timestamp of last logout? that works

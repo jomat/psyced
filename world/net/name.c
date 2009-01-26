@@ -1,6 +1,14 @@
-// $Id: name.c,v 1.5 2006/03/09 10:14:37 lynx Exp $ // vim:syntax=lpc
+// $Id: name.c,v 1.6 2008/05/11 08:56:48 lynx Exp $ // vim:syntax=lpc
 //
-// common subclass for anything that has a name - unnecessary? could be
+// common subclass for anything that has a name - unnecessary? could be.
+// jabber/active.c and jabber/mixin_parse.c inherit this separately from
+// entity.c
+
+// local debug messages - turn them on by using psyclpc -DDname=<level>
+#ifdef Dname
+# undef DEBUG
+# define DEBUG Dname
+#endif
 
 #include <net.h>
 
@@ -11,6 +19,7 @@ volatile protected string _myLowerCaseNick;
 // accessing any variables, so one can attach some event handlers later on
 
 object sName(string n) {
+	P3(("%O sName(%O)\n", ME, n))
 	_myNick = n;
 	_myLowerCaseNick = lower_case(n);
 	return ME;	// used by named_clone()
@@ -26,5 +35,7 @@ string qName() {
 }
 
 string qNameLower() {
+	D2( if (!previous_object() || previous_object() == ME)
+		     D(" <qNameLower> "); )
 	return _myLowerCaseNick;
 }

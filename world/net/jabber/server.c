@@ -1,11 +1,12 @@
-// $Id: server.c,v 1.148 2008/03/11 15:13:58 lynx Exp $ // vim:syntax=lpc:ts=8
+// $Id: server.c,v 1.159 2008/10/01 10:59:24 lynx Exp $ // vim:syntax=lpc:ts=8
 #include "jabber.h"	
 #include "server.h"	// inherits net/server
 
 #include "person.h" // find_person
 #include "url.h"
+#include <sys/tls.h>
 
-volatile string tag;
+volatile string authtag;
 volatile string resource;
 volatile string streamid;
 volatile string pass;
@@ -16,12 +17,11 @@ volatile string sasluser;
 volatile string saslchallenge;
 
 #ifdef __TLS__
-volatile mixed cert;
+volatile mixed certinfo;
 #endif
 
 qScheme() { return "jabber"; }
 // qName() { } // we need that in common.c - probably no more
-qTag() { return tag; }
   
 void create() {
 	unless (clonep()) return;
@@ -30,13 +30,24 @@ void create() {
 }
 
 #ifdef __TLS__
-tls_logon(result) { 
-	PT(("%O tls_logon(%d)\n", ME, result))
-	PT(("%O tls? %O\n", ME, tls_query_connection_state(ME)))
-	// we may write again
-# ifdef WANT_S2S_SASL
-	cert = tls_certificate(ME, 0);
+// similar code in other files
+tls_logon(result) {
+    if (result == 0) {
+# ifdef WANT_S2S_SASL	/* hey wait.. this is not S2S here!? */
+        certinfo = tls_certificate(ME, 0);
 # endif
+        P3(("%O tls_logon fetching certificate: %O\n", ME, certinfo))
+# ifdef ERR_TLS_NOT_DETECTED
+    } else if (result == ERR_TLS_NOT_DETECTED) {
+	// no encryption. no problem.
+# endif
+    } else if (result < 0) {
+        P1(("%O TLS error %d: %O\n", ME, result, tls_error(result)))
+        QUIT // don't fall back to plaintext instead
+    } else {
+        P0(("tls_logon with result > 0?!?!\n"))
+        // should not happen
+    }
 }
 #endif
 
@@ -57,14 +68,13 @@ string *splitsasl(string data) {
 	return result;
 }
 
-
 promptForPassword(user) {
 	P2(("promptForPassword with %O\n", user))
 	if (reprompt == 1 || pass) {
 		w("_error_invalid_password", "Invalid password.\n", 
-		  ([ "_tag_reply" : qTag(), "_nick" : nick, 
+		  ([ "_tag_reply" : authtag || "", "_nick" : nick, 
 		   "_resource" : resource ]) );
-		write("</stream:stream>");
+		emitraw("</stream:stream>");
 		QUIT
 		return; // ?
 	}
@@ -72,9 +82,9 @@ promptForPassword(user) {
 	unless (pass) {
 		reprompt = 1;
 		w("_query_password", 0, //"Please provide your password.", 
-	  		([ "_nick": nick, "_tag_reply" : qTag() ]) );
-	}	
-	return 1;			
+	  		([ "_nick": nick, "_tag_reply" : authtag || "" ]) );
+	}
+	return 1;
 }
 
 logon(a) {
@@ -100,17 +110,17 @@ createUser(nick) {
 
 
 userLogon() {
-	user->sTag(tag);
+	user->sTag(authtag);
 	user->sResource(resource);
 	return ::userLogon();
 }
 
-#ifdef EXPERIMENTAL
+#ifdef GAMMA
 authChecked(result, varargs array(mixed) args) {
 	// a point where we could be sending our jabber:iq:auth reply
 	// instead of letting _notice_login do that
 	PT(("%O got authChecked %O, %O\n", ME, result, args))
-	return ::authChecked(result, args);
+	return ::authChecked(result, args...);
 }
 #endif
 
@@ -119,12 +129,12 @@ jabberMsg(XMLNode node) {
 	string id;
 	mixed t;
 
-	id = node["@id"]; // tag?
+	id = node["@id"] || ""; // tag?
 	switch (node[Tag]) {
 	case "iq":
 	    if (node["/bind"]) {
 		// suppresses the jabber:iq:auth reply in the SASL case
-		tag = -1;
+		authtag = -1;
 		unless (sasluser) {
 		    // not-allowed stanza error?
 		    return 0;
@@ -137,31 +147,28 @@ jabberMsg(XMLNode node) {
 		if (!stringp(resource) || resource == "")	
 		    resource = "PSYC";
 		nick = sasluser;
-		sasluser = "";
+		sasluser = "";	    // why an empty string? explanation needed
 
-		emit(sprintf("<iq type='result' id='%s'>"
-			     "<bind xmlns='" NS_XMPP "xmpp-bind'>"
-			     "<jid>%s</jid>"
-			     "</bind></iq>", 
-			     id, nick + "@" SERVER_HOST "/" + resource));
+		emit("<iq type='result' id='"+ id +"'>"
+		     "<bind xmlns='" NS_XMPP "xmpp-bind'><jid>"+
+		     nick +"@" SERVER_HOST "/"+ resource +"</jid>"
+		     "</bind></iq>");
 		return 0;
 	    } else if (node["/session"]) {
 		unless(user) return 0; // what then?
-		if (!stringp(id))
-		    id = "";
-		emit(sprintf("<iq type='result' id='%s' from='%s'/>",
-		     id, SERVER_HOST));
+		emit("<iq type='result' id='"+ id +"' from='"
+		     SERVER_HOST "'/>");
 		user -> vSet("language", language);
 		return morph();
 	    }
 	    switch (node["/query"]["@xmlns"]) {
-	    // old-school style.. for clients that don't like SASL, like kopete
+	    // old-school style.. for clients that don't like SASL, like kopete, jabbin
 	    case "jabber:iq:auth":
-		    tag = id;
+		    authtag = id;
 		    if (node["@type"] == "get"){
 			// hello(nick) ?
                         w("_query_password", 0,
-                            ([ "_nick": nick, "_tag_reply": tag ]), "");
+                            ([ "_nick": nick, "_tag_reply": authtag || "" ]), "");
 		    } else if (node["@type"] == "set") {
 			helper = node["/query"];
 			resource = helper["/resource"][Cdata];
@@ -182,10 +189,11 @@ jabberMsg(XMLNode node) {
 	    case "jabber:iq:register":
 		if (node["@type"] == "get"){
 		    string packet;
-#ifdef REGISTERED_USERS_ONLY
+#if defined(REGISTERED_USERS_ONLY) || defined(_flag_disable_registration_XMPP)
+		    // super dirty.. this should all be in textdb
 		    packet = sprintf("<iq type='result' id='%s'>"
 				     "<query xmlns='jabber:iq:register'/>"
-				     "<error code='501>No way!</error>" IQ_OFF,
+	 "<error code='501>Registration by XMPP not permitted.</error>" IQ_OFF,
 				     id);
 #else
 		    packet = sprintf("<iq type='result' id='%s'>"
@@ -228,6 +236,9 @@ jabberMsg(XMLNode node) {
 			emit(packet);
 			QUIT
 		    } else {
+#if defined(REGISTERED_USERS_ONLY) || defined(_flag_disable_registration_XMPP)
+			// TODO: generate some error as above
+#else
 			user -> vSet("password", t[Cdata]);
 			if (t = helper["/email"]) {
 			    user -> vSet("email", helper["/email"]);
@@ -235,6 +246,7 @@ jabberMsg(XMLNode node) {
 			// maybe immediate save is not really a good idea
 			// user -> save();
 			emit(sprintf("<iq type='result' id='%s'/>", id));
+#endif
 		    }
 		    user = 0;
 		}
@@ -243,15 +255,14 @@ jabberMsg(XMLNode node) {
 	case "starttls":
 #if __EFUN_DEFINED__(tls_available)
 	    if (tls_available()) {
-		emit("<proceed xmlns='" NS_XMPP "xmpp-tls'/>");
+		emitraw("<proceed xmlns='" NS_XMPP "xmpp-tls'/>");
 		// we may not write until tls_logon is called!
 		tls_init_connection(ME, #'tls_logon);
 	    } else {
 		P1(("%O received a 'starttls' but TLS isn't available.\n", ME))
 	    }
 #else
-	    emit("<failure xmlns='" NS_XMPP "xmpp-tls'/>");
-	    emit("</stream:stream>");
+	    emitraw("<failure xmlns='" NS_XMPP "xmpp-tls'/></stream:stream>");
 	    destruct(ME);
 #endif
 	    break;
@@ -282,7 +293,7 @@ jabberMsg(XMLNode node) {
 			{
 			    if (result) {
 				sasluser = creds[1];
-				emit("<success xmlns='" NS_XMPP "xmpp-sasl'/>");
+				emitraw("<success xmlns='" NS_XMPP "xmpp-sasl'/>");
 			    } else {
 				sasluser = 0;
 				SASL_ERROR("temporary-auth-failure")
@@ -294,7 +305,7 @@ jabberMsg(XMLNode node) {
 #else
 		    && user -> checkPassword(creds[2], "plain")) {
 			sasluser = creds[1];
-			emit("<success xmlns='" NS_XMPP "xmpp-sasl'/>");
+			emitraw("<success xmlns='" NS_XMPP "xmpp-sasl'/>");
 #endif
 		} else {
 		    SASL_ERROR("invalid-mechanism")
@@ -312,8 +323,8 @@ jabberMsg(XMLNode node) {
 		unless (node[Cdata]) {
 		    SASL_ERROR("incorrect-encoding")
 		    QUIT
-		} else unless (mappingp(cert) && cert[0] == 0
-			    && cert["1.2.840.113549.1.9.1"]) {
+		} else unless (mappingp(certinfo) && certinfo[0] == 0
+			    && certinfo["1.2.840.113549.1.9.1"]) {
 		    SASL_ERROR("invalid-mechanism")
 		    QUIT
 		} else {
@@ -322,7 +333,7 @@ jabberMsg(XMLNode node) {
 		    // incorrect-encoding sasl error
 		    deco = to_string(decode_base64(node[Cdata]));
 		    // TODO: the right thingie could be a list!
-		    unless (deco == cert["1.2.840.113549.1.9.1"]) {
+		    unless (deco == certinfo["1.2.840.113549.1.9.1"]) {
 			// TODO: not sure about this one
 			SASL_ERROR("invalid-mechanism")
 			QUIT
@@ -340,7 +351,7 @@ jabberMsg(XMLNode node) {
 		    } else {
 			user = find_person(u) || createUser(u);
 			sasluser = u;
-			emit("<success xmlns='" NS_XMPP "xmpp-sasl'/>");
+			emitraw("<success xmlns='" NS_XMPP "xmpp-sasl'/>");
 		    }
 		}
 # else
@@ -377,7 +388,7 @@ jabberMsg(XMLNode node) {
 			QUIT
 		    }
 		    sasluser = u;
-		    emit("<success xmlns='" NS_XMPP "xmpp-sasl'/>");
+		    emitraw("<success xmlns='" NS_XMPP "xmpp-sasl'/>");
 		}
 		break;
 #endif
@@ -402,11 +413,12 @@ jabberMsg(XMLNode node) {
 				 + encode_base64("rspauth=" + result) +
 				 "</success>");
 			} else {
-			    PT(("digest md5 failure\n"))
+			    P0(("digest md5 failure: %O\n", creds))
 			    sasluser = 0;
-			    SASL_ERROR("invalid-authzid")
+			    SASL_ERROR("invalid-authzid")   // why do we get here?
 			    QUIT
 			}
+			return 0;   // ignored, but avoids a warning
 		    });
 
 		user = find_person(creds["username"]) || createUser(creds["username"]);
@@ -422,7 +434,7 @@ jabberMsg(XMLNode node) {
 	     * wie auch immer haetten wir sonst mittlerweile net/queue fuer
 	     * diesen job
 	     */
-	    P2(("jabber/server:jabberMsg default case\n"))
+	    P0(("jabber/server:jabberMsg default case\n"))
 	}
 	// return ::jabberMsg(from, cmd, args, data, all);
 	return 0;
@@ -467,7 +479,7 @@ open_stream(XMLNode node) {
 	    } else {
 
 		features += "<mechanisms xmlns='" NS_XMPP "xmpp-sasl'>"
-#if __VERSION_MINOR__ > 3 || __VERSION_MICRO__ > 610
+#ifndef _flag_disable_authentication_digest_MD5
 		      "<mechanism>DIGEST-MD5</mechanism>"
 #endif
 		      "<mechanism>PLAIN</mechanism>";
@@ -477,8 +489,8 @@ open_stream(XMLNode node) {
 #endif
 #if __EFUN_DEFINED__(tls_available)
 		if (tls_available() && tls_query_connection_state(ME) > 0
-			&& mappingp(cert) && cert[0] == 0
-			&& certificate_check_jabbername(0, cert)) {
+			&& mappingp(certinfo) && certinfo[0] == 0
+			&& certificate_check_jabbername(0, certinfo)) {
 		    features += "<mechanism>EXTERNAL</mechanism>";
 		}
 #endif
@@ -496,7 +508,7 @@ open_stream(XMLNode node) {
 
 // overrides certificate_check_jabbername from common.c with a function
 // that is approproate for authenticating users
-certificate_check_jabbername(name, cert) {
+certificate_check_jabbername(name, certinfo) {
     // plan: prefer subjectAltName:id-on-xmppAddr, 
     // 		but allow email (1.2.840.113549.1.9.1)
     // 		and subjectAltName:rfc822Name

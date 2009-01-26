@@ -1,4 +1,4 @@
-// $Id: disco.c,v 1.41 2008/01/05 13:44:38 lynx Exp $ // vim:syntax=lpc
+// $Id: disco.c,v 1.43 2008/09/12 15:54:38 lynx Exp $ // vim:syntax=lpc
 //
 // this gets included by user.c and gateway.c. you can distinguish this
 // by ifdeffing USER_PROGRAM. it may be renamed into disco.i one day.
@@ -19,7 +19,9 @@ disco_info_root(vars) {
     string featurelist;
     featurelist = "<feature var='http://jabber.org/protocol/muc'/>"
 #ifndef REGISTERED_USERS_ONLY
+# ifndef _flag_disable_registration_XMPP
 		"<feature var='jabber:iq:register'/>"
+# endif
 #endif
 #ifndef VOLATILE
 		"<feature var='msgoffline'/>"
@@ -95,8 +97,8 @@ disco_items_root(vars) {
 #ifdef PUBLIC_PLACES
     // see also: library advertised_places()
 #endif
-    // TODO: is it safe to use JABBER_HOST here?
-    vars["_list_item"] = "<item name='Chatrooms' jid='" JABBER_HOST "'/>";
+    // is it safe to use _host_XMPP here?
+    vars["_list_item"] = "<item name='Chatrooms' jid='" _host_XMPP "'/>";
 }
 
 disco_items_place(name, vars) {

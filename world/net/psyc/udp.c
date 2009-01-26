@@ -1,6 +1,7 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: udp.c,v 1.32 2008/03/29 20:36:44 lynx Exp $
+// $Id: udp.c,v 1.36 2008/08/05 12:21:34 lynx Exp $
 //
+#include "common.h"
 #include <net.h>
 #include <person.h>
 #include <services.h>
@@ -69,13 +70,11 @@ parseUDP2(host, ip, port, msg) {
 	}
 	// else: we presume a UDP 4404 also listens on TCP
 
-#ifdef PRO_PATH
-	P1(("./psyc/udp.c: restart. why?\n"))
+#ifndef GAMMA
+	P1(("./psyc/udp.c: paranoid extra restart\n"))
 	restart();		// leading . does that anyway
 #endif
-#if 1 //def NOT_EXPERIMENTAL
 	pvars["_INTERNAL_source"] = "psyc://"+peeraddr+"/";
-#endif
 	// m = regexplode(msg, "\r?\n"); ?
 	m = explode(msg, "\n");
 

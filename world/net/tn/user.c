@@ -1,4 +1,4 @@
-// $Id: user.c,v 1.44 2008/01/05 13:38:10 lynx Exp $ // vim:syntax=lpc
+// $Id: user.c,v 1.46 2008/12/01 11:31:33 lynx Exp $ // vim:syntax=lpc
 //
 // telnet roxx, still  ;)
 //
@@ -66,7 +66,7 @@ w(string mc, string data, mapping vars, mixed source) {
 }
 
 // inherit output functions per protocol?
-protected emit(message) {
+emit(message) {
 #ifdef LETS_NOT_USE_TELL_OBJECT
 	int l, rc;
 #endif
@@ -78,15 +78,16 @@ protected emit(message) {
 #endif
 	    return;
 	}
-# if __EFUN_DEFINED__(convert_charset)
+#if __EFUN_DEFINED__(convert_charset)
 	if (v("charset") && v("charset") != SYSTEM_CHARSET) {
 	    // this breaks when it encounters an old log or history which
 	    // is already/still in the target charset thus not utf8. waah!
 	    P3(("telnet»%s: %s\n", v("charset"), message || "(null!?)"))
 	    iconv(message, SYSTEM_CHARSET, v("charset"));
 	}
-# endif
+#endif
 #ifdef LETS_NOT_USE_TELL_OBJECT
+# echo using binary_message for telnet
 	// this solution does NOT work when viewing /history with
 	// prefixes. should we ever want to use this code again,
 	// we need to do a regreplace from \n to \r\n
@@ -99,6 +100,9 @@ protected emit(message) {
 			 rc, l, MYNICK, v("host"))); )
 	return rc == l;
 #else
+# ifdef NEW_LINE
+	message += "\n";
+# endif
 	tell_object(ME, message);
 #endif
 }

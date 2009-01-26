@@ -18,7 +18,7 @@
 //# define LOCAL	    // if you don't want to allow remote users here
 
 // but this one can't harm  ;)
-# define PLACE_MASQUERADING
+# define PLACE_MASQUERADE
 #endif
 
 #include <place.gen>	// now generate the place according to the rules

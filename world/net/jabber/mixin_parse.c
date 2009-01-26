@@ -1,5 +1,5 @@
-#include <net.h> // vim:set syntax=lpc
 #include "jabber.h"
+#include <net.h> // vim:set syntax=lpc
 #include <url.h>
 #include "presence.h"
 #include <time.h>
@@ -48,7 +48,6 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 // #define MYORIGIN XMPP + su[UUserAtHost]
 
     unless(su) su = parse_uniform(origin);
-#if 1 //def NOT_EXPERIMENTAL
     origin = XMPP;
     if (su[UUser]) {
 	origin += NODEPREP(su[UUser]) + "@";
@@ -59,7 +58,6 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 	origin += "/" + RESOURCEPREP(su[UResource]);
     }
     su = parse_uniform(origin);
-#endif
     if (node["/nick"] && 
 	    node["/nick"]["@xmlns"] == "http://jabber.org/protocol/nick" &&
 	    node["/nick"][Cdata]) {
@@ -133,7 +131,14 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 			data = "Talking to [_nick_target] is not possible: [_text_XMPP]";
 		    } else {
 			mc = "_failure_unavailable_service_talk";
-			data = "Talking to [_nick_target] is not possible. You may have to establish friendship first.";
+//			data = "Talking to [_nick_target] is not possible. You may have to establish friendship first.";
+// google talk sends this quite frequently:
+//  * when a friendship exchange hasn't been done
+//  * when a friend has gone offline
+// and you never know if a message has been delivered to the
+// recipient just the same! so here's a more accurate error message,
+// effectively giving you less information, since that's what we have here.
+			data = "Message to [_nick_target] may not have reached its recipient.";
 		    }
 		} else if (1) { // TODO: what was that error?
 		    PT(("gateway TODO <error> in <message>: %O\n",
@@ -293,7 +298,7 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 	    } else { 
 		// no relaying allowed, so we ignore hostname
 		o = summon_person(tu[UUser]);
-#ifdef EXPERIMENTAL
+#ifdef GAMMA
 		// xep 0085 typing notices - we even split active into a separate message
 		// for now. could be sent as a flag
 		if ((node[t="/composing"] || node[t="/active"] || 
@@ -379,7 +384,7 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 	    // so there wont be circular error messages
 	    if (tu[UUser]) {
 		o = summon_person(tu[UUser]);
-#ifndef EXPERIMENTAL
+#ifndef GAMMA
 		if (o && o->execute_callback(node["@id"], ({ vars["_INTERNAL_identification"], vars, node }))) return 1;
 #else
 		// the following should catch errors - in theory, requires testing
@@ -540,26 +545,20 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 		sendmsg(o, "_notice_place_leave_unicast", 0, vars, origin);
 #endif
 	    } else {
+#ifdef AVAILABILITY_OFFLINE
 		o = summon_person(tu[UUser]);
 		// http://www.psyc.eu/presence
 		vars["_degree_availability"] = AVAILABILITY_OFFLINE;
-#ifdef CACHE_PRESENCE
+# ifdef CACHE_PRESENCE
 		persistent_presence(XMPP + su[UUserAtHost],
 				   AVAILABILITY_OFFLINE);
-#endif
+# endif
 		vars["_description_presence"] =
 		    (node["/status"] && node["/status"][Cdata]) ?
 		    node["/status"][Cdata] : ""; // "Get psyced!";
 		vars["_INTERNAL_mood_jabber"] = "neutral";
 		sendmsg(o, "_notice_presence_absent", 0,
 			vars, origin);
-#if 0 // packen wir das doch wieder zusammen...
-	    } else {
-		// one more famous fippoesque else case.. let's fill it ;)
-		P0(("%O Surprise! Encountered absence with resource: %O\n",
-		    ME, node))
-		// interessant... wir werden das wohl noch oefter sehen
-		// ich bin nicht sicher, ob das ein bug der gegenseite ist
 #endif
 	    }
 	    break;
@@ -637,11 +636,11 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 //		}
 		P4(("_request_enter from %O to %O: %O\n", ME, o, vars))
 		// dont send me a memberlist if i am a member already
-#ifndef HISTORY_AMOUNT
-# define HISTORY_AMOUNT 5	
+#ifndef _limit_amount_history_place_default
+# define _limit_amount_history_place_default 5	
 #endif
 		unless(vars["_amount_history"]) 
-		    vars["_amount_history"] = HISTORY_AMOUNT;
+		    vars["_amount_history"] = _limit_amount_history_place_default;
 		sendmsg(o,
 #ifdef SPEC
                         "_request_context_enter"

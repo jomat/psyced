@@ -1,4 +1,4 @@
-// $Id: gatebot.c,v 1.146 2008/03/11 13:42:26 lynx Exp $ // vim:syntax=lpc
+// $Id: gatebot.c,v 1.151 2008/09/12 15:37:39 lynx Exp $ // vim:syntax=lpc
 //
 // the PSYC-IRC gateway robot.
 // based on the ircbot.c in Nemesis that i wrote in 1992.	-lynX
@@ -33,12 +33,11 @@
 // deal with when something needs to be fixed. Having two implementations
 // of the same thing wouldn't be what we want, anyway.
 
-#include <net.h>
+#include "gatebot.h"
 #include <status.h>
 #include <services.h>
 #include <text.h>
 #include <url.h>
-#include "gatebot.h"
 #include "error.h"      // gets numeric codes
 #include "reply.h"      // gets numeric codes
 
@@ -49,12 +48,12 @@ inherit IRC_PATH "decode";
 // message queueing and automatic reconnect mgmt
 inherit NET_PATH "circuit";
 
-#ifndef SERVER_URL
-# define SERVER_URL query_server_unl()
+#ifndef _uniform_node
+# define _uniform_node query_server_unl()
 #endif
 
 #ifdef RELAY
-# define IRCER_UNIFORM(NICK)	(SERVER_URL +"~"+ NICK)
+# define IRCER_UNIFORM(NICK)	(_uniform_node +"~"+ NICK)
 #else
 		    // will upgrade to irc: syntax..
 # define IRCER_UNIFORM(NICK)	(MYLOWERNICK +":"+ NICK)
@@ -231,7 +230,7 @@ render(mc, data, vars, source) {
 //		return;
 //	}
 //	string ircsrc = (u[UScheme] || "xmpp") +";"+
-//			(u[UUser] || u[UResource][1..]) +"|"+
+//			(UName(u) +"|"+
 //			replace(u[UHost], ".", "_");
 	if (source) {
 		advertise(source);
@@ -398,7 +397,7 @@ case RPL_LUSERCLIENT:
 		     from+": "+text);
 		break;
 case RPL_NAMREPLY:
-		names = text; namesfrom = from; namesto = a[3];
+		names = text; namesfrom = from; namesto = a[3][1 ..];
 #ifdef CHAT_CHANNEL
 		castmsg(ME, "_notice_place_members_IRC",
 		     "On [_nick_place_IRC]: [_members_IRC]",
@@ -662,10 +661,10 @@ logon(failure) {
 # endif
 	// leave login procedure to place.gen
 #else
-	emit("NICK "+ IRCGATE_NICK +"\nUSER "+ IRCGATE_USERID
-	    +" . . :"+ IRCGATE_NAME +"\n"
+	emit("NICK "+ IRCGATE_NICK +"\r\nUSER "+ IRCGATE_USERID
+	    +" . . :"+ IRCGATE_NAME +"\r\n"
 #ifdef IRCGATE_HIDE
-	    +"MODE "+ IRCGATE_NICK +" +i\n"
+	    +"MODE "+ IRCGATE_NICK +" +i\r\n"
 #endif
 	);
 #endif

@@ -1,5 +1,5 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: library.i,v 1.170 2008/03/29 20:05:32 lynx Exp $
+// $Id: library.i,v 1.172 2008/07/26 10:54:31 lynx Exp $
 
 #include <psyc.h>
 // #include "../base64.i"
@@ -26,6 +26,7 @@ varargs void register_location(mixed unl, vamixed uni, vaint unsafe) {
 	else m_delete(unl2uni, unl);
 }
 
+#ifndef _flag_disable_module_authentication
 /** finds the _identification for a network source. if it cannot find
  ** the information in the cache, and a second argument is given with
  ** the _identification claimed by the source, that _identification
@@ -57,15 +58,16 @@ varargs mixed lookup_identification(mixed source, vamixed givenUNI) {
 		if (givenUNI == source) return 0;
                 P1(("%O sending _request_authentication to %O for %O\n",
                     ME, givenUNI, source))
-#ifndef __PIKE__ // TPD
+# ifndef __PIKE__ // TPD
 		sendmsg(givenUNI, "_request_authentication", 0,
 		    ([ "_location" : source ]));
-#endif
+# endif
 	}
 	// we could look again  ;)
 	//if (unl2uni[source]) return unl2uni[source];
 	return 0;
 }
+#endif
 
 varargs string psyc_name(mixed source, vastring localpart) {
 	string s;
@@ -396,9 +398,12 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 	    buf = S_GLYPH_PACKET_DELIMITER "\n"
 		  ":_source\t"+ sname +"\n"
 		  ":_target\t"+ target +"\n";
-	buf += psyc_render(source, mc, data, vars, showingLog, target);
+	t = psyc_render(source, mc, data, vars, showingLog, target);
+	unless (t) return 0;
+	buf += t;
 #else
 	buf = psyc_render(source, mc, data, vars, showingLog, target);
+	unless (buf) return 0;
 #endif /* NEW_RENDER */
 
 	if (is_localhost(host)) return send_udp(host, port, buf);

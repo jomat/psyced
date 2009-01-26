@@ -1,11 +1,18 @@
 #!/usr/bin/perl
-# $Id: profiles.pl,v 1.54 2008/04/11 10:37:25 lynx Exp $
+# $Id: profiles.pl,v 1.56 2008/10/07 12:27:25 lynx Exp $
 #
 # generator of mappings between several profile file formats -lynX 2005
 # part of the psyced project. see documentation for copyrights and licenses.
 #
 # see below __DATA__ for the actual mapping data
 # this is just the perl program to make use of the data
+#
+# you should not be running this program yourself. it is a tool for the
+# developers, only. if you see funny modifications to this file, one of
+# your LPC apps is trying to break out of its sandbox by horsing you into
+# a trojan here. then of course you will read this message only if you are
+# wise enough to compare the file with the original from the distribution.  ;)
+# but why should you come here to run this, anyway?
 
 while (<main::DATA>) {
 	next if /^\s*$/;
@@ -40,7 +47,7 @@ print O <<X;
 <h1>PROFILING FIELD NAMES COMPARISON CHART</h1>
 <table cellspacing=2>
 X
-print O "<tr align=left><th>PSYC</th><th>/set</th><th>jProf</th><th>vCard</th><th>jCard</th><th>LDAP</th><th>FOAF</th></tr>\n";
+print O "<tr align=left><th>PSYC<br>variable</th><th>/set<br>command</th><th>jProf<br>XEP-0154</th><th>vCard<br>RFC 2426</th><th>jCard<br>XEP-0054</th><th>LDAP</th><th>FOAF</th></tr>\n";
 foreach $k ( sort keys %psyc ) {
 	print O "<tr><td>$k</td><td>$set{$k}</td><td>$jProf{$k}</td><td>$vCard{$k}</td><td>$jCard{$k}</td><td>$LDAP{$k}</td><td>$FOAF{$k}</td></tr>\n";
 }

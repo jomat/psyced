@@ -1,4 +1,4 @@
-// $Id: test.c,v 1.34 2008/01/26 12:02:07 lynx Exp $ // vim:syntax=lpc
+// $Id: test.c,v 1.35 2008/08/03 14:22:43 lynx Exp $ // vim:syntax=lpc
 //
 // room to test some library functions etc
 // originally started by heldensaga
@@ -27,8 +27,8 @@
 #ifdef HTMORE
 inherit NET_PATH "outputb";
 // order is relevant. outputb needs to be inherited BEFORE textc!
-#include <text.h>
 #endif
+#include <text.h>
 
 #include <place.gen>
 

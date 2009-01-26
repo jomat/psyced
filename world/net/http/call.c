@@ -1,47 +1,54 @@
+#include <ht/http.h>
 #include <net.h>
 #include <text.h>
-#include <ht/http.h>
 
 protected mapping sessions = ([ ]);
 
 string make_session(string nick, int expiry, string jack) {
-    string sid;
+	string sid;
 #ifndef TELEPHONY_EXPIRY
 # define TELEPHONY_EXPIRY expiry - time()
 #endif
-    while (sessions[sid = RANDHEXSTRING]);
-    sessions[sid] = ({ nick, expiry, jack });
-    call_out( (: return m_delete(sessions, sid); :), TELEPHONY_EXPIRY);
-    return sid;
+	while (sessions[sid = RANDHEXSTRING]);
+	sessions[sid] = ({ nick, expiry, jack });
+	call_out( (: return m_delete(sessions, sid); :), TELEPHONY_EXPIRY);
+	return sid;
+}
+
+mixed answer(string sid, int yesno, int thatsme, string variant) {
+	if (!(sid && sessions[sid])) {
+	    return -1; // no session found
+	}
+	if (sessions[sid][1] < time()) {
+	    return -2; // session expired
+	}
+	string ni = sessions[sid][0];
+	unless (thatsme) {
+		string mc;
+		object uo = find_person(ni);
+
+		if (!uo) return -3;
+		mc = yesno? "_notice_answer_call": "_notice_reject_call";
+		if (variant) mc += variant;
+
+		if (!sendmsg(uo, mc, 0, ([
+		    "_time_expire"  : to_string(sessions[sid][1]),
+		    "_check_call"   : sessions[sid][2], 
+		    "_token_call"   : sid,
+		  ]))) return -4;  // sendmsg failed;
+	}
+	return ni;
 }
 
 htget(prot, query, headers, qs) {
 #ifdef TELEPHONY_SERVER
 	string sid = query["sid"];
-	if (!(sid && sessions[sid])) {
-	    // no session found
-	    return;
-	}
-	if (sessions[sid][1] < time()) {
-	    // session expired
-	    return;
-	}
-
-	string ni = sessions[sid][0];
 	string t = query["thats"];
+	mixed ni = answer(sid, !query["reject"], t, "_click");
 
-	unless (t) {
-		object uo = find_person(ni);
-		if (!uo || !sendmsg(uo, "_notice_answer_talk_click",
-		  "Your phone call request has been clicked upon.", ([
-		    "_time_expire" : to_string(sessions[sid][1]),
-		    "_check_call"  : sessions[sid][2], 
-		    "_session"     : sid,
-		  ]))) {
-			hterror(prot, R_GATEWTIMEOUT,
-			    "User cannot be reached.");
-			return 1;
-		}
+	if (intp(ni)) {
+		hterror(prot, R_GATEWTIMEOUT, "User cannot be reached.");
+		return 1;
 	}
 	htok3(prot, 0, "Expires: 0\n");
 	localize(query["lang"], "html");

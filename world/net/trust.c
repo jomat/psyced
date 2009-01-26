@@ -1,9 +1,16 @@
-// $Id: trust.c,v 1.5 2008/01/22 13:13:09 lynx Exp $ // vim:syntax=lpc
+// $Id: trust.c,v 1.6 2008/04/22 22:43:56 lynx Exp $ // vim:syntax=lpc
 //
 // we're still not sure if this file deserves existence
 // it's a common file between interserver actives and passives
 // but also psyc/udp
 //
+
+// local debug messages - turn them on by using psyclpc -DDtrust=<level>
+#ifdef Dtrust
+# undef DEBUG
+# define DEBUG Dtrust
+#endif
+
 #include <net.h>
 
 volatile int trustworthy;

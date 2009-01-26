@@ -1,3 +1,4 @@
+#include <ht/http.h>
 #include <net.h>
 #include <text.h>
 #include <person.h>
@@ -16,11 +17,13 @@ htget(prot, query, headers, qs) {
 	} else if ((t = query["cmd"]) && strlen(t)) {
 		user->parsecmd(t);	// htcmd?
 		t = "_echo_execute_web";
-	} else if (t = user->htDescription(prot, query, headers, qs, "")) {
+	} else if (t = user->htDescription(0, query, headers, qs, "")) {
 		P4(("result: %O\n", t))
+		// this is the thing!!
 		write(t);
 		return 1;
 	}
+	// show error message
 	localize(query["lang"], "html");
 	w("_HTML_head");
 	w(t || "_failure_unavailable_description");

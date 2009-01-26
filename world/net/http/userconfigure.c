@@ -5,7 +5,7 @@
 // i'm unhappy with the way of authing.. first i thought this could be inheriated somehow to be a part of the user object, but thats schmarn.
 // but i think psyc auth would be a nice way here..
 //
-
+#include <ht/http.h>
 #include <net.h>
 #include <text.h>
 #include <person.h>

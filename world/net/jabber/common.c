@@ -1,9 +1,9 @@
-// $Id: common.c,v 1.270 2008/04/11 10:27:24 fippo Exp $ // vim:syntax=lpc:ts=8
+// $Id: common.c,v 1.276 2008/12/01 11:31:33 lynx Exp $ // vim:syntax=lpc:ts=8
 #define NO_INHERIT
 #include "jabber.h"
 #undef NO_INHERIT
-#include <net.h>
 
+#include <net.h>
 #include <text.h>
 //virtual inherit NET_PATH "output";
 #include <url.h>
@@ -22,7 +22,7 @@ jabberMsg();
 inherit NET_PATH "xml/common";
 
 volatile string buffer = "";
-closure jid_has_node_cl = (: int t, t2;
+volatile closure jid_has_node_cl = (: int t, t2;
 			   t = index($1, '@');
 			   if (t == -1) return 0;
 			   t2 = index($1, '/');
@@ -66,6 +66,15 @@ int emit(string message) {
 		return 0; // do not emit
 	}
 #endif
+#ifdef _flag_log_sockets_XMPP
+	D0( log_file("RAW_XMPP", "\n« %O\t%s", ME, message); )
+#endif
+	return ::emit(message);
+}
+
+// don't check message, use this only where you are 100% sure
+// to be sending safe data
+int emitraw(string message) {
 #ifdef _flag_log_sockets_XMPP
 	D0( log_file("RAW_XMPP", "\n« %O\t%s", ME, message); )
 #endif
@@ -131,7 +140,7 @@ varargs string mkjid(mixed who, mixed vars, mixed ignore_context,  string target
      */
 	string t, *u;
 	if (!who || who == "") return "";
-	unless (jabberhost) jabberhost = JABBER_HOST;
+	unless (jabberhost) jabberhost = _host_XMPP;
    	P3(("%O mkjid(%O, %O, %O, %O, %O)\n", ME, who, vars, ignore_context, target, jabberhost))
 	if (!ignore_context && vars && vars["_nick_place"] 
 	    && vars["_context"]) {
@@ -274,7 +283,14 @@ render(string mc, string data, mapping vars, mixed source) {
 		   +"' from='"+ vars["_INTERNAL_source_jabber"] +"' type='"
 		   + (ISPLACEMSG(vars["_INTERNAL_source_jabber"]) && vars["_nick"] ?
 		      "groupchat" : "chat")
-		   +"'><body>"+ chomp(xmlquote(output)) +"</body></message>";
+		   +"'><body>"+
+#ifdef NEW_LINE
+		   xmlquote(output)
+#else
+		   // was: chomp after xmlquote.. but why?
+		   xmlquote(chomp(output))
+#endif
+		   +"</body></message>";
 #if DEBUG > 1
 		// most of these message we are happy with, so we don't need this log
 		log_file("XMPP_TODO", "%O %s %s\n", ME, mc, output);
@@ -384,7 +400,6 @@ certificate_check_jabbername(name, cert) {
 	    foreach(string cn : t) {
 		if (NAMEPREP(cn) == name) return 1;
 	    }
-	    return 0;
 	} 
 	else if (name == NAMEPREP(t))
 	    return 1;

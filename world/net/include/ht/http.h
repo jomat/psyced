@@ -1,4 +1,4 @@
-// $Id: http.h,v 1.6 2008/04/09 08:29:37 lynx Exp $ // vim:syntax=lpc:ts=8
+// $Id: http.h,v 1.7 2008/04/22 22:43:56 lynx Exp $ // vim:syntax=lpc:ts=8
 /*
  * NAME:	http.h
  * DESCRIPTION:	macros for HTTP
@@ -36,6 +36,12 @@
 
 #ifndef hthead
 # define hthead(TITLE)	"<title>" CHATNAME " - "+( TITLE )+"</title>"
+#endif
+
+// local debug messages - turn them on by using psyclpc -DDhttp=<level>
+#ifdef Dhttp
+# undef DEBUG
+# define DEBUG Dhttp
 #endif
 
 #endif

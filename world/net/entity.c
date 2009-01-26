@@ -1,5 +1,5 @@
 // vim:foldmethod=marker:syntax=lpc
-// $Id: entity.c,v 1.123 2008/03/29 20:05:32 lynx Exp $
+// $Id: entity.c,v 1.127 2008/08/05 12:24:16 lynx Exp $
 //
 // entity.c: anything that has a UNI (see http://about.psyc.eu/uniform)
 // this file handles some low-level issues with being an entity:
@@ -11,6 +11,12 @@
 //   ids and message history
 // * trust network: figure out who we trust and who we can ask to find
 //   out if someone is trustworthy etc etc
+
+// local debug messages - turn them on by using psyclpc -DDentity=<level>
+#ifdef Dentity
+# undef DEBUG
+# define DEBUG Dentity
+#endif
 
 #include <net.h>
 #include <storage.h>
@@ -99,7 +105,7 @@ inherit NET_PATH "state";
 				 : _memory[target] = m_allocate(0, 2))
 #endif //}}}
 
-#ifdef TRUSTINESS
+#ifndef _flag_disable_module_trust
 // first try to implement trust for remote ( means.. not a direct peer
 // inside the friendsnet ) objects
 volatile mapping _trust;
@@ -275,6 +281,7 @@ msg(source, mc, data, vars) {
 	    unless (member(vars, x)) vars[x] = y;
     }
 #else //FORK }}}
+# ifndef _flag_disable_module_authentication
     // person.c only calls this for stringp(source), so why check here again?
     // because place/basic.c calls this for all sorts of sources. why this
     // inconsistency? and what about local string sources? TODO
@@ -351,7 +358,7 @@ msg(source, mc, data, vars) {
 		}
 	    }
 	    if (t) {
-#if 1
+#  if 1
 		// we can either decide to see our own locations as source
 		// since that's what the code in person.c already does, we'll
 		// try this option first
@@ -368,7 +375,7 @@ msg(source, mc, data, vars) {
 			    // line a client can propose its own _nick and
 			    // will be successful. hm!
 		    }
-#else
+#  else //{{{
 		// or copy them into a var, then compare everywhere
 		// this requires a rewrite of all of the v("locations") code
 		    vars["_location"] = source;
@@ -376,14 +383,15 @@ msg(source, mc, data, vars) {
 		    source = t;
 		    // don't trust what the client says
 		    if (objectp(t)) vars["_nick"] = t->qName();
-#endif
+#  endif //}}}
 		// do we really want to delete it also in the else case?
 	    } else m_delete(vars, "_source_identification");
 	}
     }
+# endif // _flag_disable_module_authentication
 #endif // !FORK
 
-#ifdef TRUSTINESS
+#ifndef _flag_disable_module_trust
     // this mechanism does not work for objectp(source) because uni::msg is not
     // called for objects. TODO
     // this stuff works alot like _request_auth.. i still think there might be
@@ -491,7 +499,7 @@ msg(source, mc, data, vars) {
 		           "_trustiness" : trustiness ])); 
 	}
     }
-#endif
+#endif // _flag_disable_module_trust
     return 1;
 }
 
@@ -506,7 +514,7 @@ create() {
     ASSERT("entity::create() !uni2unl", !uni2unl, uni2unl)
     uni2unl = ([ ]);
 #endif //}}}
-#ifdef TRUSTINESS
+#ifndef _flag_disable_module_trust
     _trust = ([ ]);
 #endif
 #ifdef ENTITY_STATE //{{{

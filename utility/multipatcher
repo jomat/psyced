@@ -15,7 +15,7 @@ usage: $0 <filematch> [<operation> [<directories>]]
 <operation> by default is to transform anonymous access to the psyced
 	    repository into your personal login access. in detail:
 
-	$op
+	"s#^:pserver:anonymous\\\@cvs\\\.psyced\\\.org:/CVS/anonCVS#:pserver:$ENV{USER}\\\@cvs\\\.psyced\\\.org:/CVS/muveCVS#m"
 
 without <directories> the directory tree starting from the current directory
 is recursively checked.

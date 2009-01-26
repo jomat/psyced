@@ -1,5 +1,5 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: person.c,v 1.688 2008/04/16 11:45:50 lynx Exp $
+// $Id: person.c,v 1.722 2008/12/18 17:45:45 lynx Exp $
 //
 // person: a PSYC entity representing a human being
 
@@ -29,6 +29,12 @@
 	object to handle it..
 */
 
+// local debug messages - turn them on by using psyclpc -DDperson=<level>
+#ifdef Dperson
+# undef DEBUG
+# define DEBUG Dperson
+#endif
+
 #include <driver.h>
 #include <errno.h>
 #include <net.h>
@@ -36,20 +42,6 @@
 #include <psyc.h>
 #include <storage.h>
 #include <url.h>
-
-#ifndef _limit_amount_log
-# define _limit_amount_log 777
-#endif
-#ifndef _limit_amount_log_persistent
-# define _limit_amount_log_persistent 100
-#endif
-
-// local debug messages - turn them on by using psyclpc -DDwhatever
-#if DEBUG_FLAGS & 0x20 ||  defined(Dperson)
-# define PL(MSG) PP(MSG);
-#else
-# define PL(MSG)
-#endif
 
 inherit NET_PATH "group/master";
 inherit NET_PATH "lastlog";
@@ -66,19 +58,23 @@ volatile string nonce;
 // not sure if ONLINE would do as well.. TODO
 // TODO: remove logged_on, if (availability) provides same info
 // but it probably doesn't - as avail is independent..
-volatile int logged_on = 0, mood = 0;
+volatile int logged_on = 0;
+
+#ifndef _flag_disable_module_presence
+volatile int mood = MOOD_UNSPECIFIED;
 // mood is one digit as defined in http://www.psyc.eu/presence
 volatile mapping avail2mc;	// shared_memory()
 # ifdef JABBER_PATH
 volatile mapping mood2jabber;	// shared_memory()
 # endif
+# ifdef LASTAWAY
+volatile mapping lastaway;
+# endif
+volatile mixed availability;
+#endif // _flag_disable_module_presence
 
 volatile mapping ppl;
 volatile mapping friends;
-#ifdef LASTAWAY
-volatile mapping lastaway;
-#endif
-volatile mixed availability;
 
 #ifdef RELAY
 volatile string remotesource;
@@ -107,20 +103,6 @@ quit(int immediate, string variant);
 // outgoing psyc object name
 psycName() { return "~"+ MYLOWERNICK; }
 
-#ifdef FUNC_TABLE
-// just a test for a way to do mc->behaviour und command->behaviour
-// mappings. probably we would initialize this in create(), since
-// this thing won't be shared anyway, but at least the inline closures
-// are shared. the advantage of this is: each object can add its own
-// commands and behaviour handlers. something we really need for places
-// and may prove useful for persons too.	-lynX
-volatile mapping code = ([
-        "name" : (: return MYNICK; :),
-        "random" : (: return random(99); :),
-        "psyc" : (: return psycName(); :),
-]);
-#endif
-
 // this looks trivial but it may get more complex one day than
 // just to look at the existence of a password.. so proper
 // abstraction must be maintained. in fact the pro variant of
@@ -129,30 +111,7 @@ volatile mapping code = ([
 isNewbie() { return IS_NEWBIE; }
 // "novice" maybe a nicer word?
 
-#ifndef MAX_EXPOSE_GROUPS
-# define MAX_EXPOSE_GROUPS	4	// just the top four  ;)
-#endif
-#ifndef DEFAULT_EXPOSE_GROUPS		// change this value in your local.h
-# define DEFAULT_EXPOSE_GROUPS	4	// if you want groups to be exposed by
-#endif					// default like on irc
-#ifndef MAX_EXPOSE_FRIENDS
-# define MAX_EXPOSE_FRIENDS	8	// just the top eight  ;)
-#endif
-#ifndef DEFAULT_EXPOSE_FRIENDS
-# define DEFAULT_EXPOSE_FRIENDS 4	// do not expose yet, until we have
-					// profiles worth exposing for
-#endif
-#define TRUST_OVER_NOTIFY	3	// how much /trust counts more
-					// than notify. the normal value for
-					// a notify friendship is 8. if a
-					// medium trust is equivalent to
-					// that, 3 needs to be added to
-					// trust 5 to reach notify 8.
-#define TRUST_MYSELF		(9 + TRUST_OVER_NOTIFY)
-					// maximum trust
-#ifndef EXPOSE_THRESHOLD
-# define EXPOSE_THRESHOLD	TRUST_MYSELF // at least show it to myself
-#endif
+#include <trust.h>
 
 int get_trust(string id, string trustee, string profile) {
 	int trust;
@@ -166,7 +125,7 @@ int get_trust(string id, string trustee, string profile) {
 			id, trustee, profile, trust - '0'))
 		return trust - '0';
 	}
-#ifdef TRUSTINESS
+#ifndef _flag_disable_module_trust
 	trust = ::get_trust(id, trustee);
 	PT(("%O get_trust(%O, %O, %O) = %d from trustiness\n", ME,
 		id, trustee, profile, trust))
@@ -320,8 +279,8 @@ qDescription(source, vars, profile, itsme) {
 # if 0 // def SIP_PATH
 		     "sip:"+ MYLOWERNICK +"@"+ SERVER_HOST +" "+
 # endif
-# ifdef JABBER_HOST
-		     "xmpp:"+ MYLOWERNICK +"@"+ JABBER_HOST +" "+
+# ifdef _host_XMPP
+		     "xmpp:"+ MYLOWERNICK +"@"+ _host_XMPP +" "+
 # else
 #  ifdef JABBER_PATH
 		     "xmpp:"+ MYLOWERNICK +"@"+ SERVER_HOST +" "+
@@ -331,8 +290,8 @@ qDescription(source, vars, profile, itsme) {
 #endif
 #ifdef JABBER_PATH
 		"_identification_scheme_XMPP":
-# ifdef JABBER_HOST
-		     MYLOWERNICK +"@" JABBER_HOST
+# ifdef _host_XMPP
+		     MYLOWERNICK +"@" _host_XMPP
 # else
 		     MYLOWERNICK +"@" SERVER_HOST
 # endif
@@ -349,11 +308,6 @@ qDescription(source, vars, profile, itsme) {
 		dv["_protocol_agent"] = v("scheme");
 		if (v("layout"))
 		    dv["_agent_design"] = v("layout");
-// if you need it as timedelta, create it out of _time_idle
-//		if (idle > 30)
-//			dv["_INTERNAL_time_idle"] = timedelta(idle);
-		if (v("age"))
-		    dv["_time_age"] = v("age");
 	}
 #if __EFUN_DEFINED__(tls_query_connection_info)
 # include <sys/tls.h>
@@ -388,16 +342,8 @@ qDescription(source, vars, profile, itsme) {
 	    dv["_description_motto"] = v("mottotext");
 	if (v("publicname"))
 	    dv["_name_public"] = v("publicname");
-	if (v("animalfave"))
-	    dv["_favorite_animal"] = v("animalfave");
-	if (v("popstarfave"))
-	    dv["_favorite_popstar"] = v("popstarfave");
-	if (v("musicfave"))
-	    dv["_favorite_music"] = v("musicfave");
 	if (v("stylefile"))
 	    dv["_uniform_style"] = v("stylefile");
-	if (v("photofile"))
-	    dv["_uniform_photo"] = v("photofile");
 	if (v("miniphotofile"))
 	    dv["_uniform_photo_small"] = v("miniphotofile");
 	if (v("photopage"))
@@ -408,7 +354,12 @@ qDescription(source, vars, profile, itsme) {
 			CALC_IDLE_TIME(idle);
 			if (idle) 
 			    dv["_time_idle"] = idle;
+// if you need it as timedelta, create it out of _time_idle
+//			if (idle > 30)
+//			    dv["_INTERNAL_time_idle"] = timedelta(idle);
 		}
+		if (v("age"))
+		    dv["_time_age"] = v("age");
 		if (v("privatetext"))
 		    dv["_description_private"] =
 				  v("privatetext");
@@ -420,16 +371,25 @@ qDescription(source, vars, profile, itsme) {
 				  v("dislikestext");
 		if (v("privatepage"))
 		    dv["_page_private"] = v("privatepage");
-		if (v("email"))
-		    // to be renamed into _identification_scheme_mailto TODO
-		    dv["_identification_scheme_mailto"] = v("email");
-		    // this will most likely be renamed
 		if (v("keyfile"))
 		    dv["_uniform_key_public"] = v("keyfile");
-
-		if (v("color")) dv["_color"] = v("color");
+		if (v("email"))
+		    dv["_identification_scheme_mailto"] = v("email");
+		    // this will most likely be renamed
+		if (v("photofile"))
+		    dv["_uniform_photo"] = v("photofile");
+		if (v("animalfave"))
+		    dv["_favorite_animal"] = v("animalfave");
+		if (v("popstarfave"))
+		    dv["_favorite_popstar"] = v("popstarfave");
+		if (v("musicfave"))
+		    dv["_favorite_music"] = v("musicfave");
+		if (v("color"))
+		    dv["_color"] = v("color");
 		if (v("language"))
 		    dv["_language"] = v("language");
+		if (v("timezone"))
+		    dv["_address_zone_time"] = v("timezone");
 		if (v("telephone"))
 		    dv["_contact_telephone"] = v("telephone");
 		// this is not compatible with vCard right now
@@ -444,7 +404,7 @@ qDescription(source, vars, profile, itsme) {
 			if (l) dv["_list_groups"] = l;	// _tab
 		}
 // hab mir überlegt das tobijschiger zu lösen.. der /x selbst zeigt keine
-// freunde an, sondern wir schicken einen _request_examine mit friendivity
+// freunde an, sondern wir schicken einen _request_description mit friendivity
 // level ab und lösen einen castmsg() aus. dann erfahren die freunde, dass
 // jemand gerne mehr über sie wissen will, und sie können entscheiden darauf
 // zu antworten. also das erforschen der freundschaften selbst als friendcast.
@@ -616,14 +576,15 @@ sName2(a) {
 #if SYSTEM_CHARSET == "ISO-8859-15"
 	if (v("charset") == "ISO-8859-1") vDel("charset");
 #endif
-	// support for stored nickname writing style
-	if ( (b = v("name")) && (stricmp(a, b)) ) {
+	if ( (b = v("name")) &&! stricmp(a, b) ) {
+		// support for stored nickname writing style
 		a = b;
+		P3((" [ %O:sName %O ] ", ME, a))
 	} else {
+		// support for "cp oldnick.o newnick.o" w/out patching
 		vSet("name", a);
+		P3((" [ %O:sName %O override ] ", ME, a))
 	}
-
-	P2((" [ sName(%O) ] ", ME))
 #ifdef ALIASES
 	if (v("aliases")) {
 		string k, l;
@@ -634,13 +595,13 @@ sName2(a) {
 		}
 	} else vSet("aliases", ([]));
 #endif
-#ifdef NOT_EXPERIMENTAL
+#ifndef _flag_disable_module_presence
 	// let's see if there's anything bad about
 	// persistent mood & availability.. if not,
 	// we should remove the local vars.
-	mood = v("mood");
+	mood = v("mood") || MOOD_UNSPECIFIED;
 	availability = v("availability");
-#endif
+#endif // _flag_disable_module_presence
 
 	unless (v("locations")) vSet("locations", ([ ]));
 	// protection against file read errors
@@ -704,7 +665,7 @@ remove() {
 // code in psyced requires such a hard and ugly approach to solve such a
 // problem, so this could probably be solved in a more elegant way..
 //
-// as I just noticed this... this MUST be asynchronus. What if you 
+// as I just noticed this... this MUST be asynchronous. What if you 
 // need to lookup the authentication data from a database first? 
 // from ldap? IF you find a more elegant solution to this go ahead, but 
 // until then this is necessary.
@@ -713,17 +674,18 @@ checkPassword(try, method, salt, args, cb, varargs cbargs) {
 	string HA1, HA2;
 	string t1, rc;
 
+	P3(("%O checkPassword(%O,%O,%O,%O,%O,%O)\n", ME,
+	    try,method,salt,args,cb,cbargs))
 #ifdef ASYNC_AUTH
     // und endlich darf saga einen komma-operator im psyced bewundern:
 # define ARETURN(RET) {\
-	P2(("async auth %O to %O in %O\n", RET, cbargs, ME)) \
+	P2(("returning async auth %O to %O in %O\n", RET, cbargs, ME)) \
 	return apply(cb, RET, cbargs), RET; \
 }
 #else
 # echo Warning: ASYNC_AUTH not activated.
 # define ARETURN(RET) return RET;
 #endif
-
 #ifdef NO_EXTERNAL_LOGINS
 	ARETURN(0)		// used by some MUDs
 #endif
@@ -756,7 +718,8 @@ case "http-digest": // see RFC 2617
 		HA2 = md5(args["_method"] + ":" + args["_uri"]);
 		rc = try == md5(HA1 + ":" + salt + ":" + HA2);
 		ARETURN(rc)
-// SASL digest-md5
+// SASL digest-md5. fippo hotzenplotzt: digest-md5 ist ein sasl bastard
+//					den sogar die ietf abschaffen will
 case "digest-md5":
 		// this assumes try set to 1 and args
 		// containing the sasl_parse'd response
@@ -769,6 +732,7 @@ case "digest-md5":
 		} else ARETURN(0)
 #endif
 default:
+		P4(("plain text pw %O == %O?\n", try, v("password")))
 #ifdef PASSWORDCHECK
 		PASSWORDCHECK(v("password"), try)
 #else 
@@ -801,6 +765,7 @@ the stuff that follows used to be in user.c
 
 ***/
 
+#ifndef _flag_disable_module_presence
 static presence_management(source, mc, data, vars, profile, avail) {
 	int display = 1;
 	string t;
@@ -861,6 +826,7 @@ static presence_management(source, mc, data, vars, profile, avail) {
 	}
 	return display;
 }
+#endif // _flag_disable_module_presence
 
 // PSYC-conformant message receiving function
 //
@@ -937,7 +903,7 @@ msg(mixed source, mc, data, mapping vars, showingLog) {
 	// person::msg() requires source to be non-zero and objectp for local
 	// objects. this has to be ensured before getting here, but it isn't.
 	// TODO!
-#ifndef TRUSTINESS
+#ifdef _flag_disable_module_trust
 	if (stringp(source)) {
 #endif
 #if 0
@@ -958,7 +924,7 @@ msg(mixed source, mc, data, mapping vars, showingLog) {
 		// we sendmsg() to the UNI because uni::sendmsg will replace
 		// that with UNL
 		unless(::msg(&source, mc, data, vars)) return 0;
-#ifdef TRUSTINESS
+#ifndef _flag_disable_module_trust
 	if (stringp(source)) {
 #endif
 		if (source == ME || ME == vars["_source_identification"]) itsme = 1;
@@ -983,6 +949,7 @@ msg(mixed source, mc, data, mapping vars, showingLog) {
 		P4(("%O got %O from %O. itsme: %O\n", ME, mc, source, itsme))
 		// here comes the psyc intelligence
 		PSYC_TRY(mc) {
+#ifndef _flag_disable_module_authentication
 case "_notice_processing_authentication":
 			P1(("asyncAUTH %O: %O is processing %O\n", ME, source, vars))
 			break;
@@ -995,6 +962,7 @@ case "_request_authenticate":
 			// to the user so he can authenticate manually...
 			// but in fact he should have done /token first.
 			break;
+#endif
 case "_request_location":
 			// t == source if identification lookup didn't succeed?
 			unless (member(friends, t || source)) {
@@ -1127,7 +1095,7 @@ case "_set_password":
 					// to die off.. let's hope that's safe
 				}
 #endif
-#ifndef TRUSTINESS
+#ifdef _flag_disable_module_trust
 				unless(stringp(source)) {
 					m_delete(v("locations"), 0);
 					return display;
@@ -1338,6 +1306,7 @@ case "_request_exit":
 				    ME, mc, source))
 			}
 			break;
+case "_request_unlink_disconnect":
 case "_request_unlink":
 			if (vars["_service"] &&
 			    member(v("locations"), vars["_service"])) {
@@ -1368,11 +1337,15 @@ case "_request_unlink":
 				sendmsg(source, "_notice_unlink",
 					0, ([]));
 #endif
+				if (mc == "_request_unlink_disconnect" && !ONLINE) {
+					// manually calling disconnected() .. hmmm
+					disconnected();
+				}
 			} else {
 		//		sendmsg(source, "_error_unavailable_function",
 		//		    "Who are you anyway?");
-				P0(("%O got invalid %O from %O\n",
-				    ME, mc, source))
+	P0(("%O got invalid %O from %O. locations are %O. vars are %O.\n",
+				    ME, mc, source, v("locations"), vars))
 			}
 			break;
 case "_request_input":
@@ -1411,6 +1384,14 @@ case "_set_identification":
 case "_assign_identification":
 			return 0;	// skip
 case "_message_echo_private":
+#ifdef _flag_enable_measurement_network_latency
+			if (stringp(source) && vars["_time_sent"]
+			    && time() - vars["_time_sent"] > 3) {
+				P1(("Network latency from %s to %s was %O.\n",
+				    MYNICK, source, time()-vars["_time_sent"]))
+			}
+#endif
+			// fall thru
 case "_message_echo_public":
 case "_message_echo":
 case "_message_public":
@@ -1496,7 +1477,7 @@ case "_request_execute":
 			else {
 				sendmsg(source,
 				    "_failure_unsupported_execute_person",
-				      0, ([]));
+				      0, ([ "_nick" : MYNICK ]) );
 				monitor_report("_warning"+ mc,
 				    "Received unexpected "+ mc +" from "+
 				    source);	
@@ -1617,7 +1598,7 @@ case "_request_retrieve":
 		}
 		return 0;
 #if 0
-case "_request_talk_link":
+case "_request_call_link":
 		// CALC_IDLE_TIME(t); unless (t)
 		if (itsme || (profile && profile[PPL_NOTIFY]
 					 >= PPL_NOTIFY_FRIEND)) {
@@ -1630,10 +1611,10 @@ case "_request_talk_link":
 			// are clicking on that user's psyced web access - he
 			// could use that to trigger opening of his own window,
 			// making this here unnecessary. ok. #if 0 this.
-			sendmsg(source, "_echo_talk_link_automatic");
+			sendmsg(source, "_echo_call_link_automatic");
 			// http://about.psyc.eu/Telephony#Web-based_Telephony
 		}
-//case "_request_talk":
+//case "_request_call":
 		break;
 #endif
 case "_request_version":
@@ -1660,7 +1641,7 @@ case "_request_version":
 			// if I request a clients version, i want the remote
 			// client to answer, not the server making 
 			// assumptions.
-case "_request_examine":	// by mistake, unused so far
+case "_request_examine":	// don't use this, should be removed in 2009
 case "_request_description":
 case "_request_description_vCard":
 		t = qDescription(source, vars, profile || -1, itsme);
@@ -1703,6 +1684,11 @@ case "_request_list_feature":
 		display = 0;
 		break;
 case "_request_list_item":
+		// jabber-only: should produce a /list of places
+		// (the subscriptions) so that the user can flag things
+		// for autojoin. that's okay for chatrooms, but inappropriate
+		// for newscasts. as you can tell, this is currently
+		// just a placebo anyway.  FIXME
 		rvars["_list_item"] = ({ });	// _tab
 		rvars["_list_item_description"] = ({ });    // _tab
 		sendmsg(source, "_notice_list_item", 0, rvars);
@@ -1712,16 +1698,25 @@ case "_request_ping":
 		sendmsg(source, "_echo_ping", 0, rvars);
 		display = 0;
 		break;
-#if 1
-case "_message_invitation":
-		mc = "_notice_invitation"; // legacy.. delete after 2005
-#endif
 case "_notice_invitation":
+		// even if invitations are filtered, if the two are
+		// on the phone or something like that
+		// they can agree out of band to just "/follow" blindly
 		vSet("invitationplace", objectp(vars["_place"]) ?
 				vars["_nick_place"] : vars["_place"]);
+
+		// same filtering code as couple lines further below
+		if (( IS_NEWBIE || !itsme && FILTERED(source)) &&
+		    (!profile || profile[PPL_NOTIFY] <= PPL_NOTIFY_PENDING)) {
+			sendmsg(source, "_failure_filter_strangers", 0,
+				([ "_nick" : MYNICK ]) );
+			unless (boss(source))
+			    return 0; // dont display, dont log
+		}
 		break;
 case "_message_private_question":
 case "_message_private":
+		// same filtering code as couple lines above
 		if (( IS_NEWBIE || !itsme && FILTERED(source)) &&
 		    (!profile || profile[PPL_NOTIFY] <= PPL_NOTIFY_PENDING)) {
 PT(("_failure_filter_strangers to %O from %O\n", source, ME))
@@ -1765,16 +1760,19 @@ PT(("_failure_filter_strangers to %O from %O\n", source, ME))
 		t = objectp(source)
 		   	? ((vars && vars["_nick"]) || "(?)")
 			: (source || psource);
-#ifdef EXPERIMENTAL
+#ifdef GAMMA
 		if (t == v("reply")) break;
 #endif
 		vSet("reply", t);
 		// generation of "away" message in irc-speak
+#ifndef _flag_enable_unauthenticated_message_private
 		if (IS_NEWBIE) {
 			 sendmsg(source, "_warning_unable_reply", 0,
 				 ([ "_nick": MYNICK ]));
 		// it is a litte noisy to send this every time
-		} else if (profile && profile[PPL_NOTIFY] >= PPL_NOTIFY_FRIEND) {
+		} else
+#endif
+		if (profile && profile[PPL_NOTIFY] >= PPL_NOTIFY_FRIEND) {
 		    if (ONLINE) {
 			// dies sendet die "redline" bei *jeder* privmsg und muss
 			// daher von den meisten user.c wieder gefiltert werden
@@ -1815,6 +1813,7 @@ case "_message_friends":
 		}
 		break;
 #endif
+#ifndef _flag_disable_module_presence
 // this one needs to be decided upon..
 case "_request_notification_subscribe":	// jaPSYC's Notification.java sollte
 				// nicht mehr verwendet werden, dafür gibt
@@ -1896,7 +1895,7 @@ case "_notice_presence_here_busy":
 				    // sending us presence and our user hasn't
 				    // looked into '/show in' yet.
 				    // let's pretty much ignore this.
-				PL(("%s got again notified by %O (%O)\n",
+				P1(("%s got again notified by %O (%O)\n",
 				    MYNICK, source, profile))
 				return 0;
 			    } else if (profile &&
@@ -1938,7 +1937,7 @@ case "_notice_presence_here_busy":
 		// currently just for xmpp:
 		// accept the notice without implying a presence reply.
 		if (!vars["_INTERNAL_quiet"] && ONLINE) {
-			PL(("%O got %O from %O.\n", ME, mc, source))
+			P2(("%O got %O from %O.\n", ME, mc, source))
 			CALC_IDLE_TIME(t);
 			// TODO: update to current presence scheme..
 			// right now these messages appear when a person logs
@@ -1959,6 +1958,7 @@ case "_notice_presence_here_busy":
 		P3(("post-pmgmt1 in %O from %O display %O logged_on %O\n", ME,
 		    source, display, logged_on))
 		return logged_on && display;
+#endif // _flag_disable_module_presence
 #ifdef _flag_enable_alternate_location_forward
 	PSYC_SLICE_AND_REPEAT
 	}
@@ -1969,9 +1969,13 @@ case "_notice_presence_here_busy":
 	// messages from here though, we do it from w().
 	// the other solution would be to forward in user.c
 	// then we dont have to split the switches
-	if (v("locations")[0] && v("locations")[0] != source) {
-		// diese variante macht kein psyctext rendering
-		sendmsg(v("locations")[0], mc, data, vars, source);
+	t = v("locations")[0];
+	if (t && t != source) {
+		// no psyctext rendering happening in this variant
+# ifndef _flag_disable_circuit_proxy_multiplexing
+		vars["_target_forward"] = t;
+# endif
+		sendmsg(t, mc, data, vars, source);
 		lastmc = mc;
 		// net/user:msg shouldn't work on this any further,
 		// should it?
@@ -2014,18 +2018,17 @@ case "_request_context_leave_friends":
 		break;
 case "_notice_friendship_established":
 		if (!profile || profile[PPL_NOTIFY] != PPL_NOTIFY_OFFERED) {
-		    P2(("%O shouldn't have gotten a %O from %O with PPL_NOTIFY %O (unless it's an acute case of jabber)\n",
+		    PT(("%O shouldn't have gotten a %O from %O with PPL_NOTIFY %O (unless it's an acute case of jabber)\n",
 			ME, mc, source,
 		       	profile? profile[PPL_NOTIFY]: "(no profile)"))
 		    return 0;
 		}
+# ifndef _flag_disable_module_presence
 		// can we dare to make this a display-only event and
 		// rely on the new _request_friendship_implied for
 		// symmetric friendships? then we should be able to
 		// break; out of here.. TODO.. but for now let's just
 		// dont we lack some sPerson here?
-		//
-#if 1 //recent change  2006-11-05 fipperland
 		if (ONLINE) {
 		    CALC_IDLE_TIME(t);
 		    if (v("me")) sendmsg(source, "_status_person_" +
@@ -2038,21 +2041,21 @@ case "_notice_friendship_established":
 			"_status_person_present", 0,
 			([ "_nick" : MYNICK, "_time_idle" : t ]) );
 		}
-#endif
+# endif // _flag_disable_module_presence
 		return display;
-		// dont fall thru
+		// dont fall thru ...?
+case "_status_friendship_established":
 case "_request_context_enter":	// future potential names of this function
 case "_request_context_enter_friends":
 case "_request_friendship":
 case "_request_friendship_implied":
 		t = objectp(source) ? source->qName() : source;
+		// unless (t = vars["_nick"]) return 0;
+		PT(("%s in %O from %s(%O)\n", mc, ME, t, profile))
+
 		t2 = "_status_friendship_established";
 		data = "[_nick] is your friend already."; 
 
-		// unless (t = vars["_nick"]) return 0;
-		// D(S("%s in %O from %s(%O)\n", mc, ME, t,
-		//     profile && profile[PPL_NOTIFY]));
-		P3(("profile %O\n", profile))
 		if (profile) switch (profile[PPL_NOTIFY]) {
 		case PPL_NOTIFY_NONE:
 			// in this case, ask the user!
@@ -2077,8 +2080,10 @@ case "_request_friendship_implied":
 #endif
 			// nasty redundancy with group/master datastructures
 			friends[source, FRIEND_NICK] = vars["_nick"] || 1;
+#ifdef AVAILABILITY_HERE
 			friends[source, FRIEND_AVAILABILITY] =
 			    vars["_degree_availability"] || AVAILABILITY_HERE;
+#endif
 			if (objectp(source)) 
 			    insert_member(source);
 			else
@@ -2124,6 +2129,7 @@ case "_request_friendship_implied":
 		    sendmsg(source, "_failure_necessary_registration", 0,
 			    ([ "_nick_target": MYNICK ]) );
 		return display;
+#ifndef _flag_disable_module_presence
 case "_status_person_absent":
 case "_status_person_absent_recorded":
 case "_status_person_absent_action":
@@ -2134,11 +2140,11 @@ case "_notice_presence_absent_vacation":
 case "_notice_presence_absent":
 		if (!profile || profile[PPL_NOTIFY] == PPL_NOTIFY_NONE
 			     || profile[PPL_NOTIFY] == PPL_NOTIFY_OFFERED) {
-			PL(("%O got %O from %O and ignored it.\n",
+			P2(("%O got %O from %O and ignored it.\n",
 			    ME, mc, source))
 			return 0;
 		}
-		PL(("%O got %O from %O.\n", ME, mc, source))
+		P2(("%O got %O from %O.\n", ME, mc, source))
 #ifdef IRC_FRIENDCHANNEL
 		vars["_degree_availability_old"] = friends[source, FRIEND_AVAILABILITY];
 #endif
@@ -2216,12 +2222,11 @@ case "_status_person_present":
 		P3(("post-pmgmt2 in %O from %O display %O logged_on %O\n", ME,
 		    source, display, logged_on))
 		return logged_on && display; // what about availability?
+#endif // _flag_disable_module_presence
 case "_notice_mail":
-#ifdef NOT_EXPERIMENTAL
 		// on request by y0shi.. remember mail notifications
 		// even when offline
 		myLogAppend(source, mc, data, vars);
-#endif
 		// fall thru
 case "_notice_place_enter_automatic_subscription":
 case "_notice_place_enter_automatic":
@@ -2257,7 +2262,6 @@ case "_status":
 	}
 	if (!vars["_time_place"]) {
 		if (abbrev("_message", mc)) {
-#ifdef NOT_EXPERIMENTAL
 		    // forward to v("id") from here
 		    if (!ONLINE && v("id"))
 			sendmsg(v("id"), "_notice_forward"+mc, 0,
@@ -2266,7 +2270,6 @@ case "_status":
 		 // do we ever get here for _message_public anyway?
 			       "_source_relay": source,
 			     ]) + vars);
-#endif
 		    // one way to circumvent the object loss problem of
 		    // ldmud persistence, the other is in user:w()
 //		    if (objectp(vars["_context"]))
@@ -2285,6 +2288,7 @@ case "_status":
 	return display;
 }
 
+#ifndef _flag_disable_module_authentication
 static returnAuthentication(result, source, vars) {
 	vars["_trust_result"] = result;
 	switch(result) {
@@ -2292,6 +2296,7 @@ static returnAuthentication(result, source, vars) {
 		sendmsg(source, "_notice_authentication", 0, vars);
 		break;
 	case 0:
+		/* should this be an _echo or _warn? */
 		sendmsg(source, "_notice_processing_authentication", 0, vars);
 		P1(("asyncAUTH in %O for %O, %O\n", ME, source, vars))
 		break;
@@ -2361,10 +2366,11 @@ checkAuthentication(source, vars) {
 	}
 	return -1;
 }
+#endif
 
 // with both HTTP and PSYC the user might be "online" even though the
 // object isn't "interactive" (connected to a TCP stream).
-#ifdef NOT_EXPERIMENTAL
+#if 1
 online(notnewbie) {
 	if (ONLINE) return 1;
 	if (notnewbie &&! IS_NEWBIE) return -1;
@@ -2400,7 +2406,7 @@ sName(a) {
 // the user is calling from (typically query_ip_name())
 //
 logon(host) {
-#if 0 //defined(EXPERIMENTAL) && !defined(PRO_PATH)
+#if 0
 //	PT(("pre rename: %O\n", ME))
 	// should i prefix it with a / ? maybe maybe
 	rename_object(ME, psycName());
@@ -2431,32 +2437,35 @@ logon(host) {
 		    friends[person, FRIEND_AVAILABILITY] = s;
 		}
 	}
-	PL(("%O has %O friends of which %O have unknown state.\n",
+	P2(("%O has %O friends of which %O have unknown state.\n",
 	    ME, amount, ask4upd8s))
 #endif
 	// greeting function disabled for psyc clients. they are
 	// auto-intelligent and they need the _notice_login
         greeting = v("greeting") == "on" || v("scheme") == "psyc" ||
             (!v("greeting") && (v("scheme") != "jabber" || IS_NEWBIE));
-#ifndef QUIET_LOGIN
+#ifndef _flag_disable_info_session
 	if (greeting && v("lastTime")) {
 		string hi, ctim;
-#ifdef _flag_log_hosts
+# ifdef _flag_log_hosts
 		hi = v("host")==v("ip") ? v("ip") : v("host")+" ("+v("ip")+")";
-#else
+# else
 		hi = "*";
-#endif
+# endif
 		ctim = ctime(v("lastTime"));
 		w("_notice_logon_last", 0,
 		    ([ "_date" : isotime(ctim, 0),
 		       "_time" : hhmmss(ctim),
+		       "_time_unix" : v("lastTime"),
 		       "_host" : hi ])
 		);
+# ifdef _flag_disable_notice_news_software
 		if (v("softnews") != SERVER_VERSION) {
 			w("_notice_news_software", 0, 
 			  ([ "_version": SERVER_VERSION ]) );
 			vSet("softnews", SERVER_VERSION);
 		}
+# endif
 		vDel("lastHost");
 	}
 #endif
@@ -2470,7 +2479,7 @@ logon(host) {
 #endif
 	    host = "?";
 
-	PL(("%O person:logon %O\n", ME, IS_NEWBIE? "(newbie)": "(registered)" ))
+	P2(("%O person:logon %O\n", ME, IS_NEWBIE? "(newbie)": "(registered)" ))
 	log_file("LOGON", "[%s] %s %s %s(%s) %s/%s/%s \"%s\"\n", ctime(),
 		logged_on ? "O" : IS_NEWBIE ? "*" : "+", MYNICK,
 #ifdef _flag_log_hosts
@@ -2538,26 +2547,28 @@ logon(host) {
 	PT(("smarticast distribution structure: %O\n", _routes))
 # endif
 #endif
+#ifndef _flag_disable_module_presence
 	switch(v("scheme")) {
 	case "jabber":
 	case "psyc":
-#ifdef _flag_enable_manual_announce_telnet
+# ifdef _flag_enable_manual_announce_telnet
 	case "tn":
-#endif
-#ifdef _flag_enable_manual_announce_IRC
+# endif
+# ifdef _flag_enable_manual_announce_IRC
 	case "irc":
-#endif
+# endif
 		showMyPresence(1);
 		break;
 	default:
-#ifdef CACHE_PRESENCE
+# ifdef CACHE_PRESENCE
 		announce(AVAILABILITY_HERE, 0, ask4upd8s == 0);
-#else
+# else
 		announce(AVAILABILITY_HERE);
-#endif
+# endif
 		showMyPresence(0);
 	}
 	// showMyPresence(logged_on > 1);
+#endif // _flag_disable_module_presence
 	if (v("new")) {
 		// TODO: displaying these messages seems to trigger a bug
 		// in net/jabber/user whereas the connection breaks, still
@@ -2567,7 +2578,7 @@ logon(host) {
 		logView(v("new"), 1);
 		vDel("new");
 	} else {
-#ifndef QUIET_LOGIN
+#ifndef _flag_disable_info_session
 		if (greeting &&! IS_NEWBIE)
 		    w("_status_log_none");
 #endif
@@ -2583,7 +2594,7 @@ reboot(reason, restart, pass) {
 	//unless (clonep(ME)) return;
 	if (blueprint(ME) == ME) return;
 	P2(("%O shutting down\n", ME))
-#ifndef SLAVE
+#if !defined(SLAVE) && !defined(_flag_disable_info_session)
 	if (ONLINE) {
 	    // same in net/psyc/circuit.c
 	    if (restart)
@@ -2635,6 +2646,7 @@ quit(immediate, variant) {
 		P1(("intercepted recursive QUIT %O\n", ME || MYNICK ))
 		return 0;
 	}
+#ifndef	_flag_disable_module_presence
 	switch(v("scheme")) {
 	// psyc clients are supposed to always explicitely set
 	// a user's presence status. this is probably too blue-eyed
@@ -2645,24 +2657,25 @@ quit(immediate, variant) {
 	// jabber/user:quit() is called on @type 'unavailable'
 	// so it relies on quit() to announce offline status
 	//case "jabber":
-#ifdef _flag_enable_manual_announce_telnet
+# ifdef _flag_enable_manual_announce_telnet
 	case "tn":
-#endif
-#ifdef _flag_enable_manual_announce_IRC
+# endif
+# ifdef _flag_enable_manual_announce_IRC
 	case "irc":
-#endif
+# endif
 		break;
 	default:
-#ifdef CACHE_PRESENCE
+# ifdef CACHE_PRESENCE
 		//announce(AVAILABILITY_OFFLINE, 0, ask4upd8s == 0);
-#else
+# else
 		//announce(AVAILABILITY_OFFLINE);
-#endif
+# endif
 		if (availability) {
 			announce(AVAILABILITY_OFFLINE);
 			availability = 0;
 		}
 	}
+#endif // _flag_disable_module_presence
 	// TODO: here we need to leave all our friends cslaves
 	if (v("lastTime2")) {
 		if (query_once_interactive(ME)) {
@@ -2670,9 +2683,10 @@ quit(immediate, variant) {
 			// we need to keep track of user's age for security
 			// reasons
 			vSet("age", delta + v("age"));
-
+#ifndef _flag_disable_info_session
 			w("_notice_session_end", 0,
 			    ([ "_time_duration" : timedelta(delta) ]) );
+#endif
 		}
 		vDel("lastTime2");	// don't keep this tmp copy
 	}
@@ -2723,12 +2737,6 @@ quit(immediate, variant) {
 save() {
 	int howmany;
 
-#ifdef FUNC_TABLE
-P1(("SAVE - mapping in %O is %O - name is %O, random is %O, psyc is %O\n",
-    ME, code,
-    funcall(code["name"]), funcall(code["random"]), funcall(code["psyc"])))
-#endif
-
 	if ( IS_NEWBIE || !MYNICK ) return 0;
 	howmany = logClip(2 * _limit_amount_log_persistent,
 			      _limit_amount_log_persistent);
@@ -2736,6 +2744,7 @@ P1(("SAVE - mapping in %O is %O - name is %O, random is %O, psyc is %O\n",
 	return howmany;
 }
 
+#ifndef _flag_disable_module_presence
 showMyPresence(verbose) {
 	if (v("presencetext"))
 	    w("_status_presence_description",
@@ -2768,32 +2777,32 @@ announce(level, manual, verbose, text) {
 	if (!changed && availability == level) return 0;
 	if (level) vSet("availability", availability = level);
 	else level = availability;	// sending EXPIRED not permitted here
-	PL(("%O announce %O(%O,%O) %O changed: %d, mood: %O\n", ME,
+	P2(("%O announce %O(%O,%O) %O changed: %d, mood: %O\n", ME,
 	    level, manual, verbose, text, changed, mood))
 
-#if 0 //def CACHE_PRESENCE
+# if 0 //def CACHE_PRESENCE
 // this define could also by dynamic to reflect whether we need a
 // reply from the other side or not
 // for now, we expect replies but cache nonetheless.
 // this is a temporary test behaviour
-# define _NOTICE_FRIEND_PRESENT \
+#  define _NOTICE_FRIEND_PRESENT \
 	(verbose? "_notice_presence_here": "_notice_presence_here_quiet")
-#else
-# define _NOTICE_FRIEND_PRESENT "_notice_presence_here"
-#endif
-#ifdef SMART_UNICAST_FRIENDS
+# else
+#  define _NOTICE_FRIEND_PRESENT "_notice_presence_here"
+# endif
+# ifdef SMART_UNICAST_FRIENDS
 	vars = ([	   "_nick": MYNICK,
 			 "_source": v("_source"),
 	   "_description_presence": text,
 	    "_degree_availability": level ]);
 	if (mood) vars["_degree_mood"] = mood;
-# ifdef JABBER_PATH
+#  ifdef JABBER_PATH
 	vars["_INTERNAL_mood_jabber"] = mood2jabber[mood];
-# endif
-# ifdef PSYC_SYNCHRONIZE
+#  endif
+#  ifdef PSYC_SYNCHRONIZE
 	// 0 makes this message invisible when an admin is in the @sync
 	synchro_report("_notice_presence_synchronize", 0, vars);
-# endif
+#  endif
 	// manual = manual? "_manual": "_automatic"; ?
 	// or just manual = manual? "": "_automatic"; ?
 	switch(level) {
@@ -2807,9 +2816,9 @@ announce(level, manual, verbose, text) {
 		castmsg("_notice_presence"+ avail2mc[level], 0, vars);
 		break;
 	}
-#else 
-# echo Warning: person.c running without SMART_UNICAST_FRIENDS
-# echo About time to delete this part of the code..
+# else //{{{ SMART_UNICAST_FRIENDS
+#  echo Warning: person.c running without SMART_UNICAST_FRIENDS
+#  echo About time to delete this part of the code..
 	foreach (string ni, string mode : ppl) {
 	    object o;
 
@@ -2829,7 +2838,7 @@ announce(level, manual, verbose, text) {
 		    continue;			// offline local buddy
 	    }
 
-	    PL(("%O announce(%O): %O for %O (%O)\n", ME, level, o, ni,
+	    P3(("%O announce(%O): %O for %O (%O)\n", ME, level, o, ni,
 		mode[PPL_NOTIFY]))
 	    switch(level) {
 	    case AVAILABILITY_OFFLINE:
@@ -2866,10 +2875,13 @@ announce(level, manual, verbose, text) {
 		    // TODO: the most correct way would be to expect a _status_person_present
 	    }
 	}
-#endif
+# endif //}}} SMART_UNICAST_FRIENDS
+#ifndef _flag_disable_module_presence
 	if (verbose) showMyPresence(1);
+#endif
 	return ++logged_on; // might aswell use it as an announcement counter ;)
 }
+#endif // _flag_disable_module_presence
 
 static qFriends() { 
 	int i;
@@ -2930,7 +2942,7 @@ htinfo(prot, query, headers, qs) {
 	P3(("htinfo(%O, %O, %O, %O)\n", prot, query, headers, qs))
 
 #ifdef EXPERIMENTAL
-// this extension is disputed
+// this extension is disputed and not in use
 // we should probably do net/http/register instead..
 	if (member(query, "register")) {
 
@@ -2951,22 +2963,30 @@ htinfo(prot, query, headers, qs) {
 	    }
 	} else
 #endif
-	// if (member(query, "motto"))
-	{
-	    // intended for little (i)frames: just one line
-	    // showing nickname and motto message.
-	    me = v("publicpage") ? "<a href=\""+ v("publicpage")
-		    +"\" target=x>"+ MYNICK +"</a>" : MYNICK;
-	    if (v("me")) me += " "+ htquote(v("me"));
-	} // else {
-	//	produce a /surf profile for strangers.. alice?
-	// }
-
 	htok(prot);
-	write("<title>/~"+ MYNICK +"</title>\n\
-<body bgcolor=#000000 text=#666666 link=#999999 vlink=#333333>\n\
-<center><font face=helvetica>["+ me + "]\n");
+        if (member(query, "motto")) {
+		// intended for little (i)frames: just one line
+		// showing nickname and motto message.
+                me = v("publicpage") ? "<a href=\""+ v("publicpage")
+			+"\" target=x>"+ MYNICK +"</a>" : MYNICK;
+                if (v("me")) me += " "+ htquote(v("me"));
 
+                write( ( // T("_HTML_status_head",
+"<title>/~"+ MYNICK +"</title>\n\
+<body bgcolor=#000000 text=#cccccc link=#ffffff vlink=#999999>\n\
+<center><font face=helvetica>") +"["+ me + "]\n");
+        } else {
+		P3(("anonymous profile inspection in %O with %O and %O\n",
+		    ME, query, headers))
+		w("_notice_examine_web_person", 0, ([
+	          "_web_on": headers["referer"] || headers["host"],
+                  "_web_from": headers["user-agent"]
+			 || query_ip_name(this_interactive()) || "",
+                  "_nick" : MYNICK,
+		]) );
+                write( htDescription(1, query, headers, qs, "_anonymous",
+                        qDescription(0, ([ "_trust": 0 ]), -1, 0)) );
+        }
 	return 1;
 }
 
@@ -3001,10 +3021,12 @@ void reset(int again) {
 		vSet("locations", ([]));
 		friends = m_allocate(0, 2);
 		leaving = 0;
+#ifndef _flag_disable_module_presence
 		avail2mc = shared_memory("avail2mc");
 # ifdef JABBER_PATH
 		mood2jabber = shared_memory("mood2jabber");
 # endif
+#endif // _flag_disable_module_presence
 		// _tags = ([ ]);	-- shouldnt be here
 	}
 }

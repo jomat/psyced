@@ -1,4 +1,4 @@
-// $Id: gateway.c,v 1.451 2008/03/29 16:07:30 fippo Exp $ // vim:syntax=lpc
+// $Id: gateway.c,v 1.461 2008/10/22 16:35:59 fippo Exp $ // vim:syntax=lpc
 /*
  * jabber/gateway 
  * listens on jabber interserver port for incoming connections
@@ -56,6 +56,12 @@ quit() {
 disconnected(remainder) { 
         // TODO: handle remainder
         P2(( "gateway %O disconnected\n", ME ))
+#ifdef GAMMA
+	// sometimes we get complete presence packets in the socket close
+	// remainder. probably broken xmpp implementations, let's try and
+	// do the best we can with it by forwarding stuff to feed().
+	if (remainder && strlen(remainder)) feed(remainder);
+#endif
         if (objectp(active)) active -> removeGateway(streamid);
 #ifdef _flag_log_sockets_XMPP
         D0( log_file("RAW_XMPP", "\n%O disc\t%O", ME, ctime()); )
@@ -85,13 +91,18 @@ void create() {
 }
 
 #ifdef WANT_S2S_TLS
+// similar code in other files
 tls_logon(result) { 
-    P2(("%O tls_logon(%d)\n", ME, result))
-    if (result < 0) { 
-	QUIT 
-    }
-    else if (result == 0) {
+    if (result == 0) {
 	certinfo = tls_certificate(ME, 0);
+	P3(("%O tls_logon fetching certificate: %O\n", ME, certinfo))
+# ifdef ERR_TLS_NOT_DETECTED
+    } else if (result == ERR_TLS_NOT_DETECTED) { 
+	// just go on without encryption
+# endif
+    } else if (result < 0) { 
+	P1(("%O TLS error %d: %O\n", ME, result, tls_error(result)))
+	QUIT 
     } else {
 	P0(("tls_logon with result > 0?!?!\n"))
 	// should not happen
@@ -121,7 +132,7 @@ verify_connection(string to, string from, string type) {
     emit(sprintf("<db:result from='%s' to='%s' type='%s'/>",
 		 to, from, type));
     if (type != "valid") {
-	emit("</stream:stream>");
+	emitraw("</stream:stream>");
 	P2(("quitting invalid stream\n"))
 	QUIT
     } else {
@@ -217,7 +228,7 @@ jabberMsg(XMLNode node) {
 
 	// <?xml version='1.0'?><stream:stream xmlns:stream='http://etherx.jabber.org/streams' xmlns='jabber:server' to='localhost' xmlns:db='jabber:server:dialback' version='1.0'><switching xmlns='http://switch.psyced.org'><scheme>psyc</scheme></switching>
 
-	emit("<switched xmlns='http://switch.psyced.org'/>");
+	emitraw("<switched xmlns='http://switch.psyced.org'/>");
 	PT(("received 'switching'. authhosts %O\n", authhosts))
 	o = ("S:psyc:" + host) -> load();
 	P1(("%O switching to %O for %O\n", ME, o, host))
@@ -237,8 +248,8 @@ jabberMsg(XMLNode node) {
 	 *    a request for verification of a key
 	 */
 	// if we dont know the host, complain
-	// put NAMEPREP(JABBER_HOST) into the localhost mapping pleeeease
-	//if (target != NAMEPREP(JABBER_HOST)) {	
+	// put NAMEPREP(_host_XMPP) into the localhost mapping pleeeease
+	//if (target != NAMEPREP(_host_XMPP)) {	
 	unless (is_localhost(lower_case(target))) {
 	    monitor_report("_error_unknown_host", 
 	       sprintf("%O sent us a dialback packet believing we would be %O",
@@ -250,7 +261,7 @@ jabberMsg(XMLNode node) {
 	sendmsg(origin,
 		"_dialback_request_verify", 0,
 		([ "_INTERNAL_target_jabber" : source,
-		   "_INTERNAL_source_jabber" : NAMEPREP(JABBER_HOST),
+		   "_INTERNAL_source_jabber" : NAMEPREP(_host_XMPP),
 		   "_dialback_key" : node[Cdata],
 		   "_tag" : streamid
 		   ])
@@ -296,7 +307,7 @@ jabberMsg(XMLNode node) {
 	    /* we were calling this server, this packet is step 8
 	     * and we are doing step 9
 	     */
-	    /* if we dont recognize target (currently: == JABBER_HOST)
+	    /* if we dont recognize target (currently: == _host_XMPP)
 	     * then croak with a host-unknown and commit suicide
 	     */
 	    // same as above...
@@ -317,12 +328,15 @@ jabberMsg(XMLNode node) {
     case "starttls":
 #ifdef WANT_S2S_TLS
 	if (tls_available()) {
-	    emit("<proceed xmlns='" NS_XMPP "xmpp-tls'/>");
+	    emitraw("<proceed xmlns='" NS_XMPP "xmpp-tls'/>");
+# if __EFUN_DEFINED__(tls_want_peer_certificate)
+	    tls_want_peer_certificate(ME);
+# endif
 	    tls_init_connection(ME, #'tls_logon);
 	    return;
 	} 
 #endif
-	emit("<failure xmlns='" NS_XMPP "xmpp-tls'/>");
+	emitraw("<failure xmlns='" NS_XMPP "xmpp-tls'/>");
 	return;
     case "stream:error":
 	if (node["/connection-timeout"]) {
@@ -351,7 +365,7 @@ jabberMsg(XMLNode node) {
 
 		success = certificate_check_jabbername(t, certinfo);
 		if (success) {
-		    emit("<success xmlns='" NS_XMPP "xmpp-sasl'/>");
+		    emitraw("<success xmlns='" NS_XMPP "xmpp-sasl'/>");
 		    P2(("successful sasl external authentication with "
 			"%O\n", t))
 		    sAuthenticated(t);
@@ -377,7 +391,7 @@ jabberMsg(XMLNode node) {
 		     encode_base64(sprintf("realm=\"%s\",nonce=\"%s\","
 					   "qop=\"auth\",charset=utf-8,"
 					   "algorithm=md5-sess", 
-					   JABBER_HOST, RANDHEXSTRING)
+					   _host_XMPP, RANDHEXSTRING)
 				   ) + "</challenge>");
 	    } else {
 		// kind of 'unknown username'
@@ -469,7 +483,10 @@ open_stream(XMLNode node) {
     if (node["@to"]) {
 	packet += "from='" + node["@to"] + "' ";
     } else {
-	packet += "from='" JABBER_HOST "' ";
+	packet += "from='" _host_XMPP "' ";
+    }
+    if (node["@from"]) {
+	packet += "to='" + node["@from"] + "' ";
     }
     if (node["@to"] && !(is_localhost(lower_case(node["@to"])))) {
 	emit(packet + ">");
@@ -505,7 +522,7 @@ open_stream(XMLNode node) {
 		// let the other side decide if it knows a shared secret 
 		// with us
 		// if it it has, it will use it with digest-md5
-#  if __VERSION_MINOR__ > 3 || __VERSION_MICRO__ > 610
+#  ifndef _flag_disable_authentication_digest_MD5
 		if (node["@from"] 
 			&& config(XMPP + node["@from"], 
 				  "_secret_shared")) {
@@ -517,7 +534,7 @@ open_stream(XMLNode node) {
 		// and we have verified it as X509_V_OK (0)
 		// we offer SASL external (authentication via name
 		// presented in x509 certificate
-		P3(("gateway::certinfo %O\n", certinfo))
+		P0(("gateway::certinfo %O\n", certinfo))
 		if (mappingp(certinfo) && certinfo[0] == 0) {
 		    // if from attribute is present we only offer
 		    // sasl external if we know that it will succeed
@@ -554,6 +571,6 @@ w(string mc, string data, mapping vars, mixed source) {
     P2(("%O using w() for %O, unimplemented... mc %O, source %O\n", 
 	ME, origin, mc, source))
     unless (vars) vars = ([ ]);
-    vars["_INTERNAL_source_jabber"] = objectp(source) ? mkjid(source) : JABBER_HOST;
+    vars["_INTERNAL_source_jabber"] = objectp(source) ? mkjid(source) : _host_XMPP;
     sendmsg(origin, mc, data, vars); 
 }

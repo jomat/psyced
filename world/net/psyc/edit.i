@@ -1,5 +1,5 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: edit.i,v 1.106 2008/04/01 18:27:15 lynx Exp $
+// $Id: edit.i,v 1.111 2008/12/01 11:31:33 lynx Exp $
 //
 // headermaker functions. we should call it render rather than edit.
 
@@ -108,7 +108,7 @@ static int build_header(string key, mixed val, mapping vars) {
 #endif
             }
             else if (mappingp(val)) {
-#if 1 //def NOT_EXPERIMENTAL
+#if 1
                 raise_error("Mappings currently not transmittable.\n");
 #else
 		klopp = "";
@@ -151,16 +151,27 @@ static varargs string psyc_render(mixed source, string mc, mixed data,
 	P4(("%O psyc_render %O for %O\n", ME, vars, previous_object()))
 	string t, context;
 	int needLen = 0;
+#ifndef NEW_LINE
+	int excessiveNewline = 0;
+#endif
 
 	rbuf = ebuf = "";
 #ifdef NEW_RENDER
 	ASSERT("mc", mc, "Message from "+ to_string(source) +" w/out mc")
+	if (!stringp(data)) {
 #ifdef T // what lynX wants to say here: do we have the textdb
-	if (!stringp(data))
-	    data = abbrev("_message", mc)? "": (T(mc, "") || "");
+		if (abbrev("_message", mc)) data = "";
+		else {
+			data = T(mc, "") || "";
+			P3(("edit: fmt from textdb for %O: %O\n", mc, data))
+			if (strlen(data) && char_from_end(data, 1) == '\n')
+			    excessiveNewline = 1;
+		}
 #else
-	if (!stringp(data)) data = data? to_string(data): "";
+		PT(("non-string data: %O\n", data))
+		data = data? to_string(data): "";
 #endif
+	}
 	else if (data == S_GLYPH_PACKET_DELIMITER ||
 		  (data[0] == C_GLYPH_PACKET_DELIMITER && data[1] == '\n')
 		    || strstr(data, "\n" S_GLYPH_PACKET_DELIMITER "\n") != -1) {
@@ -171,23 +182,50 @@ static varargs string psyc_render(mixed source, string mc, mixed data,
 # else
 		P1(("%O: %O tried to send %O via psyc. censored.\n",
 		    previous_object() || ME, vars["_nick"] || vars, data))
-//              data = "*** censored message ***";
+		data = "*** censored message ***";
 		return 0;
 # endif         
-        }
-# if 1 //def NOT_EXPERIMENTAL
+# ifndef NEW_LINE
+	} else
+#  ifdef SPYC
+	    if (!needLen)
+#  endif
+	{
+//#   echo net/psyc Warning: Using inaccurate newline guessing strategy.
+		// textdb still provides formats with extra trailing newline.
+		// catching this at this point is kind of wrong. it doesn't
+		// take into consideration data that intentionally ends with
+		// a newline. This is a minor inconvenience, but still.. FIXME
+		//
+		P4(("Newline guessing for %O (%O) %O\n", data,
+		    char_from_end(data, 1), '\n'))
+		if (strlen(data) && char_from_end(data, 1) == '\n')
+		    excessiveNewline = 1;
+# endif
+	}
+# if 1
 	if (context = vars["_INTERNAL_context"]) {
 		P4(("retransmit: %O - deleting source\n", data))
+# ifdef ALPHA
+		if (source != context && !vars["_source_relay"])
+		    vars["_source_relay"] = source;
+# else
 		unless(vars["_source_relay"])
 		    vars["_source_relay"] = source;
+# endif
 		// public lastlog and history are sent with _context and _target
 		source = 0;
 	}       
 	else if (context = vars["_context"]) {
 		P4(("1st transmit: %O - deleting source and target\n", data))
 		// we're not multipeering, so no sources here.
+# ifdef ALPHA
+		if (source != context && !vars["_source_relay"])
+		    vars["_source_relay"] = source;
+# else
 		unless(vars["_source_relay"])
 		    vars["_source_relay"] = source;
+# endif
 		source = 0;
 //              if (vars["_INTERNAL_context"]) context = 0;   // EXPERIMENTAL
 //              else {
@@ -270,20 +308,23 @@ static varargs string psyc_render(mixed source, string mc, mixed data,
                 }
 #endif
 	}
-	ebuf += "\n"+ mc +"\n"+ data;
-#if 1 //def EXPERIMENTAL
-# ifdef SPYC 	// || MODULE_LENGTH
+        if (data == "") ebuf += "\n"+ mc;
+	else ebuf += "\n"+ mc + "\n"+ data;
+
+#ifdef SPYC 	// || MODULE_LENGTH
 	if (needLen || strlen(ebuf) + strlen(rbuf) > 555)
 	    return ":_length\t"+ strlen(ebuf) + rbuf +"\n"+
 		ebuf +"\n" S_GLYPH_PACKET_DELIMITER "\n";
 	else
-# endif
+#endif
+#ifndef NEW_LINE
+	if (excessiveNewline) return rbuf[1 ..] +"\n"+
+		ebuf + S_GLYPH_PACKET_DELIMITER "\n";
+	else
+#endif
 	if (strlen(rbuf)) return rbuf[1 ..] +"\n"+
 		ebuf +"\n" S_GLYPH_PACKET_DELIMITER "\n";
 	return	ebuf +"\n" S_GLYPH_PACKET_DELIMITER "\n";
-#else
-	return ebuf;
-#endif
 }
 
 #ifdef FORK // {{{

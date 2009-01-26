@@ -1,9 +1,8 @@
 // this code contributed from symlynX webchat. currently not in use.
 
+#include <ht/http.h>
 #include <net.h>
 #include <text.h>
-#include <ht/html.h>
-#include <ht/http.h>
 #include <person.h>
 
 volatile string nick;
@@ -18,22 +17,20 @@ htget(prot, query, headers, qs) {
         localize(query["lang"], "ht");
 
 	htok(prot);
-	write (hthead("modifying "+nick+"'s settings") + htfs_on "<th>");
+	write (hthead("modifying "+nick+"'s settings"));
 	unless (nick) {
-		write( T("_PAGES_register_nickless", "Who are you?")
-		     + htfs_off);
+		write( T("_PAGES_register_nickless", "Who are you?") );
 		return 1;
 	}
 	unless (user = find_person(nick)) {
 		write( T("_PAGES_register_offline",
 		 	"You're not in the chat?<br>Please enter it.")
-		     + T("_HTML_back", "") + htfs_off );
+		     + T("_HTML_back", "") );
 		return 1;
 	}
 	unless (user -> validToken(query["token"])) {
 		write( T("_error_invalid_authentication_token",
-			    "Invalid token. Please log in anew.")
-		     + htfs_off);
+			    "Invalid token. Please log in anew."));
 		return 1;
         }
 	okay = 1;
@@ -103,9 +100,9 @@ htget(prot, query, headers, qs) {
 #endif
 		write( T("_PAGES_edit_stored",
 			    "Settings successfully stored.")
-		     + T("_HTML_back", "") + htfs_off );
+		     + T("_HTML_back", "") );
 	} else
-	     write( T("_HTML_back", "") + htfs_off );
+	     write( T("_HTML_back", "") );
 	return 1;
 }
 

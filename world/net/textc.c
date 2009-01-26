@@ -1,6 +1,12 @@
-// $Id: textc.c,v 1.32 2008/04/11 18:48:26 lynx Exp $ // vim:syntax=lpc
+// $Id: textc.c,v 1.36 2008/12/01 11:31:32 lynx Exp $ // vim:syntax=lpc
 //
 // text database client
+
+// local debug messages - turn them on by using psyclpc -DDtextc=<level>
+#ifdef Dtextc
+# undef DEBUG
+# define DEBUG Dtextc
+#endif
 
 #include <net.h>
 #include <lang.h>
@@ -72,7 +78,7 @@ getText(string mc, string fmt) {
 	// urn member(_tdb, mc) ? _tdb[mc] : (_tob -> lookup(mc, fmt));
 }
 
-// new sTextPath function
+// new sTextPath function ... what for?
 localize(lang, scheme) {
 	return sTextPath(
 #ifdef PRO_PATH
@@ -145,8 +151,12 @@ w(string mc, string data, mapping vars, mixed source) {
 	string template = T(mc, "");
 	string output = psyctext(template, vars, data, source);
 
-#ifdef PREFIXES
+#ifdef NEW_LINE
+	output += "\n";
+#else
+# ifdef PREFIXES
 	if (template == "") output += abbrev("_prefix", mc) ? " " : "\n";
+# endif
 #endif
 	//PT(("textc:w(%O,%O,%O,%O) - %O\n", mc,data,vars,source, template))
 

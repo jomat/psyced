@@ -1,4 +1,5 @@
-// $Id: user.c,v 1.552 2008/04/11 10:37:25 lynx Exp $ // vim:syntax=lpc
+// vim:foldmethod=marker:syntax=lpc:noexpandtab
+// $Id: user.c,v 1.565 2008/10/01 10:59:47 lynx Exp $
 //
 // server-side handler for a logged in IRC client
 //
@@ -36,14 +37,14 @@ msg(source, mc, data, mapping vars, showingLog) {
 	int special;
 	mixed a, res;
 	
-#ifdef PREFIXES
+#ifdef PREFIXES //{{{
 	//ob das folgende so klug ist müssen wir (ich?) noch ergründen.
 	//aber da es temporär eh nicht genutzt wird...
 	//bis dahin erstmal jedesmal löschen.
 	if (prefix) {
 	    prefix = 0;
 	}
-#endif
+#endif //}}}
 	P4(("irc:msg (%O,%s,%O,%O)\n", source, mc, data, vars))
 	P2(("irc:msg (%O,%s,%O..)\n", source, mc, data))
 
@@ -88,11 +89,11 @@ msg(source, mc, data, mapping vars, showingLog) {
 	// this is partly a hack for a more generic 512-byte-length problem
 	// but we need a #366 end of names... 
 	// maybe call ::msg and then return writing the 366
-#ifdef ENTER_MEMBERS
+#ifdef ENTER_MEMBERS //{{{
 	if (mc == "_status_place_members")
 	    return _status_place_members(source, mc, data, vars);
 	else
-#endif
+#endif //}}}
 	if (mc == "_message_announcement") {
 	    // what about not checking for _context and using ::msg() or even
 	    // w()?
@@ -113,7 +114,6 @@ msg(source, mc, data, mapping vars, showingLog) {
 static int namreply(mapping vars) {
 	mixed u;
 
-#ifdef NOT_EXPERIMENTAL
 	// TODO: control == silent ist eigentlich nicht richtig,
 	// 	control == keine join/part waere richtiger
 		// && vars["_control"] != "silent"
@@ -137,7 +137,7 @@ static int namreply(mapping vars) {
 		// normal behaviour, when _amount is sent instead of _list
 		// w/o is american for without  ;)
 		P3(("Empty or anonymous channel: %O w/o _list_members\n",
-		    mc))
+		    vars["_nick_place"]))
 	}
 	// this code is all weirdly redundant with net/user.c
 	// doing renderMembers itself in some cases, in some not -
@@ -148,18 +148,6 @@ static int namreply(mapping vars) {
 		  "_members" : u,
 		  "_nick_me" : MYNICK ]) );
 	render("_status_place_members_end", 0, vars);
-#else
-       	if (pointerp(vars["_list_members_nicks"])) {
-		u = implode(vars["_list_members_nicks"], " ");  // _tab
-# ifdef _flag_encode_uniforms_IRC
-		u = uniform2irc(u);
-# endif
-		w("_status_place_members", 0, ([
-			  "_nick_place" : vars["_nick_place"],
-			  "_members" : u ]) );
-	}
-	w("_status_place_members_end", 0, vars);
-#endif
 	return 1;
 }
 
@@ -250,17 +238,17 @@ w(string mc, string data, mapping vars, mixed source) {
 
 	P3(("%O: irc:w(%O, %O, %O, %O) %O\n", ME, mc, data, 0, source, vars))
 
-#ifdef PREFIXES
+#ifdef PREFIXES //{{{
 	// completely skip these methods.. sagt fippo.. na ob das richtig ist!?
 	if (abbrev("_prefix", mc)) return 1;
-#endif
+#endif //}}}
 
 #ifndef GHOST
 	// should it be..?
 	//unless (ONLINE) return;
 	unless (interactive(ME)) return;
 #endif
-#ifdef VARS_IS_SACRED
+#ifdef VARS_IS_SACRED //{{{
 	// "VARS_IS_SACRED" bedeutet dass *kein* copy gemacht wurde und
 	// man deshalb hier paranoid sein muss. der normalfall ist, dass
 	// der raum uns ne kopie gibt.. ist auch gut so, denn der irc code
@@ -273,7 +261,7 @@ w(string mc, string data, mapping vars, mixed source) {
 	// konnten ist mir ein rätsel.. aber ich habs mit eigenen augen
 	// gesehen.. ich kopiers sogar nach /ve/data/damaged-rendezvous.o
 	// ah.. der neue foreach code im place ist schuld
-#else
+#else //}}}
 	unless (mappingp(vars)) vars = ([]);
 #endif
 	if (trail("_important", mc)) {
@@ -327,7 +315,7 @@ w(string mc, string data, mapping vars, mixed source) {
 	    return ::wAction(mc, data, vars
 		 + ([ "_action" : T("_TEXT_action_says", 0) ]),
 			 source, "", vars["_nick"]);
-#ifdef OLD_LOCAL_NICK_PLAIN_TEXTDB_HACK
+#ifdef OLD_LOCAL_NICK_PLAIN_TEXTDB_HACK //{{{
 	else if (vars["_nick_local"]) {			// less work
 		if (mc == "_message_echo_public_action"
 			&& (t = vars["_INTERNAL_nick_plain"])) {
@@ -343,7 +331,7 @@ w(string mc, string data, mapping vars, mixed source) {
 		    sTextPath(0, v("language"), v("scheme"));
 		}
 	}
-#else
+#else //}}}
 	else if (vars["_nick_local"] &&
 		 vars["_nick_local"] == vars["_nick"])
 	    vars["_nick"] = vars["_INTERNAL_nick_plain"] || vars["_nick_verbatim"];
@@ -394,11 +382,12 @@ w(string mc, string data, mapping vars, mixed source) {
 		|| abbrev(query_server_unl() +"~", source)
 #endif
 		) {
-#ifdef GHOST
+#ifdef GHOST //{{{
 	    // in S2S mode we are not supposed to deliver nick!user@host
 	    // thus we use plain nicks or plain uniforms
 	    vars["_source_hack"] = vars["_INTERNAL_nick_plain"] || vars["_nick"];
-#else
+#else //}}}
+# if 0	// OLD // according to elmex "should never happen" happened...
 	    if (vars["_nick"]) {
 		vars["_source_hack"] = 
 			(vars["_INTERNAL_nick_plain"] || vars["_nick"])
@@ -407,15 +396,22 @@ w(string mc, string data, mapping vars, mixed source) {
 			+"@" SERVER_HOST;
 	    } else // should never happen
 		vars["_source_hack"] = to_string(source);
+# else // EXPERIMENTAL
+	    nick2 = vars["_INTERNAL_nick_plain"] || vars["_nick"];
+	    vars["_source_hack"] = nick2 ? nick2
+		  +"!"+ (vars["_nick_long"] || vars["_INTERNAL_nick_plain"]
+					    || vars["_nick"]) +"@" SERVER_HOST
+		    : to_string(source); // should never happen
+# endif
 	} else if (abbrev("_echo_place_enter", mc)) {
 	    vars["_source_hack"] = MYNICK + "!" + MYNICK + "@" SERVER_HOST;
 #endif
 	} else {
-#ifdef GHOST
+#ifdef GHOST //{{{
 	    // in S2S mode we are not supposed to deliver nick!user@host
 	    // thus we use plain nicks or plain uniforms
 	    vars["_source_hack"] = source;
-#else
+#else //}}}
 	    u = parse_uniform(source);
 	    unless (u) {
 		// this happens when a user@host notation gets here..
@@ -431,8 +427,7 @@ w(string mc, string data, mapping vars, mixed source) {
 		nick2 = raliases[source];
 		vars["_source_hack"] = nick2 + ((u[UUser] || 
 				       (u[UResource] && u[UResource][0]))
-		    ? "!" + (u[UUser] || u[UResource][1..])
-		      + "@" + u[UHost]
+		    ? "!"+ UName(u) +"@"+ u[UHost]
 		    : "!"+ (vars["_nick_long"] || vars["_INTERNAL_nick_plain"]
 			    || vars["_nick"])
 		      +"@alias.undefined");
@@ -444,10 +439,10 @@ w(string mc, string data, mapping vars, mixed source) {
     case "psyc":
 		    if (u[UUser] || (u[UResource] && strlen(u[UResource])
 				     && u[UResource][0] == '~')) {
+			string tmp = UName(u);
 			vars["_source_hack"] = u[UScheme] + "://"
-			+ u[UHostPort] + "/~" + (u[UUser] || u[UResource][1..])
-			+ "!" + (u[UUser] || u [UResource][1..]) + "@"
-			+ u[UHostPort];
+			    + u[UHostPort] +"/~"+ tmp +"!"+ tmp +"@"
+			    + u[UHostPort];
 			P4(("w:psyc _source_hack %O\n", vars["_source_hack"]))
 		    } else {
 			vars["_source_hack"] = uniform2irc(source)
@@ -508,7 +503,7 @@ w(string mc, string data, mapping vars, mixed source) {
 		output[<2] = 0x01;
 		emit(output);
 		return 1;
-#  ifdef IRC_FRIENDCHANNEL
+#  ifdef IRC_FRIENDCHANNEL //{{{
 	    } else {
 #   ifdef IRC_FRIENDCHANNEL_HEREAWAY
 		string old = vars["_degree_availability_old"];
@@ -539,14 +534,14 @@ w(string mc, string data, mapping vars, mixed source) {
 		else
 		   emit(":"+ SERVER_HOST +" MODE & -v-o "+ vars["_nick"] +"\n");
 #   endif
-#  endif
+#  endif //}}}
 	    }
 	} else
 # endif
 	P2(("irc/user:w(%O,%O,..,%O)\n", mc, data, source))
 	t = 0;
 	PSYC_TRY(mc) {
-#ifdef IRC_FRIENDCHANNEL
+#ifdef IRC_FRIENDCHANNEL //{{{
 	case "_list_friends_offline":   // _tab
 		t = " "; // fall thru
 	case "_list_friends_away":  // _tab
@@ -587,7 +582,13 @@ w(string mc, string data, mapping vars, mixed source) {
 		    reply(RPL_ENDOFNAMES, "& :End of Buddylist.");
 # endif
 		return 1;
-#endif
+#endif //}}}
+	case "_status_place_topic":
+		// traditional IRC topic message without author
+		render(mc +"_only", 0, vars);
+		// extra semi-official '333' code containing author and time
+		render(mc +"_author", 0, vars);
+		return 1;
 	case "_status_place_members_automatic":
 		mc = "_status_place_members"; // fall thru
 	case "_status_place_members":
@@ -684,13 +685,13 @@ w(string mc, string data, mapping vars, mixed source) {
 		     "_nick_new" : vars["_alias"] ])) + "\n");
 		break;
 #endif
+#ifdef ENTER_MEMBERS //{{{
 // now obsolete since net/user does the rendering of _list_members
 // and converts it to _status_members* w()
-#ifdef ENTER_MEMBERS
 	case "_echo_place_enter":
 		namreply(vars);
 		break;
-#endif
+#endif //}}}
 	case "_message_public":
 	case "_message":
 	case "_notice_place_leave":
@@ -741,29 +742,25 @@ wAction(mc, data, vars, source, variant, nick) {
     return ::wAction(mc, data, vars, source, variant, nick);
 }
 
-#ifndef HISTORY_AMOUNT
-# define HISTORY_AMOUNT 5
+#ifndef _limit_amount_history_place_default
+# define _limit_amount_history_place_default 5
 #endif
 
 // irc has it's own autojoin, which is a little different from others
 autojoin() {
-#ifndef GHOST		// too tricky for now
+#if !defined(_flag_disable_place_enter_automatic) && !defined(GHOST)		// too tricky for now
     mixed t, t2;
-#if 0 //def DRIVER_HAS_SMALL_BUFFER
-    int delay;
-#endif
     string s;
 
     if (isService) return -1;
+# ifndef GAMMA
     unless (v("place"))
       vSet("place", T("_MISC_defplace", DEFPLACE));
+# endif
     // subscriptions are stored in lowercase, warum auch immer
     if (sizeof(v("subscriptions"))) 
 	foreach (s in v("subscriptions")) {
-#if 0 //def DRIVER_HAS_SMALL_BUFFER
-	    call_out(#'placeRequest, delay++, s, "_request_enter", //_automatic_subscription
-		     0, 0, ([ "_amount_history" : HISTORY_AMOUNT ]));
-#else
+	    // call_out(#'placeRequest, delay++, s, "_request_enter", //_automatic_subscription
 	    placeRequest(s,
 # ifdef SPEC
                          "_request_context_enter"
@@ -771,32 +768,33 @@ autojoin() {
                          "_request_enter"
 # endif
                          , // _automatic_subscription
-		     0, 0, ([ "_amount_history" : HISTORY_AMOUNT ]));
-#endif
+		     0, 0, ([ "_amount_history" : _limit_amount_history_place_default ]));
     } else {
-#if 0 //def DRIVER_HAS_SMALL_BUFFER
-	call_out(#'placeRequest, delay++, v("place"), "_request_enter_login", 
-		 0, 0, ([ "_amount_history" : HISTORY_AMOUNT ]));
-#else
-	placeRequest(v("place"),
-# ifdef SPEC
-                     "_request_context_enter"
-# else
-                     "_request_enter"
+# ifdef GAMMA
+	unless (v("place"))
+	  vSet("place", T("_MISC_defplace", DEFPLACE));
 # endif
+# ifndef _flag_disable_place_default
+	// call_out(#'placeRequest, delay++, v("place"), ...
+	placeRequest(v("place"),
+#  ifdef SPEC
+                     "_request_context_enter"
+#  else
+                     "_request_enter"
+#  endif
                      "_login", 0, 0, 
-		     ([ "_amount_history" : HISTORY_AMOUNT ]));
-#endif
+		     ([ "_amount_history" : _limit_amount_history_place_default ]));
+# endif
     }
-#ifdef IRC_FRIENDCHANNEL
-# ifdef IRC_FRIENDCHANNEL_HEREAWAY
+# ifdef IRC_FRIENDCHANNEL //{{{
+#  ifdef IRC_FRIENDCHANNEL_HEREAWAY
     emit(":"+ MYNICK +" JOIN :&HERE\n");
     emit(":"+ MYNICK +" JOIN :&AWAY\n");
-# else
+#  else
     emit(":"+ MYNICK +" JOIN :&\n");
-# endif
-#endif
-#endif
+#  endif
+# endif //}}}
+#endif // GHOST || _flag_disable_place_enter_automatic
 }
 
 logon() {
@@ -812,6 +810,13 @@ logon() {
 	// vDel("agent"); -- either you start a ctcp to find it out
 	//		     or we prefer to have the old info
 	vDel("query");	// server-side query would drive most ircers crazy
+#if 0
+	// what's wrong with doing this.. here?
+	// it's redundant, as it happens again in ::logon
+	sTextPath(0, v("language"), v("scheme"));
+	// it's necessary for _request_user_amount to work
+	// let's see if we can simply postpone that to after ::logon
+#endif
 	//
 	// this helps handle the /set visiblespeakaction setting if this
 	// define has changed
@@ -863,11 +868,22 @@ logon() {
 	// SILENCE: ach und ich weiss nicht ob /quote silence bzw /silence den psyced befehl silence aufruft, aber imo sollte er das aus verwirrungs-vermeidungs-gruenden nicht tun. silence im irc ist serverseitiges ignore.
 
 # endif
+# ifndef BETA
 	lusers();
+# endif
 	motd();
 	rc = ::logon();
-	// we have to do this after logon, or the textdb will fail
-# ifndef NO_IRC_AUTO_REQUEST_VERSION
+	// the following things happen after logon, because the textdb isn't
+	// available earlier. if this order of things is not acceptable, then
+	// we have to run sTextPath twice (see above)
+# ifdef BETA
+#  ifndef _flag_disable_query_server
+	sendmsg("/", "_request_user_amount", 0, ([]));
+	// reply.h says RPL_LUSERME is mandatory.. huh.. FIXME?
+	// #255 [_nick_me] :I have 4404 clients and 4404 servers
+#  endif
+# endif
+# ifndef _flag_disable_request_version_IRC
 	// since we cannot relay tagged version requests to the client
 	// easily, we request the version number once at starting time.
 	// any other protocol finds it completely normal to exchange
@@ -995,6 +1011,7 @@ case "mode":
 		return 1;
 case "topic":
 		unless (args && strlen(args)) return;
+		P4(("IRC topic %O %O\n", args, text))
 		unless (t = channel2place(args)) return;
 		t = find_place(t) || t;
 		// The topic for channel <channel> is returned if there is
@@ -1022,16 +1039,30 @@ case "user":
 		vSet("mottotext", text);
 		return 1;
 case "invite":
-		sscanf(args, "%s #%s", n, t);
-		// t = channel2place(t) || t;
-		vSet("place", t);
-		place = find_place(t);
-		P2(("irc: invite %s into %s = %O\n", n, t, place))
-		if (invite(n)) {
-			// room should send this if successful or
-			// ERR_USERONCHANNEL or ERR_CHANOPRIVSNEEDED otherwise?
-			reply(RPL_INVITING, args);
+		if (sscanf(args, "%s #%s", n, t) && strlen(t)) {
+			t2 = find_place(t);
+			if (!t2 || !places[t2]) {
+				PT(("irc: invite %s into %s = %O.\n", n, t, t2))
+				w("_error_necessary_membership",
+					0, ([ "_nick_place": t ]));
+				return 1;
+			}
+			vSet("place", t);
+			place = t2;
+		} else {
+#if 0
+			// atypical: allow for invite using current place.
+			n = args;
+			// runs the risk of you inviting the person to the
+			// wrong channel. too risky. let's go traditional:
+#else
+			reply(ERR_NEEDMOREPARAMS,
+			      "INVITE :Not enough parameters");
+			return 1;
+#endif
 		}
+		if (invite(n)) reply(RPL_INVITING, args);
+		// else: ERR_USERONCHANNEL or ERR_CHANOPRIVSNEEDED otherwise?
 		return 1;
 case "join":
 case "part":
@@ -1153,7 +1184,7 @@ static privmsg(args, text, req) {
 
 	unless (stringp(text) && strlen(text)) return;
 
-#ifdef EXPERIMENTAL
+#ifdef GAMMA
 	// fippoism typing indicator.. but shouldn't it *do* something
 	// after detecting this CTCP-like "typing" flag hack?
 	if (strlen(text) > 1 && text[<1] == 0x0f && text[<2] == 0x0f) {
@@ -1161,9 +1192,9 @@ static privmsg(args, text, req) {
 	}
 #endif
 	if (index(args, ',') > 0) {
-	    w("_failure_unsupported_targets_multiple",
+		w("_failure_unsupported_targets_multiple",
 	"We do not allow sending to several recipients at once. Why did your client ignore our MAXTARGETS=1 directive?");
-	     return 0;
+		return 0;
 	}
 	if (room = channel2place(args)) {
 	    if (!place || !v("place") || stricmp(room, v("place"))) {

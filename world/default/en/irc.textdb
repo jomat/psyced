@@ -1,4 +1,5 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
+## Check utf-8: Praise Atatürk!
 
 _status_AREYOUNUTS
 |:[_source_hack] NOTICE [_nick_me] :[_data]
@@ -122,6 +123,9 @@ _request_version
 _error_unknown_name_user
 |#401 [_nick_me] [_nick_target] :{_error_unknown_name_user}
 
+_error_necessary_membership
+|#403 [_nick_me] #[_nick_place] :{_error_necessary_membership}
+
 _error_status_place_matches
 |## das lassen wir weg, weil manche clients unbedingt den join nochmal
 |## abschicken wollen
@@ -141,6 +145,19 @@ _message_private
 
 _message_public
 |:[_source_hack] PRIVMSG #[_nick_place] :[_data]
+
+_message_echo_private
+|## let's see how clients deal with messages to a remote target echoed back
+|## it will probably not look good, but the clients need to fix that really
+|:[_source_hack] PRIVMSG [_nick_target] :[_data]
+|## oh, ircII is pretty cool about this. it shows:
+|## -source:target- message
+
+_message_echo_private_NOT
+|## without this format, "You tell.. " is generated
+|## this is how BNC sends it instead:
+|:[_source_hack] PRIVMSG [_nick_me] :<- <[_nick_me]> [_data]
+|## which is just like _message_private with an extra that isn't tamper-proof
 
 _message_echo_public
 |:[_source_hack] PRIVMSG #[_nick_place] :[_data]
@@ -290,6 +307,9 @@ _failure_unsupported_ping
 |## yes, this is a pong also...
 |:[_source_hack] NOTICE [_nick_me] :%PING [_time_ping]%
 
+_info_server_version
+|:[_host_server] 351 [_nick_me] [_version].[_degree_debug] [_host_server] :[_version_server] using [_version_driver] available from [_page_server_software]
+
 _status_version
 |:[_source_hack] NOTICE [_nick_me] :%VERSION [_version_description] ([_version])%
 
@@ -312,9 +332,16 @@ _status_place_members
 |#353 [_nick_me] = #[_nick_place] :[_members]
 
 _status_place_topic
-|## #332 [_nick_me] #[_nick_place] :{_status_place_topic}
 |## traditional IRC would be to leave out the _nick here
 |#332 [_nick_me] #[_nick_place] :[_topic] ([_nick])
+|## modern IRC is to send a semi-official 333 code
+|## this entry is unused. the following two are used instead:
+
+_status_place_topic_only
+|#332 [_nick_me] #[_nick_place] :[_topic]
+
+_status_place_topic_author
+|#333 [_nick_me] #[_nick_place] [_nick] [_INTERNAL_time_topic] :{_status_place_topic_author}
 
 _status_place_topic_none
 |#331 [_nick_me] :{_status_place_topic_none}

@@ -1,5 +1,11 @@
-// $Id: irc.h,v 1.17 2008/01/16 10:59:30 lynx Exp $ // vim:syntax=lpc
-//
+// $Id: irc.h,v 1.19 2008/08/11 09:13:12 lynx Exp $ // vim:syntax=lpc
+
+// local debug messages - turn them on by using psyclpc -DDirc=<level>
+#ifdef Dirc
+# undef DEBUG
+# define DEBUG Dirc
+#endif
+
 #include <net.h>
 
 #ifndef NO_INHERIT
@@ -31,3 +37,4 @@ inherit IRC_PATH "common";
 #ifndef IRCD
 # define	IRCD	D3
 #endif
+

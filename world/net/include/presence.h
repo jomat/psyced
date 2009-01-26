@@ -1,7 +1,8 @@
-// $Id: presence.h,v 1.9 2007/07/25 09:57:32 lynx Exp $ // vim:syntax=lpc:ts=8
+// $Id: presence.h,v 1.11 2008/07/26 10:54:30 lynx Exp $ // vim:syntax=lpc:ts=8
 //
 #ifndef _INCLUDE_PRESENCE_H
 #define _INCLUDE_PRESENCE_H
+#ifndef _flag_disable_module_presence
 
 // similar to what is defined as "availability"
 // in http://www.psyc.eu/presence
@@ -22,10 +23,12 @@
 #define AVAILABILITY_REALTIME		9	// as yet unused, name?
 
 // more unused stuff from http://www.psyc.eu/presence
+// see also english wording currently in net/library/share.c
 #define	MOOD_JUCHEI			8
 #define	MOOD_BASSTSCHO			6
 #define	MOOD_NAJA			4
 #define	MOOD_LEXTSMIAMOARSCHI		2
-// see also english wording currently in net/library/share.c
+#define	MOOD_UNSPECIFIED		0
 
+#endif // _flag_disable_module_presence
 #endif

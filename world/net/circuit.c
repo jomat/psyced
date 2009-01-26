@@ -1,5 +1,5 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: circuit.c,v 1.104 2008/03/29 20:05:32 lynx Exp $
+// $Id: circuit.c,v 1.107 2008/07/04 18:37:21 lynx Exp $
 //
 // net/circuit - generic circuit manager
 //
@@ -15,6 +15,12 @@
 //
 // also.. maybe one day this object will take care of _context
 // optimizations.. just maybe.. maybe the places will do..
+
+// local debug messages - turn them on by using psyclpc -DDcircuit=<level>
+#ifdef Dcircuit
+# undef DEBUG
+# define DEBUG Dcircuit
+#endif
 
 #if defined(DEBUG) && DEBUG > 1
 # define CONNECT_RETRY          2	// seconds for testing
@@ -77,7 +83,7 @@ void reconnect() {
 	if (ISSYNC || retry++ < MAX_RETRY) {
 		waitforme = waitforme * 2 + random(waitforme);
 		call_out(#'connect, waitforme);
-		P1(("%O trying to reconnect in %d secs\n", ME, waitforme))
+		P2(("%O trying to reconnect in %d secs\n", ME, waitforme))
 		return;
 	}
 	connect_failure("_repeated",
@@ -89,7 +95,7 @@ void pushback(string failmc) {
 	mixed *t, o;
 	mapping vars;
 
-	P1(("%O pushback of queue(%O) (size %O).\n", failmc, me, qSize(me)))
+	P2(("%O pushback of queue(%O) (size %O).\n", failmc, me, qSize(me)))
 	while(qSize(me) && (t = shift(me))) {
 	    // is it okay to append pushback mc?
 	    // or should we even append the mc of the respective message!?
@@ -115,7 +121,7 @@ void pushback(string failmc) {
 	    if (t[1] == mc) {
 		    // this happens when the place is stupid enough to
 		    // castmsg the failure.
-		    P0(("%O caught attempt to resend %O to %O || %O\n",
+		    P1(("%O caught attempt to resend %O to %O || %O\n",
 			ME, mc, o, t[0]))
 	    } else sendmsg(o || t[0], mc, // ok, should this message really
 					  // have its original target as
@@ -151,6 +157,8 @@ void pushback(string failmc) {
 	// P2(("%O qDel(%O) and autodestruct\n", ME, me))
 	qDel(me);	// not sure if this is necessary but looks safer
 	destruct(ME);
+	// alright. so this is where we want to do something
+	// differently, like remember that this host didn't work.  TODO
 }
 
 // wouldn't it be nicer to also pass real vars here?
@@ -162,7 +170,7 @@ void connect_failure(string mc, string reason) {
 
 int msg(string source, string method, string data,
 	    mapping vars, int showingLog, mixed target) {
-	P0(("%O:msg() shouldn't get called. overload me!\n", ME))
+	P1(("%O:msg() shouldn't get called. overload me!\n", ME))
 	return 0;
 }
 
@@ -172,7 +180,7 @@ circuit(ho, po, transport, srv, whoami, sysQ, uniform) {
 		// happens apparently when a racing condition occurs
 		// during upgrade from xmpp to psyc.. hm! queue fails
 		// to deliver in that case and waits for next chance TODO
-		P0(("%O loaded twice for %O and %O\n", ME, me, whoami))
+		P1(("%O loaded twice for %O and %O\n", ME, me, whoami))
 		return ME;
 	}
 	q = mappingp(sysQ) ? sysQ : system_queue();
@@ -196,7 +204,7 @@ circuit(ho, po, transport, srv, whoami, sysQ, uniform) {
 // who needs this? who calls this? /rm and derivatives. shutdown() too.
 // net/psyc/active because net/psyc/server has its own
 quit() {
-	P1(("%O quit.\n", ME))
+	P2(("%O quit.\n", ME))
 	remove_interactive(ME);
 	//destruct(ME);
 }
@@ -205,7 +213,7 @@ runQ() {
 	mixed *t, source;
 
 	D2(unless (me) raise_error("unitialized circuit\n");)
-	P2(( "%O runQ of size %O\n", ME, qSize(me)))
+	P3(( "%O runQ of size %O\n", ME, qSize(me)))
 	// causes an exception when q is too big
 	P4(( "%O\n", q))
 	while (qSize(me) && (t = shift(me))) {
@@ -231,7 +239,7 @@ runQ() {
 
 connect(ho, po, transport, srv) {
 	if (interactive()) return -8;
-	P2(("connect: %O, %O, %O, %O for %O\n", ho, po, transport, srv, ME))
+	P3(("connect: %O, %O, %O, %O for %O\n", ho, po, transport, srv, ME))
 	if (time() < time_of_connect_attempt + waitforme) return -2;
 	if (ho) {	// paranoid: stringp(ho) && strlen(ho)) {
 		if (po) port = po;
@@ -242,7 +250,7 @@ connect(ho, po, transport, srv) {
 		} else 
 #endif
 		host = lower_case(ho);
-		P1(("connect.%s:\t%O, %O, %O\t%O\n", srv || "to",
+		P2(("connect.%s:\t%O, %O, %O\t%O\n", srv || "to",
 				 ho, po, transport, ME))
 	}
 #ifndef ERQ_WITHOUT_SRV
@@ -287,13 +295,13 @@ varargs int enqueue(mixed source, string method, string data,
 // with a context *instead* of a source, so it's pointless to complain...
 //
 //	unless (vars["_source"]) {
-//	    P0(("tell lynX: enqueue without _source for %O from %O in %O\n",
+//	    P1(("tell lynX: enqueue without _source for %O from %O in %O\n",
 //	       	method, source, ME))
 //	    //vars["_source"] = psyc_name(source);
 //	    raise_error("tell lynX where it happened!!\n");
 //	} 
 #endif
-	P3(("enqueue for %O\n", source))
+	P4(("enqueue for %O\n", source))
 	connect(); // will only connect if we once had been connected before
 	return ::enqueue(me, ({ source, method, data, vars, target, mvars }) );
 }

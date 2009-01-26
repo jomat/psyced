@@ -1,5 +1,5 @@
 //						vim:noexpandtab:syntax=lpc
-// $Id: place.gen,v 1.135 2008/04/16 16:59:41 lynx Exp $
+// $Id: place.gen,v 1.137 2008/09/12 15:37:39 lynx Exp $
 //
 // documentation on http://about.psyc.eu/Create_Place
 //
@@ -56,8 +56,8 @@
 # ifdef NAME
 #  define REDIRECT	CONNECT
 #  ifndef CONNECT
-#   ifdef SERVER_URL
-#    define CONNECT	SERVER_URL "@" NAME
+#   ifdef _uniform_node
+#    define CONNECT	_uniform_node "@" NAME
 #   else
 #    define CONNECT	"psyc://" SERVER_HOST "/@" NAME
 #   endif
@@ -72,8 +72,8 @@
 #ifdef SLAVE
 # ifndef CONNECT
 #  ifdef NAME
-#   ifdef SERVER_URL
-#    define CONNECT	SERVER_URL "@" NAME
+#   ifdef _uniform_node
+#    define CONNECT	_uniform_node "@" NAME
 #   else
 #    define CONNECT	"psyc://" SERVER_HOST "/@" NAME
 #   endif
@@ -311,11 +311,11 @@ void create() {
 	P1(("PLACE %O MASTER\n", ME))
 #  endif
 # endif
-# ifdef SERVER_URL
-#  if CONNECT == SERVER_URL
-	D1(D("link [" CONNECT "] == host ["+ SERVER_URL +"]\n");)
+# ifdef _uniform_node
+#  if CONNECT == _uniform_node
+	D1(D("link [" CONNECT "] == host ["+ _uniform_node +"]\n");)
 #  else
-	D1(D("link [" CONNECT "] != host ["+ SERVER_URL +"]\n");)
+	D1(D("link [" CONNECT "] != host ["+ _uniform_node +"]\n");)
 #  endif
 # endif
 #endif
@@ -559,6 +559,11 @@ msg(source, mc, data, vars) {
 # ifdef ON_ANY
 	ON_ANY
 # endif 
+# ifdef ON_CONVERSE
+	if (abbrev("_message", mc)) {
+		ON_CONVERSE
+	}
+# endif
 # ifdef REDIRECT
 	sendmsg(source, "_failure_redirect_temporary",
 	    "[_nick_place] is currently unable to fulfil this operation. Please direct your request to [_source_redirect]",
@@ -574,11 +579,6 @@ msg(source, mc, data, vars) {
 	return 0;
 # else
 	::msg(source, mc, data, vars);
-#  ifdef ON_CONVERSE
-	if (abbrev("_message", mc)) {
-		ON_CONVERSE
-	}
-#  endif
 # endif
 }
 #endif

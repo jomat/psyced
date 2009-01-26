@@ -1,4 +1,4 @@
-// $Id: root.c,v 1.30 2008/03/11 13:42:25 lynx Exp $ // vim:syntax=lpc
+// $Id: root.c,v 1.36 2008/10/01 10:59:47 lynx Exp $ // vim:syntax=lpc
 //
 // system root object that responds to psyc://host/ and similar addresses
 //
@@ -12,7 +12,7 @@
 // use this.
 //inherit NET_PATH "entity"
 
-msg(source, mc, data, vars, target) {
+msg(source, mc, data, vars, showingLog, target) {
 	mapping rv = ([ "_nick" : query_server_unl() ]);
 	mixed t;
 	string family;
@@ -22,9 +22,10 @@ msg(source, mc, data, vars, target) {
 	unless (source) source = vars["_INTERNAL_source"]
 			      || vars["_INTERNAL_origin"];
 
-	PT(("%O msg(%O, %O, %O, %O, %O)\n",
+	P2(("%O msg(%O, %O, %O, %O, %O)\n",
 	    ME, source, mc, data, vars, target))
 	PSYC_TRY(mc) {
+#ifndef _flag_disable_module_authentication
 	case "_notice_authentication":
 		P0(("%O got a _notice_authentication. never happens since entity.c\n", ME))
 		register_location(vars["_location"], source, 1);
@@ -32,6 +33,7 @@ msg(source, mc, data, vars, target) {
 	case "_error_invalid_authentication":
 		monitor_report(mc, psyctext("Breach: [_source] reports invalid authentication provided by [_location]", vars, data, source));
 		return 1;
+#endif
 	    // the following two requests look like PSYC but they are
 	    // actually implementing XMPP disco features. it is as yet
 	    // undecided, whether PSYC should solve this type of necessity
@@ -44,14 +46,23 @@ msg(source, mc, data, vars, target) {
 #else
 		rv["_name"] = SERVER_VERSION;
 #endif
-		rv["_list_feature"] = ({ "list_feature", "list_item", "version",    // _tab
-					"time", "lasttime" }); 
-#ifndef REGISTERED_USERS_ONLY
-		rv["_list_feature"] += ({ "registration" });
+		rv["_list_feature"] = ({
+			// pidgin sends _request_list_item even
+			// if list_item was not negotiated..
+			// so we might aswell give up trying not to provide it
+				        "list_item",
+#ifndef _flag_disable_query_server
+				       	"version",    // _tab
+					"time", "lasttime"
+#endif
+#if !defined(REGISTERED_USERS_ONLY) && !defined(_flag_disable_registration_XMPP)
+					"registration",
 #endif
 #ifndef VOLATILE
-		rv["_list_feature"] += ({ "offlinestorage" });
+					"offlinestorage",
 #endif
+					"list_feature"		// _tab
+		}); 
 		sendmsg(source, "_notice_list_feature_server",
 			"[_nick] is a [_identity] called [_name] offering features [_list_feature].",
 			rv);
@@ -74,6 +85,7 @@ msg(source, mc, data, vars, target) {
 			"[_nick] has lots of items: [_list_item_description].",
 			rv);
 		return 1;
+#ifndef _flag_disable_query_server
 	// move to a common msg() for all entities including root?
 	case "_request_version":
 		rv["_version_description"] = SERVER_DESCRIPTION;
@@ -81,31 +93,36 @@ msg(source, mc, data, vars, target) {
 		sendmsg(source, "_status_version",
     "Version: [_nick] is hosted on a \"[_version_description]\" ([_version]).", rv);
 		return 1;
+        // same code in person.c
 	case "_request_ping":
 		sendmsg(source, "_echo_ping",
 				"[_nick] pongs you.", rv);
 		return 1;
 	case "_request_description_time":
-#ifdef __BOOT_TIME__	// all recent ldmuds have this
+# ifdef __BOOT_TIME__	// all recent ldmuds have this
 		rv["_time_boot"] = __BOOT_TIME__;
 		rv["_time_boot_duration"] = time() - __BOOT_TIME__;
 		sendmsg(source, "_status_description_time", 0, rv);
-#else
+# else
 		sendmsg(source, "_error_request_description_time", 0, rv);
-#endif
+# endif
 		return 1;
 	case "_query_users_amount":	// old, please remove
 	case "_request_user_amount":
-#ifdef NO_MARKETING // they dont like giving this numbers to everyone :-)
-		rv["_amount_users_online"] = amount_people();
-#else
+# ifdef _flag_disable_query_amount_users_online
 		rv["_amount_users_online"] = -1;
-#endif
+# else
+		rv["_amount_users_online"] = amount_people();
+# endif
 		rv["_amount_users_registered"] = -1; // how to get this?
 		// <kuchn> maybe read in the user directory so you have the amount of registered users.
+		// <lynX> i think it isn't anybody's business...
+		//	  in the name of privacy we should be
+		//	  giving out random numbers instead of -1..  ;)
 		sendmsg(source, "_status_user_amount",
-		    "There are [_amount_users_online] users online.", rv);
+		    "[_source] has [_amount_users_online] users online.", rv);
 		return 1;
+#endif // _flag_disable_query_server
 	case "_error":
 	case "_warning":
 	case "_failure":
@@ -124,16 +141,39 @@ msg(source, mc, data, vars, target) {
 	case "_notice_forward":
 		P1(("%O got a %O.. eh!???\n", ME, mc))
 		return 1;
+	case "_request_legacy_CTCP":
+//		sendmsg(source, "_status_legacy_CTCP", 0,
+//			    ([ "_type": vars["_type"],
+//			      "_value": "You must be mislead." ]));
+		// fall thru
+	case "_status_legacy_CTCP":
+		P1(("%O got CTCP %O from %O: %O\n", ME, vars["_type"],
+		    source, vars["_value"]))
+		return 1;
 	PSYC_SLICE_AND_REPEAT
 	}
-	P1(("%O unexpected msg(%O, %O, %O, %O, %O)\n",
-	    ME, source, mc, data, vars, target))
 	rv["_method_relay"] = mc;
-	rv["_target_relay"] = target;
-	rv["_source_relay"] = source;
-//              sendmsg(source, "_error_unsupported_method",
-//                      "Don't know what to do with '[_method]'.",
-//                      ([ "_method" : mc ]), "");
-	sendmsg(source, "_failure_unsupported_function_root", 0, rv);
+	rv["_target_relay"] = target || vars["_target"];
+	rv["_source_relay"] = source || vars["_source"];
+	if (vars["_context"]) {
+		// we get here when one or more local recipients have been
+		// inserted into a context by local hostname. group/master
+		// will then expect a context slave here, but we don't have
+		// slaves for local objects. this is a data or configuration
+		// mistake - local objects should have been resolved into
+		// object pointers before getting here. this can however
+		// happen when moving account data between server installations,
+		// or when a user intentionally inserts a local user by full
+		// url. that should be handled.. TODO
+		rv["_context_relay"] = vars["_context"];
+		P1(("Invalid route in context: msg(%O, %O, %O, %O, %O) -> %O\n",
+		    source, mc, data, vars, target, rv))
+		sendmsg(source, "_failure_invalid_route", 0, rv);
+		return 1;
+	} else {
+		P1(("%O unexpected msg(%O, %O, %O, %O, %O)\n",
+		    ME, source, mc, data, vars, target))
+		sendmsg(source, "_failure_unsupported_function_root", 0, rv);
+	}
 	return 0;
 }

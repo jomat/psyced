@@ -1,5 +1,5 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: archetype.gen,v 1.66 2008/04/13 14:07:07 lynx Exp $
+// $Id: archetype.gen,v 1.85 2008/11/29 08:24:10 lynx Exp $
 //
 // the meta-generator that contains all sorts of PSYC room code and with
 // a few defines and an include generates cloneable room implementations.
@@ -116,11 +116,21 @@
 // also it is limited to before/after hooks unless you make the structure
 // complex enough to carry unlimited hooks (ppp doesn't and tries to cope).
 
+// local debug messages - turn them on by using psyclpc -DDplace=<level>
+#ifdef Dplace
+# undef DEBUG
+# define DEBUG Dplace
+#endif
+
 #include <net.h>
 #include <person.h>
 #include <status.h>
 #include <url.h>
 #include <driver.h>
+
+#ifdef BETA
+# define ECHOES
+#endif
 
 #ifdef PLACE_HISTORY
 # include <text.h>		// inherits textc
@@ -325,7 +335,7 @@ msgView(source, mc, data, vars, showingLog) {
 		}
 # endif
 		source = ME;
-# if 1 //def NOT_EXPERIMENTAL
+# if 1
 		// yes history is not multicast, but when retransmitting
 		// earlier multicasts you are supposed to provide
 		// both _target and _context
@@ -389,9 +399,10 @@ sTopic(text, source, nick) {
 #else
 # define OFFICIAL 0
 #endif
-	if (stringp(text) && strlen(text) > 1) {
+	if (stringp(text) && strlen(text)) {
 		vSet("topic", text);
 		vSet("topic-user", nick);
+		vSet("topic-time", time());
 		// TODO: no support for _official.. yet
 		castmsg(ME, "_notice_place_topic",
 		    "New topic in [_nick_place] by [_nick]: [_topic]",
@@ -421,6 +432,11 @@ showTopic(rcpt, verbose, mc) {
 			    : "_status_place_topic",
 		"Topic by [_nick]: [_topic]",
 		    ([ "_nick" : v("topic-user"),
+			    // '123456789' is a dummy for old place data
+			    // that has no topic timestamp
+		      "_time_place" : v("topic-time") || 123456789,
+			    // this one is used by IRC
+		      "_INTERNAL_time_topic" : v("topic-time") || 123456789,
 		      "_topic" : v("topic"),
 		      "_nick_place" : MYNICK,
 	  ]) );
@@ -478,12 +494,14 @@ htget(prot, query, headers, qs, data, noprocess) {
 		    if (buf != v("scratchpad")) {
 			vSet("scratchpad", buf);
 			m_add(used, query["id"]);
-			call_out(#'m_delete, 86400 /* 24 hours */,
-				 used, query["id"]);
+// some people bookmark the page after saving, thus they resubmit the used
+// id days later.. don't know what to do about that, but this is not helpful:
+//			call_out(#'m_delete, 86400 /* 24 hours */,
+//				 used, query["id"]);
 
 			castmsg(ME, "_notice_update_scratchpad",
 			    "The [_page_scratchpad] has changed.", ([
-#ifdef PRO_PATH
+#ifdef PRO_PATH // __TLS__
 			       "_page_scratchpad":
 				  ((tls_available() && HTTPS_URL) || HTTP_URL)
 #else
@@ -510,6 +528,12 @@ htget(prot, query, headers, qs, data, noprocess) {
 		// is a bit paranoid really. this function would probably
 		// work fine without a "given" mapping. well saga is a
 		// perfectionist and we usually love him for that  ;)
+		//
+		// FIXME would be more useful to never delete given tokens so we
+		// can figure out when a request is coming in with a token
+		// that has never been given out (older than last restart,
+		// bookmarked months ago etc). given & used could be
+		// optimized to be the same mapping with state machine values.
 
 		w("_PAGES_group_scratchpad", 0,
 			([ "_scratchpad" : htquote(v("scratchpad") || ""),
@@ -576,6 +600,7 @@ htget(prot, query, headers, qs, data, noprocess) {
 	if (query["from"] == "") query["from"] = 0;
 	if (query["location"] == "") query["location"] = 0;
 
+	// should be renamed into _notice_examine_web_place
 	castmsg(ME, "_notice_place_examine_web", "[_nick_place] inspected on [_web_on] coming from [_web_from].",
 	([	"_web_referrer" : query["from"] || "bookmark",
 		"_web_page" : query["location"] || headers["referer"] || "",
@@ -584,8 +609,7 @@ htget(prot, query, headers, qs, data, noprocess) {
 			    headers["user-agent"] || "",
 		"_web_from" : query["from"] ||
 			//    query_ip_name(this_interactive()) ||
-			    headers["user-agent"] ||
-			     "http",
+			    headers["user-agent"] || "http",
 		"_host_name" : query_ip_name(this_interactive()) || "",
 		"_nick_place" : MYNICK || "This place",
 	    ]) );
@@ -641,7 +665,7 @@ castPresence(source, mc, data, vars, filterpresence) {
 // actually insert the new member into our data structures
 // (happens after all checks have passed)
 insert_member(source, mc, data, vars, ni, neu, again) {
-#ifdef EXPERIMENTAL
+#ifdef GAMMA
 	unless (ni) {
 		P0(("insert_member w/out nick for %O in %O.\n", source, ME))
 		// try to make the ugly three trailing parameters optional
@@ -706,15 +730,17 @@ insert_member(source, mc, data, vars, ni, neu, again) {
 	    vars["_uniform_style"] = v("_uniform_style");
 	// we set it on all requests instead
 //		if (v("topic")) vars["_topic"] = v("topic");
-#ifdef PLACE_OWNED	// NOT_EXPERIMENTAL
+#ifdef PLACE_OWNED
+	int nuowna = 0;
+
 	// NEW: if OWNERS have not been provided by place.gen
 	// we'll make the first guy who walks in our owner.
 	unless (v("owners")) {
 		vSet("owners", ([ SNICKER: source ]));
-		sendmsg(source, "_warning_place_duty_owner",
-		    "You are the new owner of [_nick_place].",
-			([ "_nick_place" : MYNICK ]));
-		vars["_duty"] = "_owner";
+		// don't send _warning_place_duty_owner
+		// before acquitting enter operation..
+		vars["_duty"] = "owner"; // _owner_new ?
+		nuowna = 1;
 	} else {
 		int level = qAide(SNICKER);
 
@@ -769,6 +795,12 @@ insert_member(source, mc, data, vars, ni, neu, again) {
 	// visible as channels in any user interface
 	if (neu &&! v("_filter_conversation"))
 	    onEnter(source, mc, data, vars);
+#ifdef PLACE_OWNED
+	if (nuowna)
+	    sendmsg(source, "_warning_place_duty_owner",
+		"You are the new owner of [_nick_place].",
+		    ([ "_nick_place" : MYNICK ]));
+#endif // OWNED
 }
 
 private leaveMsg(ni, isError, source, mc, data, vars) {
@@ -862,7 +894,11 @@ private leaveMsg(ni, isError, source, mc, data, vars) {
 		// place, then unsubscribed..   just let them leave
 		// _notice not _echo? was: _failure_invalid_place_membership
 		else if (mc == "_notice_place_leave_subscribe")
+#ifndef ECHOES
 		    sendmsg(source, mc,
+#else /* ECHOES */
+		    sendmsg(source, "_echo_place_leave_subscribe",
+#endif /* ECHOES */
 			"You unsubscribe [_nick_place]. Bye bye.",
 			([ "_nick_place" : MYNICK,
 			 "_nick" : vars["_nick"] ]) );
@@ -871,7 +907,11 @@ private leaveMsg(ni, isError, source, mc, data, vars) {
 		//else if (mc != "_echo_place_leave_invalid")
 		else if (mc != "_notice_place_leave_invalid") 
 		    // couldn't it be a real _warning ?
+#ifndef ECHOES
 		    sendmsg(source, "_notice_place_leave_invalid",
+#else /* ECHOES */
+		    sendmsg(source, "_echo_place_leave_invalid",
+#endif /* ECHOES */
 			"[_nick_place] doesn't remember seeing you anyway.",
 			([ "_nick_place" : MYNICK,
 			 "_nick_local" : vars["_nick_local"],
@@ -888,6 +928,14 @@ private leaveMsg(ni, isError, source, mc, data, vars) {
 #ifdef PERSISTENT_SLAVES
 	revision += 1;
 #endif
+	// this code doesn't really consider the presence of _tag.
+	// a _tag should make it unicast an _echo, remove the member
+	// from the tree, then multicast the notice to other people.
+	// and since we don't leave without a _tag in most cases, we
+	// don't need any other behaviour really. the idea that we can
+	// optimize away the echo isn't really pragmatic.. TODO.
+	// we may also simplify the context specification then, huh?
+	//
 	unless(isError) {
 		if (v("_filter_presence")) {
 			// arent you a little heavy on the relays here? i dont get it
@@ -924,13 +972,10 @@ msg(source, mc, data, mapping vars) {
 	P4(("PRE %O msg(%O,%O,%O,%O) from %O\n", ME, source, mc, data, vars,
 		previous_object()))
 
-#if 1 //def NOT_EXPERIMENTAL
 	unless (source) {
 		source = vars["_INTERNAL_source"];
 		ASSERT("source", source, source)
 	}
-#endif
-
 	// this can indeed happen when the object has already been terminated
 	// during shutdown procedure, but something comes back to talk to it.
 	// in fact it's enough to type something (^L) in telnet after
@@ -1312,8 +1357,7 @@ P1(("ident: %O is really %O\n", t, source))
 		P1(("(%O,%O,%O..) needs to enter %O first (members: %O).\n",
 		    source,mc,data, ME, _u))
 #if !( defined(PRO_PATH) && DEBUG < 2 )
-		sendmsg(source, "_error_necessary_membership",
-		    "You need to enter [_nick_place] first.",
+		sendmsg(source, "_error_necessary_membership", 0,
 			 ([ "_nick_place" : MYNICK ]) );
 		//P1(("==> source, relay: %O, %O\n", source, vars["_source_relay"]))
 #endif
@@ -1435,7 +1479,7 @@ castmsg(source, mc, data, vars) {
 		// to its viewers.. we first need to make
 		// a copy of the vars as inheriters may want
 		// to keep on using vars after we were here
-# if 1 //ndef EXPERIMENTAL
+# if 1
 		// all of the above is incorrect. yes history
 		// is not multicast, but when retransmitting
 		// earlier multicasts you are supposed to provide
@@ -1483,13 +1527,21 @@ reboot(reason, restart) {
 			 // not so sure about this mc  ;)
 			 "_warning_unavailable_temporary_shutdown",
 #else
+#ifndef ECHOES
 			 "_notice_place_leave_temporary_shutdown",
+#else /* ECHOES */
+			 "_echo_place_leave_temporary_shutdown",
+#endif /* ECHOES */
 #endif
 			// used to output _source here, but when a UNI relays
 			// the message to a UNL, the UNI is shown instead of ME
 		      "Server for [_nick_place] is being restarted: [_reason]", 
 			([ "_reason": reason ]) );
+#ifndef ECHOES
 		else castmsg(ME, "_notice_place_leave_shutdown", // _permanent ?
+#else /* ECHOES */
+		else castmsg(ME, "_echo_place_leave_shutdown", // _permanent ?
+#endif /* ECHOES */
 		      "Server for [_nick_place] is shutting down: [_reason]",
 			([ "_reason": reason ]) );
 #ifndef PERSISTENT_MASTERS
@@ -1506,7 +1558,11 @@ reboot(reason, restart) {
 quit() {
 	save();
 #ifndef PERSISTENT_MASTERS
+#ifndef ECHOES
 	castmsg(ME, "_notice_place_leave_temporary",
+#else /* ECHOES */
+	castmsg(ME, "_echo_place_leave_temporary",
+#endif /* ECHOES */
 	    "[_nick_place] is temporarily being shut down for reload.",
 	     ([ "_nick_place" : MYNICK ]) );
 #endif
@@ -1920,9 +1976,6 @@ See the manual for details.");
 	return 0;
 }
 
-#ifndef MAX_VISIBLE_USERS
-#define MAX_VISIBLE_USERS 4404
-#endif
 // amountOnly used by news.c by inheritance
 makeMembers(amountOnly) {
 	if (sizeof(_u) == 0)
@@ -1976,8 +2029,8 @@ showStatus(verbosity, al, person, mc, data, vars) {
 # ifdef SIP_PATH
 		//	     "sip:#"+ MYLOWERNICK +"@"+ SERVER_HOST +" "+
 # endif
-# ifdef JABBER_HOST
-			     "xmpp:*"+ MYLOWERNICK +"@"+ JABBER_HOST +" "+
+# ifdef _host_XMPP
+			     "xmpp:*"+ MYLOWERNICK +"@"+ _host_XMPP +" "+
 # else
 #  ifdef JABBER_PATH
 			     "xmpp:*"+ MYLOWERNICK +"@"+ SERVER_HOST +" "+
@@ -1987,8 +2040,8 @@ showStatus(verbosity, al, person, mc, data, vars) {
 #endif
 #ifdef JABBER_PATH
 			   "_identification_scheme_XMPP":
-# ifdef JABBER_HOST
-			     "*"+ MYLOWERNICK +"@" JABBER_HOST,
+# ifdef _host_XMPP
+			     "*"+ MYLOWERNICK +"@" _host_XMPP,
 # else
 			     "*"+ MYLOWERNICK +"@" SERVER_HOST,
 # endif
@@ -2117,7 +2170,7 @@ qInstance() { return 0; }
 
 qDescription(source, vars, nick) {
 			// should thus be renamed
-	mapping dv = ([ "_topic": v("topic") || "" ]);
+	mapping dv = ([ "_topic": v("topic") || "", "_nick": MYNICK ]);
 	mixed k, l;
 
 	// should distinguish members from strangers..?
@@ -2125,7 +2178,7 @@ qDescription(source, vars, nick) {
 		// st00pid simple way of distinguishing exportable vars
 		if (k[0] == '_') dv[k] = l;
 	}
-	P1(("%O qDesc returns %O\n", ME, dv))
+	P3(("%O qDesc returns %O\n", ME, dv))
 	return dv;
 }
 

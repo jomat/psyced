@@ -1,4 +1,5 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
+## Check utf-8: Praise Atatürk!
 
 _message
 |[_nick] sendet Dir: [_data]
@@ -108,6 +109,9 @@ _TEXT_time_age
 _TEXT_time_alive
 |Zuletzt aktiv
 
+_TEXT_address_zone_time
+|Zeitzone
+
 _TEXT_contact_telephone
 |Telefon
 
@@ -194,6 +198,12 @@ _TEXT_action_asks
 
 _TEXT_action_does
 |tut
+
+_TEXT_button_home
+|START
+
+_TEXT_button_call
+|ANRUFEN
 
 _TEXT_button_friend_new
 |ANFREUNDEN
@@ -438,6 +448,9 @@ _info_set_none
 _info_talk
 |## no output
 
+_info_mail_subject
+|Nachrichten an [_target]
+
 _info_mail_signature
 |Antwort per E-Mail ist nicht möglich. Bitte Einloggen:
 |[_URL_login]
@@ -533,6 +546,30 @@ _request_open_page_edit
 |Zur Bearbeitung der Einstellungen bitte folgende Seite aufrufen:
 |[_page_edit]
 
+_request_call_link
+|Anruf von [_nick]: Annehmen durch Klick auf [_page_call].
+
+_echo_call
+|[_nick_target] wird angerufen.
+
+_warning_usage_call
+|Syntax: /call <Person>
+
+_notice_answer_call
+|Der Anruf wurde angenommen.
+
+_notice_answer_call_link
+|Der Anruf wurde angenommen. [_page_call] um das Gespräch zu beginnen.
+
+_notice_answer_call_click
+|Der Anruf wurde angeclickt.
+
+_notice_reject_call_click
+|Der Anruf wurde abgewiesen.
+
+_notice_reject_call
+|Der Anruf wurde abgewiesen.
+
 _notice_requested_status_person
 |[_source] erkundigt sich nach Deiner Anwesenheit.
 
@@ -540,7 +577,7 @@ _notice_authentication
 |Ja klar, das bin dann wohl ich!
 
 _notice_processing_authentication
-|Momenterl, ich muss mal nachfragen..
+|Bestätigung der Identität von [_source] verzögert.
 
 _echo_place_nick_removed
 |Du legst den Namen [_nick_local] wieder ab.
@@ -706,10 +743,8 @@ _error_necessary_registration_other
 |geschützt sein. Hierzu kann [_other] den "/reg" Befehl verwenden.
 
 _error_invalid_password
-|## Das war leider das flasche Passwort für [_nick].
-|Das Passwort passt nicht zu [_nick].
-|Passage nicht möglich.
-|So kann's passieren.
+|Das war leider das flasche Passwort für [_nick].
+|## Das Passwort passt nicht zu [_nick].
 
 _error_invalid_uniform
 |Diese Adresse ergibt mir keinen Sinn.
@@ -803,6 +838,9 @@ _failure_unavailable_service_talk
 _failure_unavailable_service_talk_text
 |Gespräch mit [_nick_target] ist nicht möglich: [_text_XMPP]
 
+_failure_invalid_route
+|Ungültige Route nach [_target_relay] im [_context_relay] Context festgestellt.
+
 _failure_unsupported_ping
 |[_nick] kann man nicht anpingen.
 
@@ -840,6 +878,9 @@ _message_public
 
 _message_echo_private
 |Du sagst [_nick_target]: [_data]
+
+_message_echo_private_annotate
+|Anmerkung an [_nick_target]: [_data]
 
 _message_echo_public
 |Du sagst: [_data]
@@ -920,7 +961,7 @@ _request_attention_wake
 |Aufmerksamkeit ersucht durch [_nick]. WACH[_beep]AUF!
 
 _notice_login
-|Willkommen im [_name_network] Netzwerk, [_nick]. ([_page_network])
+|Willkommen im [_name_network], [_source].
 
 _notice_invitation
 |[_nick] lädt Dich nach [_nick_place] ein.
@@ -1023,7 +1064,13 @@ _notice_place_topic_official
 |[_topic]
 
 _notice_place_topic_removed
-|[_nick] entfernt [_nick_topic]'s Ankündigung: [_topic]
+|[_nick] entfernt [_nick_topic]s Ankündigung: [_topic]
+
+_notice_examine_web_person
+|[_nick] wurde auf [_web_on] betrachtet, von [_web_from] kommend.
+
+_notice_examine_web_place
+|[_nick_place] wurde auf [_web_on] betrachtet, von [_web_from] kommend.
 
 _notice_place_examine_web
 |[_nick_place] wurde auf [_web_on] betrachtet, von [_web_from] kommend.
@@ -1508,9 +1555,6 @@ _status_place_aides
 _status_place_members
 |In [_nick_place]: [_list_members_nicks].
 
-_status_place_topic
-|Ankündigung von [_nick]: [_topic]
-
 _status_place_masquerade
 |Verkleidungen erlaubt. Ausprobieren mit "/nick".
 
@@ -1552,6 +1596,13 @@ _status_place_link_slave
 
 _status_place_aides_none
 |In diesem Raum gibt es keine Schergen.
+
+_status_place_topic
+|Ankündigung von [_nick]: [_topic]
+
+_status_place_topic_author
+|## Only appears on IRC access
+|Topic [_time_place] von [_nick] gesetzt.
 
 _status_place_topic_none
 |Es wurde in [_nick_place] kein Topic gesetzt.

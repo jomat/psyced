@@ -1,4 +1,5 @@
-// $Id: common.c,v 1.107 2008/04/16 14:21:17 lynx Exp $ // vim:syntax=lpc
+// vim:foldmethod=marker:syntax=lpc:noexpandtab
+// $Id: common.c,v 1.120 2008/12/16 11:58:52 lynx Exp $
 //
 // common functions for IRC servers and clients (gateways)
 //
@@ -33,12 +34,13 @@ parse(a) {
 	//if (a[<1] == ' ' || a[0] == ' ')
 	a = trim(a, TRIM_BOTH);
 	// efun probably faster than doing all those checks anyway
-#else
+#else //{{{
 	// not as efficient as it could be, but we have trim() anyway
+	// move this into a pike macro for trim() emulation?
 	if (a == "") return;	// first make sure there's something at all
 	while (a[0] == ' ') a = a[1..];
 	while (a[<1] == ' ') a = a[0..<2];
-#endif
+#endif //}}}
 	if (a == "") return;		// don't let " \n" execute "/s"
 	unless (sscanf(a, ":%s %s", from, t)) t = a;
 	sscanf(t, "%s :%s", t, text);
@@ -53,9 +55,11 @@ ircMsg(from, cmd, args, text, all) {
 case "motd":
 		motd();
 		return 1;
+#ifndef BETA
 case "lusers":
 		lusers();
 		return 1;
+#endif
 case "time":
 		t = time();
 		t1 = ctime(t);
@@ -111,6 +115,7 @@ motd() {
 // dummerweise fiel hier im Zuge des neuen emit das '- ' flach - fippo  
 		P3(("MOTD_FILE (%O) found\n", MOTD_FILE))
 		motd_file = read_file(MOTD_FILE);
+		P4(("MOTD = %O\n", motd_file))
 		emit(sreply(RPL_MOTD, ":" + motd_file));
 	} else
 #endif
@@ -132,10 +137,14 @@ motd() {
 	return 1;
 }
 
+#ifndef BETA
 lusers() {
+# ifndef _flag_disable_query_server
 	reply(RPL_LUSERCLIENT, ":There are " + amount_people()
-				+ " users on this server\n");
+				+ " users on this server");
+# endif
 }
+#endif
 
 qCharset() {}
 
@@ -143,56 +152,47 @@ render(string mc, string data, mapping vars, mixed source) {
         string template, output;
 	mixed t;
 
-	P0(("common:render %O %O\n", ME, data));
+	P3(("common:render %O %O\n", ME, data));
 #if 1 // def IRCEXPERIMENTAL
 	template = T(mc, 0); // enable textdb inheritance
 #else
 	template = T(mc, ""); 
 #endif
-<<<<<<< common.c
-=======
 #ifndef _flag_disable_stamp_time_IRC
 	t = vars["_time_place"] || vars["_time_log"];
+	// this goes thru ->v()
 	if (t && v("timestamp") != "off" // && abbrev("_message", mc)
 	    && stringp(data)) {
+# ifndef GAMMA
 		if (stringp(t)) t = to_int(t);	// we need types ;)
+# endif
 		if (v("timestamp") == "on") {
 			string msa = " ";
 			msa[0] = 0x01; // msa's CTCP character
 			// should use psyctime instead of unixtime
 			data = msa +"TS "+ (t - PSYC_EPOCH) +msa+ data;
 		} else
-		    data = "["+ hhmm(ctime(t)) +"] "+ data; // use T() ?
+		    data = "["+ time_or_date(t) +"] "+ data; // use T() ?
 		P3(("%O data is %O\n", ME, data))
 	}
 #endif
->>>>>>> 1.107
 	P3(("c:r pre ptext: %O %O %O %O\n", template, vars, data, source ));
 	output = psyctext( template, vars, data, source);
 	P3(("c:r 1st ptext: %O\n", output));
 	if (!output || output=="") return D2(D("irc/user: empty output\n"));
 
-#ifndef _flag_disable_stamp_time_IRC
-	if (t = vars["_time_place"] || vars["_time_log"]) {
-		PT(("%O got timestamp %O\n", ME, t))
-	}
-	if (t && v("timestamp") != "off" && abbrev("_message", mc)
-	    && stringp(output)) {
-		output = v("timestamp")
-		    ? output +" ["+ hhmm(ctime(t)) +"]" // use T() ?
-		    : output + "%TS "+ hhmm(ctime(t)) +"%";
-	}
-#endif
+#ifdef NEW_LINE
+	output += "\n";
+#else
 	if (template == "") {
-#ifdef PREFIXES
-	    // der ganze prefix kram is im irc protokoll in der
-	    // tat blödsinn.. muss ma anders machen..
+# ifdef PREFIXES //{{{
 	    if (abbrev("_prefix", mc)) return prefix = output+" ";
 	    else
-#endif
+# endif //}}}
 		output += "\n";
 	}
-	if (output[0] == '#') output = SERVER_SOURCE + output[1..];
+#endif
+	if (output[0] == '#') output = SERVER_SOURCE + output[1 ..];
 	else if (output[0] != ':') {
 		string t2;
 
@@ -228,12 +228,11 @@ render(string mc, string data, mapping vars, mixed source) {
 			log_file("IRC_TEXTDB", "%O\n", mc);
 			return;
 		}
-
 		// _silent: when casts from a conversation-filtered place
 		// arrive, which isnt known to the client as a channel, we
 		// revert to personal notices to not irritate it.
 		if (
-#ifdef NOT_EXPERIMENTAL
+#if 1
 		    // would be nicer to check if source is a place but
 		    // isn't trivial right here.. looks like joining remote
 		    // xmpp: mucs is affected by this change - you may not
@@ -275,13 +274,16 @@ render(string mc, string data, mapping vars, mixed source) {
 			      "_members" : vars["_nick_me"] ]));
 	    w(mc[..<8] + "_end", 0, vars);
 	}
+	P4(("calling emit(%O)\n", output));
 	emit(output);
 }
 
 // server:w() doesnt call this anyway, so we dont need last_prefix
 //volatile private string last_prefix;
 emit(string output) {
-	//PT(("common:emit %O %O\n", ME, output));
+	string* outlines;
+
+	P3(("common:emit %O %O\n", ME, output));
 	// misteries of virtual inheritance.. why doesnt this get called
 	// from gatebot? we need to get this working for 512-split!!
 #ifdef _flag_log_sockets_IRC
@@ -296,25 +298,37 @@ emit(string output) {
 		P4(("output in %O = %O\n", cs, output))
         }
 #endif
-	if (output[<1] != '\n')
-	    return EMIT(output);
-	if (strlen(output) < MAX_IRC_BYTES)
-	    return EMIT(chomp(output) + "\r\n");
-	else {
+	if (output[<1] != '\n') {
+		// this is used when prompting for password
+		P4(("irc:emit optimized for prefix on %O\n", output))
+		return EMIT(output);
+	}
+	outlines = explode(slice_from_end(output, 0, 2), "\n");
+	if (sizeof(outlines) == 1 && strlen(output) < MAX_IRC_BYTES) {
+		// optimized for single line
+		P4(("irc:emit single %O\n", outlines[0]))
+		return EMIT(outlines[0] + "\r\n");
+	} else {
 		string split_prefix, line;
 		int cut, t;
 
 		cut = strstr(output, " :");
-		P3(("IRC:emit splitting large line at %O\n%O\n", cut, output))
+		P4(("IRC:emit splitting large line at %O\n%O\n", cut, outlines))
 		if (cut >= 0) {
-			split_prefix = output[..++cut];
-			output = output[++cut..<2];
-			if (output[0] == output[<1] && output[0] == 0x01) {
-				output = chop(output);
+			split_prefix = outlines[0][.. ++cut];
+#if 0 // annoying rendering bug we had here.. but is <2 always wrong?
+			outlines[0] = outlines[0][++cut .. <2];
+#else
+			outlines[0] = outlines[0][++cut .. <1];
+#endif
+			if (strlen(outlines[0])
+			    && outlines[0][0] == outlines[0][<1]
+			    && outlines[0][0] == 0x01) {
+				outlines[0] = chop(outlines[0]);
 			}
 		} else {
 			split_prefix = ""; //last_prefix;
-			output = chop(output);
+			outlines[0] = chop(outlines[0]);
 		}
 	       	// because of additional \\\r\n we have to subtract 3
 		cut = MAX_IRC_BYTES-3 - strlen(split_prefix);
@@ -324,10 +338,9 @@ emit(string output) {
 			    "to be able to do 512 splitting\n%O\n", ME, line))
 			return;
 		}
-		foreach(line : explode(output, "\n")) if (strlen(line)) {
-			// maybe we should just throw away everything beyond
+		foreach(line : outlines) if (strlen(line)) {
 			while (strlen(line) > cut) {
-#ifdef NOT_EXPERIMENTAL
+#if 1
 	// we shall look for last whitespace instead
 			    t = rindex(line, ' ', cut);
 			    if (t > 9) {
@@ -337,12 +350,14 @@ emit(string output) {
 						       // any realistic ideas
 						       // how to do do this
 						       // just once?
+					P4(("splitting an msa line %O\n", line[.. t]))
 					EMIT(split_prefix + line[..t]
 					       + line[0..0] + "\r\n");
-					line = line[t+1..];
+					line = line[t+1 ..];
 				} else {
-					EMIT(split_prefix + line[..t]+ "\r\n");
-					line = line[t+1..];
+					P4(("time for %O\n", line[.. t]))
+					EMIT(split_prefix + line[.. t]+ "\r\n");
+					line = line[t+1 ..];
 				}
 			    } else {
 				P1(("%O encountered data w/out ' ' to "
@@ -353,7 +368,7 @@ emit(string output) {
 				// we might aswell use the old
 				// backslash splitting code below here
 			    }
-#else
+#else //{{{
 				t = line[cut] == '\r' ? cut-1 : cut;
 
 				// msa's CTCP character
@@ -371,8 +386,9 @@ emit(string output) {
 					       + "\\\r\n");
 					line = line[cut+1..];
 				}
-#endif
+#endif //}}}
 			}
+			P4(("irc:emit each %O\n", line))
 			EMIT(split_prefix + line +"\r\n");
 		}
 	}

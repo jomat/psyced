@@ -1,4 +1,4 @@
-// $Id: jabber.h,v 1.74 2008/03/30 10:27:49 lynx Exp $ // vim:syntax=lpc
+// $Id: jabber.h,v 1.75 2008/09/12 15:54:39 lynx Exp $ // vim:syntax=lpc
 //
 // REMINDER:
 // there are plenty of calls to lower_case in the code, that is because
@@ -74,12 +74,12 @@ virtual inherit JABBER_PATH "common";
 # endif
 #endif
 
-#ifndef JABBER_HOST
-# define JABBER_HOST SERVER_HOST
+#ifndef _host_XMPP
+# define _host_XMPP SERVER_HOST
 #endif
 
 // this is not ready for is_localhost
-#define is_localhost(a) (a) == JABBER_HOST
+#define is_localhost(a) (a) == _host_XMPP
 
 
 #define JABSOURCE "_INTERNAL_source_jabber"

@@ -1,4 +1,4 @@
-// $Id: text.c,v 1.17 2008/04/11 10:37:25 lynx Exp $ // vim:syntax=lpc
+// $Id: text.c,v 1.21 2008/07/17 17:23:25 lynx Exp $ // vim:syntax=lpc
 //
 // the marvellous psyctext() function, fundamental of any PSYC implementation.
 //
@@ -35,9 +35,14 @@ varargs string psyctext(string s, mapping m, vastring data,
 		if (v == "_nick") r += p + (nick || m["_nick"]);
 		else if (v == "_data") r += p + (data || "");
 		else unless (member(m, v)) {
-		    if (v == "_source") r += p + to_string(source);
+		    if (v == "_source") r += p + UNIFORM(source);
 		    else {
-			PT(("psyctext: ignoring [%s]\n", v))
+#ifdef _flag_debug_unresolved_psyctext
+			raise_error(v +" unresolved in psyctext format\n");
+#else
+			PT(("psyctext: ignoring [%s] in %O for %O\n", v,
+			    data, previous_object()))
+#endif
 			r += p + "["+v+"]";	// pretend we havent seen it
 		    }
 		}
@@ -47,21 +52,16 @@ varargs string psyctext(string s, mapping m, vastring data,
 		}
 		// if (member(m,v) && m[v]) r += p + m[v];
 		else if (intp(m[v])) {		// used by /lu and /edit
-			if (v == "_time_idle") r += p + timedelta(m[v]);
-			else if (abbrev("_time", v)) {
-				// verrry similar code in net/user.c
-				if (time() - m[v] > 24*60*60)
-				    r += p + isotime( m[v], 0 );
-				else
-				    r += p + hhmmss(ctime( m[v] ));
-				 // r += p + hhmm(ctime(m[v]));
-			} else
+			if (v == "_time_idle")
+			    r += p + timedelta(m[v]);
+			else if (abbrev("_time", v))
+			    r += p + time_or_date(m[v]);
+			else
 			    r += p + to_string(m[v]);
 		}
 		else if (mappingp(m[v])) {	// made by psyc/parse
 			r += p + implode(m_indices(m[v]), ", ");
 		}
-		// used in rare cases where _identification is output
 		else if (objectp(m[v])) r += p + psyc_name(m[v]);
 		else {
 			// in theory at this point we could perform

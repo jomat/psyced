@@ -1,5 +1,17 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: circuit.c,v 1.189 2008/03/29 20:36:44 lynx Exp $
+//
+// The PSYC Circuit Implementation.
+// Includes renderers and parsers for the PSYC syntax.
+//
+// $Id: circuit.c,v 1.202 2008/12/04 14:20:53 lynx Exp $
+
+// local debug messages - turn them on by using psyclpc -DDcircuit=<level>
+#ifdef Dcircuit
+# undef DEBUG
+# define DEBUG Dcircuit
+#endif
+
+#include "common.h"
 #include <net.h>
 #include <services.h>
 #include <person.h>
@@ -79,7 +91,7 @@ int greet() {
 // I would like to change that into old list-syntax again.. or lets implement
 // this @_var stuff.. this damages my brain
 #  define SCHEMES ":_understand_schemes\taim;icq;irc;efnet;euirc;" \
-        "freenode;quakenet;galaxynetwork;xentonix;klingons\n"
+        "freenode;quakenet;galaxynetwork;klingons\n"
 #  define TSCHEMES "Gateways provided: [_understand_schemes].\n"
 # else
 #  define	SCHEMES	""
@@ -187,7 +199,7 @@ static varargs int block(vastring mc, vastring reason) {
 	// saying no.. but it's better to do it differently..
 	P0(("Circuit blocked TCP PSYC connection from %O in %O (%O).\n",
 	    query_ip_number(ME), ME, mc))
-#ifdef EXPERIMENTAL
+#ifdef DEVELOPMENT
 	unless (ME)
 	    raise_error("blocked destructed object?\n");
 	unless (interactive(ME))
@@ -234,16 +246,18 @@ int logon(int neverfails) {
 	}
 
 #ifdef __TLS__
-# ifdef EXPERIMENTAL
+# ifdef GAMMA
 	sAuthHosts(([ ])); // reset authhosts 
 	if (tls_available() && tls_query_connection_state(ME) == 1 && mappingp(cert = tls_certificate(ME, 0))) {
 	    if (cert[0] != 0) {
-		// log error 17 + cert here
-		// and goodbye.
+		// log error 17 or 18 + cert here
 		P0(("%O encountered a cert verify error %O in %O\n", ME,
 		    cert[0], cert))
+		// and goodbye.
+# ifdef _flag_enable_certificate_any
 		remove_interactive(ME);
 		return 0;
+# endif
 	    }
 	    if (m = cert["2.5.29.17:dNSName"]) {
 		// FIXME: this does not yet handle wildcard DNS names
@@ -334,17 +348,27 @@ int logon(int neverfails) {
 varargs int msg(string source, string mc, string data,
     mapping vars, vaint showingLog, vamixed target) {
 	string buf, context;
+	mixed rc;
 
+#ifdef __TLS__
 	P2(( (tls_query_connection_state() ? "TLS": "TCP") +
 	    "[%s] <= %s: %s %O\n", peeraddr || "error",
 		to_string(source), mc || "-", data))
 		// to_string(vars["_source_relay"] || source)
+#else
+	P2(( "TCP[%s] <= %s: %s %O\n", peeraddr || "error",
+		to_string(source), mc || "-", data))
+#endif
 	buf = "";
 #ifndef NEW_RENDER
 	ASSERT("mc", mc, "Message from "+source+" w/out mc")
-	if (!stringp(data))
-	    data = abbrev("_message", mc)? "": (T(mc, "") || "");
-	else if (data == S_GLYPH_PACKET_DELIMITER || data[0..1] == S_GLYPH_PACKET_DELIMITER "\n"
+	if (!stringp(data)) {
+		if (abbrev("_message", mc)) data = "";
+		else {
+			data = T(mc, "") || "";
+			P3(("fmt from textdb for %O: %O\n", mc, data))
+		}
+	} else if (data == S_GLYPH_PACKET_DELIMITER || data[0..1] == S_GLYPH_PACKET_DELIMITER "\n"
 		     || strstr(data, "\n" S_GLYPH_PACKET_DELIMITER "\n") != -1) {
 # if 0 // one day we shall be able to parse that, too
 		vars["_length"] = strlen(data);
@@ -359,7 +383,7 @@ varargs int msg(string source, string mc, string data,
 	//
 	// this stuff should not be seperate from the one done
 	// for UDP!!!  TODO
-# if 1 //def NOT_EXPERIMENTAL
+# if 1
 	if (context = vars["_INTERNAL_context"]) {
 		P4(("retransmit: %O - deleting source\n", data))
 		unless(vars["_source_relay"])
@@ -392,6 +416,7 @@ varargs int msg(string source, string mc, string data,
 	if (context) {
 		buf+= ":_context\t"+ UNIFORM(context) +"\n";
 		if (source) buf += ":_source_relay\t"+ UNIFORM(source) +"\n";
+		// should it be _target_forward here?
 		if (target) buf += ":_target_relay\t"+ target +"\n";
 	} else {
 		if (source) buf += ":_source\t"+ UNIFORM(source) +"\n";
@@ -421,22 +446,36 @@ varargs int msg(string source, string mc, string data,
 #  endif /* MMP_STATE */
 # endif /* !PRE_SPEC */
 #endif /* !NEW_RENDER */
-	buf += psyc_render(source, mc, data, vars, showingLog, target);
-# ifndef EXPERIMENTAL
-#  if 0
-	// i believe this was an old hack to fix psyctext fmts that
-	// came with an extra newline. since the invention of the
-	// single-file textdb (and the ease of detecting wrong newlines),
-	// this should be of no usefulness anymore ...
-	//
-	if (strlen(data) && char_from_end(data, 1) != '\n')
-	    buf += "\n" S_GLYPH_PACKET_DELIMITER "\n";
-	else
-	    buf += S_GLYPH_PACKET_DELIMITER "\n";
-#  else
+	rc = psyc_render(source, mc, data, vars, showingLog, target);
+	unless (rc) return 0;
+	buf += rc;
+	P4(("psyc_render %O for %O\n", rc, buf))
+#if 0
+# ifdef NEW_LINE
 	buf += "\n" S_GLYPH_PACKET_DELIMITER "\n";
+# else
+#  ifdef SPYC
+#   echo net/spyc Warning: Erroneous extra newlines will be transmitted.
+	buf += "\n" S_GLYPH_PACKET_DELIMITER "\n";
+#  else
+//#   echo net/psyc Warning: Using inaccurate newline guessing strategy.
+	// textdb still provides formats with extra trailing newline.
+	// catching this at this point is kind of wrong. it doesn't
+	// take into consideration data that intentionally ends with
+	// a newline. This is a minor inconvenience, but still.. FIXME
+	//
+	if (strlen(data)) {
+	    PT(("Newline guessing for %O (%O) %O\n", data, char_from_end(data, 1), '\n'))
+	}
+	if (strlen(data) && char_from_end(data, 1) != '\n') {
+		buf += "\n" S_GLYPH_PACKET_DELIMITER "\n";
+	} else {
+//		PT(("Guessed %O\n", buf))
+		buf += S_GLYPH_PACKET_DELIMITER "\n";
+	}
 #  endif
 # endif
+#endif
 # ifdef _flag_log_sockets_PSYC
 	log_file("RAW_PSYC", "» %O\n%s\n", ME, buf);
 # endif
@@ -530,10 +569,15 @@ int disconnected(string remaining) {
 	    PP(("%O ignoring remaining data from socket: %O\n", ME,
 		remaining));
 #endif
+#ifdef _flag_log_sockets_PSYC
+	log_file("RAW_PSYC", "%O disconnected.\n", ME);
+#endif
 	// wow.. a sincerely expected disconnect!
 	if (flags & TCP_PENDING_DISCONNECT) return 1;
+#ifndef _flag_disable_report_failure_network_circuit_disconnect
 	monitor_report("_failure_network_circuit_disconnect",
 	    object_name(ME) +" · lost PSYC circuit");
+#endif
 	return 0;   // unexpected
 }
 

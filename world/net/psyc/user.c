@@ -1,7 +1,8 @@
-// $Id: user.c,v 1.13 2008/03/11 13:42:27 lynx Exp $ // vim:syntax=lpc
+// $Id: user.c,v 1.15 2008/12/09 19:27:32 lynx Exp $ // vim:syntax=lpc
 //
 // handler for PSYC clients
 
+#include "common.h"
 #include <net.h>
 #include <user.h>
 
@@ -14,7 +15,11 @@ logon() {
 	// psyc users dont have their own socket, so the driver 
 	// does not call disconnected() for them - this enables the
 	// psyc socket to do that
-	this_interactive()->do_notify_on_disconnect(ME);
+	if (this_interactive()) this_interactive()->do_notify_on_disconnect(ME);
+	// connection that is creating us, died while we got here.
+	// rare, but does indeed happen sometimes.
+	else return destruct(ME);
+
 	// no lang support here either
 	vSet("scheme", "psyc");
 	return ::logon();

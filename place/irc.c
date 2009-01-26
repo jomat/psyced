@@ -9,7 +9,7 @@
 //
 //#define	CONNECT_IRC	"irc.freenet.de"	// an ircnet server
 //#define	CONNECT_IRC	"us.ircnet.org"
-#define		CONNECT_IRC	"irc1.us.ircnet.net"
+#define		CONNECT_IRC	"irc.fu-berlin.de"
 //
 // other example configuration
 //
@@ -25,6 +25,7 @@
 //#define ON_CONNECT	call_out("emit", 9, "JOIN :#" CHAT_CHANNEL "\n");
 
 #include <place.gen>
+#echo IRCnet Gateway loaded. Connecting to IRCnet IRC.
 
 // See also http://about.psyc.eu/gateway
 //

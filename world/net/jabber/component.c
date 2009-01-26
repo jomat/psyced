@@ -1,4 +1,4 @@
-// $Id: component.c,v 1.68 2008/03/11 15:13:58 lynx Exp $ // vim:syntax=lpc
+// $Id: component.c,v 1.72 2008/10/01 10:59:24 lynx Exp $ // vim:syntax=lpc
 //
 // this implements a passive listener component 
 #define NO_INHERIT
@@ -40,7 +40,7 @@ reboot(reason, restart, pass) {
     // close the stream according to XEP 0190
     if (interactive(ME)) {
 	    flags |= TCP_PENDING_DISCONNECT;
-	    emit("</stream:stream>");
+	    emitraw("</stream:stream>");
     }
 }
 
@@ -96,7 +96,7 @@ waitfor_handshake(XMLNode node) {
 	    PT(("%O component auth succeded as %O\n", ME, componentname))
 	    nodeHandler = #'jabberMsg;
 	    authenticated = 1;
-	    emit("<handshake/>");
+	    emitraw("<handshake/>");
 	    onHandshake();
 	} else {
 	    monitor_report("_error_invalid_password", 
@@ -122,7 +122,7 @@ int msg(string source, string mc, string data,
 #ifdef PREFIXES
     if (abbrev("_prefix", mc)) return 1;
 #endif
-#ifndef EXPERIMENTAL	// TODO: decide if this is good or bad
+#ifndef GAMMA	// TODO: decide if this is good or bad
     else if (abbrev("_status_person_absent", mc)) {
 	PT(("Intercepted absent from %O to %O\n", mc, source, ME))
 	return 1;
@@ -172,7 +172,7 @@ open_stream(node) {
     if (node["@to"]) {
 	packet += "from='" + node["@to"] + "' ";
     } else {
-	packet += "from='" JABBER_HOST "' ";
+	packet += "from='" _host_XMPP "' ";
     }
     if (!config) {
 	/* reply with a stream error */

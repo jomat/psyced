@@ -1,4 +1,5 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
+## Check utf-8: Praise Atatürk!
 
 _MISC_character_command
 |## since several clients started catching / commands..
@@ -59,7 +60,7 @@ _request_execute_topic
 _request_leave
 |<presence from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber_bare]/[_nick]' type='unavailable' id='[_tag]'><x xmlns='http://jabber.org/protocol/muc'/></presence>
 
-_request_examine_vCard
+_request_description_vCard
 |<iq from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber_bare]' type='get' id='[_tag]'><vCard xmlns='vcard-temp'/></iq>
 
 _request_status_person
@@ -188,7 +189,7 @@ _message_public_action
 |<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me [_action]</body></message>
 
 _message_public_magnify
-|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>« [_data] »</body></message>
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>Â« [_data] Â»</body></message>
 
 _message_public_whisper
 |<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me whispers to [_nick_target]: [_data]</body></message>
@@ -206,7 +207,7 @@ _message_public_text_action
 |<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>[_data]</body></message>
 
 _message_public_action_magnify
-|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me [_action] «««</body></message>
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me [_action] Â«Â«Â«</body></message>
 
 _message_public_action_possessive
 |<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me 's [_action_possessive]</body></message>
@@ -215,7 +216,7 @@ _message_public_action_reduce
 |<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_does} {_TEXT_something}.</body></message>
 
 _message_public_question_magnify
-|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_asks} « [_data] »</body></message>
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_asks} Â« [_data] Â»</body></message>
 
 _message_public_question_reduce
 |<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_asks} {_TEXT_something}.</body></message>
@@ -224,7 +225,7 @@ _message_private_action
 |<message from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='chat'><body>/me [_action]</body></message>
 
 _message_private_magnify
-|<message from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='chat'><body>« [_data] »</body></message>
+|<message from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='chat'><body>Â« [_data] Â»</body></message>
 
 _message_private_reduce
 |<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_tells} {_TEXT_dir} {_TEXT_something}.</body></message>
@@ -247,7 +248,7 @@ _message_private_ask_reduce
 |<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_asks} {_TEXT_dich} {_TEXT_something}.</body></message>
 
 _message_private_action_magnify
-|<message from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='chat'><body>/me [_action] «««</body></message>
+|<message from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='chat'><body>/me [_action] Â«Â«Â«</body></message>
 
 _message_private_action_reduce
 |<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_does} {_TEXT_something}.</body></message>
@@ -404,8 +405,14 @@ _notice_presence_absent
 _notice_person_absent_netburp
 |<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>xa</show><status>{_notice_person_absent_netburp}</status></presence>
 
+_request_call
+|<message from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber]' type='headline'><body>{_VAR_method}</body><x xmlns='jabber:iq:oob'><url>[_page_call]</url></x></message>
+
+_notice_answer_call_link
+|<message from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber]' type='headline'><body>{_VAR_method}</body><x xmlns='jabber:iq:oob'><url>[_page_call]</url></x></message>
+
 _notice_headline_news
-|<message from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber]' type='headline'><body></body><x xmlns='jabber:iq:oob'><url>[_page_news]</url></x></message>
+|<message from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber]' type='headline'><body>{_VAR_method}</body><x xmlns='jabber:iq:oob'><url>[_page_news]</url></x></message>
 
 _echo_notice_friendship_established
 |<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber_bare]' type='subscribed'/><presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'/>

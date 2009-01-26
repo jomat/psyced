@@ -1,11 +1,11 @@
-// $Id: fetch.c,v 1.39 2008/04/09 08:29:37 lynx Exp $ // vim:syntax=lpc
+// $Id: fetch.c,v 1.42 2008/12/10 22:53:33 lynx Exp $ // vim:syntax=lpc
 //
 // generic HTTP GET client, mostly used for RSS -
 // but we could fetch any page or data with it, really
 // tobij even made the object have the URL as its object name. fancy!  ;)
 //
-#include <net.h>
 #include <ht/http.h>
+#include <net.h>
 #include <url.h>
 #include <services.h>
 
@@ -104,6 +104,13 @@ varargs int real_logon(int arg) {
 }
 
 varargs int logon(int arg, int sub) {
+// net/connect disables telnet for all robots and circuits
+#if 0 //__EFUN_DEFINED__(enable_telnet)
+	// when fetching the spiegel rss feed, telnet_neg() occasionally
+	// crashes. fixing that would be cool, but why have the telnet
+	// machine enabled at all?
+	enable_telnet(0);
+#endif
 	// when called from xmlrpc.c we can't do TLS anyway
 	if (sub) return ::logon(arg);
 	if (ssl) tls_init_connection(ME, #'real_logon);
@@ -118,7 +125,11 @@ int parse_status(string all) {
 	sscanf(all, "%s%t%s", prot, state);
 	sscanf(state, "%d%t%s", http_status, http_message);
 	P3(("%O got %O %O from %O\n", ME, http_status, http_message, host));
-	// P2(("http_status %O == %O?\n", http_status, R_OK))
+	if (http_status != R_OK) {
+		monitor_report("_failure_unsupported_code_HTTP",
+		    S("http/fetch'ing %O returned %O %O", url || ME,
+		       http_status, http_message));
+	}
 	next_input_to(#'parse_header);
 	return 1;
 }
@@ -168,9 +179,7 @@ disconnected(remainder) {
 	}
 	break;
     default:
-	monitor_report("_error_unknown_method_HTTP",
-	    S("http/fetch'ing %O returned %O %O", url || ME,
-	       http_status, http_message));
+	// doesn't seem to get here when HTTP returns 301 or 302. strange.
 	// fall thru
     case R_NOTMODIFIED:
 	qDel(ME);

@@ -1,8 +1,14 @@
-// $Id: server.c,v 1.52 2008/03/11 13:42:25 lynx Exp $ // vim:syntax=lpc
+// $Id: server.c,v 1.54 2008/05/05 14:31:10 lynx Exp $ // vim:syntax=lpc
 //
 // THE GENERIC SERVER
 // this code is not applicable to a protocol scheme directly
 // although it's connection-oriented, base for telnet/applet/irc-schemes
+
+// local debug messages - turn them on by using psyclpc -DDserver=<level>
+#ifdef Dserver
+# undef DEBUG
+# define DEBUG Dserver
+#endif
 
 #include <net.h>
 #include <person.h>
@@ -80,7 +86,7 @@ hello(ni, elm, try, method, salt) {
 ohYeah(whatever) {
 	input_to(#'ohYeah, input_to_settings);
 	// input ignore warning? inverting mc's is really a good idea!
-	w("_warning_ignored_input", "Oh yeah?");
+	w("_warning_ignored_input", "Oh yeah? ");
 }
 #endif
 

@@ -1,13 +1,13 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: library.i,v 1.335 2008/02/18 20:52:00 lynx Exp $
+// $Id: library.i,v 1.344 2008/09/12 15:54:38 lynx Exp $
 
 #include <net.h>
 #include <services.h>
 #include <person.h>
 #include <url.h>
 
-#ifdef SERVER_URL
-# define myUNL  SERVER_URL
+#ifdef _uniform_node
+# define myUNL  _uniform_node
 #else
 volatile string myUNL;
 #endif
@@ -54,7 +54,7 @@ varargs int register_target(string uniform, vaobject handler, vaint shy) {
         unless (uniform)
             raise_error("register_target without uniform\n");
 #endif
-#if 0 //def BETA
+#if 0
         if (query_server_unl() == uniform)
             raise_error("register_target for root!?\n");
 #endif
@@ -142,10 +142,8 @@ static void create() {
 	ME->base64_self_test();
 	if (md5("foobar") != "3858f62230ac3c915f300c664312c63f")
 	    raise_error("MD5 is br0ken!!11!!!\n");
-# if __VERSION_MINOR__ > 3 || __VERSION_MICRO__ > 610
+# ifndef _flag_disable_authentication_digest_MD5
 	sasl_test();
-# else
-#  echo SASL digest-md5 currently disabled for old LDMUDs.
 # endif
 	//P4(("%O\n", make_json( ([ 7:"33\n44\t21", "!":93 ]) )))
 	printf("Testing make_json: Is %O equal to %O ?\n",
@@ -260,10 +258,10 @@ static void create() {
 #endif
 #ifdef JABBER_PATH
 	register_target("xmpp:"+ myLowerCaseHost);
-# ifdef JABBER_HOST
-        register_localhost(lower_case(JABBER_HOST));
-	register_target(lower_case(JABBER_HOST));
-	register_target("xmpp:"+ lower_case(JABBER_HOST));
+# ifdef _host_XMPP
+        register_localhost(lower_case(_host_XMPP));
+	register_target(lower_case(_host_XMPP));
+	register_target("xmpp:"+ lower_case(_host_XMPP));
 # endif
 #endif
 	// base64decode("test2000");
@@ -472,7 +470,7 @@ string is_formal(string nicki) {
 	// for this person (psyc, xmpp, mailto..)
 	//
 # echo We don't get here anyway.
-# if 1 //def EXPERIMENTAL
+# if 1
 	if (index(nicki, ':') != -1 || index(nicki, '.') != -1)
 	    return nicki;
 # else
@@ -590,6 +588,7 @@ string legal_mailto(string a) {
 }
 #endif
 
+#ifndef hex2int
 // thanks to saga this does now convert hex to integer.. :)
 //
 // modern ldmud now offers hex2int in form of
@@ -614,6 +613,7 @@ int hex2int(string hex) {
 	}
 	return r;
 }
+#endif
 
 #if 0
 // only used by /lu these days
@@ -717,14 +717,12 @@ varargs mixed sendmsg(mixed target, string mc, mixed data, vamapping vars,
 #endif
 
 	unless (source) source = previous_object();
-//#ifndef EXPERIMENTAL
 	// entity.c doesn't allow vars to be missing so we might
 	// just aswell enforce it in the whole psyced source that
 	// vars always need to be given as mapping. TODO
 	// i changed the behaviour of entity.c because vars are missing
 	// everywhere..
 	unless (mappingp(vars)) vars = ([]);
-//#endif
 #ifdef TAGGING
         /* <fippo> I dont remember exactly why I did not want this 
          *      for stringp sources... but for pushback, it should 
@@ -795,6 +793,18 @@ varargs mixed sendmsg(mixed target, string mc, mixed data, vamapping vars,
 				return psyc_sendmsg(target, mc, data, vars,
 						    showingLog, source, u);
 #endif
+			case 0:
+#ifdef DEVELOPMENT
+				raise_error("scheme 0 is a bug\n");
+				//
+				// TODO: we had this error, and maybe it's
+				// because user@host addressing does get here
+				// so i'm not completely sure it is the right
+				// thing to do to just treat it like xmpp, but
+				// let's give that a try.
+#endif
+				//
+				// fall thru
 			case "xmpp":
 #ifdef SWITCH2PSYC
 				P4(("LOOKing for %O in %O\n",
@@ -829,8 +839,6 @@ varargs mixed sendmsg(mixed target, string mc, mixed data, vamapping vars,
 				o -> msg(source, mc, data, vars);
 				return 3;
 #endif
-			case 0:
-				raise_error("scheme 0 is a bug\n");
 			}
 			if (schemes[u[UScheme]])
 			    return schemes[u[UScheme]]->msg(source,
@@ -918,10 +926,8 @@ varargs mixed sendmsg(mixed target, string mc, mixed data, vamapping vars,
 		return 0;
 	}
 	if (objectp(target)) {
-		// returnwert sagt aus, ob msg dargestellt werden will
-		// nicht aber, dass sie erfolgreich angekommen ist, denn das ist ja eh
 		target -> msg(source, mc, data, vars, showingLog);
-		// deshalb machen wir das lieber selber klar
+		// make sure msg is treated as successfully delivered:
 		return 2;
 	}
 	D2(else D(S("sendmsg encountered %O as target for (%O,%s,%O,%O)\n",
@@ -1081,7 +1087,7 @@ varargs int sendmsg(mixed target, string mc, mixed data, mapping vars,
 #endif
 
 	unless (source) source = previous_object();
-#ifndef EXPERIMENTAL
+#ifndef GAMMA
 	// entity.c doesn't allow vars to be missing so we might
 	// just aswell enforce it in the whole psyced source that
 	// vars always need to be given as mapping. TODO

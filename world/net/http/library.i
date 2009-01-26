@@ -1,5 +1,5 @@
 //						vim:noexpandtab:syntax=lpc
-// $Id: library.i,v 1.38 2008/04/08 23:12:16 lynx Exp $
+// $Id: library.i,v 1.40 2008/04/27 08:20:47 lynx Exp $
 //
 // HTTP function library  -lynx
 //
@@ -85,20 +85,21 @@ void htrequireauth(string prot, string type, string realm) {
 	}
 }
 
-varargs string htredirect(string prot, string target, string comment, int permanent) {
+varargs string htredirect(string prot, string target, string comment, int permanent, string extra) {
 	if (!comment) comment = "Check this out";
 	if (!target) target = "/";
+	if (!extra) extra = "";
 
 	if (prot) {
 		printf("%s %d %s\n%s", HTTP_SVERS,
 		  permanent ? R_MOVED : R_FOUND, comment, htheaders());
 	}
 	printf("\
-Location: %s\n\
+Location: %s\n%s\
 \n\
 <a href=\"%s\">%s</a>.\n\
 ",
-		target, target, comment);
+		target, extra, target, comment);
 	return 0;
 }
 

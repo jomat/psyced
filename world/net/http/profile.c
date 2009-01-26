@@ -1,4 +1,4 @@
-// $Id: profile.c,v 1.2 2007/04/11 13:48:57 lynx Exp $ vim:syntax=lpc
+// $Id: profile.c,v 1.3 2008/04/22 22:43:14 lynx Exp $ vim:syntax=lpc
 //
 // <kuchn> profile.c, a web based user settings/profile changer,
 //	   called from net/http/server.
@@ -20,6 +20,7 @@
 // in production servers. so please only use this on experimental servers.
 #ifdef EXPERIMENTAL
 
+#include <ht/http.h>
 #include <net.h>
 #include <text.h>
 #include <person.h>
@@ -54,7 +55,7 @@ checkAuth(val, prot, query, headers, qs, user) {
 			w("_PAGES_user_settings_body", ([
 				"_username" : query["username"],
 				"_password" : query["password"],
-				
+
 				"_speakaction" : user->v("speakaction") ? user->v("speakaction") : "",
 				"_commandcharacter" : user->v("commandcharacter") ? user->v("commandcharacter") : ""
 			]) );
@@ -88,7 +89,7 @@ checkAuth(val, prot, query, headers, qs, user) {
 		w("_PAGES_user_index", ([ "_username" : query["username"], "_password" : query["password"] ]));
 		break;
 	}
-	
+
 	w("_PAGES_user_footer");
 }
 
@@ -98,7 +99,7 @@ auth(prot, query, headers, qs) {
 		w("_PAGES_user_login_body");
 		return 0;
 	}
-	
+
 	if(query["username"] == "" || query["password"] == "")
 	{
 		w("_PAGES_user_login_empty");
@@ -119,7 +120,7 @@ auth(prot, query, headers, qs) {
 settings(prot, query, headers, qs, user) {
 	foreach(string k, string v : query) {
 		int ok = 0;
-		
+
 		switch(k) {
 		case "password":
 			ok = 1;
@@ -131,10 +132,10 @@ settings(prot, query, headers, qs, user) {
 			ok = 1;
 			break;
 		}
-		
+
 		if(! ok)
 			continue;
-		
+
 		if(v == "")
 		{
 			//if(v != "password")
@@ -144,7 +145,7 @@ settings(prot, query, headers, qs, user) {
 		else
 			user->vSet(k, v);	// password won't be set? humm.
 	}
-	
+
 	w("_PAGES_user_settings_changed", ([ "_username" : query["username"], "_password" : query["password"] ]) );
 }
 

@@ -1,6 +1,7 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: active.c,v 1.40 2008/02/20 14:03:30 fippo Exp $
+// $Id: active.c,v 1.41 2008/06/17 09:35:45 lynx Exp $
 //
+#include "common.h"
 #include <net.h>
 #include <services.h>
 

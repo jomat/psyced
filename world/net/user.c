@@ -1,6 +1,12 @@
-// $Id: user.c,v 1.519 2008/04/16 11:45:50 lynx Exp $ // vim:syntax=lpc
+// $Id: user.c,v 1.547 2008/12/22 11:11:36 lynx Exp $ // vim:syntax=lpc
 //
 // common subclass for PSYC clients, whatever the user interface
+
+// local debug messages - turn them on by using psyclpc -DDuser=<level>
+#ifdef Duser
+# undef DEBUG
+# define DEBUG Duser
+#endif
 
 #include <net.h>
 #include <person.h>
@@ -8,9 +14,7 @@
 #include <url.h>
 
 inherit NET_PATH "person";
-//#ifdef EXPERIMENTAL
 inherit NET_PATH "common";
-//#endif
 inherit NET_PATH "sockets";
 
 #include <text.h>
@@ -86,13 +90,14 @@ volatile mapping descvars;
 //# define DEFAULT_FILE_STYLE_EXAMINE "http://www.psyced.org/examine.css"
 # define DEFAULT_FILE_STYLE_EXAMINE "/static/examine.css"
 #endif
-htDescription(prot, query, headers, qs, variant, vars, source) {
+htDescription(anonymous, query, headers, qs, variant, vars) {
 	string k, t, page, foto, buttons, profile, nick, type;
 #ifndef HTTP_PATH
 	int doTalk = 1;
 #else
 	int doTalk = 0;
 
+	P3(("htDescription for %O showing %O or %O\n", qs, vars, descvars))
 	if (query) sTextPath(query["layout"] || v("layout"),
 			     query["lang"] || v("language"), "html");
 	else sTextPath(v("layout"), v("language"), "html");
@@ -126,13 +131,18 @@ htDescription(prot, query, headers, qs, variant, vars, source) {
 		type = "_person";
 		nick = vars["_nick"];
 	}
+	// we could also try _identification here, or even apply inheritance
 	if (vars["_source"]) profile = ppl[ vars["_source"] ];
 	if (!profile && stringp(nick)) profile = ppl[ lower_case(nick) ];
 
 	page = listDescription(vars, 0, variant
 		 ? "<a href=\"javascript:exa('%s')\">%s</a>"
 		 : "<a href=\"%s\">%s</a>");	// direct psyc: links!
-	if (type == "_place") {
+	if (anonymous) {
+		// anonymous profile inspection from the web
+		// we are rendering ourselves for somebody else
+		// not the other way around
+	} else if (type == "_place") {
 		// new meaning of _context used here.. ay ay ay
 		// we should only show one of these
 		buttons = T("_HTML_examine_context_enter", "")
@@ -140,17 +150,10 @@ htDescription(prot, query, headers, qs, variant, vars, source) {
 	} else {
 		string display = "_normal";
 
-		if (profile && profile[PPL_NOTIFY] >= PPL_NOTIFY_PENDING) {
-		    buttons = T("_HTML_examine_friend_delete", "");
-		    if (doTalk) buttons += T("_HTML_examine_talk", "");
-		} else {
-		    buttons = T("_HTML_examine_friend_new", "");
-		    if (doTalk && !FILTERED(source))
-			buttons += T("_HTML_examine_talk", "");
-		}
-
 		switch (profile && profile[PPL_DISPLAY]) {
 		case PPL_DISPLAY_NONE:
+			// this, of course, needs to happen before we use
+			// the "doTalk" variable
 			doTalk = 0;
 			display = "_none";
 			break;
@@ -167,14 +170,31 @@ htDescription(prot, query, headers, qs, variant, vars, source) {
 		vars["_display_normal"] = "";
 		vars["_display"+display] = "selected";
 
+		if (profile && profile[PPL_NOTIFY] >= PPL_NOTIFY_PENDING) {
+		    buttons = T("_HTML_examine_friend_delete", "");
+		    if (doTalk) buttons += T("_HTML_examine_talk", "");
+		} else {
+		    buttons = T("_HTML_examine_friend_new", "");
+		    if (doTalk && !FILTERED(vars["_source"]))
+			buttons += T("_HTML_examine_talk", "");
+		}
+#ifdef TELEPHONY_SECRET
+		buttons += T("_HTML_examine_button_call", "");
+#endif
 		buttons += T("_HTML_examine_display", "");
 	}
-	page = T("_HTML_examine_buttons_start", "")
-	       	+ buttons
-	       	+ T("_HTML_examine_buttons_end", "")
-		+ T("_list_description_on", "")
+
+#ifndef _flag_enable_profile_table
+	page = T("_list_description_on", "")
 		+ page
 		+ T("_list_description_off", "");
+#else
+	page = T("_list_description_on_table", "")
+		+ page
+		+ T("_list_description_off_table", "");
+#endif
+	if (buttons) page = T("_HTML_examine_buttons_start", "")
+	       	+ buttons + T("_HTML_examine_buttons_end", "") + page;
 	if (t = vars["_uniform_photo"] || vars["_uniform_photo_small"]) {
 		foto = "<img class=\"Peup\" src=\""+ t +"\">";
 		if (vars["_page_photo"])
@@ -182,7 +202,7 @@ htDescription(prot, query, headers, qs, variant, vars, source) {
 			    + vars["_page_photo"] +"\">"+ foto +"</a>";
 		// foto = "<span class=\"Peup\">"+ foto +"</span>\n";
 	} else foto = "";
-	if (variant) page = "<link rel=stylesheet href=\""+
+	if (variant) page = "<link rel=\"stylesheet\" href=\""+
 	        (vars["_uniform_style"] || DEFAULT_FILE_STYLE_EXAMINE)
 		+"\">\n"+ T("_PAGES_start_description"+ variant, "") + page
 	       	+ T("_PAGES_end_description"+ variant, "");
@@ -512,10 +532,11 @@ msg(source, mc, data, mapping vars, showingLog) {
 	}
 #ifdef PREFIXES
 	if (t && intp(t)) {
+		// similar to time_or_date()
 		if (time() - t > 24*60*60)
 		    w("_prefix_time_date", isotime( t, 0 ));
 		else
-		    w("_prefix_time", hhmmss(ctime( t )));
+		    w("_prefix_time", hhmm(ctime( t )));
 		unless (showingLog) {
 			P0(("%O got _time_place w/out showingLog in %O\n",
 			    ME, vars))
@@ -643,7 +664,14 @@ case "_message_public":
 		    break;
 		}
 		if (vars["_nick_local"] && MYLOWERNICK != lower_case(vars["_nick_local"])) {
+			// should we have special templates for this?
+			//mc = "_message_echo_public_masquerade";
 			nick = vars["_nick_local"];
+			// or should we rather make sure that all clients
+			// learn to detect echo themselves, since future
+			// multicast routing may not give us the possibility
+			// to patch methods on the way to the client
+			// like we do here:
 		} else mc = "_message_echo_public";
 		// fall through for echoes coming from rooms
 case "_message_echo_public":
@@ -676,6 +704,9 @@ case "_status_description_place":
 		    sscanf(vars["_tag_reply"], "%s %s", variant, t);
 		    //PT(("format %O tag %O\n", variant, t))
 		    descvars = vars;
+#ifdef GAMMA
+		    descvars["_source"] = source;
+#endif
 		    switch (variant) {
 		    default:
 			// client doesn't want HTML
@@ -758,8 +789,8 @@ case "_status_place_members":
 #ifdef TELEPHONY_SECRET
 # include <sys/tls.h>
 
-case "_notice_answer_talk_click":
-case "_notice_answer_talk":
+case "_notice_answer_call_click":
+case "_notice_answer_call":
 		t = vars["_time_expire"];
 		if (to_int(t) < time()) {
 			P1(("Expired phone call for %O from %O: %O\n",
@@ -772,14 +803,14 @@ case "_notice_answer_talk":
 			 "I"+ t +":"+ MYNICK));
 		P1(("hmac/call %O for %O\n", t3, "I"+t+":"+MYNICK))
 		t3 = NET_PATH "http/call"->make_session(MYNICK, to_int(t), t3);
-		w("_notice_answer_talk_link",
-		    "Your call request has been accepted. "
-		    "Use [_page_talk] to start the phone call.", ([
-			"_page_talk":
-			    ((tls_available() && HTTPS_URL) || HTTP_URL)
-			    + NET_PATH +"http/call?thats=me&sid=" +t3,
+		w("_notice_answer_call_link", 0, ([
+                    "_page_call": (
+#ifdef __TLS__
+                        (tls_available() && HTTPS_URL) ||
+#endif
+                        HTTP_URL) + NET_PATH +"http/call?thats=me&sid=" +t3,
 # ifdef TELEPHONY_SERVER
-			"_uniform_talk": TELEPHONY_SERVER + t2,
+                    "_uniform_call": TELEPHONY_SERVER + t2,
 # endif
 		 ]));
 		return 1;
@@ -833,7 +864,7 @@ case "_failure_redirect":
 				placeRequest(vars["_source_redirect"],
 					     mc, 0, 1);
 			} // else.. we'll see
-#ifdef EXPERIMENTAL // enough to make the messages visible?
+#ifdef GAMMA // enough to make the messages visible?
 			return 1;
 #endif
 		}
@@ -1087,7 +1118,7 @@ case "_status":
 	D2( if (vars["_nick"] != nick)
 	    D(S("u:msg _nick %O is changed into %O\n", vars["_nick"], nick)); )
 
-#if 0 //ndef NOT_EXPERIMENTAL
+#if 0 //ndef GAMMA
 	// DANGEROUS CHANGE! I added this line to make sure
 	// remote UNI is shown on private messages. let's see
 	// if it breaks anything --- 2003-05-09
@@ -1108,7 +1139,7 @@ case "_status":
 	return 1;
 }
 
-#ifndef EXPERIMENTAL
+#ifndef GAMMA
 // print() is for "important" output which gets lastlogged
 //
 // if no lastlog mechanism is available,
@@ -1161,12 +1192,7 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 	else t = vars["_time_log"] || vars["_time_place"];
 	// would be nicer to have _time_log in /log rather than showingLog
 	if (!t && showingLog) t = vars["_time_INTERNAL"];
-	if (t && intp(t)) {
-		if (time() - t > 24*60*60)
-		    di["_prefix"] = isotime( t, 0 ) +" ";
-		else
-		    di["_prefix"] = hhmmss(ctime( t )) +" ";
-	}
+	if (t && intp(t)) di["_prefix"] = time_or_date(t) +" ";
 #endif
 #if 0
 	template = T(di["_method"] || mc, 0);
@@ -1189,7 +1215,7 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 		nudata = template;
 
 	    //PT(("%O user:w(%O,%O..%O) - %O\n", ME,mc,data,source, template))
-	    //PT(("%O user:w locations %O\n", ME, v("locations")))
+	    P4(("%O user:w locations %O\n", ME, v("locations")))
 	    foreach (type, loc : v("locations")) {
 		// check uniformness of location here?
 		// no! no broken location should have made it into the
@@ -1244,7 +1270,12 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 #endif
 		    }
 #ifdef LPC3
-		    if (member(vars, "_context") &&! vars["_context"]) {
+		    // i have no idea how a _message_private can trigger this
+		    // code but it does. member(vars, "_context") should not
+		    // return true in that case. very strange!! therefore
+		    // i add "&& vars["_nick_place"]" ... sigh!
+		    if (member(vars, "_context") &&! vars["_context"]
+			&& vars["_nick_place"]) {
 			    // the context was an object, but got lost
 			    // during ldmud's lastlog persistence. let's
 			    // reconstruct it!
@@ -1261,6 +1292,19 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 #else
 # echo No LPC? Wow. Good luck!
 #endif
+#ifndef _flag_disable_circuit_proxy_multiplexing
+		    // this is necessary when a single proxy is emulating
+		    // several clients for several users. to figure out
+		    // which context stuff is forwarded to which client
+		    // we need to add this _target_forward. this is not the
+		    // way psyc should operate in the long term. psyc clients
+		    // should be integrated into the context distribution
+		    // tree themselves, thus the proxy would manage a cslave
+		    // for them instead of accepting forwards from each UNI
+		    vars["_target_forward"] = loc;
+		    // maybe this can be avoided when no _context is set...?
+#endif
+		    P3(("%O user:w forwarding %O to %O\n", ME, mc, vars["_target_forward"]))
 		    sendmsg(loc, mc, nudata, vars);
 //		    PT(("PSYCW: %s -> %O (%O)\n", mc, loc, vars))
 #if DEBUG > 1
@@ -1290,7 +1334,8 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 		    // notifications is just plain wrong
 		    //
 		    if (!stringp(source)|| (vars["_INTERNAL_trust"] >5
-			 || (vars["_nick"] && strstr(data, "[_nick]") != -1)))
+			 || (vars["_nick"] && data && strlen(data)
+			     && strstr(data, "[_nick]") != -1)))
 #ifdef PREFIXES
 			output += isfix ? " " : "\n";
 #else
@@ -1339,10 +1384,20 @@ wAction(mc, data, vars, source, variant, nick) {
 		else {
 		    if (va["_nick_target"])
 			w(mc+"_action"+variant,
+#ifdef GAMMA
+			    0,
+#else
+			     // bei _message gehört sich das nicht
 			     "[_nick_target]: [_nick] [_action].",
+#endif
 			     va, source);
 		    else
-			w(mc+"_action"+variant, "[_nick] [_action].",
+			w(mc+"_action"+variant,
+#ifdef GAMMA
+			  "[_nick] [_action].",
+#else
+			  0,
+#endif
 			  va, source);
 		}
 		return 1;
@@ -1385,15 +1440,16 @@ logon() {
 	// (use another w() maybe?)
 	w("_notice_login", 0, ([ "_nick": MYNICK,
 	      "_page_network": "http://www.psyc.eu/",
-	      "_name_network": "PSYC" ]) );
+	      "_name_network": "PSYC" ]), ME );
 	while (remove_call_out(#'quit) != -1);
+#ifndef _flag_disable_info_session
 	if (t == "irc" || t == "tn") w("_warning_usage_set_charset",
 	   0, ([ "_charset": v("charset") || SYSTEM_CHARSET ]));
-	// moved autojoin to a separate method
+#endif
 	autojoin();
 	cmdchar = (v("commandcharacter") ||
 		   T("_MISC_character_command", "/"))[0..0];
-#ifndef QUIET_LOGIN
+#ifndef _flag_disable_info_session
 	if (greeting) {
 		w("_warning_usage_set_language",
  "Mittels \"/set language de\" kann zur deutschen Sprache gewechselt werden.");
@@ -1429,25 +1485,22 @@ logon() {
 // jabber users. how sad, why miss out on all newscasts? we should
 // refine this so at least newscasts are kept. or should we solve
 // that by +enrol? that would be jabber style.  TODO
+// btw irc has it's own autojoin, which is a little different
 autojoin() {
+#ifndef _flag_disable_place_enter_automatic
 	string s;
 	object o;
 
-#ifdef FORCE_PLACE
+# ifdef FORCE_PLACE
 	// per local policy, all users must join the default place
 	// a community-esq feature
 	vSet("place", DEFPLACE);
-#endif
+# endif
 	P2(("autojoin with %O %O %O\n", v("place"), place, places))
+# ifndef GAMMA
 	unless (v("place"))
-// that was just for fun really ;)
-#if 0 //__EFUN_DEFINED__(tls_query_connection_state)
-	  vSet("place", T("_MISC_defplace",
-		interactive(ME) && tls_query_connection_state() ?
-		    "CryptoChat" : DEFPLACE));
-#else
 	  vSet("place", T("_MISC_defplace", DEFPLACE));
-#endif
+# endif
 	// see also http://about.psyc.eu/Client_coders#Room_members
 	if (sizeof(places)) {
 #if 0
@@ -1470,43 +1523,50 @@ autojoin() {
 		} else {
 #endif
 			foreach (o, s : places) {
-#ifdef FORCE_PLACE_RESET
+# ifdef FORCE_PLACE_RESET
 // we could have a v("leaveonreconnect") instead of an ifdef for this
 				placeRequest(o,
-# ifdef SPEC                  
+#  ifdef SPEC                  
                                      "_request_context_leave"
-# else                        
+#  else                        
                                      "_request_leave"
-# endif
+#  endif
                                      "_netburp", 0, 1);
-#else
+# else
 				P2(("%O relinking %O\n", ME, o))
 				placeRequest(o,
-# ifdef SPEC
+#  ifdef SPEC
                                      "_request_context_enter"
-# else
+#  else
                                      "_request_enter"
-# endif
+#  endif
                                      "_relink", 0, 1);
-#endif
+# endif
 			}
 //		}
 	}
 	else {
+# ifndef _flag_disable_place_default
+#  ifdef GAMMA
+		unless (v("place"))
+		  vSet("place", T("_MISC_defplace", DEFPLACE));
+#  endif
 		// re-entering your last place is unusual by irc
 		// habits, but since we don't want people to set up
 		// autojoins they may find this quite practical until
 		// they decide upon subscribe or not. the requested
 		// history is probably not necessary for ircers, but
 		// shouldn't harm either. jabberers never get here.
-#ifndef HISTORY_AMOUNT
-# define HISTORY_AMOUNT 5	// what about history glimpse?
+#  ifndef _limit_amount_history_place_default
+#   define _limit_amount_history_place_default 5	// what about history glimpse?
 			// history glimpse is how much a room will
 			// allow (at max), this is how much the client
-			// requests
-#endif
-		teleport(v("place"), "_login", 0, 0, 
-			 ([ "_amount_history" : HISTORY_AMOUNT ]));
+			// requests. maybe this should go, _login kind of
+			// says it, too.
+#  endif
+		teleport(v("place"), "_login", 0, 0, ([ "_amount_history":
+			  _limit_amount_history_place_default ]));
+# endif
 		// subscriptions are stored in lowercase, warum auch immer
 		if (sizeof(v("subscriptions"))) {
 //			string t1;
@@ -1531,6 +1591,7 @@ autojoin() {
 			}
 		}
 	}
+#endif // _flag_disable_place_enter_automatic
 }
 
 quit(immediate, variant) {
@@ -1587,20 +1648,30 @@ quit(immediate, variant) {
 
 // driver calls us here to tell us we lost the connection
 // if you don't like this default behaviour, override it
+//
+// we also call this manually from _request_unlink_disconnect
 disconnected(remainder) {
 	// user did not detach his client properly. we'll make a wild guess
 	// at how many messages he may have missed - enough to make the user
 	// check the lastlog if that's not enough.
-#ifdef EXPERIMENTAL
+#ifdef GAMMA
 	// FIXME: problem with jabber/user running into some bug when
 	// lastlog messages are shown.. which at this point of course
 	// creates a recursion - thus, eliminating the otherwise useful
 	// feature of replay-on-tcp-loss here.
-	if (!leaving && v("scheme") != "jabber") vInc("new", 7);
+	if (find_call_out(#'quit) == -1 && v("scheme") != "jabber") {
+		// can't use "leaving" here because it only serves the
+		// purpose of detecting recursion within quit(), thus
+		// gets resetted before arriving here.
+		P1(("unexpected disconnect in %O\n", ME))
+		vInc("new", 7);
+	}
 #endif
 	// actually - we could show all messages since last activity
 	// from user. TODO
+#ifdef AVAILABILITY_OFFLINE
 	if (availability == AVAILABILITY_OFFLINE) return;
+#endif
 	if (find_call_out(#'quit) != -1) return;
 //	if (place) sendmsg(place, "_notice_place_leave_disconnect",
 //		"[_nick] disconnects from the twilight zone.",
@@ -1616,17 +1687,16 @@ disconnected(remainder) {
         return 0;   // unexpected
 }
 
+#ifndef _flag_disable_module_presence
 // usually called from logon, unless set to manual
 announce(level, manual, verbose, text) {
 	::announce(level, manual, verbose, text);
 	unless (ONLINE) return;
-#ifdef NOT_EXPERIMENTAL
 	// psyc://x-net.hu/~tg probably just ran into a bug:
 	// i forgot to put this if here.
-	if (verbose)
-#endif
-	    return showFriends(1);
+	if (verbose) return showFriends(1);
 }
+#endif
 
 // belongs into person.c as it is being called from there..?
 static showFriends(verbose) {
@@ -1651,7 +1721,11 @@ static showFriends(verbose) {
 	    // there is a 'bug' inside which exposes idletimes of people you have offered
 	    // friendship to - just check the lvl
 	    o = k[--i];
+#ifdef AVAILABILITY_NEARBY
 	    isaway = friends[o, FRIEND_AVAILABILITY] < AVAILABILITY_NEARBY;
+#else
+	    isaway = 0;
+#endif
 	    list[isaway * 3 + 2][o] = friends[o, FRIEND_NICK];
 
 	    if (objectp(o)) {
@@ -1670,7 +1744,6 @@ static showFriends(verbose) {
 		list[isaway * 3 + 1] += ", "+ (fmt[isaway] ? sprintf(fmt[isaway],n,n,n) : n);
 		// for once we leave out the CALC_IDLE_TIME.. ;)
 		if (verbose && idle = o->vQuery("aliveTime"))
-		 // list2 += " [" + hhmm(ctime(time() - idle - 60*60)) + "]";
 		    list[isaway * 3 + 1] += " [" + timedelta(time() - idle) + "]";
 	    } else {
 		// TODO: do handling of remote nicks here
@@ -1706,9 +1779,16 @@ listDescription(vars, eachout, nicklink) {
 	string k, na, va, buf, fmt, t;
 
 	buf = "";
+	P3(("%O listDescription(%O,%O,%O)\n", ME, vars, eachout, nicklink))
+#ifndef _flag_enable_profile_table
+	// html version with more intelligent tables:
+	// <tr id="[_key]"><td class="ldpek">[_name_key]</td><td class="ldpev">[_value]</td></tr>
+	fmt = T("_list_description_each_item", "[_key]: [_value]\n");
+#else
 	// maybe someday we'll use psyctext() instead, but for now this
-	// is sooo much faster.
+	// is sooo much faster. too bad the %22 trick doesn't work for utf8 
 	fmt = T("_list_description_each", "%22s: %s\n");
+#endif
 	if (vars["_identification_alias"]) {
 	    m_delete(vars, "_identification_scheme_XMPP");
 	    //m_delete(vars, "_identification_scheme_SIP");
@@ -1737,7 +1817,7 @@ listDescription(vars, eachout, nicklink) {
 			va = 0;
 			break;
 		case "_uniform_photo":
-			PT(("photo is %O\n", va))
+			P4(("photo is %O\n", va))
 			if (nicklink) va = 0;
 			break;
 		case "_language":
@@ -1828,7 +1908,13 @@ listDescription(vars, eachout, nicklink) {
 				   sprintf("%22s: %s",na,va),
 				   ([ k: va, // "_text"+k: na
 				    ]));
-			    else buf += sprintf(fmt, na, va);
+			    else
+#ifndef _flag_enable_profile_table
+				buf += psyctext(fmt, ([ "_key": k,
+					"_name_key": na, "_value": va ]) );
+#else
+				buf += sprintf(fmt, na, va);
+#endif
 			}
 			// else.. no output encoding
 		}

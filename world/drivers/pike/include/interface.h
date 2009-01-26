@@ -1,4 +1,4 @@
-// $Id: interface.h,v 1.31 2008/04/09 16:49:23 lynx Exp $ // vim:syntax=lpc:ts=8
+// $Id: interface.h,v 1.32 2008/04/18 13:34:38 lynx Exp $ // vim:syntax=lpc:ts=8
 // several things in here do not look like they were optimized for pike.. TODO
 
 #define _INCLUDE_INTERFACE_H
@@ -127,6 +127,15 @@
 
 #define	to_string(XXX)		((string) XXX)
 #define	to_int(XXX)		((int) XXX)
+
+// ... this stuff may want to be done in a more pikey way
+// extracts hh:mm:ss format from ctime output
+#define hhmmss(CTIME)   CTIME[11..18]
+// extracts hh:mm format from ctime output (for idle times)
+#define hhmm(CTIME)     CTIME[11..15]
+// typical timestamp string: hhmm or iso-date if older than 24 hours
+#define time_or_date(TS) \
+    (time() - TS > 24*60*60 ? isotime(TS, 0) : hhmm(ctime( TS )))
 
 // TODO *** stuff that needs to be solved better *** //
 #define interactive(ME) ME

@@ -1,4 +1,4 @@
-// $Id: interface.h,v 1.51 2008/04/09 16:49:23 lynx Exp $ // vim:syntax=lpc:ts=8
+// $Id: interface.h,v 1.54 2008/08/26 13:42:24 lynx Exp $ // vim:syntax=lpc:ts=8
 #define _INCLUDE_INTERFACE_H
 
 // let's stay compatible for a while
@@ -8,10 +8,12 @@
 # define SAVE_FORMAT     0
 //#endif
 
-#ifdef __psyclpc__
-# define DRIVER_VERSION  "psyclpc/" __VERSION__
-#else
+#ifndef __psyclpc__
 # define DRIVER_VERSION  "ldmud/" __VERSION__
+#else
+# define DRIVER_VERSION  "psyclpc/" __VERSION__
+
+# define hex2int(HEX)	to_int("0x"+ HEX)
 #endif
 
 // driver abstraction kit -- abstraction layer from driver details
@@ -114,6 +116,14 @@
 #define	vamixed		mixed
 #define	vaint		int
 
+// extracts hh:mm:ss format from ctime output
+#define hhmmss(CTIME)   CTIME[11..18]
+// extracts hh:mm format from ctime output (for idle times)
+#define hhmm(CTIME)     CTIME[11..15]
+// typical timestamp string: hhmm or iso-date if older than 24 hours
+#define time_or_date(TS) \
+    (time() - TS > 24*60*60 ? isotime(TS, 0) : hhmm(ctime( TS )))
+
 #if __EFUN_DEFINED__(convert_charset)
 # ifdef TRANSLIT // TRANSLIT has no effect whatsoever. grrr!
 #  define iconv(s, FROM, TO) (s = convert_charset(s, FROM, TO +"//TRANSLIT"))
@@ -139,4 +149,10 @@
 # else
 #  define DEBUG_TRACE	"(DEBUG_TRACE disabled: DEBUG level below 1)"
 # endif
+#endif
+
+// some ldmud versions previous to 610 have a problem with digest-md5
+#if __VERSION_MAJOR__ < 4 && __VERSION_MICRO__ < 611
+# echo Warning: Your driver is so old, it cannot do DIGEST-MD5
+# define _flag_disable_authentication_digest_MD5
 #endif

@@ -1,9 +1,10 @@
-// $Id: configure.c,v 1.58 2007/06/17 21:07:54 lynx Exp $ // vim:syntax=lpc
+// $Id: configure.c,v 1.59 2008/04/22 22:43:56 lynx Exp $ // vim:syntax=lpc
 //
 // web configurator interface. does a lot of cool things for you,
 // and it should always learn to do some more. if you don't need or
 // like it, simply don't load it (from init.ls, or by fetching the url).
 //
+#include <ht/http.h>
 #include <net.h>
 #include <driver.h>
 

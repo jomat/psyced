@@ -1,4 +1,4 @@
-// $Id: server.c,v 1.56 2007/06/15 14:45:09 lynx Exp $ // vim:syntax=lpc
+// $Id: server.c,v 1.57 2008/05/24 07:23:00 lynx Exp $ // vim:syntax=lpc
 /*
  * rudimentary prototype of an SMTP server
  * all your protocols belong to us
@@ -10,6 +10,8 @@
 // does mailto:*place@host work for addressing places?
 // unfortunately # is not allowed in mailto: urls according to the NEW URI RFC
 #define GROUP_PREFIX		'*'
+#define PERSON_PREFIX		'~'
+// RFC 822 allows both * and ~ in usernames. phew.
 
 #ifndef MAX_EMAIL_LINES
 # ifdef _flag_optimize_protection_SMTP
@@ -115,15 +117,19 @@ body(a) {
 		return;
 	}
 	PT(("SMTP %O content %O vars %O\n", query_ip_number(), text, vars))
-	unless (objectp(target) || (strlen(vars["_nick_target"]) &&
-	    (target = vars["_nick_target"][0] == GROUP_PREFIX
-	     ? find_place(vars["_nick_target"]) :
-	    summon_person(vars["_nick_target"])))) {
+	unless (objectp(target)) {
+	   // || (strlen(vars["_nick_target"]) &&
+	   // (target = vars["_nick_target"][0] == GROUP_PREFIX
+	   //  ? find_place(vars["_nick_target"]) :
+	   // summon_person(vars["_nick_target"])))) {
+	   // ... and PERSON_PREFIX?
 		// re-summon may happen when a user logged out while the
 		// mail was coming in. unlikely. even unlikelier that it
 		// gets here:
-		P0(("SMTP %O cannot re-summon username %O\n", query_ip_number(), user))
+		P0(("SMTP %O requires re-summon of username %O\n", query_ip_number(), user))
 		write("550 Technical problems summoning recipient\n");
+		// let's observe this.. does it really happen?
+		// having summon logic twice in here is silly
 	} else {
 		string subject;
 
@@ -269,24 +275,25 @@ case "RCPT":
 				// as summon_person / find_place do all of that
 				if (user[0] == GROUP_PREFIX)
 				    target = find_place(user[1..]);
-				else
-				    target = summon_person(user);
-				if(target) {
-					if(user[0] == GROUP_PREFIX ||
-					   !target->isNewbie()) {
-						vars["_host_target"] = host || "";
-						write("250 Recipient apparently ok\n");
-					} else {
-						target = 0;
-						spam("_unknown_name_user", 0,
-			  "550 User "+user+" unknown (not registered).\n");
-					}
+				else if
+#ifdef _flag_disable_prefix_person_SMTP
+				    (target = summon_person(user))
+#else
+				    (user[0] == PERSON_PREFIX
+					&& target = summon_person(user[1 ..]))
+#endif
+				{
+					if (target->isNewbie()) target = 0;
+				}
+				if (target) {
+					vars["_host_target"] = host || "";
+					write("250 Recipient apparently ok\n");
 					break;
 				}
 			}
 			target = 0;
 			spam("_unknown_name_user", 0,
-			     "550 User or room "+user+" unknown (/not registered).\n");
+			     "550 '"+user+"' unknown.\n");
 			// spam does a QUIT in this case. too harsh?
 			break;
 		    }

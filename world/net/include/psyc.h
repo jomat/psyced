@@ -48,7 +48,18 @@
 // here are the macros to implement method inheritance in a loop around
 // a switch (see http://about.psyc.eu/Inheritance and "try and slice")
 
-#ifdef EXPERIMENTAL 
+// changes for try/slice are so profound in some parts, that running with it
+// disabled is actually more "experimental" and flaky. PSYC_TRY() is also
+// used for varnames in spyc/dispatch.i, so it's not just the methods here.
+#ifndef _flag_disable_inheritance_method
+# if DEBUG > 1
+#  define PSYC_SLICE_DEBUG \
+		log_file("SLICE", "%s:%O slicing %O in %O\n", \
+		    __FILE__, __LINE__, family, ME);
+# else
+#  define PSYC_SLICE_DEBUG
+# endif
+
 # define PSYC_TRY(mc) \
 	family = mc; \
 	while (family) { \
@@ -57,8 +68,7 @@
 
 # define PSYC_SLICE_AND_REPEAT \
         default: \
-		log_file("SLICE", "%s:%O slicing %O in %O\n", \
-		    __FILE__, __LINE__, family, ME); \
+		PSYC_SLICE_DEBUG \
                 glyph = rmember(family, C_GLYPH_SEPARATOR_KEYWORD); \
                 if (glyph > 1) family = family[.. glyph-1]; \
                 else family = 0; \
@@ -66,7 +76,6 @@
 	if (glyph == -4) family = 0; // got here by break;
 
 #else
-// this disables method inheritance
 # define PSYC_TRY(mc) switch(mc)
 # define PSYC_SLICE_AND_REPEAT
 #endif

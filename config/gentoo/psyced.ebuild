@@ -1,4 +1,4 @@
-# $Header: /CVS/muveCVS/psycmuve/config/gentoo/psyced.ebuild,v 1.31 2007/09/24 22:16:19 lynx Exp $
+# $Header: /CVS/muveCVS/psycmuve/config/gentoo/psyced.ebuild,v 1.32 2008/09/22 21:51:39 lynx Exp $
 # Copyright 1999-2005 Gentoo Foundation
 # Distributed under the terms of the GNU General Public License v2
 #
@@ -76,8 +76,8 @@ src_install() {
 	keepdir /var/${PN}/data/person
 	keepdir /var/${PN}/data/place
 	dodir /var/${PN}/config
-	chmod -x config/default/*.*
-	cp -rp config/default/README config/default/*.* "${D}var/${PN}/config"
+	chmod -x config/blueprint/*.*
+	cp -rp config/blueprint/README config/blueprint/*.* "${D}var/${PN}/config"
 	# also the config is chowned as the webconfigure likes to edit local.h
 	chown -R ${PN}:psyc "${D}var/${PN}"
 	einfo "Person, place and configuration data is kept in /var/${PN}"

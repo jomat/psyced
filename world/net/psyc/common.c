@@ -1,8 +1,9 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: common.c,v 1.64 2008/02/06 18:13:16 lynx Exp $
+// $Id: common.c,v 1.67 2008/08/05 12:21:34 lynx Exp $
 //
 // common code for UDP and TCP server
 
+#include "common.h"
 #include <net.h>
 #include <url.h>
 #include <psyc.h>
@@ -130,7 +131,7 @@ varargs int rootMsg(mixed source, string mc, string data,
 		}
 #endif
 		break;
-#ifdef EXPERIMENTAL
+#ifdef GAMMA
 	case "_notice_authentication":
 		P0(("rootMsg got a _notice_authentication. never happens since entity.c\n"))
 		register_location(vars["_location"], source, 1);

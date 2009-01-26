@@ -23,4 +23,5 @@
 				// (not provided by parse_uniform)
 #define	USize		15
 
+#define UName(uniform)	(uniform[UUser] || uniform[UResource][1 ..])
 #endif

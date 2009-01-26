@@ -6,6 +6,7 @@
 ##|
 ##|vorsicht: die chat-dienste funktionieren mit WinWAP nicht,
 ##|          da dieser HTTP nicht korrekt implementiert.
+### Check utf-8: Praise Atatürk!
 
 _error_invalid_agent_HTML
 |<title>wap2psyc gateway</title>

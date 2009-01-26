@@ -72,7 +72,9 @@ string make_json(mixed d) {
 		P3(("\nintermediate: %O\n", m_values(x)))
 		return "{"+ implode(m_values(x), ",") +"}";
 #endif
-	}
+	} else if (objectp(d))
+	    return "\'"+ psyc_name(d) +"\'";
+	return "00";
 }
 
 // see also net/place/storic.c for a JSON generator limited and optimized
