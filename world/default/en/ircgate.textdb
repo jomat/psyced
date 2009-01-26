@@ -1,0 +1,27 @@
+<PSYC:TEXTDB> ## vim:syntax=mail
+
+_message_public
+|## people out there just *hate* the actions
+|<[_nick]> [_data]
+
+_message_public_text_action
+|## maybe we should simply inherit from en_g  ;)
+|<[_nick]> [_data]
+
+_request_legacy
+|Relaying [_type] request from [_nick] to you.
+|PRIVMSG [_nick_target] :%[_type] [_value]%
+
+_request_version
+|%VERSION%
+
+_request_legacy_dcc
+|Relaying DCC request from [_nick] to you.
+|PRIVMSG [_nick_target] :%[_type] [_value]%
+
+_notice_broadcast
+|Broadcast: [_data]
+
+_status_version_UNUSED
+|## Relaying version reply from [_nick] to you.
+|%VERSION [_version]%

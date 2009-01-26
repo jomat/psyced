@@ -1,0 +1,50 @@
+#!/usr/bin/perl
+#
+# editor for .o files						-lynX
+#
+# it merely splits long lines at the end of mappings
+# so that vi-like editors aren't confronted with
+# huge one-liners. after saving it recreates the
+# original format after renaming the original file
+# into itself with appended tilde.
+#
+#sub backupsuffix() { '~' }
+
+($file = shift and $file =~ /\.o$/) or die <<X;
+usage: $0 <lpmud-data-file.o>
+X
+
+$tmp = "/tmp/edata.$$";
+
+open(I, $file) or die "$file: $!";
+open(O, ">$tmp") or die "cannot create $tmp: $!";
+
+$/ = undef;
+while(<I>) {
+	s/(,]\),)/\1\n  /gm;
+	print O;
+}
+close I;
+close O;
+
+$edit = $ENV{EDITOR} or 'vi';
+
+$M = -M $tmp; 
+
+system("$edit $tmp");
+
+exit if $M == -M $tmp;
+die $! unless rename $file, "$file~";
+print STDERR "Backup created in $file~\n";
+
+open(I, $tmp) or die "$tmp: $!";
+open(O, ">$file") or die "cannot create $file: $!";
+$/ = undef;
+
+while(<I>) {
+	s/\n  //gm;
+	print O;
+}
+close I;
+close O;
+

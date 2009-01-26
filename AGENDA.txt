@@ -1,0 +1,119 @@
+VERSION 1.0
+===========
+
+psyced:
+	[x]	make those methods carry the names they should carry
+	[x]	interface cmd() to psyc user object
+	[x]	have pr() produce something useful for psyc clients
+	[x]	send incoming psyc client messages as its user object
+	[x]	allow for remote buddies (even if only java can talk to them)
+	[x]	output real buddies
+	[x]	make rooms usable from psyc
+	[x]	write up some docs / installation instructions
+	[-]	fix up the veChat applet
+
+web:
+	[x]	multilang
+	[x]	end-user start page
+	[x]	hacker page
+	[x]	software download
+	[x]	konr@d disclaimer
+	[-]	finish up the psyc draft to match psyced-1.0
+	[x]	www.psyced.org
+	[x]	provide driver binaries on download
+	[-]	provide ready-to-use packages (rpm, deb, ebuild..)
+
+general:
+	[-]	set up mailing lists
+	[x]	beta testing
+	[x]	get it all working
+	[ ]	heldensaga wants to celebrate a release party!
+
+promotion:
+	[x]	konr@d interview
+	[x]	freshmeat
+	[ ]	iX article
+	[ ]	radio bremen interview
+	[ ]	publish in comp.sources.unix and de.comm.chatsystems
+	[ ]	/.
+	[ ]	less old-fashioned ideas
+
+
+
+VERSION 1.1
+===========
+
+psyced:
+	[x]	fix irc client access to server
+	[-]	fix /p & co, or think of something better
+	[x]	server intercommunication (buddies, messages, query)
+	[+]	real psyc rooms
+	[-]	filter incoming psyc vars & recognize abbrevs
+	[ ]	support compact methods and vars
+	[-]	proper support for var modifiers
+	[x]	support _tag for request/reply tagging
+	[x]	parse notice syntax: "There are [_users_amount] users online."
+
+perl:
+	[x]	tcp support
+	[x]	smart multiplexing
+	[x]	parse notice syntax: "There are [_users_amount] users online."
+	[x]	simple client
+
+general:
+	[ ]	update & publish internet drafts
+
+web:
+	[x]	about.psyc.eu
+	[x]	comparison psyc vs. icq, jabber, msn, irc
+
+
+VERSION 1.2
+===========
+
+psyced:
+	[x]	enter remote rooms (simple style)
+	[ ]	make rooms fully capable of psyc
+	[x]	make remote people addressable by nickname (local nickspace)
+	[ ]	make user objects fully capable of psyc conferencing (hard!)
+
+web:
+	[?]	the psyc vision (document) ?
+
+perl:
+	[+]	non-blocking writes using buffers
+	[-]	tkperl client
+
+all:
+	[+]	start development of negotiations (see FORK)
+
+
+VERSION 2.0
+===========
+
+web:
+	[ ]	release PSYC 1.0 specification
+
+all:
+	[ ]	introduce compressed keywords
+
+
+VERSION 3.0
+===========
+
+	[ ]	introduce object descriptions
+
+
+POSSIBLE FUTURES
+================
+	[-]	c/c++ implementation (for windows, mac and unix)
+	[-]	psyc: plugins for browsers (so you can click on a psyc url)
+	[x]	icq gateway (so you can talk to icq-buddies from psyc)
+	[x]	ircserver gateway (so you can talk to ircers)
+	[ ]	pager/gsm-sms gateways
+	[-]	psyc-enhanced videoconferencing/internet-telephony
+	[ ]	psyc-enhanced broadcasting (text/video/audio)
+	[ ]	psyc-enhanced distributed webcasting/website management
+	[-]	psyc-enhanced file sharing
+
+

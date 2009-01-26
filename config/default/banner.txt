@@ -1,0 +1,8 @@
+[connected]
+
+	PROTOCOL for SYNCHRONOUS CONFERENCING	http://www.psyced.org/
+	---------------	___   __  _   _  __ ___ __ ------------------
+			|  \ (__   \ /  /   |   | \
+			|__/    \   V  |    |-  |  )
+	>>>		|    (__/   |   \__ |__ |_/		  <<<
+

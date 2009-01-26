@@ -1,0 +1,1427 @@
+<PSYC:TEXTDB> ## vim:syntax=mail
+
+_message
+|[_nick] sends you: [_data]
+
+_notice_forward_message_private
+|Message from [_source_relay]: [_data_relay]
+
+_notice_forward_message
+|Message from [_source_relay]: [_data_relay]
+
+_notice_forward_message_public
+|In [_nick_place] [_source_relay] says: [_data_relay]
+
+_prefix
+|[_data]	
+
+_URL_help
+|http://help.pages.de
+
+_MISC_color
+|{_MISC_color_text}
+
+_MISC_fonts
+|arial,helvetica
+
+_MISC_color_notice
+|#999999
+
+_MISC_color_border
+|## if the default colours get used erroneously, lets make sure they are
+|## actually colour-free to make them fit into any design
+|##
+|## then again, on black grounds every color looks good
+|## as opposed to white backgrounds
+|##
+|{_MISC_color_private}
+
+_MISC_color_magnify
+|{_MISC_color_alt}
+
+_MISC_color_remote
+|{_MISC_color_echo}
+
+_MISC_color_text
+|#ffffff
+
+_MISC_color_important
+|{_MISC_color_private}
+
+_MISC_color_bg
+|## black is true neutrality, white just hurts your eyes
+|#000000
+
+_MISC_color_alink
+|## these are just compatibility hooks
+|{_MISC_color_link_activated}
+
+_MISC_color_vlink
+|## these are just compatibility hooks
+|{_MISC_color_link_visited}
+
+_MISC_color_alt
+|#cc3333
+
+_MISC_color_private
+|#ff6666
+
+_MISC_color_echo
+|#a0a0a0
+
+_MISC_color_public
+|#cccc99
+
+_MISC_color_friends
+|{_MISC_color_text}
+
+_MISC_color_ppl
+|{_MISC_color_text}
+
+_MISC_color_link
+|{_MISC_color_alt}
+
+_MISC_color_bg_examine
+|{_MISC_color_bg}
+
+_MISC_color_bg_commander
+|{_MISC_color_bg}
+
+_MISC_color_bg_person
+|{_MISC_color_bg}
+
+_MISC_color_bg_input
+|{_MISC_color_bg_status}
+
+_MISC_color_bg_talk
+|{_MISC_color_bg}
+
+_MISC_color_bg_info
+|{_MISC_color_bg}
+
+_MISC_color_bg_status
+|{_MISC_color_bg}
+
+_MISC_color_bg_friends
+|{_MISC_color_bg}
+
+_MISC_color_bg_view
+|{_MISC_color_bg}
+
+_MISC_color_bg_ppl
+|{_MISC_color_bg}
+
+_MISC_color_bg_info_menu
+|{_MISC_color_bg_status}
+
+_MISC_color_bg_info_headline
+|{_MISC_color_bg}
+
+_MISC_color_bg_info_paper
+|{_MISC_color_bg}
+
+_MISC_color_info_emphasized
+|{_MISC_color_private}
+
+_MISC_color_info_headline
+|{_MISC_color_text}
+
+_MISC_color_info_strong
+|{_MISC_color_public}
+
+_MISC_color_link_activated
+|{_MISC_color_private}
+
+_MISC_color_link_visited
+|{_MISC_color_notice}
+
+_MISC_color_text_view
+|{_MISC_color_text}
+
+_MISC_fonts_applet
+|Helvetica
+
+_MISC_character_command
+|/
+
+_MISC_character_action
+|:
+
+_MISC_separator_list
+|, 
+
+_MISC_server
+|psyced
+
+_TEXT_nick
+|Nickname
+
+_TEXT_dich
+|you
+
+_TEXT_dir
+|you
+
+_TEXT_present
+|Present
+
+_TEXT_external
+|From elsewhere
+
+_TEXT_gender
+|Sex
+
+_TEXT_something
+|something
+
+_TEXT_pending
+|Pending:
+
+_TEXT_identification
+|PSYC Identification
+
+_TEXT_affiliation
+|Affiliation
+
+_TEXT_from
+|from
+
+_TEXT_language
+|Language Choice
+
+_TEXT_language_alternate
+|Language Options
+
+_TEXT_StoreChanges
+|Store changes
+
+_TEXT_friends
+|Friends
+
+_TEXT_groups
+|Groups
+
+_TEXT_motto
+|Motto
+
+_TEXT_date_birth
+|Date of Birth
+
+_TEXT_file_key_public
+|Public key file
+
+_TEXT_host_IP
+|IP address
+
+_TEXT_host_name
+|Host address
+
+_TEXT_name_given
+|First Name
+
+_TEXT_name_family
+|Family name
+
+_TEXT_name_first
+|First Name
+
+_TEXT_name_public
+|Publicized name
+
+_TEXT_page_private
+|Private page
+
+_TEXT_page_public
+|Public page
+
+_TEXT_page_help
+|[_page_help] provides Manual and Helpdesk.
+
+_TEXT_time_idle
+|Idle time
+
+_TEXT_time_age
+|Virtual age
+
+_TEXT_time_alive
+|Last time alive
+
+_TEXT_contact_telephone
+|Telephone
+
+_TEXT_contact_identities
+|Other identities
+
+_TEXT_display_none
+|disabled
+
+_TEXT_uniform_style
+|## should never be output really.
+|## listDescription takes care of that, instead of "no output" encoding
+|Style sheet
+
+_TEXT_display_magnify
+|magnified
+
+_TEXT_display_normal
+|normal
+
+_TEXT_display_reduce
+|reduced
+
+_TEXT_display_Title
+|Display
+
+_TEXT_protocol_agent
+|Agent technology
+
+_TEXT_version_agent
+|Agent software
+
+_TEXT_agent_design
+|Agent design
+
+_TEXT_uniform_photo
+|Photo file
+
+_TEXT_image_photo
+|Photo
+
+_TEXT_identification_alias
+|Identification Aliases
+
+_TEXT_favorite_animal
+|What is your favourite animal?
+
+_TEXT_favorite_music
+|What music do you listen to?
+
+_TEXT_favorite_popstar
+|Who is your favourite star?
+
+_TEXT_description_nick
+|Description of [_nick]
+
+_TEXT_description_private
+|Message for friends
+
+_TEXT_description_preferences
+|Things you like
+
+_TEXT_description_public
+|Public description
+
+_TEXT_description_preferences_not
+|Things you dislike
+
+_TEXT_action_says
+|says
+
+_TEXT_action_shouts
+|shouts
+
+_TEXT_action_analogously
+|analogously
+
+_TEXT_action_tells
+|tells
+
+_TEXT_action_asks
+|asks
+
+_TEXT_action_away
+|is away
+
+_TEXT_action_does
+|does
+
+_TEXT_button_friend_new
+|MAKE FRIENDSHIP
+
+_TEXT_button_friend_delete
+|CANCEL FRIENDSHIP
+
+_TEXT_prompt_connect
+|Which name or identity would you like to assume?
+
+_TEXT_source_identification
+|PSYC Identification
+
+_TEXT_identification_scheme_SIP
+|SIP address
+
+_TEXT_identification_scheme_Skype
+|Skype Phone
+
+_TEXT_identification_scheme_MSN
+|MSN address
+
+_TEXT_identification_scheme_XMPP
+|Jabber Identification
+
+_TEXT_identification_scheme_AIM
+|AIM address
+
+_TEXT_identification_scheme_ICQ
+|ICQ number
+
+_TEXT_identification_scheme_mailto
+|Email address
+
+_TEXT_settings_nick
+|Settings for [_nick]
+
+_TEXT_protocols_email
+|Email address
+
+_TEXT_circuit_compression
+|Connection compression
+
+_TEXT_circuit_encryption_protocol
+|Encryption Protocol
+
+_TEXT_circuit_encryption_cipher
+|Encryption Cipher
+
+_TEXT_topic
+|Topic
+
+_TEXT_weblog_pong
+|## so at least our reply _does_ contain some useful information ;)
+|Pong. Thanks for a verbose and complex message telling me some unspecified modification has happened to your blog. Very exciting. Why don't you send me the headline and URL of the story instead, using the excellent PSYC protocol? That's a smart thing to send! See http://about.psyc.eu/Newscasting
+
+_XML_RPC_weblog_pong
+|<?xml version="1.0"?>
+|<methodResponse><params><param><value><struct>
+|<member><name>flerror</name><value><boolean>0</boolean></value></member>
+|<member><name>message</name><value>{_TEXT_weblog_pong}</value></member>
+|</struct></value></param></params></methodResponse>
+|
+|## finishes message with a decent newline
+
+_XML_RPC_weblog_pong_SOAP
+|## this is even more ridiculous
+|<?xml version="1.0"?>
+|<SOAP-ENV:Envelope SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/1999/XMLSchema" xmlns:xsi="http://www.w3.org/1999/XMLSchema-instance">
+|<SOAP-ENV:Body><pingResponse><Result>
+|<flerror xsi:type="xsd:boolean">0</flerror>
+|<message xsi:type="xsd:string">{_TEXT_weblog_pong}</message>
+|</Result></pingResponse></SOAP-ENV:Body></SOAP-ENV:Envelope>
+|
+|## finishes message with a decent newline
+
+_echo_set_description_away_none
+|You are no longer away: [_description_presence]
+
+_echo_set_description_away
+|You are away now: [_description_presence]
+
+_echo_history
+|## nothing
+
+_echo_ping
+|[_nick] pongs you.
+
+_echo_place_enter
+|You enter [_nick_place].
+
+_echo_place_enter_quiet
+|##
+
+_echo_place_enter_login
+|You sign into [_nick_place].
+
+_echo_place_enter_home
+|You take the long way home.
+
+_echo_place_enter_relinked
+|## You are still in [_nick_place].
+
+_echo_place_enter_automatic_subscription
+|## You enter... automagically
+
+_echo_place_enter_subscribe
+|You subscribe to [_nick_place].
+
+_echo_place_leave
+|You leave [_nick_place].
+
+_echo_place_leave_subscribe
+|You unsubscribe from [_nick_place].
+
+_echo_place_leave_other
+|You leave [_nick_place].
+
+_list_acquaintance_notification_offered
+|Friendship offered by [_nick].
+
+_list_description_place_off
+|## should be _list_description_off* anyway
+
+_list_description_nick
+|## skip this one
+
+_list_description_color
+|
+
+_list_description_place_on
+|## wrong inheritance again, produced by user.c:_status_description
+|{_TEXT_description_nick}:
+
+_list_description_on
+|=== {_TEXT_description_nick}:
+
+_list_description_off
+|## === End of description.
+
+_list_description_nick_stylish
+|## dont display
+
+_echo_end
+|## do nothing
+
+_echo_start
+|## do nothing
+
+_echo_end_places
+|## do nothing
+
+_echo_start_places
+|## do nothing
+
+_echo_end_places_public
+|## do nothing
+
+_echo_start_places_public
+|## do nothing
+
+_echo_end_places_entered
+|## do nothing
+
+_echo_start_places_entered
+|## do nothing
+
+_request_invitation
+|[_nick] invites [_nick_target] into [_nick_place].
+
+_request_friendship
+|[_nick] kindly asks for your friendship.
+
+_request_unlink
+|
+
+_request_link
+|## no output
+
+_request_description_vCard
+|[_nick] requests your vCard.
+
+_request_friendship_implied
+|## no output
+
+_notice_requested_status_person
+|[_source] is checking your presence.
+
+_echo_place_nick_removed
+|Your masquerade as [_nick_local] is over.
+
+_status_place_nick_local
+|You are masquerading as [_nick_local].
+
+_status_place_nick_local_none
+|You aren't masquerading yet. What are you waiting for?
+
+_error_place_silent_configuration_topic
+|This room is not for talking. [_topic]
+
+_error_disabled_masquerade
+|Sorry, masquerade is currently not activated.
+
+_error_necessary_privilege
+|You are not permitted to submit "[_command]" to me.
+
+_error_unknown_name_user
+|Cannot reach "[_nick_target]".
+
+_error_unavailable_nick_place
+|{_TEXT_nick} [_nick] in [_nick_place] is already taken by [_other].
+
+_error_illegal_email
+|I'm very sorry but your e-mail address looks broken. Could you please check?
+
+_error_illegal_name_person
+|Sorry. a name like '[_nick]' is not acceptable.
+
+_error_illegal_name_person_place
+|Sorry, '[_nick]' is not a valid name in [_nick_place].
+
+_error_invalid_password
+|Invalid password for [_nick].
+
+_error_invalid_authentication
+|Sorry, you must be mistaken. I'm [_source].
+
+_error_invalid_authentication_token
+|Invalid authentication token.
+
+_error_rejected_input_person
+|You're not in charge of giving me input.
+
+_error_rejected_query_location
+|You're currently not permitted to request the location.
+
+_error_status_person_connected
+|This person is already connected.
+
+_failure_filter_strangers
+|[_nick] has not enabled messages from strangers.
+
+_failure_necessary_registration
+|[_nick_target] cannot handle friendships yet.
+
+_failure_unsuccessful_delivery
+|Could not establish a circuit to [_host] to deliver a [_method_relay] to [_source].
+
+_failure_unsuccessful_delivery_block
+|Would not establish a circuit to [_host] to deliver a [_method_relay] to [_source].
+
+_failure_unsuccessful_delivery_disconnect
+|Tried to deliver [_method_relay] to [_source], but the circuit to [_host] has been disconnected.
+
+_failure_unsuccessful_delivery_invalid_port_connect
+|The port given in [_source] cannot be connected to.
+
+_failure_unsuccessful_delivery_repeated
+|Repeatedly unable to reach [_host] in order to deliver a [_method_relay] to [_source].
+
+_failure_unsuccessful_delivery_resolve
+|Could not resolve "[_host]" in order to deliver a [_method_relay] to [_source].
+
+_failure_unsuccessful_delivery_self
+|The [_host] address points to [_source_origin] which however wasn't instructed to handle that.
+
+_failure_unavailable_service_version
+|Requesting version from [_nick_target] is not possible.
+
+_failure_unavailable_service_description
+|Requesting description of [_nick_target] is not possible.
+
+_failure_unsupported_function_root
+|[_nick] does not provide [_method_relay].
+|Are you sure you want to talk to me?
+
+_failure_unsupported_function_whisper
+|Routing private messages through groupchat managers is dangerous to your privacy and therefore disallowed. Please communicate with the person directly.
+
+_failure_exceeded_limit_users
+|Extremely sorry, the maximum possible amount of people on this
+|server has just been reached. But do try again soon, please!
+
+_failure_unsupported_execute_person
+|Sorry, [_nick] hasn't defined any commands for you.
+
+_info_location
+|[_nick] has location [_location].
+
+_info_description
+|[_nick] [_description_action].
+
+_warning_place_duty_owner
+|You are the new owner of [_nick_place].
+
+_message_announcement
+|Announcement from [_nick]: [_data]
+
+_message_announcement_anonymous
+|Announcement: [_data]
+
+_message_private
+|[_nick] {_TEXT_action_tells} you: [_data]
+
+_message_public
+|[_nick] {_TEXT_action_says}: [_data]
+
+_message_friends
+|[_nick] {_TEXT_action_shouts}: [_data]
+
+_message_echo_private
+|You tell [_nick_target]: [_data]
+
+_message_echo_public
+|You say: [_data]
+
+_message_echo_friends
+|You friendcast: [_data]
+
+_message_echo_public_action
+|[_nick] [_action].
+
+_message_echo_public_important
+|=> You say: %s
+
+_message_echo_public_ask
+|You ask: [_data]
+
+_message_echo_public_text_action
+|[_nick] [_action]: [_data]
+
+_message_echo_public_text_action_magnify
+|««« {_message_echo_private_text_action} »»»
+
+_message_echo_public_text_action_reduce
+|[_nick] [_action] {_TEXT_something}.
+
+_message_echo_public_action_possessive
+|Your [_action_possessive].
+
+_message_echo_public_important_ask
+|=> You ask: %s
+
+_message_echo_private_ask
+|You ask [_nick_target]: [_data]
+
+_message_public_other
+|In [_nick_place] [_nick] says: [_data]
+
+_message_public_external
+|{_TEXT_external} {_TEXT_action_says} [_nick]: [_data]
+
+_message_public_action
+|[_nick] [_action].
+
+_message_public_magnify
+|««« {_message_public} »»»
+
+_message_public_important
+|===> {_message_public}
+
+_message_public_analogously
+|[_nick] {_TEXT_action_analogously}: [_data]
+
+_message_public_whisper
+|[_nick] whispers to [_nick_target]: [_data]
+
+_message_public_reduce
+|[_nick] {_TEXT_says} {_TEXT_something}.
+
+_message_public_question
+|[_nick] {_TEXT_action_asks}: [_data]
+
+_message_public_ask
+|[_nick] {_TEXT_action_asks}: [_data]
+
+_message_public_text_action
+|[_nick] [_action]: [_data]
+
+_message_public_external_action
+|{_TEXT_external}: [_nick] [_action].
+
+_message_public_other_action
+|In [_nick_place] [_nick] [_action].
+
+_message_public_other_ask
+|In [_nick_place] [_nick] {_TEXT_action_asks}: [_data]
+
+_message_public_other_action_possessive
+|In [_nick_place]: [_nick]'s [_action_possessive].
+
+_message_public_action_magnify
+|««« {_message_public_action} »»»
+
+_message_public_action_important
+|===> {_message_public_action}
+
+_message_public_action_possessive
+|[_nick]'s [_action_possessive].
+
+_message_public_action_reduce
+|[_nick] {_TEXT_action_does} {_TEXT_something}.
+
+_message_public_question_magnify
+|««« {_message_public_question} »»»
+
+_message_public_question_pending
+|{_TEXT_pending} [_nick] {_TEXT_action_asks}: [_data]
+
+_message_public_question_reduce
+|[_nick] {_TEXT_action_asks} {_TEXT_something}.
+
+_message_public_important_ask
+|===> [_nick] {_TEXT_action_asks}: [_data]
+
+_message_behaviour_warning
+|*** Warning: [_data] ***
+
+_message_behaviour_punishment
+|*** Hasta la vista. [_data] ***
+
+_message_behaviour_warning_default
+|*** Stop misbehaving or you will be expelled. ***
+
+_message_behaviour_punishment_default
+|*** You have been expelled. ***
+
+_message_private_annotate
+|Notice from [_nick]: [_data]
+
+_message_private_action
+|[_nick] [_action].
+
+_message_private_magnify
+|««« {_message_private} »»»
+
+_message_private_reduce
+|[_nick] {_TEXT_action_tells} you {_TEXT_something}.
+
+_message_private_question
+|[_nick] {_TEXT_action_asks} you: [_data]
+
+_message_private_ask
+|[_nick] {_TEXT_action_asks} you: [_data]
+
+_message_private_ask_magnify
+|««« {_message_private_ask} »»»
+
+_message_private_ask_reduce
+|[_nick] {_TEXT_action_asks} you {_TEXT_something}.
+
+_message_private_text_action
+|[_nick] [_action]: [_data]
+
+_message_private_action_magnify
+|««« {_message_private_action} »»»
+
+_message_private_action_reduce
+|[_nick] does {_TEXT_something} to you.
+
+_echo_wake
+|Trying to wake [_nick_target].
+
+_notice_login
+|Welcome on the [_name_network] network, [_nick]. ([_page_network])
+
+_request_attention_wake
+|[_nick] seeks your attention. WAKE[_beep]UP!
+
+_notice_mail
+|%s -- %s
+
+_notice_invitation
+|[_nick] invites you to [_nick_place].
+
+_notice_received_email_UNUSED
+|([_nick_alias]) [_origin]: [_subject]
+
+_notice_headline_news
+|([_nick_place]News) [_headline] [_page_news]
+
+_notice_news_headline_NOT
+|[_news_path]: [_news_headline] ([_page_news])
+
+_notice_news_software
+|This is a new version of the server software: [_version].
+
+_notice_logon_last
+|Your last visit was on [_date] at [_time] from [_host].
+
+_notice_place_leave
+|[_nick] leaves [_nick_place].
+
+_notice_place_examine_web
+|[_nick_place] inspected on [_web_on] coming from [_web_from].
+
+_notice_place_enter_automatic
+|[_nick] enters [_nick_place] automatically.
+
+_notice_place_enter_quiet
+|##
+
+_notice_place_enter_unicast
+|[_nick] clicks into [_nick_place].
+
+_notice_place_leave_unicast
+|[_nick] clicks out of [_nick_place].
+
+_notice_place_enter_other
+|[_nick] switches to [_nick_place].
+
+_notice_place_enter_relinked
+|## request for no output
+
+_notice_place_leave_automatic
+|[_nick] leaves [_nick_place] automatically.
+
+_notice_place_leave_subscribe
+|[_nick] unsubscribes from [_nick_place].
+
+_notice_place_leave_netburp
+|Lost route to [_nick].
+
+_notice_place_leave_home
+|[_nick] leaves home.
+
+_notice_place_leave_disconnect
+|Connection lost to [_nick].
+
+_notice_place_leave_follow
+|[_nick] follows to an other place.
+
+_notice_place_leave_logout
+|[_nick] signs out of [_nick_place].
+
+_notice_place_topic_official
+|## Announcement:
+|[_topic]
+
+_notice_place_topic_removed_official
+|
+
+_notice_message_pending
+|{_TEXT_pending} [_nick] {_TEXT_action_says}: [_data]
+
+_notice_message_pending_action
+|{_TEXT_pending} [_nick] [_action].
+
+_notice_message_pending_text_action
+|{_TEXT_pending} [_nick] [_action]: [_data]
+
+_notice_action_tongue
+|[_nick] sticks out [_possessive] tongue at you.
+
+_notice_action_yell
+|[_nick] yells.
+
+_notice_action_disgust
+|[_nick] is disgusted.
+
+_notice_action_stay_cool
+|[_nick] stays cool.
+
+_notice_action_blush
+|[_nick] blushes.
+
+_notice_action_blush_shame
+|[_nick] is ashamed.
+
+_notice_action_blush_amorous
+|[_nick] is in love.
+
+_notice_action_blush_erotic
+|[_nick] is getting excited.
+
+_notice_action_obscene
+|[_nick] makes an obscene gesture.
+
+_notice_action_worship
+|[_nick] worships you.
+
+_notice_action_get_drink
+|## himself.. herself
+|[_nick] fetches a drink.
+
+_notice_action_get_food
+|[_nick] fetches some food.
+
+_notice_action_find_good
+|[_nick] thinks it's good.
+
+_notice_action_find_bad
+|[_nick] thinks it's bad.
+
+_notice_action_agree
+|[_nick] agrees.
+
+_notice_action_disagree
+|[_nick] disagrees.
+
+_notice_action_smile
+|[_nick] smiles.
+
+_notice_action_rule
+|[_nick] rules.
+
+_notice_action_suck
+|[_nick] sucks.
+
+_notice_action_troll
+|[_nick] trolls.
+
+_notice_action_smile_cry
+|[_nick] cries in happiness.
+
+_notice_action_laugh_tears
+|[_nick] is laughing with tears.
+
+_notice_action_laugh
+|[_nick] laughs.
+
+_notice_action_laugh_out
+|[_nick] laughs out loud.
+
+_notice_action_laugh_floor
+|[_nick] rolls on the floor laughing.
+
+_notice_action_frown_cry
+|[_nick] cries sadly.
+
+_notice_action_weep
+|[_nick] starts weeping.
+
+_notice_action_frown
+|[_nick] frowns.
+
+_notice_action_frown_angry
+|[_nick] is angry.
+
+_notice_action_frown_mad
+|[_nick] is really mad now.
+
+_notice_action_rant
+|[_nick] rants.
+
+_notice_action_ponder
+|[_nick] ponders...
+
+_notice_action_frown_tired
+|[_nick] takes a nap.
+
+_notice_action_surprise
+|[_nick] is surprised.
+
+_notice_action_yawn
+|[_nick] yawns.
+
+_notice_action_sleep
+|[_nick] is sleeping.
+
+_notice_action_smile_stoned
+|[_nick] puts up a confused smile.
+
+_notice_action_grin
+|[_nick] grins.
+
+_notice_action_smile_cute
+|[_nick] smiles cutely.
+
+_notice_action_smile_smart
+|[_nick] smiles smartly.
+
+_notice_action_wink
+|[_nick] winks.
+
+_notice_action_smile_mean
+|[_nick] grins evilly.
+
+_notice_action_smile_tired
+|[_nick] smiles confidently.
+
+_notice_action_smile_mean_cute
+|[_nick] puts up a cute grin.
+
+_notice_action_smile_wink_smart
+|[_nick] winks smartly.
+
+_notice_action_neutral_blind
+|[_nick] cannot see.
+
+_notice_action_neutral_mean
+|[_nick] is irritated.
+
+_notice_action_revoke
+|[_nick] revokes the last statement and asserts the contrary.
+
+_notice_action_confuse
+|[_nick] never said that! You must be confused!!111!1
+
+_notice_action_confuse_doubt
+|[_nick] spreads fear, uncertainty and doubt.
+
+_notice_action_detect_doubt
+|[_nick] detects fear, uncertainty and doubt.
+
+_notice_action_apologize
+|[_nick] apologizes.
+
+_notice_action_applaud
+|[_nick] applauds.
+
+_notice_action_beck
+|[_nick] becks.
+
+_notice_action_beckon
+|[_nick] beckons to you.
+
+_notice_action_beg
+|[_nick] falls on [_possessive] knees begging.
+
+_notice_action_bite
+|[_nick] bites you.
+
+_notice_action_bounce
+|[_nick] bounces around.
+
+_notice_action_bow
+|[_nick] bows gracefully.
+
+_notice_action_cackle
+|[_nick] cackles with glee.
+
+_notice_action_caress
+|[_nick] caresses you.
+
+_notice_action_cheer
+|[_nick] cheers.
+
+_notice_action_chuckle
+|[_nick] chuckles.
+
+_notice_action_comfort
+|[_nick] comforts you.
+
+_notice_action_cough
+|[_nick] coughs.
+
+_notice_action_cuddle
+|[_nick] cuddles you.
+
+_notice_action_curtsy
+|[_nick] drops a curtsy.
+
+_notice_action_dance
+|[_nick] dances.
+
+_notice_action_dance_disco
+|[_nick] dances the disco duck.
+
+_notice_action_dance_head
+|[_nick] headbangs like crazy.
+
+_notice_action_dance_feet
+|[_nick] shuffles [_possessive] feet.
+
+_notice_action_drool
+|[_nick] drools.
+
+_notice_action_embrace
+|[_nick] embraces you.
+
+_notice_action_envious
+|[_nick] is envious.
+
+_notice_action_fondle
+|[_nick] fondles you.
+
+_notice_action_gasp
+|[_nick] gasps.
+
+_notice_action_giggle
+|[_nick] giggles.
+
+_notice_action_gnash
+|[_nick] gnashes [_possessive] teeth.
+
+_notice_action_groan
+|[_nick] groans.
+
+_notice_action_growl
+|[_nick] growls.
+
+_notice_action_hiccup
+|[_nick] hiccups.
+
+_notice_action_hug
+|[_nick] hugs you.
+
+_notice_action_jealous
+|[_nick] is jealous.
+
+_notice_action_kiss
+|[_nick] gives you a kiss.
+
+_notice_action_kiss_hand
+|[_nick] kisses your hand.
+
+_notice_action_listen
+|[_nick] listens closely.
+
+_notice_action_love
+|[_nick] loves you.
+
+_notice_action_moan
+|[_nick] moans.
+
+_notice_action_mourn
+|[_nick] mourns.
+
+_notice_action_nod
+|[_nick] nods.
+
+_notice_action_pout
+|[_nick] pouts.
+
+_notice_action_purr
+|[_nick] purrs.
+
+_notice_action_scream
+|[_nick] screams.
+
+_notice_action_scratch_head
+|[_nick] scratches [_possessive] head.
+
+_notice_action_shake_head
+|[_nick] shakes [_possessive] head.
+
+_notice_action_shake_hand
+|[_nick] shakes your hand.
+
+_notice_action_shiver
+|[_nick] shivers.
+
+_notice_action_shriek
+|[_nick] shrieks.
+
+_notice_action_shudder
+|[_nick] shudders.
+
+_notice_action_shrug
+|[_nick] shrugs.
+|## [_possessive] shoulders.
+
+_notice_action_sigh
+|[_nick] sighs.
+
+_notice_action_sing
+|[_nick] sings.
+
+_notice_action_smack_head
+|[_nick] smacks [_possessive] forehead.
+
+_notice_action_smirk
+|[_nick] smirks.
+
+_notice_action_sneeze
+|[_nick] sneezes.
+
+_notice_action_sniff
+|[_nick] sniffs.
+
+_notice_action_snore
+|[_nick] snores.
+
+_notice_action_snuffle
+|[_nick] snuffles.
+
+_notice_action_snuggle
+|[_nick] snuggles up to you.
+
+_notice_action_sprawl
+|[_nick] sprawls.
+
+_notice_action_stretch
+|[_nick] stretches.
+
+_notice_action_stroke
+|[_nick] strokes you.
+
+_notice_action_strut
+|[_nick] struts [_possessive] stuff.
+
+_notice_action_swear
+|[_nick] swears.
+
+_notice_action_thank
+|[_nick] thanks you.
+
+_notice_action_tickle
+|[_nick] tickles you.
+
+_notice_action_tremble
+|[_nick] trembles.
+
+_notice_action_twinkle
+|[_nick] twinkles.
+
+_notice_action_wait
+|[_nick] waits.
+
+_notice_action_wish_luck
+|[_nick] crosses the fingers.
+|## [_possessive]
+
+_notice_authentication
+|Yes, that's me!
+
+_notice_processing_authentication
+|Wait a minute, I have to ask somebody.
+
+_notice_unlink
+|[_location] unlinked from [_identification].
+|You are being replaced by a machine.
+
+_notice_unlink_service
+|[_location_service] ending [_service] service for [_identification].
+|You just lost that magic feeling.
+
+_notice_link_service
+|[_location_service] starting [_service] service for [_identification].
+|May the truthiness be with you.
+
+_notice_link
+|[_location] linked to [_identification].
+|You are now connected to this big marshmellow in the sky.
+
+_notice_unlink_exit
+|I wish you good sleep or a fun night-out.
+
+_notice_list_feature_person
+|[_nick] is a [_identity] called [_name] offering features [_list_feature].
+
+_notice_list_item
+|[_nick] has lots of items: [_list_item_description].
+
+_notice_session_end
+|Session duration: [_time_duration].
+
+_query_password
+|Do you know [_nick]'s password?
+
+_status_friends
+|Your friends are available: [_friends]
+
+_status_friends_none
+|None of your friends is available.
+
+_status_friendship_established
+|[_nick] is your friend already.
+
+_status_log_new
+|[_amount_new] new messages.
+
+_status_log_none
+|No new messages.
+
+_status_place_members_automatic
+|{_status_place_members}
+
+_status_place_members
+|In [_nick_place]: [_list_members_nicks].
+
+_status_place_members_amount_automatic
+|{_status_place_members_amount}
+
+_status_place_members_amount
+|[_nick_place] contains [_amount_members] people.
+
+_status_place_members_none_automatic
+|{_status_place_members_none}
+
+_status_place_members_none
+|[_nick_place] is empty.
+
+_status_presence
+|## no output
+
+_status_presence_here
+|[_nick] is available. [_description_presence]
+
+_status_presence_here_busy
+|[_nick] is busy. [_description_presence]
+
+_status_presence_away
+|[_nick] is away. [_description_presence]
+
+_status_presence_absent_vacation
+|[_nick] is traveling. [_description_presence]
+
+_status_presence_absent
+|[_nick] is absent. [_description_presence]
+
+_status_unlinked_restart
+|You have been unlinked by a server restart.
+
+_status_version_agent
+|Version: [_nick] is using "[_version_description]" ([_version]).
+
+_status_version
+|Version: [_nick] is using "[_version_description]" ([_version]).
+
+_notice_presence_here_talkative
+|Presence: [_nick] is willing to talk. [_description_presence]
+
+_notice_presence_here
+|Presence: [_nick] is available now. [_description_presence]
+
+_notice_presence_here_busy
+|Presence: [_nick] is busy now. [_description_presence]
+
+_notice_presence_away
+|Presence: [_nick] is away now. [_description_presence]
+
+_notice_presence_absent_vacation
+|Presence: [_nick] is traveling. [_description_presence]
+
+_notice_presence_absent
+|Presence: [_nick] is absent now. [_description_presence]
+
+_notice_friendship_established
+|[_nick] is your friend now.
+
+_notice_friendship_removed
+|[_nick] deletes [_possessive] friendship with you.
+
+_notice_friendship_removed_implied
+|[_nick] automatically deletes [_possessive] friendship with you, too.
+
+_status_place_identification
+|PSYC Identification of [_nick_place]: [_identification]
+
+_status_place_topic_none
+|No topic is set in [_nick_place].
+
+_status_place_topic_official
+|## Announcement:
+|[_topic]
+
+_status_description_time
+|[_nick] has been alive about [_time_idle] ago.
+
+_status_description_person
+|Description data of [_nick] received.
+
+_status_description_place
+|Description data of [_nick_place] received.
+
+_status_person_present
+|{_TEXT_present}: [_nick]
+
+_status_person_present_implied
+|## {_TEXT_present}: [_nick]
+|## default: no output
+
+_status_person_away
+|## no output.. could've been something like..
+|## [_nick] {_TEXT_action_away}: [_description]
+
+_status_person_absent
+|Message recorded. [_nick] is absent.
+
+_status_person_absent_offline
+|[_nick] is absent.
+
+_status_person_absent_recorded
+|Message recorded. [_nick] [_action].
+
+_warning_unable_reply
+|Warning: [_nick] is unable to reply.
+
+_warning_usage_set_language
+|Mittels "/set language de" kann zur deutschen Sprache gewechselt werden.
+
+_warning_usage_set_charset
+|Your charset is [_charset]. Use "/set charset" to change it if necessary.
+
+_warning_server_shutdown_temporary
+|Server restart: [_reason]
+
+_warning_server_shutdown
+|Server shutdown: [_reason]

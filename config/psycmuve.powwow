@@ -1,0 +1,64 @@
+#savefile-version 6
+#host localhost 2000
+#delim normal
+#setvar mem=1048576
+#mark Benachrichtigung:=red
+#mark Anwesende Freunde=green
+#mark Freundschaft=red
+#mark & sagt Dir:=bold red
+#mark & fragt Dich:=bold red
+#mark Mozilla/&\)=green
+#mark ^~&>=black on red
+#mark ^@&>=cyan on blue
+#mark ^&:&:&  Du &:=blue
+#mark ^Du &: =bold blue
+#mark In & spricht=blue
+#mark psyc=bold red
+#mark Psyc=bold red
+#mark PSYC=bold red
+#mark ^In &:=blue
+#mark \(&Mail\) &:=bold cyan on black
+#mark \(&News\)=yellow
+#mark http://&=blue
+#mark \(CVS\) &=YELLOW
+#bind BS ^H=&del-char-left
+#bind C-a ^A=&begin-of-line
+#bind C-b ^B=&prev-char
+#bind C-d ^D=&del-char-right
+#bind C-e ^E=&end-of-line
+#bind C-f ^F=&next-char
+#bind C-k ^K=&kill-to-eol
+#bind C-l ^L={#keyedit &to-history§#keyedit &enter-line}
+#bind C-n ^N=&next-line
+#bind C-p ^P=&prev-line
+#bind C-t ^T=&transpose
+#bind C-w ^W=&to-history
+#bind C-z ^Z=&suspend
+#bind Del ^?=&del-char-left
+#bind Down =&next-line
+#bind KP2 ^[Or=s
+#bind KP3 ^[Os=d
+#bind KP4 ^[Ot=w
+#bind KP5 ^[Ou=exits
+#bind KP6 ^[Ov=e
+#bind KP7 ^[Ow=look
+#bind KP8 ^[Ox=n
+#bind KP9 ^[Oy=u
+#bind LF ^J=&enter-line
+#bind Left =&prev-char
+#bind M-BS ^[^H=&del-word-left
+#bind M-Del ^[^?=&del-word-left
+#bind M-Tab ^[^I=&complete-line
+#bind M-b ^[b=&prev-word
+#bind M-d ^[d=&del-word-right
+#bind M-f ^[f=&next-word
+#bind M-k ^[k=&redraw-line-noprompt
+#bind M-l ^[l=&downcase-word
+#bind M-t ^[t=&transpose-words
+#bind M-u ^[u=&upcase-word
+#bind Ret ^M=&enter-line
+#bind Right =&next-char
+#bind Tab ^I=&complete-word
+#bind Up =&prev-line
+#option +exit -history -words -compact -debug +echo +info +keyecho -speedwalk
+#option -wrap -autoprint -reprint -sendsize +autoclear

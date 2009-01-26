@@ -1,0 +1,41 @@
+# ircII script to support psyc servers on the irc emulation port.
+# hopefully works also for mIRC.		-lynX the symlynX, 2002
+#
+# see http://www.psyc.eu for information on PSYC
+
+echo *** Enabling PSYC Support. Disabling old-school client-based notify.
+
+# produces error otherwise
+set -suppress_server_motd
+
+# delete client-based notify. psyc server will give you hell
+# in error messages if you try to flood it with ISON's.
+notify -
+
+# provide aliases for popular PSYC commands
+alias people names
+alias tell msg
+alias q query
+alias go channel
+alias " quote
+alias sset " set
+
+# room-based commands
+alias status " status
+alias history " history
+
+# regular whois is ugly
+#alias whois " x
+alias examine " x
+alias x " x
+
+# these functions are server-based in PSYC
+alias notify " notify
+alias ignore " ignore
+
+alias friend " friend
+alias show " show
+alias talk " talk
+alias subscribe " subscribe
+alias unsubscribe " unsubscribe
+alias register " register

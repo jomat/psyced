@@ -1,0 +1,6 @@
+# Historic LPMUD access control file. A properly configured
+# driver will ignore this file. Should you by mistake have
+# this activated, this line will effectively disable it.
+# So it does no harm, and you can safely ignore it.
+
+*.*.*.*:0:-1:0:0:No message should ever be printed here.

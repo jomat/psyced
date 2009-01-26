@@ -1,0 +1,50 @@
+.Pe {
+	font-family: verdana,helvetica;
+	font-weight: bold;
+	font-size: 9;
+	padding: 44;
+	background: #333;
+	color: white;
+}
+.Peb {
+	color: #f33;
+}
+.Pe a {
+	text-decoration: none;
+	color: #f33;
+	background: black;
+}
+.Peb a {
+	padding: 4;
+	border: 1px solid #f33;
+}
+input,select,textarea {
+	background: black;
+	color: #f33;
+	font-size: 9;
+	border: 1px solid #f33;
+	padding: 4;
+}
+.Peup { 
+	border: 3px dashed;
+	padding: 4;
+	margin-bottom: 23px;
+}
+.ldp {
+	font-size: 9;
+	border: 3px dashed #333;
+	background: #666;
+	padding: 3;
+	margin: 44;
+}
+.ldpc {
+	background: #f33;
+	color: black;
+	font-size: 12;
+}
+.ldp tr {
+}
+.ldp td {
+	background: black;
+	padding: 7;
+}

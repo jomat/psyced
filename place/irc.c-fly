@@ -1,0 +1,18 @@
+#include <net.h>
+#define	NAME		"IRC"
+
+// gateway to ircnet
+//
+// just put this file into init.ls if you want it to
+// activate at boot time. addressing irc:nickname
+// should work also when this isn't loaded however.
+//
+#ifdef fly
+
+# define	CONNECT_IRC	"irc.freenet.de"	// an ircnet server
+
+#else
+# define CONNECT	"beta.ve.symlynX.com"
+#endif
+
+#include <place.gen>

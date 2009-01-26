@@ -1,0 +1,342 @@
+<PSYC:TEXTDB> ## vim:syntax=mail
+
+_status_AREYOUNUTS
+|:[_source_hack] NOTICE [_nick_me] :[_data]
+
+_MISC_character_command
+|+
+
+_MISC_separator_list
+| 
+
+_echo_invitation
+|#341 [_nick_me] [_nick_target] #[_nick_place]
+
+_echo_place_enter
+|:[_source_hack] JOIN :#[_nick_place]
+
+_echo_place_enter_automatic
+|:[_source_hack] JOIN :#[_nick_place]
+
+_echo_place_enter_subscribe
+|:[_source_hack] JOIN :#[_nick_place]
+
+_echo_place_enter_login
+|:[_source_hack] JOIN :#[_nick_place]
+
+_echo_place_enter_home
+|:[_source_hack] JOIN :#[_nick_place]
+
+_echo_place_enter_join
+|:[_source_hack] JOIN :#[_nick_place]
+
+_echo_place_enter_follow
+|:[_source_hack] JOIN :#[_nick_place]
+
+_echo_place_enter_automatic_subscription
+|:[_source_hack] JOIN :#[_nick_place]
+
+_info_commands
+|## gaim comes up with a useless popup instead of
+|## displaying the message. i guess that client is
+|## not alone in this inappropriate behaviour so
+|## let's just not use numeric codes here ... sigh
+|##
+|### #421 [_nick_me] [_command] :{_TEXT_page_help}
+|##
+|{_TEXT_page_help}
+
+_info_commands_newbie
+|## #421 [_nick_me] [_command] :{_TEXT_page_help}
+|{_TEXT_page_help}
+
+_list_alias
+|Alias: [_short] = [_long]
+
+_list_user_description_end
+|#315 [_nick_me] * :End of WHO list.
+
+_list_description_person_idle
+|#317 [_nick_me] [_nick] [_time_alive_seconds] 0 :seconds idle, zero
+
+_list_description_person_on
+|#311 [_nick_me] [_nick] [_nick] {_VAR_server} * :[_description_motto] [_action_motto]
+
+_list_description_person_off
+|#318 [_nick_me] [_nick] :End of /WHOIS list.
+
+_list_description_person_places
+|## #319 [_nick_me] [_nick] :(list places? to hell with privacy)
+
+_list_description_person_protocol_agent
+|#312 [_nick_me] [_nick] [_protocol_agent] :access protocol
+
+_list_places_none
+|#353 [_nick_me] * * :[_users_private]
+
+_list_places_entered
+|#322 [_nick_me] #[_nick_place] [_amount_members] :[_description_place]
+
+_list_places_public
+|#322 [_nick_me] #[_nick_place] [_amount_members] :[_description_place]
+
+_list_places_members
+|#353 [_nick_me] = #[_nick_place] :[_members]
+
+_list_places_end
+|#366 [_nick_me] * :End of /NAMES list.
+
+_echo_alias_added_NICEBUTCANTWORK
+|:[_alias] NICK {_VAR_server_uniform}~[_alias]
+|:{_VAR_server_uniform}~[_address] NICK [_address]
+|## :[_source_hack] NOTICE :{_VAR_method}
+|NOTICE :{_VAR_method}
+
+_echo_end_places
+|#323 :End of /LIST
+
+_echo_start_places
+|#321 Channel :Users Topic
+
+_echo_end_places_public
+|#323 :End of /LIST
+
+_echo_start_places_public
+|#321 Channel :Users Topic
+
+_echo_end_places_entered
+|#323 :End of /LIST
+
+_echo_start_places_entered
+|#321 Channel :Users Topic
+
+_request_legacy_CTCP
+|:[_source_hack] PRIVMSG [_nick_me] :%[_type] [_value]%
+
+_status_legacy_CTCP
+|:[_source_hack] NOTICE [_nick_me] :%[_type] [_value]%
+
+_request_version
+|:[_source_hack] PRIVMSG [_nick_me] :%VERSION%
+
+_error_unknown_name_user
+|#401 [_nick_me] [_nick_target] :{_error_unknown_name_user}
+
+_error_status_place_matches
+|## das lassen wir weg, weil manche clients unbedingt den join nochmal
+|## abschicken wollen
+|##
+|## NOTICE * :Du bist doch schon da!
+
+_error_place_enter
+|## 471 is ERR_CHANISFULL
+|#471 [_nick_me] #[_nick_place] :Error entering [_nick_place].
+
+_query_password
+|## Please provide your password. (If your client isn't able to, use /quote pass «your-password» (which does not work in irssi) or use a syntax like /server {_VAR_server} «ircport» «your-password»)
+|Please provide your password (Set it as the server password, or try /quote pass «your-password» or a syntax like /server {_VAR_server} «ircport» «your-password»)
+
+_message_private
+|:[_source_hack] PRIVMSG [_nick_me] :[_data]
+
+_message_public
+|:[_source_hack] PRIVMSG #[_nick_place] :[_data]
+
+_message_echo_public
+|:[_source_hack] PRIVMSG #[_nick_place] :[_data]
+
+_message_echo_public_action
+|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix][_action].%
+
+_message_echo_public_ask
+|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix]{_TEXT_action_asks}: [_data]%
+
+_message_echo_public_text_action
+|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix][_action]: [_data]%
+
+_message_public_action
+|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix][_action].%
+
+_message_public_question
+|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix]{_TEXT_action_asks}: [_data]%
+
+_message_public_ask
+|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix]{_TEXT_action_asks}: [_data]%
+
+_message_public_text_action
+|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix][_action]: [_data]%
+
+_message_private_annotate
+|:[_source_hack] NOTICE [_nick_me] :[_data]
+
+_message_private_action
+|:[_source_hack] PRIVMSG [_nick_me] :%ACTION [_action].%
+
+_message_private_question
+|:[_source_hack] PRIVMSG [_nick_me] :%ACTION {_TEXT_action_asks}: [_data]%
+
+_message_private_ask
+|:[_source_hack] PRIVMSG [_nick_me] :%ACTION {_TEXT_action_asks}: [_data]%
+
+_message_private_text_action
+|:[_source_hack] PRIVMSG [_nick_me] :%ACTION [_action]: [_data]%
+
+_message_private_action_action
+|:[_source_hack] PRIVMSG [_nick_me] :%ACTION [_action].%
+
+_notice_switch_identity
+|:[_nick_me] NICK [_nick_next]
+
+_notice_login
+|## shut up
+
+_notice_invitation
+|:[_source_hack] INVITE [_nick_me] :#[_nick_place]
+
+_notice_typing_inactive
+|:[_source_hack] PRIVMSG [_nick_me] :%TYPING INACTIVE%
+
+_notice_typing_paused
+|:[_source_hack] PRIVMSG [_nick_me] :%TYPING PAUSED%
+
+_notice_typing_composing
+|:[_source_hack] PRIVMSG [_nick_me] :%TYPING COMPOSING%
+
+_notice_typing_active
+|:[_source_hack] PRIVMSG [_nick_me] :%TYPING ACTIVE%
+
+_notice_typing_gone
+|:[_source_hack] PRIVMSG [_nick_me] :%TYPING GONE%
+
+_notice_place_AREYOUNUTS
+|:{_VAR_server} NOTICE #[_nick_place] :[_data]
+
+_notice_place_enter
+|## es wird nur diese JOIN datei verwendet.. die anderen können alle in den müll
+|:[_source_hack] JOIN :#[_nick_place]
+
+_notice_place_enter_automatic
+|:[_source_hack] JOIN :#[_nick_place]
+
+_notice_place_enter_subscribe
+|:[_source_hack] JOIN :#[_nick_place]
+
+_notice_place_enter_login
+|:[_source_hack] JOIN :#[_nick_place]
+
+_notice_place_enter_home
+|:[_source_hack] JOIN :#[_nick_place]
+
+_notice_place_enter_join
+|:[_source_hack] JOIN :#[_nick_place]
+
+_notice_place_enter_follow
+|:[_source_hack] JOIN :#[_nick_place]
+
+_notice_place_enter_automatic_subscription
+|:[_source_hack] JOIN :#[_nick_place]
+
+_echo_place_leave
+|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+
+_echo_place_leave_logout
+|## Why is this blank? Current w() code ignores this however.
+
+_notice_place_leave
+|## user messages embedded in state changes are bad protocol design
+|## we use the space for system text
+|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+
+_notice_place_leave_automatic
+|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+
+_notice_place_leave_subscribe
+|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+
+_notice_place_leave_netburp
+|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+
+_notice_place_leave_home
+|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+
+_notice_place_leave_disconnect
+|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+
+_notice_place_leave_netburp
+|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+
+_notice_place_leave_follow
+|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+
+_notice_place_leave_logout
+|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+
+_notice_place_leave_automatic_subscription
+|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+
+_notice_place_leave_invalid
+|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+
+_notice_place_topic
+|:[_source_hack] TOPIC #[_nick_place] :[_topic]
+
+_notice_place_topic_official
+|#332 [_nick_me] #[_nick_place] :[_topic]
+
+_echo_ping
+|:[_source_hack] NOTICE [_nick_me] :%PING [_time_ping]%
+
+_failure_unsupported_ping 
+|## yes, this is a pong also...
+|:[_source_hack] NOTICE [_nick_me] :%PING [_time_ping]%
+
+_status_version
+|:[_source_hack] NOTICE [_nick_me] :%VERSION [_version_description] ([_version])%
+
+_status_version_agent
+|:[_source_hack] NOTICE [_nick_me] :%VERSION [_version_description] ([_version])%
+
+_list_friends_channel
+|#353 [_nick_me] = & :[_friends]
+
+_list_friends_present_channel
+|#353 [_nick_me] = &HERE :[_friends]
+
+_list_friends_away_channel
+|#353 [_nick_me] = &AWAY :[_friends]
+
+_status_place_members_automatic
+|#353 [_nick_me] = #[_nick_place] :[_members]
+
+_status_place_members
+|#353 [_nick_me] = #[_nick_place] :[_members]
+
+_status_place_topic
+|## #332 [_nick_me] #[_nick_place] :{_status_place_topic}
+|## traditional IRC would be to leave out the _nick here
+|#332 [_nick_me] #[_nick_place] :[_topic] ([_nick])
+
+_status_place_topic_none
+|#331 [_nick_me] :{_status_place_topic_none}
+
+_status_place_topic_official
+|#332 [_nick_me] #[_nick_place] :[_topic]
+
+_status_place_members_end
+|#366 [_nick_me] #[_nick_place] :End of /NAMES list.
+
+_status_place_members_each
+|#352 [_nick_me] #[_nick_place] [_IRC_identified][_nick_login] [_identification_host] {_VAR_server} [_nick] [_IRC_away][_IRC_operator] :[_IRC_hops] [_identification] [_name]
+|## we don't put the away message into /who after all..
+|## [_description_action]
+|##
+|## the second [_nick] should theoretically be a [_nick_local]
+|## but since we don't really change nicks in rooms, we don't
+|## need that. we could store the userid the irc client provided
+|## and show it instead of the first [_nick] .. hmm.. yeah
+
+_status_place_members_end_verbose
+|#315 [_nick_me] #[_nick_place] :End of /WHO list.
+
+_status_user_amount
+|#251 [_nick_me] :There are [_amount_users_online] users on [_source]'s server

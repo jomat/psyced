@@ -1,0 +1,28 @@
+<PSYC:TEXTDB> ## vim:syntax=mail
+
+_message
+|MESSAGE sip:[_nick_target]@[_host_target] SIP/2.0
+|## Via:
+|## Max-Forwards:
+|## Call-ID:
+|From: sip:[_nick]@{_VAR_host} ...
+|To: sip:[_nick_target]@[_host_target]
+|CSeq: [_count] MESSAGE
+|Content-Type: [_type_content]
+|Content-Length: [_length]
+|
+|[_data]
+
+_notice_presence
+|NOTIFY sip:[_nick_target]@[_host_target] SIP/2.0
+|Event: presence
+|From: sip:[_nick]@{_VAR_host} ...
+|To: sip:[_nick_target]@[_host_target]
+|Subscription-State: [_SIMPLE_state];expires=[_time_expire]
+|CSeq: [_count] NOTIFY
+|## Contact:
+|Content-Type: [_type_content]
+|Content-Length: [_length]
+|
+|[_data]
+

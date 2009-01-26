@@ -1,0 +1,1745 @@
+<PSYC:TEXTDB> ## vim:syntax=mail
+
+_message
+|[_nick] sendet Dir: [_data]
+
+_notice_forward_message_private
+|Nachricht von [_source_relay]: [_data_relay]
+
+_notice_forward_message
+|Nachricht von [_source_relay]: [_data_relay]
+
+_notice_forward_message_public
+|In [_nick_place] sagt [_source_relay]: [_data_relay]
+
+_MISC_private
+|privat
+
+_TEXT_nick
+|Spitzname
+
+_TEXT_dich
+|Dich
+
+_TEXT_dir
+|Dir
+
+_TEXT_present
+|Anwesend
+
+_TEXT_external
+|Anderswoher
+
+_TEXT_gender
+|Geschlecht
+
+_TEXT_something
+|was
+
+_TEXT_pending
+|Als nächstes:
+
+_TEXT_identification
+|PSYC Identifikation
+
+_TEXT_affiliation
+|Zugehörigkeit
+
+_TEXT_from
+|von
+
+_TEXT_language
+|Sprachwahl
+
+_TEXT_language_alternate
+|Sprachkenntnisse
+
+_TEXT_StoreChanges
+|Änderungen speichern
+
+_TEXT_friends
+|Freunde
+
+_TEXT_groups
+|Gruppen
+
+_TEXT_date_birth
+|Geburtstag
+
+_TEXT_file_key_public
+|Public Key URL
+
+_TEXT_host_IP
+|Numerische IP-Adresse
+
+_TEXT_host_forwarded
+|Maskierte IP-Adresse
+
+_TEXT_host_name
+|Internet-Adresse
+
+_TEXT_name_given
+|Vorname
+
+_TEXT_name_family
+|Familienname
+
+_TEXT_name_first
+|Vorname
+
+_TEXT_name_public
+|Öffentlicher Name
+
+_TEXT_page_private
+|Webseite für Freunde
+
+_TEXT_page_public
+|Öffentliche Homepage
+
+_TEXT_page_help
+|[_page_help] bietet Handbuch und Hilfestellung.
+
+_TEXT_time_idle
+|Inaktiv seit
+
+_TEXT_time_age
+|Virtuelles Alter
+
+_TEXT_time_alive
+|Zuletzt aktiv
+
+_TEXT_contact_telephone
+|Telefon
+
+_TEXT_contact_identities
+|Weitere Identitäten
+
+_TEXT_display_none
+|AUS
+
+_TEXT_display_magnify
+|vergrößert
+
+_TEXT_display_normal
+|normal
+
+_TEXT_display_reduce
+|verkleinert
+
+_TEXT_display_Title
+|Darstellung
+
+_TEXT_protocol_agent
+|Zugangstechnologie
+
+_TEXT_version_agent
+|Zugangssoftware
+
+_TEXT_agent_design
+|Zugangsdesign
+
+_TEXT_uniform_photo
+|Photo
+
+_TEXT_identification_alias
+|Zugriffsadressen
+
+_TEXT_favorite_animal
+|Lieblingstier
+
+_TEXT_favorite_music
+|Lieblingsmusik
+
+_TEXT_favorite_popstar
+|Lieblingsstar
+
+_TEXT_description_nick
+|Beschreibung von [_nick]
+
+_TEXT_description_private
+|Spruch für Freunde
+
+_TEXT_description_preferences
+|Was ich mag
+
+_TEXT_description_public
+|Spruch für alle
+
+_TEXT_description_preferences_not
+|Was ich gar nicht mag
+
+_TEXT_action_say
+|sagen
+
+_TEXT_action_says
+|sagt
+
+_TEXT_action_away
+|ist abwesend
+
+_TEXT_action_shouts
+|schreit
+
+_TEXT_action_analogously
+|sinngemäß
+
+_TEXT_action_ask
+|fragen
+
+_TEXT_action_tells
+|sagt
+
+_TEXT_action_asks
+|fragt
+
+_TEXT_action_does
+|tut
+
+_TEXT_button_friend_new
+|ANFREUNDEN
+
+_TEXT_button_friend_delete
+|ABWIMMELN
+
+_TEXT_geographic_region
+|Geographische Region
+
+_TEXT_prompt_connect
+|Wie lautet der neue Name oder Identität?
+
+_TEXT_source_identification
+|PSYC Identifikation
+
+_TEXT_identification_scheme_mailto
+|Email-Addresse
+
+_TEXT_settings_nick
+|Einstellungen für [_nick]
+
+_TEXT_protocols_email
+|E-Mail-Adresse
+
+_TEXT_circuit_compression
+|Stromkomprimierung
+
+_TEXT_circuit_encryption_protocol
+|Crypto-Protokoll
+
+_TEXT_circuit_encryption_cipher
+|Crypto-Chiffre
+
+_TEXT_topic
+|Ankündigung
+
+_echo_save
+|[_amount_lines] Zeilen gesichert.
+
+_echo_set
+|Einstellung [_key_set] hat jetzt den Wert "[_value]".
+
+_echo_invitation
+|[_nick_target] nach [_nick_place] eingeladen.
+
+_echo_logoff
+|Du loggst aus.
+
+_echo_log_cleared
+|Der Speicher der letzten Nachrichten wurde gelöscht.
+
+_echo_log_all
+|Rückblick sämtlicher %d Nachrichten.
+
+_echo_log_last
+|Rückblick der letzten %d Nachrichten.
+
+_echo_set_none
+|Ok. Die Einstellung von [_key_set] ist gelöscht.
+
+_echo_set_default
+|Die Einstellung [_key_set] ist auf den Normalzustand zurückgestellt.
+
+_echo_set_password
+|Sehr gut. Du hast ein neues Passwort.
+
+_echo_set_description_away_none
+|Ehemals abwesend: [_description_presence]
+
+_echo_set_description_away
+|Ab sofort abwesend: [_description_presence]
+
+_echo_set_description
+|Beschreibung: [_nick] [_action_description].
+
+_echo_set_description_none
+|Beschreibung entfernt: [_nick] [_action_description].
+
+_echo_notification_delayed
+|[_nick_target] wird verzögert benachrichtigt.
+
+_echo_notification_immediate
+|[_nick_target] wird unverzögert benachrichtigt.
+
+_echo_notification_removed
+|[_nick_target] erhält keine automatischen Benachrichtigungen.
+
+_echo_notification_delayed_more
+|[_nick_target] wird nach längerer Verzögerung benachrichtigt.
+
+_echo_acquaintance_display_reduced
+|Reduzierte Darstellung von [_nick_target].
+
+_echo_acquaintance_display_none
+|Kein Wort mehr von [_nick_target].
+
+_echo_acquaintance_display_normal
+|Normale Darstellung von [_nick_target].
+
+_echo_acquaintance_display_highlighted
+|Betonte Darstellung von [_nick_target].
+
+_echo_acquaintance_deleted
+|Alle Kontaktdaten für [_nick_target] sind nun gelöscht.
+
+_echo_acquaintance_exposed
+|Freundschaft mit [_nick_target] wird um Faktor [_degree_expose] exponiert.
+
+_echo_acquaintance_trusted
+|Vertrauensfaktor für [_nick_target] steht bei [_degree_trust].
+
+_echo_request_friendship
+|[_nick] wird um Freundschaft gebeten.
+
+_echo_request_description
+|Beschreibung von [_location_target] angefragt.
+
+_echo_alias_added
+|[_address] hat ab jetzt den Aliasnamen [_alias].
+
+_echo_alias_removed
+|Der Aliasname [_alias] für [_address] ist nun gelöscht.
+
+_echo_place_nick
+|Du bist ab sofort als [_nick_local] verkleidet.
+
+_echo_place_unban
+|Der Bann auf [_bannee] wurde erfolgreich entfernt.
+
+_echo_place_set_topic
+|Du verkündest ab sofort: [_topic]
+
+_echo_place_set_quiet_on
+|Zutrittsmeldungen in diesem Raum ausgeschaltet.
+
+_echo_place_set_quiet_off
+|Zutrittsmeldungen in diesem Raum wieder eingeschaltet.
+
+_echo_place_set_topic_none
+|Du entfernst %ss Spruch %O.
+
+_echo_place_set_silence_on
+|Du verbietest Nebengeräusche.
+
+_echo_place_set_silence_off
+|Du erlaubst Nebengeräusche.
+
+_echo_place_set_logging_on
+|Du schaltest Logging in diesem Raum ein.
+
+_echo_place_set_logging_off
+|Du schaltest Logging in diesem Raum aus.
+
+_echo_place_set_public_on
+|Du machst diesen Raum öffentlich.
+
+_echo_place_set_public_off
+|Du machst diesen Raum nicht mehr öffentlich.
+
+_echo_place_set_masquerade_on
+|Husch husch! Schnell ein Kostüm anlegen!
+
+_echo_place_set_masquerade_off
+|Jetzt ist aber Schluss mit dem Schabernack!
+
+_echo_place_enter
+|## was: Du gehst nach..
+|Du betrittst [_nick_place].
+
+_echo_place_enter_login
+|Du loggst ein und befindest Dich in [_nick_place].
+
+_echo_place_enter_home
+|Du gehst heim.
+
+_echo_place_enter_join
+|Du gesellst Dich in [_nick_place] dazu.
+
+_echo_place_enter_relinked
+|## Du bist immernoch in [_nick_place].
+
+_echo_place_enter_follow
+|Du folgst nach [_nick_place].
+
+_echo_place_enter_automatic_subscription
+|## Du betrittst [_nick_place] automatisch.
+
+_echo_place_enter_subscribe
+|Du abonnierst [_nick_place].
+
+_echo_place_leave
+|Du verlässt [_nick_place].
+
+_echo_place_leave_automatic
+|Du loggst aus.
+
+_echo_place_leave_subscribe
+|Du kündigst das Abonnement und verlässt [_nick_place].
+
+_echo_place_leave_other
+|Du verlässt [_nick_place].
+
+_echo_place_leave_home
+|[_nick] verlässt [_nick_place] und geht heim.
+
+_echo_place_leave_teleport
+|
+
+_echo_place_leave_invalid
+|[_nick_place] weiss von nichts, ist aber auch egal.
+
+_echo_place_leave_logout
+|Du verabschiedest Dich aus [_nick_place].
+
+_echo_place_leave_automatic_subscription
+|Du verlässt [_nick_place] automatisch.
+
+_echo_place_history_cleared
+|Die Historie wurde von [_amount_history_old] Einträge auf [_amount_history] gestaucht.
+
+_echo_examine_remote
+|## historic
+|Beschreibung von %s angefragt.
+
+_echo_notice_friendship_established
+|Freundschaft mit [_nick] angenommen.
+
+_echo_friendship_removed
+|Freundschaft mit [_nick_target] gekündigt.
+
+_info_commands
+|Befehle: tell, reply, go, me, [_nick], who, p(eople), log.
+|{_URL_help} bietet Hilfe.
+
+_info_set
+|Die Einstellung [_key_set] hat den Wert "[_value]".
+
+_info_set_none
+|Die Einstellung [_key_set] ist nicht belegt.
+
+_info_talk
+|## no output
+
+_info_mail_signature
+|Antwort per E-Mail ist nicht möglich. Bitte Einloggen:
+|[_URL_login]
+
+_info_commands_newbie
+|Befehle: tell, talk, go, me, who, p(eople), log, bye.
+|{_URL_help} bietet Hilfe.
+
+_info_server_version
+|[_version_server] ([_version] [_version_driver]) erhältlich auf [_page_server_software]
+
+_list_alias
+|Alias: [_short]	= [_long]
+
+_list_user_description
+|[_time_idle]	[_nick] [_action_description].
+
+_list_user_description_none
+|[_time_idle]	[_nick] ist da.
+
+_list_acquaintance_notification_delayed
+|[_nick] wird verzögert benachrichtigt.
+
+_list_acquaintance_notification_immediate
+|[_nick] wird unverzögert benachrichtigt.
+
+_list_acquaintance_notification_offered
+|## sollte dies überhaupt angezeigt werden?
+|[_nick] hat Dir Freundschaft angeboten.
+
+_list_acquaintance_notification_mute
+|[_nick] wird nicht benachrichtigt.
+
+_list_acquaintance_notification_pending
+|Bereitschaft zur Freundschaft mit [_nick].
+
+_list_acquaintance_notification_delayed_more
+|[_nick] wird besonders verzögert benachrichtigt.
+
+_list_acquaintance_display_reduced
+|[_nick] wird reduziert dargestellt.
+
+_list_acquaintance_display_none
+|[_nick] wird ignoriert.
+
+_list_acquaintance_display_highlighted
+|[_nick] wird betont dargestellt.
+
+_list_acquaintance_trust
+|Vertrauensfaktor für [_nick] ist [_degree_trust].
+
+_list_acquaintance_expose
+|Expositionsfaktor für [_nick] ist [_degree_expose].
+
+_list_banned_hosts
+|Blockierte Internet-Adressen: %O
+
+_list_subscriptions_each
+|Abonniert: [_subscription]
+
+_list_friends_present
+|Anwesende Freunde: [_friends].
+
+_list_friends_away
+|## still not convinced it was a good idea to introduce this message..
+|Abwesende Freunde: [_friends_away].
+
+_list_friends_present_each
+|%s
+
+_list_places_none
+|(privat) [_users_private].
+
+_list_places_amount_invisibles
+|[_amount_invisibles] unsichtbar.
+
+_list_places_amount_guests
+|[_amount_guests] Gäste.
+
+_request_invitation
+|[_nick] lädt [_nick_target] nach [_nick_place] ein.
+
+_request_friendship
+|[_nick] möchte mit Dir Freundschaft schließen.
+
+_request_description
+|## [_nick] wirft einen Blick auf Deine Beschreibung.
+
+_request_open_page
+|Bitte folgende Seite aufrufen: [_page]
+
+_request_open_page_edit
+|Zur Bearbeitung der Einstellungen bitte folgende Seite aufrufen:
+|[_page_edit]
+
+_notice_requested_status_person
+|[_source] erkundigt sich nach Deiner Anwesenheit.
+
+_notice_authentication
+|Ja klar, das bin dann wohl ich!
+
+_notice_processing_authentication
+|Momenterl, ich muss mal nachfragen..
+
+_echo_place_nick_removed
+|Du legst den Namen [_nick_local] wieder ab.
+
+_status_place_nick_local
+|Du bist als [_nick_local] verkleidet.
+
+_status_place_nick_local_none
+|Du bist nicht maskiert. Worauf wartest Du noch?
+
+_error_disabled_masquerade
+|Masquerade ist derzeit nicht aktiv. Bitte zuerst einschalten!
+
+_error_rejected_address
+|## Tut mir Leid, Du bist hier nicht erwünscht.
+|Zugang ist derzeit nicht möglich.
+
+_error_rejected_talk
+|Der Gesprächswunsch wurde (eventuell automatisch) abgewiesen.
+
+_error_necessary_privilege
+|Berechtigung zur Ausführung von [_command] nicht gegeben.
+
+_error_necessary_membership
+|Das geht nicht bevor [_nick_place] betreten wurde.
+
+_error_place_enter_necessary_nick
+|Du kannst hier nicht einfach hereinlaufen ohne einen anständigen Spitznamen!
+
+_error_place_enter_necessary_registration
+|Es bedarf der Registrierung bevor [_nick_place] betreten werden kann.
+
+_error_place_enter_necessary_encryption
+|[_nick_place] darf nur mit verschlüsselter Verbindung betreten werden.
+
+_error_place_enter_necessary_invitation
+|[_nick_place] kann nur auf Einladung besucht werden.
+
+_error_place_enter_restricted_local
+|Leider ist [_nick_place] nur für Anwender des selben Servers.
+
+_error_place_silent_configuration_topic
+|Dieser Raum ist nicht für Gespräche vorgesehen. [_topic]
+
+_error_place_silent_moderation_topic
+|Dieser Raum ist zur Zeit geschlossen. [_topic]
+
+_error_excessive_subscriptions
+|Zu viele Abonnements.
+
+_error_examine_pending
+|Es sind noch keine Daten von [_nick] eingetroffen!
+
+_error_closed_server
+|Tut mir Leid, der Chat ist um diese Uhrzeit geschlossen.
+
+_error_unknown_setting
+|Einstellung "[_key_set]" ist nicht bekannt.
+
+_error_unknown_name_user
+|"[_nick_target]" ist nicht erreichbar.
+
+_error_unknown_acquaintance
+|Es sind gar keine Kontaktdaten für [_nick_target] vorhanden.
+
+_error_unknown_friendship
+|Es liegen keinerlei Freundschaftsdaten für [_nick_target] vor.
+
+_error_unavailable_invitation
+|Du wurdest nirgendwohin eingeladen.
+
+_error_unavailable_name
+|Verzeihung, dieser Name ist bereits an jemand anders vergeben.
+
+_error_unavailable_nick_place
+|Spitzname [_nick] ist in [_nick_place] bereits durch [_other] belegt.
+
+_error_unavailable_function_here
+|Diese Funktion wird von diesem Server nicht angeboten.
+
+_error_unavailable_function_place_topic
+|Diese Funktion ist Dir hier nicht zugänglich.
+
+_error_unavailable_place_other
+|Es wurde noch kein anderer Raum betreten, zu dem man nun wechseln könnte.
+
+_error_unavailable_message_pending
+|Momentan keine Nachricht zur Veröffentlichung vorgesehen.
+
+_error_status_place_none
+|Du bist doch in gar keinem Raum.
+
+_error_status_place_matches
+|Du bist bereits in [_nick_place].
+
+_error_status_place_chosen
+|Du bist bereits in einem Raum.
+
+_error_status_person_connected
+|Tut mir Leid, aber %O ist schon da. Wählen Sie bitte einen anderen Namen.
+
+_error_status_person_display_none
+|Das geht nicht. Du musst zuerst aufhören [_nick_target] zu ignorieren.
+
+_warning_pending_friendship
+|Erneuter Versuch [_nick] um Freundschaft zu bitten.
+
+_error_pending_friendship
+|Du hast [_nick] bereits um Freundschaft gebeten.
+
+_error_duplicate_registration
+|Du bist bereits registriert, Danke.
+
+_error_duplicate_alias
+|[_address] hat bereits '[_alias]' als Abkürzung.
+
+_error_duplicate_subscription
+|Das ist bereits abonniert.
+
+_warning_duplicate_friendship
+|Du bist mit [_nick] scheinbar befreundet, aber bestätigen schadet nicht.
+
+_error_duplicate_friendship
+|## same wording in _status_friendship_established
+|Du bist mit [_nick] bereits befreundet.
+
+_error_duplicate_user
+|Dieser Name ist bereits eingeloggt!
+
+_error_illegal_email
+|Deine eMail-Adresse sieht falsch aus. Kannst Du sie bitte korrigieren?
+
+_error_illegal_scheme
+|Das ist aber keine [_scheme] URL.
+
+_error_illegal_name_person
+|Verzeihung, '[_nick]' ist kein erlaubter Name.
+
+_error_illegal_name_person_place
+|Tut mir Leid, aber '[_nick]' ist kein erlaubter Name in [_nick_place].
+
+_error_illegal_name_place
+|Raumname enthält ungültige Zeichen.
+
+_error_illegal_password_characters
+|Sonderzeichen oder Umlaute werden Dir Leid tun
+|wenn Du mal die Tastatur in einem fremden Land bedienen musst.
+
+_error_illegal_password_username
+|Der Spitzname als Teil des Passwortes? Keine geschickte Wahl scheint mir.
+
+_error_illegal_password_size
+|Dein Vorschlag eines Passworts ist zu kurz, das machen wir lieber nicht so.
+
+_error_necessary_registration
+|Tut mir Leid, das geht erst nach Registrierung.
+
+_error_necessary_nick_place
+|Du kannst hier nicht einfach hereinlaufen ohne einen anständigen Spitznamen!
+
+_error_necessary_registration_other
+|Um die Sicherheit zu gewährleisten, muss genannte Person durch Passwort
+|geschützt sein. Hierzu kann [_other] den "/reg" Befehl verwenden.
+
+_error_invalid_password
+|## Das war leider das flasche Passwort für [_nick].
+|Das Passwort passt nicht zu [_nick].
+|Passage nicht möglich.
+|So kann's passieren.
+
+_error_invalid_uniform
+|Diese Adresse ergibt mir keinen Sinn.
+
+_error_invalid_mailto
+|Schade, das ist meines Wissens keine gültige E-Mail-Adresse.
+
+_error_invalid_input_speed
+|Hoppla! Nicht so schnell! "%s" ignoriert.
+
+_error_invalid_setting_value
+|Diesen Wert kann [_key_set] leider nicht annehmen.
+
+_error_invalid_setting_name
+|Du kannst nur die Groß-Kleinschreibung Deines Namens ändern.
+
+_error_invalid_password_repetition
+|Die Wiederholung stimmt nicht mit dem neuen Passwort überein!
+|Bitte überprüfen!
+
+_error_invalid_authentication_token
+|Zugangscode abgelaufen oder ungültig, bitte neu einloggen.
+
+_query_nick_alternate
+|{_failure_necessary_nick_alternate}
+
+_query_password
+|Wie lautet das Passwort für [_nick]?
+
+_failure_set_password
+|Auf diesem Server sind keine Registrierungen möglich.
+
+_failure_unimplemented_remote
+|Verzeihung, aber diese Funktion ist noch nicht PSYC-fähig. Kommt noch.
+
+_failure_filter_strangers
+|Filter: [_nick] empfängt keine Nachrichten von Fremden.
+
+_failure_object_creation
+|Hoppla! Ich kann das Objekt nicht erzeugen!
+
+_failure_object_destructed
+|Das Objekt wurde zerstört. Versuch's nochmal von vorn.
+
+_failure_place_enter_XMPP
+|Zugang fehlgeschlagen aus jabberistischen Gründen.
+
+_failure_place_enter_necessary_encryption
+|Zutritt nach [_nick_place] nicht erlaubt für ungesicherte Person [_nick].
+
+_failure_place_enter_necessary_invitation
+|Zutritt nach [_nick_place] nicht erlaubt für uneingeladene Person [_nick].
+
+_failure_place_enter_necessary_registration
+|Zutritt nach [_nick_place] nicht erlaubt für unregistrierte Person [_nick].
+
+_failure_place_enter_restricted_local
+|Zutritt nach [_nick_place] nicht erlaubt für nicht-lokale Person [_source_relay].
+
+_failure_place_invitation_necessary_ownership
+|[_nick] versucht [_nick_target] einzuladen, darf aber nicht.
+
+_failure_unsuccessful_delivery
+|Konnte keine Verbindung zu [_host] herstellen um [_method_relay] an [_source] auszuliefern.
+
+_failure_unsuccessful_delivery_block
+|Durfte keine Verbindung zu [_host] herstellen um [_method_relay] an [_source] auszuliefern.
+
+_failure_unsuccessful_delivery_disconnect
+|Beim Versuch [_method_relay] an [_source] auszuliefern, wurde die Verbindung zu [_host] gekappt.
+
+_failure_unsuccessful_delivery_invalid_port_connect
+|Zu der Portangabe in [_source] kann keine Verbindung aufgebaut werden.
+
+_failure_unsuccessful_delivery_repeated
+|Konnte wiederholt keine Verbindung zu [_host] herstellen um [_method_relay] an [_source] auszuliefern.
+
+_failure_unsuccessful_delivery_resolve
+|Konnte den Namen "[_host]" nicht auflösen um [_method_relay] an [_source] auszuliefern.
+
+_failure_unsuccessful_delivery_self
+|Die Adresse [_host] zeigt auf [_source_origin], ist dort aber nicht vorgesehen.
+
+_failure_unavailable_service
+|Solch ein Dienst wird hier derzeit nicht angeboten.
+
+_failure_unavailable_service_talk
+|Gespräch mit [_nick_target] ist nicht möglich.
+|## Eventuell muss zuerst Freundschaft geschlossen werden.
+
+_failure_unavailable_service_talk_text
+|Gespräch mit [_nick_target] ist nicht möglich: [_text_XMPP]
+
+_failure_unsupported_ping
+|[_nick] kann man nicht anpingen.
+
+_failure_unsupported_syntax
+|Sowas führen wir hier nicht.
+
+_failure_unsupported_function_root
+|[_nick] kann mit [_method_relay] leider nicht dienen.
+
+_failure_unsupported_function_whisper
+|Privatgespräche durch Groupchat-Server zu ist ungesund für die Privatsphäre und daher nicht zulässig. Kontaktieren Sie die betreffende Person bitte auf direktem Wege.
+
+_failure_exceeded_limit_users
+|Bitte tausendmal um Verzeihung, aber die maximal mögliche Anzahl anwesender
+|Personen wurde leider erreicht! Versuchen Sie es später nochmal!
+
+_failure_necessary_registration
+|[_nick_target] kann noch keine Freundschaften handhaben.
+
+_failure_necessary_nick_alternate
+|Verzeihung, [_nick] ist bereits anwesend in [_nick_place].
+|Könntest Du einen alternativen Spitznamen angeben?
+
+_failure_invalid_place_membership
+|[_nick_place] kann sich an nichts erinnern. Macht aber nichts.
+
+_warning_place_duty_owner
+|Du bist der neue Eigentümer von [_nick_place].
+
+_message_private
+|[_nick] sagt Dir: [_data]
+
+_message_public
+|[_nick] {_TEXT_action_says}: [_data]
+
+_message_echo_private
+|Du sagst [_nick_target]: [_data]
+
+_message_echo_public
+|Du sagst: [_data]
+
+_message_echo_friends
+|Deine Freunde wissen jetzt: [_data]
+
+_message_echo_public_reduce
+|Du sagst was.
+
+_message_echo_public_ask
+|Du fragst: [_data]
+
+_message_echo_public_action_possessive
+|[_nick]s [_action_possessive].
+
+_message_echo_private_ask
+|Du fragst [_nick_target]: [_data]
+
+_message_announcement
+|Ankündigung von [_nick]: [_data]
+
+_message_announcement_anonymous
+|Ankündigung: [_data]
+
+_message_public_other
+|In [_nick_place] spricht [_nick]: [_data]
+
+_message_public_whisper
+|[_nick] flüstert [_nick_target] zu: [_data]
+
+_message_public_reduce
+|[_nick] sagt was.
+
+_message_public_other_action
+|In [_nick_place]: [_nick] [_action].
+
+_message_public_other_ask
+|In [_nick_place] fragt [_nick]: [_data]
+
+_message_public_other_action_possessive
+|In [_nick_place]: [_nick]s [_action_possessive].
+
+_message_public_action_possessive
+|[_nick]s [_action_possessive].
+
+_message_public_action_reduce
+|[_nick] tut was.
+
+_message_behaviour_warning
+|*** Warnung: [_data] ***
+
+_message_behaviour_punishment
+|*** [_data]. Und tschüß. ***
+
+_message_behaviour_warning_default
+|*** Benimm dich oder du fliegst raus! ***
+
+_message_behaviour_punishment_default
+|
+
+_message_private_annotate
+|Anmerkung von [_nick]: [_data]
+
+_message_private_action
+|[_nick] [_action].
+
+_message_private_ask
+|[_nick] fragt Dich: [_data]
+
+_message_private_action_reduce
+|[_nick] tut Dir was.
+
+_echo_wake
+|Versuche [_nick_target] zu wecken.
+
+_request_attention_wake
+|Aufmerksamkeit ersucht durch [_nick]. WACH[_beep]AUF!
+
+_notice_login
+|Willkommen im [_name_network] Netzwerk, [_nick]. ([_page_network])
+
+_notice_invitation
+|[_nick] lädt Dich nach [_nick_place] ein.
+
+_notice_switch_identity
+|Identitätswechsel von [_nick] zu [_nick_next].
+
+_notice_news_software
+|Dies ist eine neue Version der Server-Software: [_version]
+
+_notice_logon_last
+|Dein letzter Besuch war am [_date] um [_time] von [_host] aus.
+
+_notice_place_topic
+|Neue Ankündigung von [_nick] in [_nick_place]: [_topic]
+
+_notice_place_invitation
+|[_nick] lädt [_nick_target] nach [_nick_place] ein.
+
+_notice_place_enter
+|[_nick] betritt [_nick_place].
+
+_notice_place_masquerade
+|[_nick_local] ist eigentlich [_nick] in Verkleidung.
+
+_notice_place_aide_added
+|[_aide] ist jetzt neuer Scherge in diesem Raum.
+
+_notice_place_aide_removed
+|[_aide] ist ab sofort kein Scherge dieses Raumes mehr.
+
+_notice_place_enter_automatic
+|[_nick] betritt [_nick_place] automatisch.
+
+_notice_place_enter_subscribe
+|[_nick] abonniert [_nick_place].
+
+_notice_place_enter_unicast
+|[_nick] klickt sich in [_nick_place] hinein.
+
+_notice_place_enter_other
+|[_nick] wechselt nach [_nick_place].
+
+_notice_place_enter_login
+|[_nick] loggt ein in [_nick_place].
+
+_notice_place_enter_home
+|[_nick] kommt nach [_nick_place].
+
+_notice_place_enter_join
+|[_nick] gesellt sich in [_nick_place] dazu.
+
+_notice_place_enter_follow
+|[_nick] folgt der Einladung nach [_nick_place].
+
+_notice_place_enter_automatic_subscription
+|[_nick] betritt [_nick_place] automatisch.
+
+_notice_place_leave
+|[_nick] verlässt [_nick_place].
+
+_notice_place_leave_unicast
+|[_nick] klickt sich aus [_nick_place] heraus.
+
+_notice_place_leave_automatic
+|[_nick] verlässt [_nick_place] automatisch.
+
+_notice_place_leave_subscribe
+|[_nick] kündigt [_nick_place] das Abonnement.
+
+_notice_place_leave_home
+|[_nick] verlässt [_nick_place] und geht heim.
+
+_notice_place_leave_disconnect
+|Verbindung zu [_nick] verloren.
+
+_notice_place_leave_netburp
+|Route zu [_nick] verloren.
+
+_notice_place_leave_temporary
+|Der Raum "[_nick_place]" wird wegen Renovierung zeitweilig geschlossen.
+
+_notice_place_leave_follow
+|[_nick] verlässt [_nick_place].
+
+_notice_place_leave_logout
+|[_nick] verabschiedet sich aus [_nick_place] und loggt aus.
+
+_notice_place_leave_temporary_shutdown
+|Neustart des Servers für [_source]: [_reason]
+
+_notice_place_leave_permanent_shutdown
+|Shutdown des Servers für [_source]: [_reason]
+
+_notice_place_leave_automatic_subscription
+|[_nick] verlässt [_nick_place] automatisch.
+
+_notice_place_topic_official
+|## Ankündigung:
+|[_topic]
+
+_notice_place_topic_removed
+|[_nick] entfernt [_nick_topic]'s Ankündigung: [_topic]
+
+_notice_place_examine_web
+|[_nick_place] wurde auf [_web_on] betrachtet, von [_web_from] kommend.
+
+_notice_query_on
+|Beginne Privatgespräch mit [_nick_target].
+
+_notice_query_off
+|Privatgespräch beendet.
+
+_notice_session_end
+|Sitzungsdauer: [_time_duration].
+
+_notice_action_tongue
+|[_nick] streckt Dir die Zunge raus.
+
+_notice_action_frown
+|[_nick] runzelt die Stirn.
+
+_notice_action_yell
+|[_nick] schreit.
+
+_notice_action_disgust
+|[_nick] ist angeekelt.
+
+_notice_action_stay_cool
+|[_nick] bleibt ganz cool.
+
+_notice_action_blush
+|[_nick] errötet.
+
+_notice_action_blush_shame
+|[_nick] schämt sich.
+
+_notice_action_blush_amorous
+|[_nick] ist verliebt.
+
+_notice_action_blush_erotic
+|[_nick] kommt in Stimmung.
+
+_notice_action_obscene
+|[_nick] macht eine obszöne Geste.
+
+_notice_action_worship
+|[_nick] fällt auf die Knie in Anbetung.
+
+_notice_action_get_drink
+|[_nick] besorgt sich was zu trinken.
+
+_notice_action_get_food
+|[_nick] holt sich was zu essen.
+
+_notice_action_find_good
+|[_nick] findet es gut.
+
+_notice_action_find_bad
+|[_nick] findet es blöd.
+
+_notice_action_agree
+|[_nick] ist einverstanden.
+
+_notice_action_disagree
+|[_nick] ist nicht einverstanden.
+
+_notice_action_smile
+|[_nick] lächelt gutgelaunt.
+
+_notice_action_rule
+|[_nick] gibt die Anweisungen.
+
+_notice_action_suck
+|[_nick] gibt nicht die Anweisungen.
+
+_notice_action_troll
+|[_nick] trällert.
+
+_notice_action_smile_cry
+|[_nick] heult vor Freude.
+
+_notice_action_laugh_tears
+|[_nick] lacht mit Tränen in den Augen.
+
+_notice_action_laugh
+|[_nick] lacht.
+
+_notice_action_laugh_out
+|[_nick] lacht laut.
+
+_notice_action_laugh_floor
+|[_nick] liegt auf dem Boden vor Lachen.
+
+_notice_action_frown_cry
+|[_nick] weint.
+
+_notice_action_weep
+|[_nick] muss jetzt heulen.
+
+_notice_action_frown_angry
+|[_nick] ist nicht glücklich.
+
+_notice_action_frown_mad
+|[_nick] ist echt sauer.
+
+_notice_action_rant
+|[_nick] schimpft.
+
+_notice_action_ponder
+|[_nick] denkt nach.
+
+_notice_action_frown_tired
+|[_nick] haut sich auf's Ohr.
+
+_notice_action_surprise
+|[_nick] ist überrascht.
+
+_notice_action_yawn
+|[_nick] gähnt.
+
+_notice_action_sleep
+|[_nick] schläft.
+
+_notice_action_smile_stoned
+|[_nick] ist ganz verwirrt.
+
+_notice_action_grin
+|[_nick] grinst.
+
+_notice_action_smile_cute
+|[_nick] grinst süß.
+
+_notice_action_smile_smart
+|[_nick] lächelt clever.
+
+_notice_action_wink
+|[_nick] zwinkert.
+
+_notice_action_smile_mean
+|[_nick] grinst frech.
+
+_notice_action_smile_tired
+|[_nick] lächelt zutraulich.
+
+_notice_action_smile_mean_cute
+|[_nick] grinst schelmisch.
+
+_notice_action_smile_wink_smart
+|[_nick] zwinkert clever.
+
+_notice_action_neutral_blind
+|[_nick] sieht nichts.
+
+_notice_action_neutral_mean
+|[_nick] wundert sich.
+
+_notice_action_revoke
+|[_nick] nimmt die vorherige Aussage zurück und behauptet das Gegenteil.
+
+_notice_action_confuse
+|[_nick] hat das nie gesagt, du hast dich getäuscht!!1!1
+
+_notice_action_confuse_doubt
+|[_nick] verbreitet Angst, Unsicherheit und Zweifel.
+
+_notice_action_detect_doubt
+|[_nick] beobachtet Angst, Unsicherheit und Zweifel.
+
+_notice_action_apologize
+|[_nick] entschuldigt sich.
+
+_notice_action_applaud
+|[_nick] klatscht Applaus.
+
+_notice_action_beck
+|[_nick] winkt.
+
+_notice_action_beckon
+|[_nick] nickt Dir zu.
+
+_notice_action_beg
+|[_nick] fällt bettelnd auf die Knie.
+
+_notice_action_bite
+|[_nick] beisst zu.
+
+_notice_action_bounce
+|[_nick] hopst herum.
+
+_notice_action_bow
+|[_nick] verbeugt sich.
+
+_notice_action_cackle
+|[_nick] gackert vor Freude.
+
+_notice_action_caress
+|[_nick] tätschelt Dich.
+
+_notice_action_cheer
+|[_nick] spendet Beifall.
+
+_notice_action_chuckle
+|[_nick] gluckst.
+
+_notice_action_comfort
+|[_nick] tröstet Dich.
+
+_notice_action_cough
+|[_nick] hustet.
+
+_notice_action_cuddle
+|[_nick] knuddelt Dich.
+
+_notice_action_curtsy
+|[_nick] macht einen Knicks.
+
+_notice_action_dance
+|[_nick] tanzt.
+
+_notice_action_dance_head
+|[_nick] haut sich den Kopf wie Blöde.
+
+_notice_action_dance_disco
+|[_nick] tanzt wie ein Discohuhn.
+
+_notice_action_dance_feet
+|[_nick] schüttelt die Füße.
+
+_notice_action_drool
+|[_nick] sabbert.
+
+_notice_action_embrace
+|[_nick] umarmt Dich.
+
+_notice_action_envious
+|[_nick] ist neidisch.
+
+_notice_action_fondle
+|[_nick] hätschelt Dich.
+
+_notice_action_gasp
+|[_nick] schnappt nach Luft.
+
+_notice_action_giggle
+|[_nick] kichert.
+
+_notice_action_gnash
+|[_nick] knirscht mit den Zähnen.
+
+_notice_action_groan
+|[_nick] stöhnt.
+
+_notice_action_growl
+|[_nick] knurrt.
+
+_notice_action_hiccup
+|[_nick] hat Schluckauf.
+
+_notice_action_hug
+|[_nick] umarmt Dich.
+
+_notice_action_jealous
+|[_nick] ist eifersüchtig.
+
+_notice_action_kiss
+|[_nick] gibt Dir einen Kuss.
+
+_notice_action_kiss_hand
+|[_nick] gibt Dir einen Handkuss.
+
+_notice_action_listen
+|[_nick] hört aufmerksam zu.
+
+_notice_action_love
+|[_nick] liebt Dich.
+
+_notice_action_moan
+|[_nick] jammert.
+
+_notice_action_mourn
+|[_nick] trauert.
+
+_notice_action_nod
+|[_nick] nickt.
+
+_notice_action_pout
+|[_nick] schmollt.
+
+_notice_action_purr
+|[_nick] schnurrt.
+
+_notice_action_scream
+|[_nick] schreit.
+
+_notice_action_scratch_head
+|[_nick] kratzt sich am Kopf.
+
+_notice_action_shake_head
+|[_nick] schüttelt den Kopf.
+
+_notice_action_shake_hand
+|[_nick] schüttelt Deine Hand.
+
+_notice_action_shiver
+|[_nick] fröstelt.
+
+_notice_action_shriek
+|[_nick] kreischt.
+
+_notice_action_shudder
+|[_nick] schaudert.
+
+_notice_action_shrug
+|[_nick] zuckt mit den Schultern.
+
+_notice_action_sigh
+|[_nick] seufzt.
+
+_notice_action_sing
+|[_nick] singt.
+
+_notice_action_smack_head
+|[_nick] haut sich auf die Stirn.
+
+_notice_action_smirk
+|[_nick] feixt.
+
+_notice_action_sneeze
+|[_nick] niest.
+
+_notice_action_sniff
+|[_nick] schnieft.
+
+_notice_action_snore
+|[_nick] schnarcht.
+
+_notice_action_snuffle
+|[_nick] schnuppert.
+
+_notice_action_snuggle
+|[_nick] kuschelt sich an Dich heran.
+
+_notice_action_sprawl
+|[_nick] breitet sich aus.
+
+_notice_action_stretch
+|[_nick] streckt sich.
+
+_notice_action_stroke
+|[_nick] streichelt Dich.
+
+_notice_action_strut
+|[_nick] stolziert herum.
+
+_notice_action_swear
+|[_nick] schimpft.
+
+_notice_action_thank
+|[_nick] bedankt sich.
+
+_notice_action_tickle
+|[_nick] kitzelt Dich.
+
+_notice_action_tremble
+|[_nick] zittert.
+
+_notice_action_twinkle
+|[_nick] blinzelt.
+
+_notice_action_wait
+|[_nick] wartet schon.
+
+_notice_action_wish_luck
+|[_nick] drückt Dir die Daumen.
+
+_status_presence_description
+|Präsenz: [_description_presence]
+
+_status_presence
+|## no output
+
+_status_presence_here
+|[_nick] ist da. [_description_presence]
+
+_status_presence_here_busy
+|[_nick] ist beschäftigt. [_description_presence]
+
+_status_presence_away
+|[_nick] ist abwesend. [_description_presence]
+
+_status_presence_absent_vacation
+|[_nick] ist unterwegs. [_description_presence]
+
+_status_presence_absent
+|[_nick] ist weg. [_description_presence]
+
+_notice_presence_here_talkative
+|Präsenz: [_nick] ist gesprächsbereit. [_description_presence]
+
+_notice_presence_here
+|Präsenz: [_nick] kommt. [_description_presence]
+
+_notice_presence_here_busy
+|Präsenz: [_nick] ist beschäftigt. [_description_presence]
+
+_notice_presence_away
+|Präsenz: [_nick] ist abwesend. [_description_presence]
+
+_notice_presence_absent_vacation
+|Präsenz: [_nick] ist unterwegs. [_description_presence]
+
+_notice_presence_absent
+|Präsenz: [_nick] geht. [_description_presence]
+
+_notice_friend_summoned
+|[_nick] hat sich erfolgreich angemeldet.
+
+_notice_person_absent_netburp
+|Netzverbindung zu [_nick] unterbrochen.
+
+_notice_person_present_netburp
+|Netzverbindung zu [_nick] wieder hergestellt.
+
+_notice_link
+|[_location] nun eingeloggt in [_identification].
+
+_notice_link_service
+|[_location_service] startet den [_service] Dienst für [_identification].
+
+_notice_link_topic
+|Verbindung zu [_source] hergestellt. [_topic]
+
+_notice_unlink
+|[_location] nun ausgeloggt aus [_identification].
+
+_notice_unlink_service
+|[_location_service] beendet den [_service] Dienst für [_identification].
+
+_notice_unlink_restart
+|Verbindung zu [_source] geschlossen. Gegenseite startet neu durch. 
+
+_notice_unlink_restart_complete
+|Verbindung zu [_source] wieder hergestellt.
+
+_notice_friendship_established
+|[_nick] schließt mit Dir Freundschaft.
+
+_notice_friendship_removed
+|[_nick] löscht die Freundschaft mit Dir.
+
+_notice_friendship_removed_implied
+|Automatischerweise löscht auch [_nick] die Freundschaft mit Dir.
+
+_status_description_person
+|Beschreibung von [_nick] erhalten.
+
+_status_description_place
+|Beschreibung von [_nick_place] erhalten.
+
+_status_version_agent
+|Version: [_nick] verwendet "[_version_description]" ([_version]).
+
+_status_version
+|Version: [_nick] verwendet "[_version_description]" ([_version]).
+
+_status_users
+|Es sind [_amount_users] Nutzer auf diesem Server angemeldet.
+
+_status_friends
+|Anwesende Freunde: [_friends].
+
+_status_log_none
+|Keine Nachrichten vorhanden.
+
+_status_log_new
+|[_amount_new] neue Nachrichten!
+
+_status_jobs_amount
+|Es stehen noch [_jobs_amount] Herausforderungen aus.
+
+_status_place_aides
+|In diesem Raum sind folgende Schergen definiert: [_aides]
+
+_status_place_members
+|In [_nick_place]: [_list_members_nicks].
+
+_status_place_topic
+|Ankündigung von [_nick]: [_topic]
+
+_status_place_masquerade
+|Verkleidungen erlaubt. Ausprobieren mit "/nick".
+
+_status_place_identification
+|Identifikation: [_identification]
+
+_status_place_silence
+|Nebengeräusche hat [_nick] abgeschaltet.
+
+_status_place_filter_presence
+|Anwesenheitsmeldungen wurden von [_nick] abgeschaltet.
+
+_status_place_filter_presence_on
+|Anwesenheitsmeldungen sind an diesem Ort abgeschaltet.
+
+_status_place_filter_presence_off
+|Anwesenheitsmeldungen sind an diesem Ort eingeschaltet.
+
+_status_place_filter_conversation_on
+|Gespräche sind an diesem Ort nicht erlaubt.
+
+_status_place_filter_conversation_off
+|Gespräche sind an diesem Ort freigegeben.
+
+_status_place_public
+|[_nick_place] öffentlich durch [_nick].
+
+_status_place_link
+|Vernetzung mit [_link] aktiv.
+
+_status_place_logging
+|Logging von [_nick] eingeschaltet.
+
+_status_place_net_members_amount
+|[_nick_place] enthält [_amount_members] Teilnehmer von [_amount_servers] Servern.
+
+_status_place_link_slave
+|Link [_link] hat [_amount_members] Teilnehmer.
+
+_status_place_aides_none
+|In diesem Raum gibt es keine Schergen.
+
+_status_place_topic_none
+|Es wurde in [_nick_place] kein Topic gesetzt.
+
+_status_place_topic_official
+|## Ankündigung:
+|[_topic]
+
+_status_place_identification_aliases
+|{_status_place_identification} oder [_identification_alias]
+
+_status_place_members_none
+|[_nick_place] ist leer.
+
+_status_place_members_amount
+|[_nick_place] enthält [_amount_members] Personen.
+
+_status_place_members_authenticated
+|Prominente Gäste: [_members_authenticated].
+
+_status_place_members_authenticated_none
+|In diesem Raum sind keine prominenten Gäste konfiguriert.
+
+_status_place_public_action
+|Öffentlich dank %s.
+
+_status_query_on
+|Privatgespräch mit [_nick_target] wird fortgesetzt.
+
+_status_events
+|Zuletzt eingeladen nach [_place_invitation].
+|Zuletzt gesprochen mit [_person_reply].
+|Zuletzt eingeloggt: [_person_greet].
+
+_status_person_absent
+|Nachricht gespeichert. [_nick] ist nicht da.
+
+_status_person_absent_recorded
+|Nachricht gespeichert. [_nick] ist nicht da.
+
+_status_person_absent_netburp
+|Netzverbindung zu %s verloren.
+
+_status_person_absent_netburp_action
+|Netzverbindung zu %s verloren.
+
+_status_person_absent_recorded_action
+|Nachricht gespeichert. [_nick] [_action].
+
+_status_person_absent_recorded_text_action
+|Nachricht gespeichert. [_nick] [_action].
+
+_status_person_present_netburp
+|Netzverbindung zu [_nick] wieder hergestellt.
+
+_status_person_present_action
+|{_status_person_present} [_action].
+
+_status_person_present_text_action
+|{_status_person_present} [_action].
+
+_status_person_present_netburp_action
+|Netzverbindung zu %s wieder hergestellt.
+
+_status_friendship_established
+|## same wording in _error_duplicate_friendship
+|Du bist mit [_nick] bereits befreundet.
+
+_warning_inappropriate_access
+|Vorsicht, der Client wird mit einem Identitätswechsel vermutlich nicht klar kommen.
+
+_warning_place_set_masquerade_on
+|In diesem Raum sind alle bereits verkleidet.
+
+_warning_place_set_masquerade_off
+|Hier ist doch niemand verkleidet.
+
+_warning_place_set_public_on
+|Dieser Raum ist bereits öffentlich.
+
+_warning_place_set_public_off
+|Dieser Raum ist bereits privat.
+
+_warning_place_link_lost
+|Master [_master] hat vergessen wer wir sind. Moment noch.
+
+_warning_usage_ping
+|Syntax: /ping <Entität> [<Zeitstempel>]
+
+_request_ping
+|[_nick] pingt Dich.
+
+_echo_ping
+|Pong von [_nick] ist eingetroffen.
+
+_warning_usage_clearscreen
+|Trick: Durch Abschicken einer Leerzeile löscht sich der Ausgabeschirm.
+
+_warning_usage_histclear
+|Die Historie ist [_amount_history] Einträge lang. Syntax: /histclear «Anzahl»
+
+_warning_usage_subscribe
+|Syntax: /sub(scribe) oder /unsub(scribe) <Raum>
+
+_warning_usage_set
+|Syntax: /set <variable> [<wert>]
+
+_warning_usage_auto
+|Syntax: /[_nick] <beschreibung>
+
+_warning_usage_tell
+|Syntax: /tell <nickname> <nachricht>
+
+_warning_usage_notify
+|Syntax: /notify <nickname> [ i(mmediate),d(elayed),D(elayedMore) ]
+
+_warning_usage_acquaintance
+|Syntax: /ignore oder /show <person>
+
+_warning_usage_mandate
+|Syntax: /mand(ate) «Scherge»
+
+_warning_usage_post
+|Syntax: /post <KeksNummer>
+
+_warning_usage_go
+|Syntax: /go <Raum>
+
+_warning_usage_alias
+|Syntax: /alias <Aliasname> <Person>
+
+_warning_usage_me
+|Syntax: /me <aktionsbeschreibung> oder :<aktion>
+
+_warning_usage_shout
+|Syntax: /shout <nachricht-an-alle-freunde>
+
+_warning_usage_my
+|## hey mir fallt grad nichts besseres ein
+|Syntax: /my <besitzbeschreibung> oder :s <besitzbeschreibung>
+
+_warning_usage_unalias
+|Syntax: /unalias <Aliasname>
+
+_warning_usage_invite
+|Syntax: /invite <Person>
+
+_warning_usage_query
+|Syntax: /talk <nickname> und /talk zum Beenden des Zwiegesprächs.
+
+_warning_usage_friend
+|Syntax: /friend <nickname> oder /unfriend <nickname>
+
+_warning_usage_authenticate
+|Syntax: /auth(enticate) <Spitzname|psycUNI>
+
+_warning_usage_logging
+|Syntax: /logging (on|off)
+
+_warning_usage_set_charset
+|Zeichensatz [_charset] ist eingestellt. Änderung per "/set charset".
+
+_warning_usage_set_language
+|You can switch to english using "/set language en".
+
+_warning_usage_set_password
+|Syntax: /set password <altesWort> <neuesWort>
+
+_warning_usage_set_password_register
+|Zur Registrierung verwende /set password <neuesPasswort>.
+
+_warning_superflous_unban
+|[_bannee] wurde gar nicht verbannt.
+
+_warning_modified_command_character
+|Vorsicht, "[_command_character]" ist als Befehlszeichen eingestellt.
+
+_warning_server_restart
+|Neustart des Servers: [_reason]
+
+_warning_server_shutdown
+|Shutdown des Servers: [_reason]
+
+_warning_unable_reply
+|[_nick] ist nicht registriert, wird daher nicht antworten können!
+
+_warning_unsafe_filter_strangers
+|Vielleicht sollte [_other] den Filter gegen fremde Nachrichten aktivieren.
+
+_warning_omitted_messages
+|[_amount_messages_omitted] Nachrichten weggelassen.

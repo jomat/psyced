@@ -1,0 +1,92 @@
+#!/usr/bin/perl
+# recursive cvs root fixer. reusable for all sorts of patch operations. -lynX
+
+require 'find.pl';
+$File::Find::dont_use_nlink = 'DONT!';
+
+my $op = "s#^:pserver:anonymous\@cvs\.psyced\.org:/CVS/anonCVS#:pserver:$ENV{USER}\@cvs\.psyced\.org:/CVS/muveCVS#m";
+
+$grep = shift or die <<X;
+
+usage: $0 <filematch> [<operation> [<directories>]]
+
+<filematch> would typically be "Root"
+
+<operation> by default is to transform anonymous access to the psyced
+	    repository into your personal login access. in detail:
+
+	$op
+
+without <directories> the directory tree starting from the current directory
+is recursively checked.
+
+you can obviously use a completely different regular expression on completely
+different sets of files. for example here is a command that will remove the
+/lastlog store from all of psyced's .o save files it encounters.
+
+	multipatcher '.o' 's:^_log .*\\n\$::m'
+
+you can even embed any of \$name, \$dir or \$base, like this:
+
+	multipatcher .o 's#softnews#id":"psyc://psyced.org/~$base","softnews#'
+
+this one inserts an entry 'id' in front of an existing entry called 'softnews'
+X
+
+$_ = shift;
+$op = $_ if $_;
+
+$|=1;
+my @list;
+&find($#ARGV >= 0 ? @ARGV : '.');
+exit;
+
+sub wanted {
+	($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime)
+		= lstat;
+	return unless /$grep/o;
+
+	my $f = $_;
+	if (open(I, $f)) {
+		$_ = &slurp(I);
+		close I;
+	} else {
+		print STDERR "cannot access $name\n";
+		return;
+	}
+	my $base = $f =~ m!^(\w+)\b! ? $1 : $f;
+
+	my $was = $_;
+	eval $op;
+#	print "** $op ** in $_ **\n";
+
+	if ($was eq $_) {
+		print "no:\t$name\n";
+		return;
+	}
+	print "yes:\t$name\n";
+
+	if (open(O, ">Nu$f")) {
+		print O $_;
+		close O;
+	} else {
+		print STDERR "cannot create Nu$f in $dir\n";
+		return;
+	}
+	unless (unlink $f) {
+		print STDERR "cannot delete $f\n";
+		return;
+	}
+	rename ("Nu$f", $f) or die "the world is not logical";
+}
+
+# reads a file from a stream into a variable all at once
+#
+sub slurp {
+	local(*IN) = @_;
+	local($save) = $/;
+	undef $/;
+	local($data) = <IN>;
+	$/ = $save;
+	return $data;
+}

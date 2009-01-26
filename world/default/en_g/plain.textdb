@@ -1,0 +1,158 @@
+<PSYC:TEXTDB> ## vim:syntax=mail
+
+_INHERIT
+|default/en/plain
+
+_message_announcement
+|[_nick] shouts: [_data]
+
+_message_private
+|## bitnet relay style
+|## <*[_nick]*> [_data]
+|## irc style
+|*[_nick]* [_data]
+
+_message_public
+|<[_nick]> [_data]
+
+_message_echo_private
+|-> *[_nick_target]* [_data]
+
+_message_echo_public
+|> [_data]
+
+_message_echo_public_important
+|=> [_data]
+
+_message_echo_public_ask
+|» [_data]
+
+_message_echo_public_text_action
+|> [_data]
+
+_message_echo_public_text_action_magnify
+|««« {_message_echo_private_text_action} »»»
+
+_message_echo_public_text_action_reduce
+|[_nick] [_action] {_TEXT_something}.
+
+_message_echo_public_important_ask
+|=> You ask: %s
+
+_message_echo_private_question
+|-> +[_nick_target]+ [_data]
+
+_message_echo_private_ask
+|-> +[_nick_target]+ [_data]
+
+_message_announcement_anonymous
+|*** Announcement: [_data] ***
+
+_message_public_other
+|[_nick_place]: <[_nick]> [_data]
+
+_message_public_external
+|{_TEXT_external} {_TEXT_action_says} [_nick]: [_data]
+
+_message_public_action
+|* {_message_public_action}
+
+_message_public_magnify
+|««« {_message_public} »»»
+
+_message_public_important
+|===> {_message_public}
+
+_message_public_analogously
+|[_nick] {_TEXT_action_analogously}: [_data]
+
+_message_public_whisper
+|[_nick] -> [_nick_target]: [_data]
+
+_message_public_reduce
+|[_nick] {_TEXT_says} {_TEXT_something}.
+
+_message_public_question
+|«[_nick]» [_data]
+
+_message_public_ask
+|«[_nick]» [_data]
+
+_message_public_text_action
+|## * {_message_public_text_action}
+|<[_nick]> [_data]
+
+_message_public_external_action
+|{_TEXT_external}: [_nick] [_action].
+
+_message_public_other_action
+|[_nick_place]: [_nick] [_action].
+
+_message_public_other_ask
+|[_nick_place]: «[_nick]» [_data]
+
+_message_public_action_magnify
+|««« {_message_public_action} »»»
+
+_message_public_action_important
+|===> {_message_public_action}
+
+_message_public_action_reduce
+|[_nick] {_TEXT_action_does} {_TEXT_something}.
+
+_message_public_question_magnify
+|««« {_message_public_question} »»»
+
+_message_public_question_pending
+|{_TEXT_pending} [_nick] {_TEXT_action_asks}: [_data]
+
+_message_public_question_reduce
+|[_nick] {_TEXT_action_asks} {_TEXT_something}.
+
+_message_public_important_ask
+|===> [_nick] {_TEXT_action_asks}: [_data]
+
+_message_behaviour_warning
+|*** Warning: [_data] ***
+
+_message_behaviour_punishment
+|*** Hasta la vista. [_data] ***
+
+_message_behaviour_warning_default
+|*** Stop misbehaving or you will be expelled. ***
+
+_message_behaviour_punishment_default
+|*** You have been expelled. ***
+
+_message_private_annotate
+|-[_nick]- [_data]
+
+_message_private_action
+|*> [_nick] [_action].
+
+_message_private_magnify
+|««« {_message_private} »»»
+
+_message_private_reduce
+|[_nick] {_TEXT_action_tells} you {_TEXT_something}.
+
+_message_private_question
+|+[_nick]+ [_data]
+
+_message_private_ask
+|+[_nick]+ [_data]
+
+_message_private_ask_magnify
+|««« {_message_private_ask} »»»
+
+_message_private_ask_reduce
+|[_nick] {_TEXT_action_asks} you {_TEXT_something}.
+
+_message_private_text_action
+|*[_nick]* [_data]
+
+_message_private_action_magnify
+|««« {_message_private_action} »»»
+
+_message_private_action_reduce
+|[_nick] does {_TEXT_something} to you.

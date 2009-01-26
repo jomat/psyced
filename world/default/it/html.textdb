@@ -1,0 +1,831 @@
+<PSYC:TEXTDB> ## vim:syntax=html
+## tradotto a metà
+
+_PAGES_help_basic
+|<h5>COMANDI DI BASE</h5>
+|
+|<dl>
+|<a name="people"></a>
+|<dt><P><B> /p(eople) </B></p><dd>
+|mostra una lista degli utenti connessi allo stesso server come te.
+|In <b>[privato]</b> vedi tutte le persone che hanno scelto di non
+|essere in un luogo pubblico.
+|
+|<a name="go"></a>
+|<dt><p><b> /go &lt;luogo&gt; </b></p><dd>
+|cambia luogo. Un nuovo luogo privato si crea se ti inventi un nome
+|altrimenti inesistente.
+|
+|##</dl>
+|## {_HTML_info_split}
+|## <dl>
+|
+|<a name="me"></a>
+|<dt><p><b> /me &lt;descrizione&gt; </b></p><dd>
+|trasmette la descrizione di una azione. <nobr>"<b>/me sorride</b>"</nobr>
+|per esempio crea il messaggio <nobr><em>"JoeCool sorride."</em></nobr>
+|
+|<dt><p><b> /&lt;proprioNome&gt; &lt;descrizione&gt; </b></p><dd>
+|Usando il tuo proprio nome <em>(nickname)</em> invece di <code>/me</code>
+|la tua azione rimane memorizzata come attuale tuo stato d'animo e di
+|esistenza. Appare quando qualcuno ti lascia un messaggio e nella lista
+|del comando <code>/who</code>.
+|
+|<a name="who"></a>
+|<dt><P><B> /who </B></p><dd>
+|mostra una lista quegli utenti del tuo server locale, chi hanno
+|definito una azione permanente come descritto nel paragrafo antecedente.
+|Inoltre appare il tempo passato dalla loro ultima attività (il cosidetto
+|"idle time"), che può risultare anche assai alto se la persona in realtà
+|lavora o non è effettivamente attiva al computer.
+|
+|## <dt><p><b> /help </b></p><dd>
+|
+|<a name="examine"></a>
+|<dt><p><b> /examine &lt;persona&gt; </b> o semplicemente <b> /x </b></p><dd>
+|manda una richiesta per una descrizione della persona. A seconda del
+|grado di amicizia puoi ricevere svariate informazioni sulla persona
+|come altri indirizzi internet e numeri di telefono.
+|
+|<a name="tell"></a>
+|<dt><p><b> /t(ell) &lt;persona&gt; &lt;messaggio&gt; </b></p><dd>
+|serve a mandare un messaggio direttamente alla persona senza che
+|appaia in qualche luogo o canale. Non è neanche necessario che la
+|persona sia in un luogo insieme a te.
+|
+|<a name="talk"></a>
+|<DT><P><B> /t(alk) &lt;persona&gt; </B> e <b> /t(alk) </b></p><dd>
+|serve ad attivare una comunicazione privata. Tutti i messaggi scritti
+|ora saranno diretti solo a questa persona. Se ti trovi in un luogo
+|allo stesso tempo, puoi usare
+|<nobr>"<b>/ &lt;testo&gt;</b>"</nobr>
+|(una barra seguita da uno spazio libero)
+|per mandare messaggi al luogo "sottostante" il discorso privato.
+|"<b>/t</b>" termina questo modus.
+|
+|## c'e' da spostare una macchina		TODO!!!!!
+|
+|<a name="bye"></a>
+|<dt><P><B> /bye </B></p><dd>
+|schließt das Chatfenster und sichert die Benutzerdaten.
+|Anwesenden im Raum wird mitgeteilt, daß man den Chat bewußt
+|verläßt, im Gegensatz zu <em>"Netzverbindung unterbrochen"</em>.
+|Bitte stets den Chat korrekt verlassen bevor die
+|Modemverbindung durchtrennt wird oder ähnliches.
+|
+|</dl>
+
+_PAGES_help_display
+|<h5>DARSTELLUNGSBEFEHLE</h5>
+|
+|<dl>
+|<a name="ignore"></a>
+|<DT><P><B> /ig(nore) &lt;Name&gt; </B></p><dd>
+|stellt ein, daß Nachrichten von diesem Benutzer in Zukunft unterdrückt werden.
+|
+|<a name="show"></a>
+|<DT><P><B> /show &lt;Name&gt; </B></p><dd>
+|stellt ein, daß Nachrichten von diesem Benutzer wieder normal sichtbar sind.
+|
+|<a name="highlight"></a>
+|<DT><P><B> /hi(ghlight) &lt;Name&gt; </B></p><dd>
+|stellt ein, daß Nachrichten von diesem Benutzer betont werden.
+|
+|<a name="reduce"></a>
+|<DT><P><B> /reduce &lt;Name&gt; </B> oder <b> /lo &lt;Name&gt; </b></p><dd>
+|stellt ein, daß Nachrichten von diesem Benutzer reduziert werden.
+|
+|</dl>
+|{_HTML_info_split}
+|<dl>
+|
+|<a name="friend"></a>
+|<DT><P><B> /fr(iend) &lt;Name&gt; </B> oder
+|    <B> /fr(iend) -&lt;Name&gt; </B></p><dd>
+|bietet einer Person im Chat die Freundschaft an, oder kündigt diese.
+|Sollte diese Freundschaft auf der Gegenseite erwidert werden, wird man in
+|Zukunft automatisch benachrichtigt werden, wenn die Person das PSYC-Netz
+|betritt. Ausserdem stellen sich Freunde gegenseitig mehr Informationen
+|im Profil zur Verfügung.
+|<br>
+|
+|<a name="show"></a>
+|<DT><P><B> /show </B></p><dd>
+|zeigt eine Liste der Darstellungsmodi und die davon betroffenen Namen.
+|
+|</dl>
+
+_PAGES_help_advanced
+|<h5>KOMFORT FÜR PROFICHATTER</h5>
+|
+|<dl>
+|
+|<a name="reply"></a>
+|<DT><P><b> /r(eply) </b></p><dd>
+|startet ein Privatgespräch mit jener Person, von der man zuletzt
+|eine Privatnachricht erhalten hat.
+|
+|<a name="more"></a>
+|<DT><P><b> /m(ore) </b></p><dd>
+|startet ein Privatgespräch mit jener Person, der man zuletzt mit
+|<b>/tell</b> eine Privatnachricht geschickt hat.
+|
+|<a name="greet"></a>
+|<DT><P><b> /g(reet) </b></p><dd>
+|startet ein Privatgespräch mit jener Person, von der man zuletzt
+|eine Anwesenheitsbenachrichtigung erhalten hat.
+|
+|<a name="log"></a>
+|<DT><P><B> /log [&lt;Anzahl oder Fragment&gt;] </B></p><dd>
+|zeigt genannte Anzahl Zeilen aus der mitlaufenden persönlichen
+|Log einkommender Nachrichten, oder Zeilen welche ein bestimmtes
+|Textfragment enthalten. Bei registrierten Benutzern 
+|wird eine beschränkte Anzahl solcher Zeilen gesichert bis zum
+|nächsten Chatbesuch, sowie Nachrichten, die in Abwesenheit
+|des Benutzers hinterlassen wurden. Eine weitergehende Speicherung
+|der Nachrichten findet nicht statt. Die Log ist nicht zu verwechseln
+|mit der History von Räumen, welche einen ähnlichen Dienst tut.
+|
+|<a name="logclear"></a>
+|<DT><P><B> /logclear </B></p><dd>
+|löscht die persönliche Log restlos. Dies kann wünschenswert
+|sein, falls man gerade ein sehr privates Gespräch geführt hat.
+|
+|<a name="home"></a>
+|<DT><P><B> /h(ome) </B></p><dd>
+|bringt Dich schnell in Deinen Lieblingsraum, welcher mittels
+|<nobr>"<b>/set home &lt;lieblingsraum&gt;</b>"</nobr> eingestellt
+|werden kann.
+|
+|<a name="clearscreen"></a>
+|<DT><P><B> &lt;Leereingabe&gt; </B></p><dd>
+|löscht das Chatfenster im Telnet-Zugang, sofern das nicht durch die
+|clearscreen-Einstellung ausgeschaltet ist.
+|
+|<a name="join"></a>
+|<DT><P><B> /j(oin) &lt;Raum&gt; </B> </p><dd>
+|betritt einen weiteren Raum ohne den aktuellen Raum zu verlassen.
+|
+|<a name="leave"></a>
+|<DT><P><B> /leave &lt;Raum&gt; </B> </p><dd>
+|Der Befehl um einen Raum zu verlassen ohne einen neuen zu betreten.
+|
+|<a name="subscribe"></a>
+|<DT><P><B> /sub(scribe) [ &lt;Raum&gt; ] </B></p><dd>
+|abonniert einen Raum - das entspricht einem automatischen <b>/join</b>
+|sobald man die PSYC-Welt betritt. Über diesen Befehl werden beispielsweise
+|Nachrichtenticker realisiert, oder Systemmeldungen an die Empfänger verteilt.
+|
+|<a name="unsubscribe"></a>
+|<DT><P><B> /unsub(scribe) &lt;Raum&gt; </B></p><dd>
+|kündigt das Abo wieder.
+|
+|</dl>
+|
+|{_HTML_info_split}
+|
+|<h5>KLEINE GESCHICHTE DES CHATTENS</h5>
+|
+|<dl>
+|
+|<a name="msg"></a>
+|<DT><P><B> /m(sg) &lt;Name&gt; &lt;Nachricht&gt; </B></p><dd>
+|ist dasselbe wie <b>/tell</b>, aus Kompatibilität zu IRC und Bitnet Relay.
+|"MSG" ist ein übliches aber unnötiges historisches Akronym
+|aus Großrechnerzeiten für "message".
+|
+|<a name="whois"></a>
+|<DT><P><B> /whois &lt;Name&gt; </B></p><dd>
+|ist der entsprechende Relay-Befehl zu <b>/examine</b> oder <b>/x</b>.
+|
+|<a name="part"></a>
+|<DT><P><B> /part &lt;Raum&gt; </B></p><dd>
+|ist das IRC-Pendant zu <b>/leave</b>.
+|
+|<a name="change"></a>
+|<DT><P><B> /c(hange) &lt;Raum&gt; </B></p><dd>
+|Andere Form von <b>/go</b>, aus Kompatibilität. Genaugenommen hiess der
+|Relay-Befehl damals <b>/channel</b> und entsprach dem Wechseln eines
+|Funk-Kanals beim Amateurfunk. Räume hatten daher auch keine Namen
+|sondern Nummern.
+|## Die Funk-Analogie stammt vermutlich von Jeff Kell.
+|
+|<a name="query"></a>
+|<DT><P><B> /q(uery) [&lt;Name&gt;] </B></p><dd>
+|ist dasselbe wie <b>/talk</b>, aus Kompatibilität zu IRC.
+|Das Wort "query" bedeutet abfragen, ausfragen, in Frage
+|stellen, bezweifeln, monieren. Das klingt mir zu negativ.
+|## Diesen merkwürdigen Befehlsnamen ("Ausfragung") verdanken wir
+|## vermutlich Jarkko Oikarinen, Erfinder des IRC.
+|
+|<a name="lastlog"></a>
+|<DT><P><B> /la(stlog) [&lt;Anzahl oder Fragment&gt;] </B></p><dd>
+|ist dasselbe wie <b>/log</b>, aus Kompatibilität zu ircII.
+|Der /lastlog-Befehl wurde 1989 von BigCheese eingeführt, wie
+|so vieles anderes Nützliches.
+|
+|<a name="mudemote"></a>
+|<DT><P><B> :&lt;Beschreibung&gt; </B></p><dd>
+|verhält sich genauso wie <b>/me</b>.
+|MUD-Abenteurern ist diese Notation vertrauter.
+|Wenn ich mich recht entsinne wurde sie in der TinyMUD-Welt
+|erfunden, um 1987 herum. Ich fand sie so genial, daß ich
+|sie in Form des /me-Befehls 1990 ins IRC einbrachte.
+|Das Doppelpunktzeichen kann mittels <b>/set actchar</b>
+|verstellt werden.
+|
+|</dl>
+|
+|{_HTML_info_split}
+|
+|<h5>WEITERE EXOTISCHE BEFEHLCHEN</h5>
+|
+|<dl>
+|<dt><p><a name="uptime"><b> /up(time) </b></a></p><dd>
+|Wie lange läuft dieser Server schon?
+|
+|<dt><p><a name="version"><b> /vers(ion) [ &lt;Person&gt; ] </b></a></p><dd>
+|Information über Software-Version des eigenen Servers oder der Software
+|eines Gesprächspartners anfragen. Letzterer kann aber seinen Server
+|angewiesen haben, nicht zu antworten.
+|
+|<DT><P><a name="notify" /><B> /notify &lt;Name&gt; [&lt;Verzögerung&gt;] </B></a></p><dd>
+|ist eine "asymmetrische" Variante von <b>/friend</b>. Sie stellt ein, daß
+|die benannte Person automatisch benachrichtigt werden soll, sobald
+|man den Chat betritt. Diese Funktion tut also genau das Gegenteil von dem,
+|was /notify im IRC macht, das ist Absicht und im Rahmen von PSYC sinnvoller.
+|<br>
+|Es kann zusätzlich eine Zeitverzögerung angegeben werden, nach der die
+|Ankündigung rausgeschickt wird. Dies kann nützlich sein um nicht von allzu
+|vielen Personen gleichzeitig angesprochen zu werden. Die Verzögerung wird
+|in Form eines Buchstaben "<b>d</b>" <em>(delayed)</em> für eine kurze
+|sowie "<b>D</b>" für eine lange Verzögerung.
+|Um die automatische Benachrichtigung wieder abzuschalten muß
+|<nobr>"<b>/notify &lt;Name&gt;</b>"</nobr> nochmal eingegeben werden.
+|"<b>/nf</b>" ist eine gültige Abkürzung von /notify.
+|Statt &lt;Name&gt; kann stets auch eine PSYC-Adresse angegeben werden.
+|Der Befehl kann auch benutzt werden um die Freundschaftsankündigungen
+|einer Freundschaft zu entfernen ohne gleich die Freundschaft zu kündigen.
+|
+|<DT><P><a name="save"><B> /save </B></a></p><dd>
+|sichert die Benutzerdaten wie bei <b>/bye</b>, kann aber auch
+|zwischendrin benutzt werden. Dieser Befehl ist normalerweise jedoch
+|nicht notwendig, da der Server in regelmäßigen Abständen von
+|alleine sichert, sowie immer dann, wenn wichtige Einstellungen verändert
+|wurden (etwa mittels <b>/set</b>).
+|
+|<dt><p><a name="enter"><b> /enter &lt;Raum&gt; </b></a></p><dd>
+|ist nur der schönere Befehlsname für <b>/join</b>. You can enter a group,
+|but you cannot join a room!
+|
+|</dl>
+
+_PAGES_help_remote
+|<h5>KOMMUNIKATION MIT PERSONEN IM PSYC-NETZWERK</h5>
+|
+|Die PSYC-Technologie ist zur weltweit uneingeschränkten Kommunikation mit
+|anderen Personen gedacht. In manchen Fällen wirst Du dies schon getan
+|haben, ohne es zu merken, weil manche Räume mit anderen PSYC Servern
+|verbunden sind, oder die Personen in einem Raum von einem entfernten
+|Server gekommen sein können.<p>
+|
+|Diese Dinge kannst Du aber auch selbst tun, in dem Du dieselben
+|Befehle, die bisher in dieser Anleitung beschrieben wurden, auch
+|für entfernte Anwender verwendest. Überall wo ein &lt;Name&gt; als
+|Parameter eines Befehls angegeben werden muss, kannst Du genausogut
+|eine PSYC-Adresse verwenden.<p>
+|
+|Zum Beispiel, falls Du mit mir reden willst, egal wo Dein Server
+|sich befindet, kannst Du dies tun mit dem Befehl
+|<b>/t psyc://psyced.org/~lynX</b> (t wie talk).<p>
+|
+|Magst Du stattdessen in unseren PSYC Entwickler-Raum kommen, dann geht
+|das mittels <b>/c psyc://psyced.org/@psyc</b> (c wie change, oder du
+|verwendest /go oder das alte hässliche /join).<p>
+|
+|Falls Du Dir Deine eigene PSYC-Adresse auf Visitenkarte drucken willst,
+|oder in Deine E-Mail Signature aufnehmen magst, Du kannst sie von Deinem
+|Server erfragen mit dem <b>/x</b> Befehl, welcher Dich selbst betrachtet
+|(<em>examiniert</em>).<p>
+|
+|Du kannst <b>/friend</b>-schaften schließen mit entfernten Personen,
+|mit dem <b>/subscribe</b>-Befehl Dienste abonnieren quer durch das
+|PSYC-Netz. Und Du kannst sogar mehrere dieser Dinge mit den
+|<em>Jabber</em>&trade;-Adressen Deiner noch nicht zu PSYC konvertierten
+|Freunde. Einfach <b>xmpp:</b> vor die von Jabber üblicherweise verwendete
+|Syntax kleben, also <b>xmpp:Name@Serveradresse</b>.<p>
+|
+|Einige Befehle sind in erster Linie zum Umgang mit entfernten PSYC
+|Adressen konzipiert:
+|
+|<dl>
+|<a name="alias"></a>
+|<DT><P><B> /alias &lt;Spitzname&gt; &lt;Identität&gt; </B></p><dd>
+|erlaubt Dir Benutzern von entfernten Servern pragmatische persönliche
+|Spitznamen zu verpassen, dadurch entfällt das lästige Tippen einer
+|vollständigen PSYC-Adresse. Beispielsweise
+|<b>/alias saga psyc://goodadvice.pages.de/~heldensaga</b>.
+|Du kannst damit auch generell Namensabkürzungen für Deinen Privatgebrauch
+|definieren. Etwa so: <b>/alias Supi Der-Supermann-von-nebenan</b>.
+|
+|<a name="unalias"></a>
+|<DT><P><B> /unalias &lt;Spitzname&gt; </B></p><dd>
+|um den Alias wieder zu löschen.
+|
+|<a name="surf"></a>
+|<DT><P><B> /surf </B></p><dd>
+|sputa fuori un indirizzo web che permitte di navigare il network
+|sociale dei propri amici. assolutamente da provarsi!
+|
+|<a name="connect"></a>
+|<DT><P><B> /co(nnect) &lt;Identität&gt; [&lt;Passwort&gt;] </B></p><dd>
+|Experimenteller Befehl um die Identität (nicht nur den Namen) zu wechseln,
+|oder sich einzuwählen auf einer PSYC-Identität, welche auf einem entfernten
+|Server abgelegt ist.
+|</dl>
+|
+
+_PAGES_help_access
+|<h5>ZUGANGSMÖGLICHKEITEN</h5>
+|
+|Der <b>psyced</b> unterstützt mehrere Möglichkeiten mit Personen die ihn
+|benutzen in Kontakt zu treten und Räume zu betreten die er beherbergt.
+|Für viele der unten genannten Zugänge gibt es auch die Option sie mit
+|eingeschalteter TLS/SSL-Verschlüsselung zu verwenden.
+|
+|<dl>
+|<dt><P><a name="applets"><B> Java Applets </B></a></p></dt><dd>
+|Sie sind eine komfortable Möglichkeit den Chat zu betreten.
+|Je nach Anbieter sind sie unterschiedlich gestaltet, ja sogar
+|vollkommen unterschiedlich realisiert. Man findet sie auf der
+|Website des Anbieters, oder vielleicht <a target=_top class=top href="/">hier</a>.
+|Sie funktionieren in allen Java-fähigen Webbrowsern sowie in
+|Network Computers.</dd>
+|
+|</dd><dt><P><a name="irc"><B> Internet Relay Chat </B></a></p></dt><dd>
+|Dieser Server antwortet auf Port 6667 dieser Maschinen mit
+|<a target=_top class=top href="http://internet.relay.pages.de/">IRC</a>-Protokoll.
+|Dazu benötigt man einen IRC Client.
+|Wie sich der <b>psyced</b> als IRC-Server verhält wird in der
+|<a href="http://www.psyced.org/psyc-irc.de.html">Hilfestellung zum
+|IRC-Zugang</a> genauer beschrieben.
+|Eventuell funktioniert dieser <a href="irc://{_VAR_server}">Link</a>.
+|
+|</dd><dt><P><a name="telnet"><B> Telnet </B></a></p></dt><dd>
+|Rudimentär aber immernoch ausreichend: Mit einem telnet-Programm wie
+|es bei Unix und sogar bei Windows 95 mitgeliefert wird,
+|kann man sich an Port 2323 (wurde als "Anschluß" übersetzt) dieser
+|Maschine ({_VAR_server}) verbinden. Eventuell ist auch Port 23 geschaltet.
+|Einloggen und Befehle sind wie sonst auch, lediglich anzuklicken gibt es
+|nichts. Manche empfinden diesen klassischen Zugang letztendlich angenehmer.
+|Bei dem mitgelieferten Windows-telnet muss man eventuell per Hand in Optionen
+|Echo einschalten, wenn man sehen will was man tippt.
+|Die Liste der im Raum Anwesenden erhält man bei Leereingabe.
+|<a href="telnet://{_VAR_server}:2323">Like this</a>.
+|
+|</dd><dt><P><a name="psyc"><B> PSYC </B></a></p></dt><dd>
+|Diese Software ist eigentlich die Ur-Implementation von PSYC,
+|the Protocol for SYnchronous Conferencing.
+|Der Server benutzt dieses Protokoll im Umgang mit anderen PSYC Servern,
+|es gibt aber auch PSYC Clients. Mehr dazu auf der 
+|<a target=_top class=top href="http://www.psyc.eu">PSYC</a>-Website.
+|
+|</dd><dt><P><a name="jabber"><B> Jabber&trade; </B></a></p></dt><dd>
+|Der Server bietet einen Jabber-Zugang mit oder ohne TLS/SSL.
+|Zusätzlich kann er aber auch mit allen Jabber-Server weltweit direkt
+|kommunizieren, man kann also Jabber-Anwender von PSYC aus ansprechen
+|mit der <b>xmpp:&lt;nickname&gt;@&lt;server.adresse&gt;</b>-Notation.
+|
+|</dd><dt><P><a name="http"><B> HTTP </B></a></p></dt><dd>
+|Der eingebaute Webserver ermöglicht es, Multi-User-Anwendungen
+|zu schreiben mit eingebauten Messaging-Fähigkeiten.
+|
+|</dd><dt><P><a name="nntp"><B> NNTP </B></a></p></dt><dd>
+|Dies erlaubt, gestandene Usenet News Clients zu verwenden um
+|Nachrichten in Foren-Räumen zu lesen und schreiben. Experimentell.
+|
+|</dd><dt><P><a name="smtp"><B> SMTP </B></a></p></dt><dd>
+|Hiermit kann man Nachrichten per E-Mail in PSYC einspielen. Experimentell.
+|
+|</dd><dt><P><a name="pop"><B> POP3 </B></a></p></dt><dd>
+|Und damit kann man Nachrichten mit einer Mail-Software empfangen,
+|statt im Chatfenster. Experimentell.
+|
+|</dd><dt><P><a name="wap"><B> WAP </B></a></p></dt><dd>
+|statt im Chatfenster. Experimentell.
+|
+|## </dd><dt><P><a name="sip"><B> SIP </B></a></p></dt><dd>
+|</dd></dl>
+
+_PAGES_help_room
+|<h5>RAUM-ORIENTIERTE BEFEHLE</h5>
+|
+|Räume sind in <a target=PSYC href="http://www.psyc.eu">PSYC</a>
+|an sich beliebig programmierbar. Der <b>psyced</b> speziell bietet eine
+|Reihe Standardbausteine an, aus denen Räume erstellt werden können.
+|Dennoch kann man auf Räume stoßen, die eigene Befehle
+|und Funktionen vorsehen. Dies ist nicht auf Anhieb erkennbar.
+|Alle Räume können derzeit nur von den Verwaltern des jeweiligen psyced 
+|erstellt und modifiziert werden, sei es manuell oder per Web-konfigurator.
+|Um eigene Räume kreieren zu können, kann man sich aber einfach
+|einen eigenen <a target=MUVE href="http://www.psyced.org">psyced</a>
+|einrichten. Der ist dann normalerweise von überall im PSYC-Netz erreichbar.
+|Noch nicht beschrieben ist die Funktionsweise der neuen <b>THREADS</b>-Räume,
+|auch Forum/Gästebuch/Blog-Raum genannt. Die sind über die Web-Schnittstelle
+|sowieso einfacher zu bedienen.
+|<dl>
+|
+|<dt><h5>EINLADUNG UND WECHSEL</h5>
+|<a name="invite"></a>
+|<p><b> /i(nvite) [&lt;Person&gt;] </b></p><dd>
+|lädt eine Person dazu ein, den aktuellen Raum zu betreten. Der Raum
+|wird von dieser Einladung in Kenntnis gesetzt, weswegen er normalerweise
+|den Wunschgast hereinlassen wird. Letztlich ist die Entscheidung den
+|Raumverwaltern überlassen. Ebenfalls kann der Raum auch beschließen
+|die anderen Anwesenden über die Tat des Einladens informieren.
+|
+|<a name="follow"></a>
+|<p><b> /f(ollow) </b></p><dd>
+|Der Empfänger einer Einladung braucht einfach nur <b>/f</b> wie
+|<b>/follow</b> einzugeben, um jenen Raum zu betreten. Sollte keine
+|Einladung vorliegen, wird in den zuletzt aktiven Raum gewechselt. Auch
+|eine sehr nützliche Funktion, falls man die <b>multiplace</b>-Einstellung
+|aktiviert hat. Einfach ausprobieren.
+|
+|<dt><h5>ALLGEMEINE RAUMFUNKTIONEN</h5>
+|<a name="topic"></a>
+|<dt><p><b> /top(ic) [&lt;Ankündigung&gt;] </b></p><dd>
+|stellt eine persistente Nachricht ein, üblicherweise
+|eine zum Raumthema passende Information oder gar das aktuelle Gesprächsthema.
+|<b>/top</b> löscht den Topic.
+|Je nach Serverkonfiguration kann dieser Befehl in öffentlichen Räumen
+|den Administratoren oder Eigentümern vorbehalten sein.
+|
+|<a name="status"></a>
+|<dt><p><b> /st(atus) </b> oder die Kurzfassung <b> /s </b></p><dd>
+|zeigt das aktuelle Topic und eventuell weitere Information zum Raum.
+|Administratoren erfahren, wer eine eventuelle Moderation übernommen hat.
+|Bei PSYC-vernetzten Räumen erscheint eine Liste der angebundenen Server.
+|
+|<dt><h5>MIT HISTORY-OPTION</h5>
+|<a name="history"></a>
+|<p><b> /hist(ory) [&lt;Anzahl oder Fragment&gt;] </b></p><dd>
+|zeigt eine Historie der letzten öffentlichen Gespräche in diesem Raum.
+|Diese Funktion ist in der Regel nur in bestimmten Räumen vorhanden.
+|Genauso wie beim <b>/log</b>-Befehl kann die Historie nach einem bestimmten
+|Textfragment durchsucht werden, typischerweise der Name eines Benutzers.
+|
+|<a name="histclear"></a>
+|<dt><p><b> /histclear [&lt;Anzahl&gt;] </b></p><dd>
+|Es kann vorkommen, dass in einem öffentlichen Raum mit Historienfunktion
+|auch mal ein Privatgespräch entsteht. Sofern der Raum nicht moderiert
+|oder einem Eigentümer zugewiesen wurde, kann dieser Befehl zur Verfügung
+|stehen um die Historie des Raumes zu löschen. Es empfiehlt sich aber nach
+|wie vor Privatgespräche nicht in öffentlichen Räumen zu führen, da der
+|Administrator des Servers womöglich einen Mitschnitt des öffentlichen
+|Raumes führt. Privaträume und Privatgespräche werden hingegen niemals
+|mitgeschnitten. Unter Angabe der Anzahl kann man nur eine bestimmte Menge
+|der letzten Nachrichten löschen. "Streichen Sie die letzte Bemerkung
+|aus dem Protokoll!" sozusagen.
+|
+|<dt><h5>MIT MASKERADE-OPTION</h5>
+|<a name="nickname"></a>
+|<p><b> /ni(ckname) [&lt;Maske&gt;] </b></p><dd>
+|Mit dem guten alten <b>/nick</b>-Befehl kann man in diesem Raum
+|so tun als hätte man einen anderen Namen. Dies kann für die
+|Dramaturgie einer Konversation nützlich sein.
+|
+|<dt><h5>MIT EIGENTÜMERN</h5>
+|<a name="mandate"></a>
+|<p><b> /mand(ate) [&lt;Person&gt;] </b> oder <b> /md [&lt;Person&gt;] </b></p><dd>
+|oder für IRCer <b>/chop</b> oder gar im Original-<em>heldensaga</em>-Stil
+|<b>/schergify</b>.
+|Dieser Befehl ermöglicht es den Eigentümern eines Raumes, Schergen zu
+|bestimmen.
+|
+|<a name="listaides"></a>
+|<dt><p><b> /listaides </b> oder <b> /listschergen </b></p><dd>
+|zeigt die Liste der definierten Schergen.
+|
+|<a name="elrid"></a>
+|<dt><p><b> /elrid [&lt;Person&gt;] </b> oder <b> /kick [&lt;Person&gt;] </b></p><dd>
+|Unwiderrufbares Verbannen einer Person aus dem Raum. Die Eigentümer
+|des Raumes müssen sich diese Entscheidung gut überlegen, da nur ein
+|von den Administratoren ausgelöster Neustart des Raumes oder Servers
+|alle bestehenden Verbannungen löschen kann.
+|
+|## <dt>
+|## <h5>MIT VERNETZUNGS-OPTION</h5>
+|## <p><b> /li(nks) </b></p><dd>
+|
+|</dl>
+|{_HTML_info_split}
+|<dl>
+|
+|<dt><h5>BEFEHLE FÜR OPERATEURE</h5>
+|Die Administratoren eines Servers können Operators vorsehen, welche einige
+|zusätzliche Funktionen bereitgestellt bekommen zur optimalen Versorgung
+|der Benutzer. Dazu zählen folgende Raumbefehle:
+|
+|<a name="public"></a>
+|<dt><p><b> /public [on|off] </b></p><dd>
+|In manchen Raumtypen kann ein Operator des Servers
+|einfach durch Absetzen dieses Befehles den Raum von außen
+|sichtbar machen, etwa mittels <b>/people</b>-Befehl.
+|
+|<a name="masquerade"></a>
+|<dt><p><b> /masq(uerade) [on|off] </b></p><dd>
+|Hiermit kann ein Operator die Maskerade-Funktion, also
+|oben erwähnten <b>/nick</b>-Befehl, in Standardräumen
+|einschalten.
+|
+|<a name="silence"></a>
+|<dt><p><b> /silence [presence|conversation|all|none] </b></p><dd>
+|Der "presence"-Filter schaltet Betreten/Verlassen-Meldungen aus und wieder ein.
+|Sehr nützlich in vollen Räumen. Der "conversation"-Filter stattdessen
+|schaltet den Raum stumm.
+|
+|<a name="logging"></a>
+|<dt><p><b> /logging [on|off] </b></p><dd>
+|startet eine Transcribierung der Gespräche im Raum auf die
+|Festplatte des Servers. Man kann im <b> /status </b> sehen ob
+|diese Funktion eingeschaltet ist, sowie in der Regel
+|beim Betreten des Raumes. Diese Funktion ist nur vorhanden in
+|permanent öffentlichen Räumen.
+|
+|</dl>
+
+_PAGES_help_index
+|<br><a target=icnt class=menu href="features.page">EINFÜHRUNG</a><br>
+|<p>
+|<br><a target=icnt class=menu href="basic.page">GRUNDBEFEHLE</a><br>
+|<br><a target=icnt class=menu href="settings.page">BENUTZER<br>EINSTELLUNGEN</a><br>
+|<br><a target=icnt class=menu href="display.page">DARSTELLUNGS<br>BEFEHLE</a><br>
+|<br><a target=icnt class=menu href="room.page">RAUM<br>BEFEHLE</a><br>
+|<br><a target=icnt class=menu href="remote.page">PSYC<br>NETZWERK</a><br>
+|<br><a target=icnt class=menu href="advanced.page">WEITERE<br>BEFEHLE</a><br>
+|<p>
+|<br><a target=icnt class=menu href="access.page">ZUGANGS<br>MÖGLICHKEITEN</a><br>
+|<p>
+|<br><a onClick="return chat()" target=icap class=top href="/static/"
+|>CHAT<br>APPLET</a><br>
+|<p>
+|<a target=icnt class=menu href="../home.page">STARTSEITE</a>
+|<p>
+|<a target=icnt class=menu href="http://about.psyced.org">ABOUT</a>
+|<p>
+|
+
+_PAGES_help_settings
+|## vim:syntax=html
+|<h5>BENUTZEREINSTELLUNGEN</h5>
+|
+|Die meisten der folgenden Einstellungen können auch mit dem
+|<b>/edit</b>-Befehl angenehm per Web-Seite bearbeitet werden,
+|falls der Web-Zugang eingerichtet ist.
+|<dl>
+|
+|<a name="password"></a>
+|<DT><P><B> /set password &lt;neuesWort&gt; </B> oder<br>
+|       <B> /set password &lt;altesWort&gt; &lt;neuesWort&gt; </B></p><dd>
+|ändert oder definiert ein Passwort. Sobald ein Chatname durch Passwort
+|geschützt ist, kann er nur durch dessen Angabe benutzt werden. Es empfiehlt
+|sich ein Passwort zu wählen, welches nicht durch Bekannte erraten werden
+|kann (etwa der Vorname, Vorname des Partners, Papagei). Es sollte auch auf
+|keinen Fall dasselbe Passwort verwendet werden, wie für andere wichtige
+|Dienste wie etwa E-Mail oder der Internet-Zugang selbst, da dieses Passwort
+|unverschlüsselt an den Chatserver übermittelt wird. Den Befehl selbst
+|kann man auch auf <b>/register</b> oder <b>/reg</b> verkürzen.
+|
+|<a name="email"></a>
+|<DT><P><B> /set email &lt;mailAdresse&gt; </B></p><dd>
+|speichert die E-Mail-Adresse. Diese Information wird
+|Freunden zugänglich gemacht über die Profilfunktion, und sie ermöglicht
+|die Auslieferung per E-Mail von Chatnachrichten in Abwesenheit.
+|Sehr nützlich!
+|
+|<a name="telephone"></a>
+|<DT><P><B> /set telephone &lt;telefonNummern&gt; </B></p><dd>
+|ist eine Möglichkeit den Freunden auch Telefonnummern zukommen zu lassen.
+|
+|<a name="home"></a>
+|<DT><P><B> /set home &lt;lieblingsraum&gt; </B></p><dd>
+|stellt den Raum ein, welchen man anschliessend abgekürzt mit dem
+|Befehl <b>/home</b> oder einfach <b>/h</b> erreichen kann.
+|
+|<a name="name"></a>
+|<DT><P><B> /set name &lt;Schreibweise&gt; </B></p><dd>
+|ändert die Groß-Klein-Schreibweise des eigenen Spitznamens, da sich der
+|Server diese bei der Registrierung merkt. Sollte man sich also als
+|"<em>ghost</em>" registriert haben, aber lieber "<em>Ghost</em>"
+|heissen wollen, kann dies hiermit korrigiert werden.
+|
+|<a name="speakaction"></a>
+|<DT><P><B> /set speakaction &lt;Verb&gt; </B></p><dd>
+|ermöglicht eine andere Ausgabe als "sagt" bei jeder Eingabe, wie wär's
+|zum Beispiel mit "flüstert" oder "schreit" ? Löschen kann man die
+|Einstellung wieder, in dem man "<b>/set speakaction -</b>" abschickt.
+|
+|<a name="visiblespeakaction"></a>
+|<DT><P><B> /set visiblespeakaction [ on | off ]</B></p><dd>
+|um keine speakactions mehr zu sehen. Manche mögen's nicht.
+|
+|<a name="filter"></a>
+|<DT><P><B> /set filter [ s(trangers) | off ]</B></p><dd>
+|Hiermit kann ein Schutzwall vor Fremden hochgezogen werden. Sobald
+|der Filter auf "<b>strangers</b>" ("<b>s</b>" reicht aus) gesetzt ist
+|können Dir nur noch Freunde, welche mittels <b>/friend</b> für Ankündigungen
+|vorgemerkt sind, private Nachrichten schicken. Andere erhalten die lapidare
+|Meldung "Filter: Veronika empfängt keine Nachrichten von Fremden." und
+|müssen abwarten bis sie Dich mal in einem Raum treffen dürfen.
+|Mit "<b>/set filter off</b>" kann der private Firewall wieder abgeschaltet
+|werden.
+|
+|<a name="presencefilter"></a>
+|<DT><P><B> /set presencefilter [ on | off | all | automatic ] </B></p><dd>
+|hilft die Menge an Anwesenheit- und Abwesenheitsbekundungen in Zaum zu
+|halten. Im Normalfall werden automatisch erzeugte Meldungen herausgefiltert -
+|sie haben lediglich Auswirkung auf die Buddy List. Wenn diese Einstellung
+|auf "on" gestellt wird, kommen nur noch explizit manuell getippte Nachrichten
+|hindurch. Im Falle von "all" wird gar nichts mehr durchgelassen, während
+|bei "off" alle Nachrichten ungeniert den Bildschirm bombardieren dürfen.
+|
+|<a name="echo"></a>
+|<DT><P><B> /set echo [ off | on | automatic ] </B></p><dd>
+|Normalerweise werden alle eigenen Eingaben nochmal auf dem Schirm
+|wiederholt, damit man weiß, dass sie heile angekommen sind. Manche
+|haben's aber lieber knapp und verzichten auf das Echo der Eingaben.
+|Beim IRC-Zugang ist es traditionell bedingt exakt umgekehrt, da kommt
+|"automagischerweise" kein Echo vom Server weil das der Client bereits
+|sinnloserweise tut - man kann das Echo aber bewusst einschalten.
+|Auf jeden Fall kann man den <B>/log</B>-Befehl verwenden,
+|um die eigenen Eingaben nachzuprüfen.
+|
+|<a name="multiplace"></a>
+|<DT><P><B> /set multiplace [ on | off ] </B></p><dd>
+|erlaubt das Betreten mehrerer Räume gleichzeitig. Für fortgeschrittene
+|Anwender essentiell, manchen aber zu verwirrend.
+|
+|<a name="clearscreen"></a>
+|<DT><P><B> /set clearscreen [ on | off ] </B></p><dd>
+|betrifft nur den telnet-Zugang. Mit einer Leereingabe kann
+|man normalerweise den Terminalschirm löschen.
+|
+|<a name="visibility" />
+|<DT><P><B> /set visibility [ off | on ] </B></p><dd>
+|verschafft Unsichtbarkeit vor <b>/who</b> und <b>/people</b> Befehl.
+|
+|<a name="exposetime" />
+|<DT><P><B> /set exposetime [ off | on ] </B></p><dd>
+|versteckt die Information, wann man zuletzt aktiv war, auch vor Freunden.
+|
+|</dl>
+|{_HTML_info_split}
+|<dl>
+|
+|<a name="publicpage"></a>
+|<DT><P><B> /set publicpage http://&lt;Web-Adresse&gt; </B></p><dd>
+|Hiermit kann man die eigene Homepage publizieren. Sobald man zum
+|Gespräch angeclickt wird, erscheint beim Gesprächspartner der eigene
+|Name in der Statuszeile dorthin verlinkt.
+|
+|<a name="privatepage"></a>
+|<DT><P><B> /set privatepage http://&lt;Web-Adresse&gt; </B></p><dd>
+|Eine Web-Adresse nur für Freunde. Wird Freunden zugesandt über
+|die Profilfunktion.
+|
+|<DT><P><B> /set photopage http://&lt;web-address&gt; </B></p><dd>
+|A page that shows more photos of you. Will be linked to your
+|profile photo.
+|
+|<DT><P><B> /set photofile http://&lt;web-address&gt; </B></p><dd>
+|A medium size photo of yours, stored on a web server of your choice.
+|The photo appears when you or your friends use <b>/surf</b> to look
+|at your profile.
+|
+|<DT><P><B> /set miniphotofile http://&lt;web-address&gt; </B></p><dd>
+|A thumbnail size photo of yours, to be used for lists of friends.
+|
+|<a name="keyfile"></a>
+|<DT><P><B> /set keyfile http://&lt;Web-Adresse&gt; </B></p><dd>
+|Für die Freunde der verschlüsselten Kommunikation, hier kann die
+|Adresse der eigenen public-key Datei abgelegt werden wonach
+|Freunde verschlüsselte Email austauschen oder, mit einem
+|geeigneten <a target=psyc href="http://www.psyc.eu">PSYC</a>
+|client, direkt verschlüsselt chatten können.
+|
+|<a name="startpage"></a>
+|<DT><P><B> /set startpage http://&lt;Web-Adresse&gt; </B></p><dd>
+|Hiermit kann eine Startseite eingestellt werden, welche sofort nach
+|dem Öffnen des Chatfensters aufgerufen werden soll. Man kann daraufhin
+|die Startseite des Chats zur Browserhomepage machen, falls man
+|während der Onlinezeit grundsätzlich auch im PSYC-Netz sein will.
+|
+|</dl>
+|{_HTML_info_split}
+|<dl>
+|
+|<a name="commandcharacter"></a>
+|<DT><P><B> /set commandcharacter &lt;Steuerzeichen&gt; </B></p><dd>
+|Auch als <b>cmdchar</b> abkürzbar ermöglicht diese Einstellung das
+|Befehlszeichen des Systems zu verändern, welches einem Befehl
+|voran steht. cmdchar ist normalerweise <b>/</b> (Schrägstrich)
+|ausser für IRC-Anwender, für die ist ein <b>+</b> (Plus-Zeichen)
+|voreingestellt.
+|
+|<a name="actioncharacter"></a>
+|<DT><P><B> /set actioncharacter [ &lt;Steuerzeichen&gt; | off ] </B></p><dd>
+|Hiermit kann das Steuerzeichen verändert oder entfernt werden,
+|welches zum Erzeugen von Actions dient. Normalerweise kann man den
+|guten alten <b>/me</b> Befehl durch das <b>:</b>-Zeichen (Doppelpunkt)
+|abkürzen. Diese Einstellung darf auch <b>actchar</b> genannt werden.
+|
+|<a name="charset"></a>
+|<DT><P><B> /set charset [ &lt;codifica&gt; | - ] </B></p><dd>
+|Alcune forme d'accesso (telnet, IRC, applet) necessitano di un
+|adattamento manuale della codifica dei caratteri. Tipicamente serve un
+|<b>/set charset latin1</b>. Altre forme d'accesso ignoreranno questa
+|settazione ed useranno quella predisposta dal proprio protocollo.
+|Il charset di sistema di questo server è {_VAR_charset}.
+|
+|## <a name="verbatimuniform"></a>
+|## <DT><P><B> /set verbatimuniform [ on | off ] </B></p><dd>
+|
+|</dl>
+
+_PAGES_help_features
+|<h5>FEATURES DES PSYCED</h5>
+|<dl>
+|<a name="basics"></a>
+|<dt><p><b> Alle klassische Chatfähigkeiten </b><dd>
+|Chatter wissen jeden kleinen Befehl zu schätzen, der ihnen die
+|Kommunikation erleichtert. <b>psyced</b> beherrscht
+|alle aus dem <a target=_top href="http://internet.relay.pages.de/"
+|>Internet Relay Chat</a>
+|relevanten Befehle - schon allein da einer der Entwickler dieser Software
+|1990 bei der IRC-Software mitentwickelt hat - sowie nützliche neue
+|Befehle, die dieses Chatsystem für intensive regelmässige Nutzung
+|tauglich machen und das flechten sozialer Netze unterstützen.
+|
+|<a name="access"></a>
+|<dt><p><b> Mehrere Zugangsformen </b><dd>
+|<em>HTTP und HTML</em> sind für Chats nicht konzipiert und schlichtweg
+|ungeeignet. Sie erzeugen höhere Netzlast und höhere Last beim Server.
+|Andererseits funktioniert <em>Java</em> nicht auf allen Systemen.
+|Außerdem mögen manche die ihnen vertrauten <em>IRC</em>-Programme,
+|und andere haben es gern auf's Essentielle reduziert mit <em>telnet</em>.
+|Die <b>psyced</b>-Software bietet kurzerhand all diese 
+|Zugangsmöglichkeiten parallel. Egal welches Interface man
+|wählt, man erhält weitgehend alle Features, und man kann mit den
+|anderen Personen im Chat kommunizieren, egal welchen Zugang diese verwenden.
+|
+|<a name="platforms"></a>
+|<dt><p><b> Plattformen </b><dd>
+|<b>psyced</b> basiert auf LPMUD, eine Software die Lars Pensjö
+|Ende der 80er erfand und seither die Grundlage von hunderten von
+|Multiuser- Abenteuerspielen ist. Diese Software hat ein Jahrzehnt an
+|Internet-Erfahrung intus und ist auf die objektorientierte Modellierung
+|von Personen und Räumen spezialisiert. <b>psyced</b> modelliert diese
+|protokollunabhängig, und ergänzt diese Modelle dann um speziell auf die
+|Bedürfnisse der Protokolle und Chat-Oberflächen zugeschnittene
+|Spezialisierungen. Der Server läuft auf Unix-Plattformen, wobei diese
+|sich bei ernster Belastung unterschiedlich gut eignen. Chatserver sind
+|technologisch weitaus komplizierter als die meisten anderen Netzwerkdienste,
+|wie beispielsweise Webserver, deshalb bringen sie auch die Schwächen der
+|Betriebssysteme schneller zu Tage.
+|
+|<a name="network"></a>
+|<dt><p><b> Vernetzung </b><dd>
+|Diese Objekte, welche Personen und Räume modellieren verwenden dabei
+|intern das <a target=_top href="http://www.psyc.eu/">PSYC</a> (Protocol for
+|SYnchronous Conferencing).
+|Das Protokoll ist eine offene Eigentwicklung.
+|## welches in das Internet Engineering Task Force
+|## (<a target=_top href="http://www.ietf.de/">IETF</a>)
+|## zur Standardisierung eingebracht wird.
+|Es entstand als Ersatz für das an die Grenzen gestossene IRC-Protokoll.
+|Da es die Problematik von Chatprotokollen tiefgreifender umfasst, ist es
+|auch ein geschickteres Instant-Messaging-Protokoll als ICQ, AIM, Jabber und der
+|Microsoft-Ansatz. Mehr dazu auf der PSYC Website.
+|<p>
+|Dieser Server kann auch nach außen hin mit Servern und Clients im Internet
+|kommunizieren mittels PSYC sowohl auf TCP als UDP und wenn nötig auch via 
+|Jabber/XMPP. Allerdings steht
+|noch die Entwicklung mehrerer Features an, wodurch es möglich werden
+|soll, daß die Benutzer sich jenen Server und jene
+|Chat-Oberfläche oder Programm aussuchen können, welche ihnen am meisten liegen,
+|und dennoch mit allen anderen Menschen im PSYC-Netzwerk
+|komfortabel kommunizieren können. PSYC ist auch als Steuerungsprotokoll
+|für Videokonferenzen und Telefonie einsetzbar.
+|<p>
+|Mehrere Implementationen von PSYC sind frei erhältlich auf der PSYC Website.
+|Kreativhacker sind eingeladen mitzuhelfen PSYC auszubauen, jeder wie es
+|seinem Interesse entspricht. Anbieter von Chats oder anderen Multiusersystemen
+|sind eingeladen ihre Server an das PSYC-Netz anzuschließen.
+|
+|## </dl>
+|## {_HTML_info_split}
+|## <dl>
+|
+|</dl>
+

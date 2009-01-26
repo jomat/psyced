@@ -1,0 +1,214 @@
+// $Id: fetch.c,v 1.39 2008/04/09 08:29:37 lynx Exp $ // vim:syntax=lpc
+//
+// generic HTTP GET client, mostly used for RSS -
+// but we could fetch any page or data with it, really
+// tobij even made the object have the URL as its object name. fancy!  ;)
+//
+#include <net.h>
+#include <ht/http.h>
+#include <url.h>
+#include <services.h>
+
+virtual inherit NET_PATH "output"; // virtual: in case we get inherited..
+inherit NET_PATH "connect";
+//inherit NET_PATH "place/master";
+
+#ifdef NEW_QUEUE
+inherit NET_PATH "queue2";
+#else
+inherit NET_PATH "queue";
+#endif
+
+volatile mapping headers, fheaders;
+volatile string modificationtime, etag, http_message;
+volatile string useragent = SERVER_VERSION;
+volatile int http_status, port, fetching, ssl;
+volatile string buffer, thehost, url, fetched, host, resource;
+volatile string basicauth;
+
+int parse_status(string all);
+int parse_header(string all);
+int buffer_content(string all);
+
+string qHost() { return thehost; }
+
+void fetch(string murl) {
+    if (url) return;
+    url = replace(murl, ":/", "://");
+    P3(("%O: fetch(%O)\n", ME, url))
+    connect();
+}
+
+object load() { return ME; }
+
+void setHTTPBasicAuth(string user, string password) {
+    basicauth = "Authorization: Basic " + encode_base64(user + ":" + password) + "\r\n";
+}
+
+string sAgent(string a) {
+	PT(("sAgent(%O) in %O\n", a, ME))
+	return useragent = a;
+}
+
+// net/place/news code follows.
+
+void connect() {
+	mixed t;
+
+	fetching = 1;
+	ssl = 0;
+	unless (thehost) {
+		unless (sscanf(url, "http%s://%s/%!s", t, thehost)) {
+			P0(("%O couldn't parse %O\n", ME, url))
+			return 0;
+		}
+		thehost = lower_case(thehost);
+		ssl = t == "s";
+	}
+	P3(("URL, THEHOST: %O, %O\n", url, thehost))
+	unless (port) 
+	    unless (sscanf(thehost, "%s:%d", thehost, port) == 2)
+		port = ssl? HTTPS_SERVICE: HTTP_SERVICE;
+	P2(("Resolving %O and connecting.\n", thehost))
+	::connect(thehost, port);
+}
+
+varargs int real_logon(int arg) {
+	string scheme;
+
+	headers = ([ ]);
+	http_status = 500;
+	http_message = "(failure)";	// used by debug only
+
+	unless(::logon(arg)) return -1;
+	unless (url) return -3;
+	unless (resource) sscanf(url, "%s://%s/%s", scheme, host, resource); 
+
+	buffer = "";
+	if (modificationtime)
+	    buffer += "If-Modified-Since: "+ modificationtime + "\r\n";
+	if (useragent) buffer += "User-Agent: "+ useragent +"\r\n";
+	//if (etag)
+	//	emit("If-None-Match: " + etag + "\r\n");
+	// we won't need connection: close w/ http/1.0
+	//emit("Connection: close\r\n\r\n");		
+	PT(("%O using %O\n", ME, buffer))
+	emit("GET /"+ resource +" HTTP/1.0\r\n"
+		 "Host: "+ host +"\r\n"
+		 + buffer +
+		 "\r\n");
+
+	buffer = "";
+	next_input_to(#'parse_status);
+	return 0; // duh.
+}
+
+varargs int logon(int arg, int sub) {
+	// when called from xmlrpc.c we can't do TLS anyway
+	if (sub) return ::logon(arg);
+	if (ssl) tls_init_connection(ME, #'real_logon);
+	else real_logon(arg);
+	return 0; // duh.
+}
+
+int parse_status(string all) {
+	string prot;
+	string state;
+
+	sscanf(all, "%s%t%s", prot, state);
+	sscanf(state, "%d%t%s", http_status, http_message);
+	P3(("%O got %O %O from %O\n", ME, http_status, http_message, host));
+	// P2(("http_status %O == %O?\n", http_status, R_OK))
+	next_input_to(#'parse_header);
+	return 1;
+}
+
+int parse_header(string all) { 
+	string key, val;
+	D2(D("htroom::parse is: " + all + "\n");)
+	// TODO: parse status code
+	if (all != "") {
+		if (sscanf(all, "%s:%1.0t%s", key, val) == 2) {
+			headers[lower_case(key)] = val;
+			// P2(("ht head: %O = %O\n", key, val))
+		}
+		next_input_to(#'parse_header);
+		return 1;
+	} else {
+		// das wollen wir nur bei status 200
+		next_input_to(#'buffer_content);
+		return 1;
+	}
+	return 1;
+}
+
+int buffer_content(string all) {
+	buffer += all + "\n"; 
+	next_input_to(#'buffer_content);
+	return 1;
+}
+
+disconnected(remainder) {
+    headers["_fetchtime"] = isotime(ctime(time()), 1);
+    if (headers["last-modified"])
+	    modificationtime = headers["last-modified"];
+    if (headers["etag"]) 
+	    etag = headers["etag"]; // heise does not work with etag
+
+    fetched = buffer;
+    if (remainder) fetched += remainder;
+    fheaders = headers;
+    buffer = headers = 0;
+    switch (http_status) {
+    case R_OK:
+	mixed *waiter;
+	while (qSize(ME)) {
+	    waiter = shift(ME);
+	    funcall(waiter[0], fetched, waiter[1] ? fheaders : copy(fheaders));
+	}
+	break;
+    default:
+	monitor_report("_error_unknown_method_HTTP",
+	    S("http/fetch'ing %O returned %O %O", url || ME,
+	       http_status, http_message));
+	// fall thru
+    case R_NOTMODIFIED:
+	qDel(ME);
+	qInit(ME, 150, 5);
+    }
+
+    fetching = 0;
+    return 1;       // presume this disc was expected
+}
+
+varargs string content(closure cb, int force, int willbehave) {
+    if (cb) {
+	if (fetched) {
+	    if (force) {
+		funcall(cb, fetched, willbehave ? fheaders : copy(fheaders));
+	    }
+	} else {
+	    enqueue(ME, ({ cb, willbehave }));
+	}
+    }
+    return fetched;
+}
+
+varargs mapping headers(int willbehave) {
+    return willbehave ? fheaders : copy(fheaders);
+}
+
+string qHeader(mixed key) {
+    if (mappingp(fheaders)) return fheaders[key];
+    return 0;
+}
+
+varargs void refetch(closure cb, int willbehave) {
+    enqueue(ME, ({ cb, willbehave }));
+    unless (fetching) connect();
+}
+
+protected create() {
+    qCreate();
+    qInit(ME, 150, 5);
+}

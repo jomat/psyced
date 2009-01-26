@@ -1,0 +1,647 @@
+//						vim:noexpandtab:syntax=lpc
+// $Id: place.gen,v 1.135 2008/04/16 16:59:41 lynx Exp $
+//
+// documentation on http://about.psyc.eu/Create_Place
+//
+// place.gen was inspired by loc.h, a similar room generation system in
+// the Nemesis mudlib. Nemesis itself being a legendary MUD based in
+// Munich (http://www.nemesis.de). the innovation in this room generation
+// approach is to use the #include to generate code rather than to define
+// a series of macros and hope the user uses them the right way.
+// of course these days you could do a room generator in -say- perl..
+// or you could implement a mega do-everything room class which can then
+// be configured at runtime by web interface or slash command. in fact
+// standard.c is just that, only that it didn't get all that popular.
+
+#include <net.h>
+#include <storage.h>
+#include <status.h>
+#include <url.h>
+
+#ifdef BRAIN
+
+# ifdef SLAVE
+#  echo Configuration Error: BRAIN cannot be SLAVE
+# endif
+# undef CONNECT
+
+#else
+
+#ifndef DEFAULT_MASTER
+# define DEFAULT_MASTER "psyc://psyced.org"
+#endif
+
+#ifdef CONNECT_DEFAULT
+# ifdef NAME
+//# if DEBUG > 0
+//#  echo CONNECT_DEFAULT is psyc://beta.ve.symlynX.com
+//#  define CONNECT "psyc://beta.ve.symlynX.com/@" NAME
+//# else
+
+// and after several changes in tagging and forking and dunnowhat
+// the old master/slave system has died and not returned to life
+#  define REDIRECT	DEFAULT_MASTER "/@" NAME
+//#  define CONNECT	DEFAULT_MASTER "/@" NAME
+//# endif
+# else
+#  echo place.gen: Cannot use CONNECT_DEFAULT without #define NAME
+# endif
+#endif
+
+#if 1
+
+#ifdef SLAVE
+//# undef SLAVE	// slave system br0ken.. migrating to context slaves
+		// (it cannot deal with missing _tags for local joins etc etc)
+# ifdef NAME
+#  define REDIRECT	CONNECT
+#  ifndef CONNECT
+#   ifdef SERVER_URL
+#    define CONNECT	SERVER_URL "@" NAME
+#   else
+#    define CONNECT	"psyc://" SERVER_HOST "/@" NAME
+#   endif
+#  endif
+# else
+#  echo place.gen: Cannot use SLAVE without #define NAME
+# endif
+#endif
+
+#else
+
+#ifdef SLAVE
+# ifndef CONNECT
+#  ifdef NAME
+#   ifdef SERVER_URL
+#    define CONNECT	SERVER_URL "@" NAME
+#   else
+#    define CONNECT	"psyc://" SERVER_HOST "/@" NAME
+#   endif
+#  else
+#   echo place.gen: Cannot use SLAVE without #define NAME
+#  endif
+# endif
+#else
+# ifdef CONNECT
+#  ifndef JUNCTION
+#   define SLAVE "local"
+#  endif
+# endif
+#endif
+
+#endif
+
+#if defined(SLAVE) || defined(VOLATILE)
+# undef CONNECT_IRC
+#endif
+
+#endif
+
+#if defined(MODERATED) && defined(PRO_PATH)
+# ifdef SLAVE
+inherit PRO_PATH "place/moslave";
+# else
+#  ifdef LECTIC
+inherit PRO_PATH "place/lectic";
+#  else
+inherit PRO_PATH "place/momaster";
+#  endif
+# endif
+#else
+# if defined(JUNCTION) || (defined(MASTER) && defined(SLAVE))
+#  define ALLOW_FROM_LINKS
+inherit NET_PATH "place/junction";
+# else
+#  ifdef SLAVE
+inherit NET_PATH "place/slave";
+#  else
+#   ifdef CONNECT_IRC
+#    ifdef EMULATE_SERVER
+inherit NET_PATH "irc/gateway";
+#    else
+inherit NET_PATH "irc/gatebot";
+#    endif
+#   else
+#    ifdef THREADS
+inherit NET_PATH "place/threads";
+#    else
+#     ifdef GAMESERV
+inherit NET_PATH "place/gamespy";
+#     else
+#      ifdef OWNED
+inherit NET_PATH "place/owned";
+#      else
+#       ifdef NEWSFEED_RSS
+inherit NET_PATH "place/news";
+#       else
+# 	 ifdef MASTER
+inherit NET_PATH "place/master";
+#        else
+#         ifdef HISTORY
+inherit NET_PATH "place/storic";
+#         else
+#          ifdef MAILCAST
+inherit NET_PATH "place/mailcast";
+#          else
+#           ifdef PUBLIC
+inherit NET_PATH "place/public";
+#           else
+	     // special case in the archetype options logic, see also the .pl
+#	     ifndef PLACE_HISTORY
+#	      ifdef PLACE_HISTORY_EXPORT
+#	       define PLACE_HISTORY
+#	      endif
+#	     endif
+#	     include "place.i"	    // archetype model generator code 2007
+#	     ifdef PLACE_HISTORY
+#	      define HISTORY		    // compatibility
+#	     endif
+#	     ifdef PLACE_OWNED
+#	      define OWNED PLACE_OWNED	    // compatibility
+#	     endif
+#           endif
+#          endif
+#	  endif
+#	 endif
+#       endif
+#      endif
+#     endif
+#    endif
+#   endif
+#  endif
+# endif
+#endif
+
+#ifdef FETCH_TEXTDB
+volatile object feed, tob;
+
+fetched(buffer) {
+# ifdef FETCH_TEXTPATH
+	P1(("%O fetched: %O bytes\n", ME, strlen(buffer)))
+	// this destruct() should be avoidable, but there is some reason
+	// why it doesn't always work that needs inspection time.
+	if (tob) destruct(tob);
+	tob = (FETCH_TEXTPATH "/text") -> parseDB(buffer, FETCH_TEXTDB);
+	if (tob) castmsg(ME, "_notice_update_database_text",
+	    "The text database for [_path] has been refreshed.",
+		([ "_path": FETCH_TEXTPATH ]) );
+# else
+	P0(("%O fetched: %O bytes.. but what to do with it?\n",
+	     ME, strlen(buffer)))
+# endif
+}
+
+// same code in news.c !? simplify!
+fetchDB() {
+	unless (feed) {
+		feed = FETCH_TEXTDB -> load();
+		feed->content(#'fetched, 1);
+		return 1;
+	} else {
+		feed->refetch(#'fetched);
+		return 2;
+	}
+}
+#endif
+
+#if defined(SILENCE) || defined(NEWSFEED_RSS)
+# define FILTER_PRESENCE	// FILTER_TRAFFIC is also an interesting name
+# define FILTER_CONVERSATION
+
+# ifdef NEWSFEED_RSS
+qNewsfeed() { return NEWSFEED_RSS; }
+#  define BLAME "!newsfeed"
+# else
+#  define BLAME "!configuration"
+# endif
+#else
+// BLAME contains an "illegal" meta-nickname indicating that something
+// has been done by admin configuration rather than an interactive user
+# define BLAME "!configuration"
+#endif
+
+#ifdef MAY_HISTORY
+// only use this hook if PLACE_MAY_HISTORY was defined in the place
+// blueprint you are using (see archetype.gen). otherwise this hook
+// will have zero effect, which is the default. i don't know of any
+// application who needs this. it's more like a proof of concept
+// how hooks work and how they can be compile time optional.
+//
+mayHistory(source, mc, data, vars, b) { MAY_HISTORY; }
+#endif
+
+#ifdef HISTORY_GLIMPSE
+qHistoryGlimpse() { return HISTORY_GLIMPSE; }
+#endif
+
+#ifdef OWNED
+qOwners() { return ([ OWNED ]); }
+
+# ifdef HISTORY_PROTECTION
+// you have to explicitely request this behaviour as we normally
+// consider it a user's privacy right to delete the history
+histClear(a, b, source, mapping vars) {
+       if (b || qAide(SNICKER))
+	   return ::histClear(a, b >= 50 ? b : 50, source, vars);
+}
+# endif
+#endif
+
+#ifdef CHAT_CHANNEL
+qChatChannel() { return CHAT_CHANNEL; }
+#else
+qChatChannel() { return "PSYC"; }
+#endif
+
+#if defined(RESET) || defined(CRESET) || defined(NEWSFEED_RSS) \
+	    || defined(RESET_INTERVAL)
+void reset(int again) {
+# ifdef CRESET
+	CRESET
+# endif
+# if defined(HISTORY) || defined(PLACE_HISTORY)
+	// basic.c currently has no reset to call
+	::reset(again);
+# endif
+# ifdef CONNECT_IRC
+	// if (!interactive(ME)) call_out(#'connect, 3, CONNECT_IRC);
+# endif
+# if __EFUN_DEFINED__(set_next_reset)
+#  ifdef RESET_INTERVAL
+	set_next_reset(RESET_INTERVAL * 60);
+#  else
+	// apparently this is needed for place/news not to
+	// fall into deep sleep. strange.
+	set_next_reset(24 * 60 * 60);
+#  endif
+# endif
+	if (again) {
+# ifdef RESET_INTERVAL
+#  if ! __EFUN_DEFINED__(set_next_reset)
+		if (time() < v("lastreset") + RESET_INTERVAL * 60) return;
+		vSet("lastreset", time());
+#  endif
+# endif
+# ifdef RESET
+		RESET
+# endif
+# ifdef NEWSFEED_RSS
+		connect();
+# endif
+		return;
+	}
+}
+#endif
+
+void create() {
+	::create();
+#ifdef CRESET
+	CRESET
+#endif
+#ifdef LINK
+	P1(("%O - ignoring old-fashioned #define LINK %O\n", ME, LINK))
+#endif
+#ifdef CONNECT
+# ifdef IDENTIFICATION
+	P1(("PLACE %O SLAVE of %O with MASTER %O\n", ME, CONNECT, IDENTIFICATION))
+# else
+#  ifdef SLAVE
+	P1(("PLACE %O SLAVE of %O\n", ME, CONNECT))
+#  else
+	P1(("PLACE %O MASTER\n", ME))
+#  endif
+# endif
+# ifdef SERVER_URL
+#  if CONNECT == SERVER_URL
+	D1(D("link [" CONNECT "] == host ["+ SERVER_URL +"]\n");)
+#  else
+	D1(D("link [" CONNECT "] != host ["+ SERVER_URL +"]\n");)
+#  endif
+# endif
+#endif
+
+#if 0 //def CONNECT
+	P0(("..\nPLACE %O initiating connection to %O\n", ME, CONNECT))
+	clone_object(PSYC_PATH "active") -> connect(CONNECT);
+#endif
+#ifdef NAME
+	// double load happens only with certain room types
+	// this load() is important to set identification var
+	// replacing it is no solution
+	//sName(NAME); vSet("name", NAME);
+	load(NAME, 1);
+#else
+	load();
+#endif
+
+#if defined(FILTER_PRESENCE) || defined(QUIET)
+	vSet("_filter_presence", BLAME);
+#endif
+#if defined(FILTER_CONVERSATION) || defined(SILENT)
+	vSet("_filter_conversation", BLAME);
+#endif
+#ifdef RESTRICTED
+	vSet("_restrict_invitation", BLAME);
+#else
+	vDel("_restrict_invitation");
+#endif
+#ifdef UNIFORM_STYLE
+	vSet("_uniform_style", UNIFORM_STYLE);
+#endif
+//#ifdef IRCGATE_NAME
+//	vSet("_gateway_name", IRCGATE_NAME);
+//#endif
+
+#ifdef SLAVE
+# ifdef CONNECT
+	// this needs to happen before sIdentification
+	sMaster(CONNECT);
+# endif
+# if defined(IDENTIFICATION)
+	sIdentification(IDENTIFICATION);
+# endif
+#endif
+#ifdef CONNECT_IRC
+	link(CONNECT_IRC);
+#endif
+#if defined(NEWSFEED_RSS) && defined(DEVELOPMENT)
+	// do not connect newsfeeds immediately if running in production mode
+	connect();
+#endif
+#ifdef MODERATED
+# define ALLOW_EXTERNAL	// FROM_LINKS?
+# ifdef PRO_PATH
+	sModeratable(1);
+# endif
+#endif
+// exits currently not supported
+#ifdef EXITS
+	// sExits( EXITS );
+#endif
+#ifdef CREATE
+	CREATE
+#endif
+}
+
+#ifdef PRIVATE
+//qPublic() { return 0; }
+#else
+qPublicName() { return MYNICK; }
+qPublic() { return BLAME; }
+#endif
+
+#ifdef ALLOW_EXTERNAL
+qAllowExternal() { return 1; }
+#else
+# if defined(ALLOW_EXTERNAL_FROM)   || defined(ALLOW_FROM_LINKS) \
+  || defined(ALLOW_EXTERNAL_HOST)   || defined(ALLOW_METHOD) \
+  || defined(ALLOW_EXTERNAL_LOCALS) || defined(ALLOW_TRUSTED)
+qAllowExternal(source, mc, vars) {
+	P2(("qAllowExternal(%O,%O,%O)\n", source,mc,vars))
+	// only one #define of ALLOW_* type makes sense
+//	unless (abbrev("_notice_news", mc)) return 0;
+//	unless (abbrev("_notice_software", mc)) return 0;
+#  ifdef ALLOW_TRUSTED
+	if (vars["_INTERNAL_trust"] > 5) return 1;
+#  endif
+#  ifdef ALLOW_METHOD
+	unless (abbrev(ALLOW_METHOD, mc)) return 0;
+#  endif
+	if (stringp(source)) {
+#  ifdef ALLOW_FROM_LINKS
+			    // does this make things spoofable?
+	    if (isLink(source) || isLink(vars["_source_relay"])) return 1;
+#  endif
+#  ifdef ALLOW_EXTERNAL_FROM
+	    if (abbrev(ALLOW_EXTERNAL_FROM, source)) return 1;
+#  endif
+#  ifdef ALLOW_EXTERNAL_HOST
+	    string *u = parse_uniform(source);
+	    if (u && same_host(ALLOW_EXTERNAL_HOST, u[UHost])) return 1;
+#  endif
+	    return 0;
+	}
+#  ifdef ALLOW_EXTERNAL_HOST
+	// does anyone need this?
+	//else if (same_host(ALLOW_EXTERNAL_HOST, query_ip_number(source))) return 1;
+#  endif
+#  ifdef ALLOW_EXTERNAL_LOCALS
+	// this is equivalent to irc/mode -n for local ircers. thx fip.
+	return 1;
+#  else
+	return 0;
+#  endif
+}
+# endif
+#endif
+
+#ifdef LAYOUT
+viewHead() { return LAYOUT; }
+#endif
+
+#if defined(REQUEST_ENTER) || defined(REGISTERED) || defined(SECURE) ||\
+    defined(RESTRICTED) || defined(TRUSTED) || defined(NICKLESS) ||\
+    defined(LOCAL)
+volatile mixed lastTry;
+
+# if defined(SECURE) && defined(HISTORY) && defined(PLACE_HISTORY_EXPORT)
+#  undef PLACE_HISTORY_EXPORT
+# endif
+
+enter(source, mc, data, vars) {
+# ifdef TRUSTED
+	if (vars["_INTERNAL_trust"] > 5) return 1;
+# endif
+# ifdef LOCAL
+	unless (objectp(source)) {
+		sendmsg(source, "_error_place_enter_restricted_local",
+    "Sorry, [_nick_place] is only accessible for users of the same server.",
+		    ([ "_nick_place" : MYNICK ]) );
+		if (source != lastTry) {
+		    vars["_source_relay"] = source;
+		    castmsg(ME, "_failure_place_enter_restricted_local",
+    "Admission into [_nick_place] denied for remote user [_source_relay].",
+			    vars);
+		    lastTry = source;
+		}
+		return 0;
+	}
+# endif
+# ifdef RESTRICTED
+	unless (qAide(SNICKER)) {
+		sendmsg(source, "_error_place_enter_necessary_invitation",
+		    "[_nick_place] can only be entered upon invitation.",
+			([ "_nick_place" : qName() ]) );
+		if (source != lastTry) {
+			castmsg(ME, "_failure_place_enter_necessary_invitation",
+	    "Admission into [_nick_place] denied for uninvited user [_nick].",
+			    vars);
+			lastTry = source;
+		}
+		return 0;
+	}
+# endif
+# if defined(SECURE)
+// let people in who are either connected via a SSL/TLS
+// protocol or are coming from the localhost (probably SSH users).
+//
+// both cases are no absolute guarantee for safety.. it is still
+// in the hands of each user in the room to safeguard true secrecy
+//
+// SECURE by itself also doesn't enforce that people are registered
+// or belong to a certain group, so you have to use the respective
+// #defines to also ensure that, if that's what you want.
+//
+// -lynX 2004
+
+	if (!((objectp(source) &&
+		// should use trustworthy level 9 instead? if so.. how?
+	       (query_ip_number(source) == "127.0.0.1"
+	     || query_ip_number(source) == __HOST_IP_NUMBER__ ))
+#  if __EFUN_DEFINED__(tls_query_connection_state)
+		// psyc client.. may also one day be a psyc server, in that
+		// case we have to hope the rest of the link is secured, too
+	     || (objectp(vars["_INTERNAL_origin"]) 
+		 && interactive(vars["_INTERNAL_origin"]) 
+		 && tls_query_connection_state(vars["_INTERNAL_origin"]))
+		// tls connection, be it telnet irc jabber or https
+		// shouldn't this check happen before "_INTERNAL_origin"? -lynX
+	     || (objectp(source) && interactive(source)
+		 && tls_query_connection_state(source))
+#  endif
+	    )) {
+		sendmsg(source, "_error_place_enter_necessary_encryption",
+	"[_nick_place] may only be accessed by clients with enabled encryption.",
+                    ([ "_nick_place" : qName() ]) );
+		if (source != lastTry) {
+			castmsg(ME, "_failure_place_enter_necessary_encryption",
+		"Admission into [_nick_place] denied for insecure user [_nick].",
+			    vars);
+			lastTry = source;
+		}
+		return 0;
+	}
+# endif
+# if defined(REGISTERED)
+	if (objectp(source) && source->isNewbie()) {
+		sendmsg(source, "_error_place_enter_necessary_registration",
+    "We want you to be a registered PSYC user before entering [_nick_place].",
+		    ([ "_nick_place" : MYNICK ]) );
+		if (source != lastTry) {
+		    castmsg(ME, "_failure_place_enter_necessary_registration",
+    "Admission into [_nick_place] denied for unregistered user \"[_nick]\".",
+			    vars);
+		    lastTry = source;
+		}
+		return 0;
+	}
+# endif
+# if defined(REQUEST_ENTER)
+	REQUEST_ENTER
+# endif
+# ifdef NICKLESS
+	return 1;	// LEGAL_NICK_IN_ENTER
+# else
+	return ::enter(source, mc, data, vars);
+# endif
+}
+#endif
+
+#if defined(ON_STATUS)
+showStatus(verbosity, al, source, mc, data, vars) {
+	ON_STATUS
+	return ::showStatus(verbosity, al, source, mc, data, vars);
+}
+#endif
+
+#if defined(ON_ANY) || defined(ON_CONVERSE) || defined(REDIRECT)
+msg(source, mc, data, vars) {
+# ifdef ON_ANY
+	ON_ANY
+# endif 
+# ifdef REDIRECT
+	sendmsg(source, "_failure_redirect_temporary",
+	    "[_nick_place] is currently unable to fulfil this operation. Please direct your request to [_source_redirect]",
+		([ "_method_relay": mc,
+		   "_tag_reply" : vars["_tag"] || 0,
+                   // "_data_relay" : data,
+#  ifdef NAME
+		   "_nick_place" : NAME,
+#  else
+		   "_nick_place" : MYNICK,
+#  endif
+                   "_source_redirect": REDIRECT ]));
+	return 0;
+# else
+	::msg(source, mc, data, vars);
+#  ifdef ON_CONVERSE
+	if (abbrev("_message", mc)) {
+		ON_CONVERSE
+	}
+#  endif
+# endif
+}
+#endif
+
+#ifdef ON_ENTER
+onEnter(source, mc, data, vars) {
+	ON_ENTER
+	return ::onEnter(source, mc, data, vars);
+}
+#endif
+
+// obsolete for new code.. use PLACE_HISTORY_EXPORT or not
+#ifdef HISTORY_PRIVATE
+# echo HISTORY_PRIVATE is obsolete. Unset PLACE_HISTORY_EXPORT instead.
+// disables web-export of HISTORY in a somewhat drastic way, i admit
+htget(prot, query, headers, qs) {
+	return 0;
+}
+#endif
+
+#ifdef HISTORY
+# if defined(HISTORY_METHOD) || defined(HISTORY_MAY_LOG)
+mayLog(mc) {
+#  ifdef HISTORY_MAY_LOG
+        HISTORY_MAY_LOG
+#  endif
+#  ifdef HISTORY_METHOD
+        return abbrev(HISTORY_METHOD, mc);
+#  endif
+}
+# endif
+#endif
+
+#ifdef ON_ERROR
+error(source, mc, data, vars) {
+	ON_ERROR
+}
+#endif
+
+#ifdef ON_COMMAND
+cmd(command, args, privilege, source, vars) {
+	ON_COMMAND
+	return ::cmd(command, args, privilege, source, vars);
+}
+#endif
+
+#if defined(PASS_IRC) || defined(ON_CONNECT)
+logon(failure) {
+	int rc = ::logon(failure);
+	unless (rc) return 0;
+# ifdef PASS_IRC
+	emit("PASS :"+ PASS_IRC +"\r\n");
+# endif
+# ifdef ON_CONNECT
+	ON_CONNECT
+# endif
+	return rc;
+}
+#endif
+
+#ifdef NEWS_PUBLISH
+publish(link, headline, channel) {
+	unless (NEWS_PUBLISH(link, headline, channel))
+	    ::publish(link, headline, channel);
+}
+#endif

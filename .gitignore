@@ -1,0 +1,15 @@
+CVS
+~$*
+.DS_Store
+.metadata
+.actionScriptProperties
+*~
+*.swf
+*.swp
+*.diff
+*.orig
+*.rej
+*.log
+*.pem
+*old
+*bak

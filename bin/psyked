@@ -1,0 +1,64 @@
+#!/usr/bin/pike
+
+// This is an experimental prototype program using parts of psyced from pike.
+//
+// But careful, you need to apply the pikelpc.patch for pike to even grok
+// the LPC syntax.
+
+int main(int argc, array(string) args) {
+	Stdio.Stat s;
+	string f;
+	string home = "/opt/psyced";
+	array(string) jacks = ({
+	    "/local/psyconf.h", "/local/config.h", "/pike",
+	    "/world/net/psyc",
+	});
+
+	//write("%O: %O\n", argc, args);
+	//GTK.setup_gtk();
+	//GTK.Alert("Hi!")->signal_connect("destroy", exit, 0);
+
+	if (argc > 1) home = args[1];
+	foreach (jacks;; f) {
+		if (! (s = file_stat(f = home + f))) {
+			write("%s does not exist.\n", f);
+			return 1;
+		} 
+        } 
+	add_module_path(home +"/pike");
+	//add_include_path(home +"/world"); // doesn't work?
+	add_include_path(home +"/world/net/include");
+	add_include_path(home +"/world/drivers/pike/include");
+
+	// wicked emulation of the LPC debug_message() efun
+	add_constant("debug_write", _static_modules.files()->_stderr->write);
+
+	// the only way to include pathes at runtime without ugly wrapper
+	// scripts is to delay the actual program compilation with a compile
+	// statement. what a hack to even get started using pike!!  :D
+	//
+	program psyced = compile("void create() { net.psyced(4444); }");
+	//
+	// run, baby
+	psyced();
+	// and don't look back
+	return -1;
+}
+
+/* nifty stuff from http://pike.oav.net/7.0/tutorial_16.html#16
+
+	add_constant("sqr",lambda(mixed x) { return x * x; });
+	void add_program_path(string path);
+	mapping (string:mixed) all_constant();
+	array array_sscanf(string data, string format);
+	void atexit(function callback);
+	array(array) backtrace();
+	int errno(); 
+	int getpid();
+	int glob(string glob, string str); or
+	array(string) glob(string glob, array(string) arr);
+	int query_num_arg();	// for varargs
+	mapping replace(mapping a, mixed from, mixed to);
+	...search(mapping haystack, mixed needle, [ mixed start ]); // member()
+
+*/ // vim:syntax=pike

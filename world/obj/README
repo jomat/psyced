@@ -1,0 +1,6 @@
+
+This directory is just for compatibility with drivers
+who look for /obj/master
+
+The drivers should rather load /drivers/<driver>/master/master
+

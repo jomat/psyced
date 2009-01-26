@@ -1,0 +1,12 @@
+There is no psyclpc directory! Because psyclpc is a
+derivate of LDMUD and thus uses the ldmud/ subdirectory.
+
+We are working to make psyced work with pike.
+Then again. Can't find the time.
+
+psyced can run with amylaar up to a certain point.
+Not to be recommended.
+
+MudOS and Nemesis drivers are currently not doing their job,
+but you can give it a try to work on it.
+

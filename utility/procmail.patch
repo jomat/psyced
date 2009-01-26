@@ -1,0 +1,174 @@
+=== src/mailfold.h
+==================================================================
+--- src/mailfold.h	(revision 1073)
++++ src/mailfold.h	(local)
+@@ -7,7 +7,7 @@
+   const int ignwerr,const int dolock)),
+  readmail P((int rhead,const long tobesent));
+ void
+- logabstract P((const char*const lstfolder)),
++ logabstract P((const char*const lstfolder,const char*psycnotify)),
+  concon P((const int ch));
+ 
+ extern int logopened,rawnonl;
+=== src/procmail.c
+==================================================================
+--- src/procmail.c	(revision 1073)
++++ src/procmail.c	(local)
+@@ -766,6 +766,10 @@
+ 	    }
+ 	   if(readparse(chp+1,getb,0,skiprc))
+ 	      goto fail;
++	   if (strchr(chp+1, ':') > 0) {        /* notify a non-email scheme */
++	      logabstract(tgetenv(lastfolder), chp+1);
++	      goto setlsucc;
++	   }
+ 	   if(i)
+ 	    { if(startchar==themail.p)
+ 	       { startchar[filled]='\0';		     /* just in case */
+@@ -953,7 +957,7 @@
+ 		 return rcs_DELIVERED;
+ 	       }
+ logsetlsucc:  if(succeed&&flags[CONTINUE]&&lgabstract==2)
+-		 logabstract(tgetenv(lastfolder));
++		 logabstract(tgetenv(lastfolder), 0);
+ setlsucc:     rawnonl=0;lastsucc=succeed;lasttell= -1;	       /* for comsat */
+ 	      resettmout();			  /* clear any pending timer */
+ 	    }
+=== src/misc.c
+==================================================================
+--- src/misc.c	(revision 1073)
++++ src/misc.c	(local)
+@@ -287,7 +287,7 @@
+       { lstfolder=tgetenv(lastfolder);
+ 	sendcomsat(0);
+       }
+-     logabstract(lstfolder);
++     logabstract(lstfolder, 0);
+      if(!nextexit)			/* these are unsafe from sighandlers */
+       { shutdesc();
+ 	exectrap(traps);
+=== src/mailfold.c
+==================================================================
+--- src/mailfold.c	(revision 1073)
++++ src/mailfold.c	(local)
+@@ -331,19 +331,24 @@
+   return 1;
+ }
+ 
+-void logabstract(lstfolder)const char*const lstfolder;
++#define PROG "procmail/psyc"
++#include "psycmail.c"
++
++void logabstract(lstfolder,psycnotify)
++ const char*const lstfolder;const char*psycnotify;
+ { if(lgabstract>0||(logopened||verbose)&&lgabstract)  /* don't mail it back? */
+-   { char*chp,*chp2;int i;static const char sfolder[]=FOLDER;
++   { char*chp,*chp2,*chp3;int i;static const char sfolder[]=FOLDER;
+      if(mailread)			  /* is the mail completely read in? */
+       { i= *thebody;*thebody='\0';     /* terminate the header, just in case */
+ 	if(eqFrom_(chp=themail.p))		       /* any "From " header */
+-	 { if(chp=strchr(themail.p,'\n'))
+-	      *chp='\0';
++	 { if(chp3=strchr(themail.p,'\n'))
++	      *chp3='\0';
+ 	   else
+-	      chp=thebody;			  /* preserve mailbox format */
+-	   elog(themail.p);elog(newline);*chp='\n';	     /* (any length) */
++	      chp3=thebody;			  /* preserve mailbox format */
++	   if(!psycnotify)			    /* TODO: remove this if */
++	    { elog(themail.p);elog(newline);		     /* (any length) */
++	    }
+ 	 }
+-	*thebody=i;			   /* eliminate the terminator again */
+ 	if(!nextexit&&				/* don't reenter malloc/free */
+ 	 (chp=egrepin(NSUBJECT,chp,(long)(thebody-chp),0)))
+ 	 { size_t subjlen;
+@@ -351,15 +356,46 @@
+ 	   if((subjlen=chp-++chp2)>MAXSUBJECTSHOW)
+ 	      subjlen=MAXSUBJECTSHOW;		    /* keep it within bounds */
+ 	   ((char*)tmemmove(buf,chp2,subjlen))[subjlen]='\0';detab(buf);
+-	   elog(" ");elog(buf);elog(newline);
+-	 }
++	   if(!psycnotify) /* TODO: remove this if */
++	    { elog(" ");elog(buf);elog(newline);
++	    }
+       }
++	if (psycnotify) {
++	          /* forward as instant message to a psyc daemon --lynX 2007 */
++#ifdef PSYC_DEBUG
++	    fprintf(stderr, "PROCPSYC <%s>\n", psycnotify);
++	    fprintf(stderr, "PROCFROM <%s>\n", themail.p + sizeof("From"));
++	    fprintf(stderr, "PROCSUBJ <%s>\n", buf + sizeof("Subject:"));
++#endif
++	    /* TODO: make PSYCRELAY=4404 a procmail variable,
++	     *       default being 0 as given here below	--lynX
++	     */
++	    psycbiff(psycrelay, psycnotify, themail.p + sizeof("From"),
++			buf + sizeof("Subject:"));
++	    /*
++	     * we could also add a PSYCLOG variable which forwards *any*
++	     * logabstract() to a psyc entity, in case the user prefers that
++	     * to having a !psyc: rule in procmailrc	--lynX
++	     *
++	     * TODO: how would we do if the user decides to turn off the
++	     * logging feature yet expects procmail to do psyc forward?
++	     * does this code get called in that case?
++	     */
++	}
++        *chp3='\n'; *thebody=i;		  /* eliminate the terminators again */
++      }
++     /* currently we call logabstract even when we only want to psycnotify -
++      * this should be optimized so that psycnotify is a by the way operation
++      * of logging, but i can't get the procmail flow right  --lynX
++      */
++     if(!psycnotify) { /* TODO: remove this if */
+      elog(sfolder);strlcpy(buf,lstfolder,MAXfoldlen);detab(buf);elog(buf);
+      i=strlen(buf)+STRLEN(sfolder);i-=i%TABWIDTH;		/* last dump */
+      do elog(TABCHAR);
+      while((i+=TABWIDTH)<LENoffset);
+      ultstr(7,lastdump,buf);elog(buf);elog(newline);
+    }
++   }
+ }
+ 
+ static int concnd;				 /* last concatenation value */
+=== config.h
+==================================================================
+--- config.h	(revision 1073)
++++ config.h	(local)
+@@ -217,6 +217,7 @@
+ #define MATCHVAR	"MATCH"
+ #define AMATCHVAR	"MATCH="
+ #define DEFlogabstract	-1    /* abstract by default, but don't mail it back */
++#define DEFpsycrelay	""
+ #define COMSAThost	"localhost"    /* where the biff/comsat daemon lives */
+ #define COMSATservice	"biff"	    /* the service name of the comsat daemon */
+ #define COMSATprotocol	"udp" /* if you change this, comsat() needs patching */
+=== src/procmail.h
+==================================================================
+--- src/procmail.h	(revision 1073)
++++ src/procmail.h	(local)
+@@ -85,6 +85,7 @@
+ #define sendmail	(strenstr[5].sval)
+ #define flagsendmail	(strenstr[6].sval)
+ /* #define PM_version	(strenstr[7].sval) */
++#define psycrelay	(strenstr[8].sval)
+ 
+ 
+ extern char*buf,*buf2,*loclock,*thebody;
+=== src/variables.c
+==================================================================
+--- src/variables.c	(revision 1073)
++++ src/variables.c	(local)
+@@ -31,7 +31,8 @@
+ struct varstr strenstr[]={{"SHELLMETAS",DEFshellmetas},{"LOCKEXT",DEFlockext},
+  {"MSGPREFIX",DEFmsgprefix},{"TRAP",empty},
+  {"SHELLFLAGS",DEFshellflags},{"SENDMAIL",DEFsendmail},
+- {"SENDMAILFLAGS",DEFflagsendmail},{"PROCMAIL_VERSION",PM_VERSION}};
++ {"SENDMAILFLAGS",DEFflagsendmail},{"PROCMAIL_VERSION",PM_VERSION},
++ {"PSYCRELAY",DEFpsycrelay}};
+ 
+ #define MAXvarvals	 maxindex(strenvvar)
+ #define MAXvarstrs	 maxindex(strenstr)
+

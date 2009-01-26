@@ -1,0 +1,1461 @@
+<PSYC:TEXTDB> ## vim:syntax=html
+## as yet undocumented/unfinalized: detach attach offline online
+## and /set identities
+
+_HTML_tail
+|</td></tr></table>
+
+_HTML_head
+|<script><!--
+|
+|function chat() {
+|	window.open("/static/", "icap", "width=600,height=600")
+|	return true
+|}
+|
+|//--></script>
+|
+|<style><!--
+|
+|td,th,body,div {
+|	font-family: tahoma,helvetica;
+|	font-size: 16;
+|	padding: 4;
+|}
+|a.href {
+|	text-decoration: overline;
+|	font-variant: small-caps;
+|}
+|a.menu {
+|	text-decoration: none;
+|	border-top: dashed 1px;
+|	font-size: 10;
+|	padding: 0;
+|}
+|a.top {
+|	color: #e20;
+|	text-decoration: none;
+|}
+|input,textarea {
+|	background: #666;
+|	color: #fff;
+|}
+|
+|--></style>
+|
+|<body bgcolor="#333333" text="#cccccc" link="#669966" vlink="#ccffcc">
+|<table width="80%" height="100%"><tr><td>
+|
+
+_HTML_info_split
+|<hr noshade>
+
+_list_user_technical
+|<table cols=4 border=0 bgcolor="#333366">
+|<tr bgcolor=black><td><b><font color="#ffcc00"
+| size=2>Circuits: [_amount_connections]</font></b>
+|<th align=right colspan=3><font color=white size=2>Load: [_server_load]</font>
+|[_users]
+|</table>
+
+_list_user_description
+|<tt>[_time_idle]</tt> &#160; <b>[_nick]</b> [_action_description].
+
+_list_user_technical_person
+|<tr><th align=right><font color="#ffcc00" size=0>%s%s
+|<font color="#6699ff">%s</font></font>
+|<font color=white><nobr>%s</nobr></font>
+|<td bgcolor=black colspan=3><font color="#ffcc00" size=2>%s (%s)
+|<font color="#6699ff">&lt;%s&gt;</font>
+|<font color="#ff6666" size=0>%s</font>
+|</font>
+
+_list_user_technical_ghost
+|<tr><td colspan=4 align=right>
+|<font color="#6699ff" size=1>%s %O
+|<font color="#ffcc00">%s</font>
+|</font>
+
+_list_hosts_disabled
+|<tr><td>[_ip]</td><td>[_reason]</td><td bgcolor="#002200"><a href="configure?option=block_modify&ip=[_ip]">Unblock</a></td></tr>
+|
+
+_PAGES_home
+|<div align=center>
+|
+|<a class=top target="_top" href="http://www.psyc.eu"
+|><img src="/static/psyc.gif" width=464 height=93 border=0></a><p>
+|
+|<font size=7>
+|:<br>
+|
+|<a class=top target="_top"
+| href="http://www.psyced.org">psyced</a><br>
+|:</font><p>
+|
+|<em>... your multicast capable<br>
+|social network aware<br>
+|web application server<br>
+|with integrated chat<br>
+|and messaging service.</em><p>
+|
+|:<br>
+|:<br>
+|<br>
+|<br>
+|
+|<b>english</b> <a target=inav href="/en/help/index.page">user's manual</a><br>
+|<b>deutsches</b> <a target=inav href="/de/help/index.page">benutzerhandbuch</a>
+|
+|</div>
+
+_PAGES_index
+|<title>{_VAR_host} {_MISC_server_software}</title>
+|
+|<frameset cols="150,*" border=0>
+| <frame name=inav src="/en/help/index.page"
+|        marginwidth=3 marginheight=3>
+| <frame name=icnt src="/en/home.page"
+|        marginwidth=33 marginheight=33>
+|</frameset>
+|
+|<noframes>
+|{_PAGES_home}
+|</noframes>
+|
+
+_PAGES_help_basic
+|<h5>BASIC FUNCTIONS</h5>
+|
+|<dl>
+|
+|<a name="people"></a>
+|<dt><P><B> /p(eople) </B></p><dd>
+|shows an overview of people present on this server, sorted by public rooms.
+|People in private rooms are listed after <b>[private]</b>.
+|
+|<a name="go"></a>
+|<dt><p><b> /go &lt;room&gt; </b></p><dd>
+|moves to that room. A new private room is created if a room
+|name is given which doesn't exist yet.
+|
+|<a name="help"></a>
+|<dt><p><b> /h(elp) </b></p><dd>
+|shows a short list of commands.
+|
+|<a name="bye"></a>
+|<dt><P><B> /bye </B></p><dd>
+|closes the chat window and saves the user data.
+|People in the room see that you are leaving on purpose,
+|instead of seeing messages of temporary unavailability.
+|Please do use this command to leave the chat.
+|
+|</dl>
+|{_HTML_info_split}
+|<dl>
+|
+|<a name="tell"></a>
+|<dt><p><b> /t(ell) &lt;person&gt; &lt;message&gt; </b></p><dd>
+|sends a single message directly to the person. The recipient
+|doesn't need to be in the same room.
+|
+|<a name="talk"></a>
+|<DT><p><b> /t(alk) &lt;name&gt; </b> and <b> /t(alk) </b></p><dd>
+|enters the dialogue mode which sends all of your input to the
+|named person, not to the current room. You can still talk to the
+|room by typing <nobr>"<b>/ &lt;text&gt;</b>"</nobr>, in other
+|words, by prefixing your input with a slash and a space.
+|"<b>/q</b>" terminates this dialogue mode.
+|
+|<a name="me"></a>
+|<dt><p><b> /me &lt;description&gt; </b></p><dd>
+|shows an action description. <nobr>"<b>/me smiles</b>"</nobr>
+|for instance produces the message <nobr><em>"JoeCool smiles."</em></nobr>
+|
+|<dt><p><b> /&lt;your nickname&gt; &lt;description&gt; </b></p><dd>
+|sets such an action description permanently. It will appear
+|when people send you private messages and in the output of
+|<code>/who</code>.
+|
+|<a name="who"></a>
+|<dt><P><B> /who </B></p><dd>
+|shows the list of people present, which have set such a permanent
+|description. The "idle time" of the person is also shown in hours
+|and minutes.
+|
+|</dl>
+
+_PAGES_help_display
+|<h5>DISPLAY SETTINGS</h5>
+|
+|<dl>
+|<a name="notify"></a>
+|<DT><P><B> /notify &lt;name&gt;</B></p><dd>
+|marks or unmarks a person for automatic notification as soon as you enter the
+|chat system. If you're familiar with IRC, be aware that this function works
+|exactly the opposite way as in IRC.
+|
+|<a name="filter"></a>
+|<DT><P><B> /set filter [ s(trangers) | off | d(efault) ]</B></p><dd>
+|permits you to disable private messages from strangers.
+|Only friends which are marked for notification using <b>/friend</b>
+|will be allowed to talk to you privately. Others will have to
+|wait to meet you in a room. "<b>default</b>" resets this value to
+|the local default.
+|
+|</dl>
+|{_HTML_info_split}
+|<dl>
+|
+|<a name="ignore"></a>
+|<DT><P><B> /ig(nore) &lt;name&gt; </B></p><dd>
+|suppresses all messages from named person in future.
+|
+|<a name="display"></a>
+|<DT><P><B> /display &lt;name&gt; </B></p><dd>
+|makes those messages visible again.
+|
+|<a name="highlight"></a>
+|<DT><P><B> /hi(ghlight) &lt;name&gt; </B></p><dd>
+|makes this person's message appear highlighted.
+|
+|<a name="reduce"></a>
+|<DT><P><B> /reduce &lt;Name&gt; </B> oder <b> /lo &lt;Name&gt; </b></p><dd>
+|makes this person's message appear reduced.
+|
+|</dl>
+|{_HTML_info_split}
+|<dl>
+|
+|<a name="friend"></a>
+|<DT><P><B> /fr(iend) &lt;Name&gt; </B></p><dd>
+|offers friendship to a person. Should this friendship be acknowledged from
+|the other side, then you will in future receive presence updates on the
+|other person's availability. Additionally this function gives both sides
+|extended access to profile information, unless you make use of the
+|<b> /trust </b> command to specify a custom trust level for this person.
+|
+|<a name="trust"></a>
+|<DT><P><B> /trust &lt;Name&gt; &lt;Digit&gt;|- </B></p></dd>
+|Define a custom trust level value for a person. The trust level must
+|be a digit ranging from 0 to 9, or a minus character, which will restore
+|the default.
+|
+|<a name="expose"></a>
+|<DT><P><B> /expose &lt;Name&gt; &lt;Digit&gt;|- </B></p></dd>
+|Define the exposure level for a friend. This factor defines how high the
+|trust level a person must be, to be enabled to see your friend listed in
+|your profile. By issueing <b> /expose Merlin 0 </b> for instance you can
+|ensure that noone shall ever find out, that you are friends with Merlin.
+|
+|<a name="unfriend"></a>
+|<DT><P><B> /un(friend) &lt;Name&gt; </B></p><dd>
+|cancels a friendship. You can also use the word <b> /cancel </b>.
+|Usually the friendship is cancelled on both sides.
+|
+|<a name="show"></a>
+|<DT><P><B> /show [notify|in|out|display|trust|expose|all] </B></p><dd>
+|shows the current state of friendships, display settings, trust or
+|exposure levels.
+|
+|</dl>
+
+_PAGES_help_presence
+|<h5>PRESENCE UPDATES</h5>
+|<dl>
+|
+|<DT><P><b> /&lt;State&gt; [&lt;Description&gt;] </b></p><dd>
+|where State is one out of
+|<b>realtime, talkative, here, busy, nearby, unavailable, away, vacation, offline</b>
+|while Description is an optional
+|free form phrase to describe your state better.
+|As soon as you enter this, your change of state and description will
+|be multicast to all your friends.
+|
+|<DT><P><b> /av(ailability) &lt;Digit&gt; [&lt;Description&gt;] </b></p><dd>
+|You can achieve the same also by providing the state numerically.
+|The list of states shown above is equivalent to digit values 9 through 1.
+|
+|<DT><P><b> /mood &lt;Digit&gt; [&lt;Description&gt;] </b></p><dd>
+|Mood can currently only be set using a digit on the scale from happy to sad
+|which is equivalent to the values 9 to 1.
+|</dl>
+
+_PAGES_help_advanced
+|<h5>ADVANCED FUNCTIONALITY</h5>
+|<dl>
+|
+|<a name="reply"></a>
+|<DT><p><b> /r(eply) </b></p><dd>
+|puts you into dialogue mode with the person you last received
+|a message from.
+|
+|<a name="more"></a>
+|<DT><p><b> /m(ore) </b></p><dd>
+|puts you into dialogue mode with the person you last sent
+|a private message to.
+|
+|<a name="greet"></a>
+|<DT><p><b> /g(reet) </b></p><dd>
+|puts you into dialogue mode with the person you last received
+|a presence notification from.
+|
+|<a name="log"></a>
+|<DT><p><b> /log [&lt;amount or pattern&gt;] </B></p><dd>
+|shows the given amount of messages from the log of last messages,
+|or it matches the last log for a pattern you provide.
+|For registered users a limited amount of messages is saved
+|when you leave.
+|
+|<a name="logclear"></a>
+|<DT><P><B> /logclear </B></p><dd>
+|deletes your personal log of last messages from memory and
+|the server's hard disk.
+|
+|<a name="home"></a>
+|<DT><P><B> /h(ome) </B></p><dd>
+|brings you to your home room, which you can define using
+|<nobr>"<b>/set home &lt;roomName&gt;</b>"</nobr>.
+|
+|<a name="clearscreen"></a>
+|<DT><P><B> &lt;ENTER&gt; </B></p><dd>
+|Transmitting an empty line simply by hitting ENTER or RETURN
+|will clear the screen. Simple but very useful function.
+|
+|<a name="join"></a>
+|<DT><P><B> /j(oin) &lt;room&gt; </B></p><dd>
+|enters a room additionally to your current room.
+|
+|<a name="leave"></a>
+|<DT><P><B> /leave &lt;room&gt; </B></p><dd>
+|leaves a room without entering one.
+|
+|<a name="subscribe"></a>
+|<DT><P><B> /sub(scribe) [ &lt;room&gt; [ p(ermanent) ]] </B></p><dd>
+|configures a room to be automatically entered each time you log in.
+|Very useful for news feeds or other gateway rooms. The permanent
+|setting makes you stay in the room even if you log out. Caution!
+|
+|<a name="unsubscribe"></a>
+|<DT><P><B> /unsub(scribe) &lt;room&gt; </B></p><dd>
+|does what you expect.
+|
+|</dl>
+|{_HTML_info_split}
+|
+|<h5>JUST A LITTLE HISTORY LESSON..</h5>
+|<dl>
+|
+|<a name="msg"></a>
+|<DT><P><B> /m(sg) &lt;name&gt; &lt;message&gt; </B></p><dd>
+|is the same as <b>/tell</b>, for compatibility to IRC.
+|The command was originally introduced on IBM mainframes to
+|send a message to an other user, then adapted to work
+|across the BITnet/EARN.
+|
+|<a name="whois"></a>
+|<DT><P><B> /whois &lt;name&gt; </B></p><dd>
+|is the BITnet Relay equivalent for <b>/examine</b> and <b>/x</b>.
+|
+|<a name="part"></a>
+|<DT><P><B> /part &lt;room&gt; </B></p><dd>
+|is the IRC equivalent to <b>/leave</b>.
+|
+|<a name="change"></a>
+|<DT><P><B> /c(hange) &lt;room&gt; </B></p><dd>
+|works like <b>/go</b>. The command on BITnet relay was actually
+|<b>/channel</b> and the channels were numeric like on HAM radio.
+|## Jeff Kell probably came up with that analogy.
+|
+|<a name="query"></a>
+|<DT><P><B> /q(uery) [&lt;person&gt;] </B></p><dd>
+|is the same as <b>/talk</b>, for compatibility to IRC.
+|Jarkko Oikarinen is probably the person who came
+|up with this terminus, as if one would always be asking questions.
+|
+|<a name="lastlog"></a>
+|<DT><P><B> /la(stlog) [&lt;amount or pattern&gt;] </B></p><dd>
+|is the same as <b>/log</b>, for compatibility to ircII.
+|BigCheese introduced this function in 1989.
+|
+|<a name="mudemote"></a>
+|<DT><P><B> :&lt;description&gt; </B></p><dd>
+|works just like <b>/me</b>.
+|This notation comes from the world of multi-user adventure games,
+|supposedly around 1987. lynX liked it so much, that he introduced it
+|in IRC in form of the <b>/me</b> command in 1990.
+|You can change the colon character using <b>/set actchar</b>.
+|
+|</dl>
+|{_HTML_info_split}
+|
+|<h5>FURTHER EXOTIC COMMANDS..</h5>
+|<dl>
+|
+|<dt><p><a name="uptime"><b> /up(time) </b></a></p><dd>
+|How long has this been going on?
+|
+|<dt><p><a name="version"><b> /vers(ion) [ &lt;person&gt; ] </b></a></p><dd>
+|Information request about the software version of your server or somebody
+|else's software configuration, which may or may not be given to you however.
+|
+|<a name="notify"></a>
+|<DT><P><B> /notify &lt;person&gt; [&lt;delay&gt;] </B></p><dd>
+|does the opposite of what IRC <b>/notify</b> does: it actively
+|sends presence notification to the person. This is a sort of
+|"asymmetric" friendship function. You can provide a delay flag
+|which is currently one out of <b>[ d(elayed) | D(elayed more) ]</b>,
+|this will postpone the presence notification for a certain time
+|period after the start of your new session. <b>/nf</b> also allows
+|you to delete the notifications to a friend (established using <b>/friend</b>)
+|without effectively deleting the friendship.
+|
+|<a name="save"></a>
+|<DT><P><B> /save </B></p><dd>
+|is for paranoids only.
+|
+|<a name="enter"></a>
+|<DT><P><B> /enter &lt;room&gt; </B></p><dd>
+|is just the nicer name for the <b>/join</b> command.
+|
+|</dl>
+
+_PAGES_help_remote
+|<h5>COMMUNICATION WITH REMOTE PSYC USERS</h5>
+|
+|The PSYC technology is intended to let you communicate with other
+|PSYC users worldwide. In some cases you will already have done so
+|without noticing, because some rooms you have entered are connected
+|to other PSYC servers, or the people contained in a room may have
+|come from a distant server.<p>
+|
+|You can do these kind of things yourself, using the same commands
+|described in the rest of the manual. Whenever a &lt;name&gt; is given
+|for a command, you may as well use a PSYC address.<p>
+|
+|For instance,
+|if you want to talk to me, no matter where your server is, you can
+|do <b>/t psyc://psyced.org/~lynX</b> (t as in talk).<p>
+|
+|If you want to enter the PSYC
+|developers room, you can go for <b>/c psyc://psyced.org/@welcome</b>
+|(c as in change, but you can aswell use /go or even /join).<p>
+|
+|If you want to flaunt your PSYC address on your business card or email
+|signature, you can figure it out using the <b>/x</b> command,
+|which examines yourself.<p>
+|
+|<a name="friend"></a>
+|You can make <b>/friend</b>-ships with
+|remote users, <b>/subscribe</b> services across the network, and
+|you can even do many of these things with <em>Jabber</em>&trade; addresses. Just
+|prepend <b>xmpp:</b> to the simplistic User@Host syntax they use.<p>
+|
+|There are some more commands which are mostly designed for use
+|with remote PSYC addresses. Here they are:
+|
+|<dl>
+|<a name="alias"></a>
+|<DT><P><B> /alias &lt;nickname&gt; &lt;identity&gt; </B></p><dd>
+|allows you to define personal shortcuts for remote PSYC users so you no longer
+|have to type the complete address. Makes the person also more palpable
+|to your IRC client, if you are using one.
+|
+|<a name="unalias"></a>
+|<DT><P><B> /unalias &lt;nickname&gt; </B></p><dd>
+|Do I need to explain this one?
+|
+|<a name="surf"></a>
+|<DT><P><B> /surf </B></p><dd>
+|produces a web address where you can head off surfing along the social
+|network of your friends friends. You must give this a try!
+|
+|<a name="connect"></a>
+|<DT><P><B> /co(nnect) &lt;identity&gt; [&lt;password&gt;] </B></p><dd>
+|Experimental command to switch personality or even connect to a
+|PSYC identity on a remote PSYC server.
+|</dl>
+
+_PAGES_help_access
+|<h5>ACCESS OPTIONS</h5>
+|
+|<b>psyced</b> supports several ways to access rooms and people on it.
+|Many of them also provide the option of TLS/SSL encryption, for your
+|enhanced privacy.
+|
+|<dl>
+|
+|<dt><P><a name="applets"><B> Java&trade; Applets </B></a></p></dt><dd>
+|Simple but efficient way to provide access to a PSYC server from a website.
+|The applet could be enabled <a target=_top class=top href="/">here</a>.
+|
+|</dd><dt><P><a name="irc"><B> Internet Relay Chat </B></a></p></dt><dd>
+|This server accepts
+|<a target=_top class=top href="http://internet.relay.pages.de/">IRC</a> client
+|protocol on the IRC port 6667.
+|Try this <a href="irc://{_VAR_server}">link</a>.
+|You shall find <a href="http://www.psyced.org/psyc-irc.en.html"
+|>Getting started using IRC with psyced</a> helpful to understand
+|how different PSYC is from IRC.
+|
+|</dd><dt><P><a name="telnet"><B> Telnet </B></a></p></dt><dd>
+|The minimalist way to access this server: use a telnet program and connect
+|to port 2323 (or maybe 23) of the machine running this server. 
+|<a href="telnet://{_VAR_server}:2323">Like this</a>.
+|You can see who's in the room by sending an empty line.
+|
+|</dd><dt><P><a name="psyc"><B> PSYC </B></a></p></dt><dd>
+|This chat server started out as a research project to implement
+|the new Protocol for SYnchronous Conferencing. It is used to
+|interact with other PSYC servers and services.
+|You can access the server using a native PSYC client.
+|Software is available for download at the 
+|<a target=_top class=top href="http://www.psyc.eu">PSYC</a> website.
+|
+|</dd><dt><P><a name="jabber"><B> Jabber&trade; </B></a></p></dt><dd>
+|This server accepts Jabber protocol for clients with or without SSL,
+|but it can also communicate with all Jabber servers in the world
+|directly, using the <b>xmpp:&lt;nickname&gt;@&lt;server.adresse&gt;</b>
+|notation. See also in the menu item on PSYC NETWORK functions.
+|
+|</dd><dt><P><a name="http"><B> HTTP </B></a></p></dt><dd>
+|A builtin webserver lets you create socially aware web applications
+|with integrated chat and messaging.
+|
+|</dd><dt><P><a name="nntp"><B> NNTP </B></a></p></dt><dd>
+|The NNTP access lets you use regular usenet news clients to read and
+|write messages in the forum rooms. Experimental.
+|
+|</dd><dt><P><a name="smtp"><B> SMTP </B></a></p></dt><dd>
+|Lets you submit messages by e-mail. Experimental.
+|
+|</dd><dt><P><a name="pop"><B> POP3 </B></a></p></dt><dd>
+|Lets you access your <em>lastlog</em> by POP3. Experimental.
+|
+|</dd><dt><P><a name="wap"><B> WAP </B></a></p></dt><dd>
+|Lets you submit messages from a mobile phone. Experimental.
+|
+|</dd><dt><P><a name="sip"><B> SIP </B></a></p></dt><dd>
+|Lets you use PSYC to manage your VoIP telephony. Experimental.
+|
+|</dd></dl>
+
+_PAGES_help_room
+|<h5>ROOM-ORIENTED FUNCTIONS</h5>
+|
+|Rooms are programmable in <a target=PSYC href="http://www.psyc.eu">PSYC</a>.
+|<b>psyced</b> in particular provides the administrator with standard
+|components which can still be enhanced with custom logic and commands.
+|In fact commands are being added all the time, and even you could help us
+|implement anything we haven't provided yet.
+|These are the commands provided by such standard components, leaving out
+|only the new <b>THREADS</b> rooms, also known as forum/blog-rooms, which
+|are easier to use via the web interface anyway.
+|<dl>
+|
+|<dt><h5>INVITE AND FOLLOW</h5>
+|<a name="invite"></a>
+|<p><b> /i(nvite) [&lt;person&gt;] </b></p><dd>
+|Invite a person into this room. The room will be informed of this,
+|so it can decide wether to let the person in, which is the normal
+|behaviour. It may also choose to inform the others of your
+|invitation.
+|
+|<a name="follow"></a>
+|<p><b> /f(ollow) </b></p><dd>
+|The recipient of an invitation just needs to type <b>/f</b> as in
+|<b>/follow</b> to enter the room. If there was no invitation, then
+|the last active room is selected (if you are using <b>multiplace</b>).
+|Very useful, just try it out.
+|
+|<dt><h5>BASIC FUNCTIONS</h5>
+|<a name="topic"></a>
+|<dt><p><b> /top(ic) [&lt;topicAnnouncement&gt;] </b></p><dd>
+|sets a persistent description of the discussion topic.
+|This command may be reserved for administrators or owners in public rooms.
+|
+|<a name="status"></a>
+|<dt><p><b> /st(atus) </b> or the short form <b> /s </b></p><dd>
+|shows information about the room.
+|
+|<dt><h5>w/ HISTORY COMPONENT</h5>
+|<a name="history"></a>
+|<p><b> /hist(ory) [&lt;amount or pattern&gt;] </b></p><dd>
+|shows the given amount of messages from the history of last public
+|messages in the room, or it matches them for a pattern you provide.
+|This function is only available in special public rooms.
+|
+|<a name="histclear"></a>
+|<dt><p><b> /histclear [&lt;amount&gt;] </b></p><dd>
+|may allow you to clear the history of such a public room, depending on
+|the configuration of the room. When you provide an amount, only that
+|amount of messages is deleted from the room history, otherwise the
+|complete history is removed. Should you by mistake keep a private
+|conversation in a public room, this may be of help to protect your
+|privacy. It is however much safer to keep private conversations
+|in private rooms or messages!
+|
+|<dt><h5>w/ MASQUERADE COMPONENT</h5>
+|<a name="nickname"></a>
+|<p><b> /ni(ckname) [&lt;mask&gt;] </b></p><dd> 
+|The good ole <b>/nick</b> command allows to change your name
+|within the conversation of a specific room. For technical reasons
+|of protocol design, IRC clients cannot display these changes.
+|
+|<dt><h5>w/ OWNERS</h5>
+|<a name="mandate"></a>
+|<p><b> /mand(ate) [&lt;person&gt;] </b></p><dd> 
+|enables the owner of a room to empower other room members
+|to additional commands.
+|
+|<a name="listaides"></a>
+|<dt><p><b> /listaides </b></p><dd> 
+|show the list of people you have empowered.
+|
+|<a name="kick"></a>
+|<a name="elrid"></a>
+|<dt><p><b> /kick [&lt;person&gt;] </b></p><dd> 
+|bans a person from the room. This decision cannot be revised until
+|either the room or the server are reset, so use it wisely - not for fun.
+|
+|<a name="style"></a>
+|<dt><p><b> /style [&lt;http://&lt;web-address of a CSS file&gt;] </b></p><dd>
+|defines a <em>style sheets</em> for the place. Only real cool
+|PSYC clients will show it, however.
+|
+|</dl>
+|{_HTML_info_split}
+|<dl>
+|
+|<dt><h5>COMMANDS FOR OPERATORS</h5>
+|The administrators of a server can define operators - chaps who have
+|a few commands more to serve the users better. Among these:
+|
+|<a name="public"></a>
+|<dt><p><b> /public [on|off] </b></p><dd>
+|Certain room types allow operators to change the visibility
+|of the room on the fly. You can check using <b>/people</b>.
+|
+|<a name="masquerade"></a>
+|<dt><p><b> /masq(uerade) [on|off] </b></p><dd>
+|allows the operators to activate the masquerading option,
+|that is the <b>/nick</b> command mentioned before.
+|
+|<a name="silence"></a>
+|<dt><p><b> /silence [presence|conversation|all|none] </b></p><dd>
+|The "presence" filter disables or enables the display of enter and leave
+|messages in the room. Very useful in crowded rooms. Whereas the "conversation"
+|filter makes the room a non-talking room like you typically need for
+|external newsfeeds.
+|
+|<a name="logging"></a>
+|<dt><p><b> /logging [on|off] </b></p><dd>
+|starts a transcription of public conversation onto the server
+|harddisk. The <b> /status </b> command will show if this
+|function is currently activated. It is only available in
+|predefined permanent public rooms.
+|
+|</dl>
+
+_PAGES_help_index
+|<br><a target=icnt class=menu href="basic.page">BASIC<br>FUNCTIONS</a><br>
+|<br><a target=icnt class=menu href="settings.page">USER&#160;SETTINGS</a><br>
+|<br><a target=icnt class=menu href="display.page">DISPLAY<br>SETTINGS</a><br>
+|<br><a target=icnt class=menu href="room.page">ROOM<br>FUNCTIONS</a><br>
+|<br><a target=icnt class=menu href="remote.page">PSYC<br>NETWORK</a><br>
+|<br><a target=icnt class=menu href="presence.page">PRESENCE<br>CHANGES</a><br>
+|<br><a target=icnt class=menu href="advanced.page">ADVANCED<br>FUNCTIONS</a><br>
+|<p>
+|<br><a target=icnt class=menu href="access.page">ACCESS&#160;OPTIONS</a><br>
+|<p>
+|<br><a onClick="return chat()" target=icap class=top href="/static/"
+|>CHAT<br>APPLET</a><br>
+|<p>
+|<a target=icnt class=menu href="../home.page">HOMEPAGE</a>
+|<p>
+|<a target=icnt class=menu href="http://about.psyc.eu">ABOUT</a>
+|<p>
+
+_PAGES_help_operator
+|<h5>OPERATOR COMMANDS</h5>
+|
+|These commands are available to the administrator of the server. 
+|For room-specific operator commands see ROOM FUNCTIONS.
+|
+|<dl>
+|<a name="yell"></a>
+|<DT><P><B> /yell &lt;message&gt; </B></P><DD>
+|
+|Make a server-wide announcement.
+|
+|<a name="tcp"></a>
+|<DT><P><B> /tcp </B></P><DD>
+|
+|Technical list of currently active TCP connections.
+|
+|<a name="memory"></a>
+|<DT><P><B> /mem(ory) </B></P><DD>
+|
+|Show current memory statistics. Likely to only look good on telnet.
+|
+|<a name="malloc"></a>
+|<DT><P><B> /malloc </B></P><DD>
+|
+|Memory allocation statistics. Likely to only look good on telnet.
+|
+|<a name="odump"></a>
+|<DT><P><B> /odump </B></P><DD>
+|
+|Generate an ugly table of object statistics in /log/objects.dump.
+|
+|<a name="warn"></a>
+|<DT><P><B> /warn &lt;nick&gt; [&lt;message&gt;] </B></P><DD>
+|
+|Issue a warning to a local user of your server.
+|
+|<a name="kill"></a>
+|<DT><P><B> /kill &lt;nick&gt; [&lt;message&gt;] </B></P><DD>
+|
+|If the warning didn't impress, disconnect a local user from your server.
+|
+|<a name="block"></a>
+|<DT><P><B> /block &lt;addressMask&gt; &lt;reason&gt; </B></P><DD>
+|
+|This disables access to the server from Internet address numbers
+|which start with &lt;addressMask&gt;. To help you remember why you
+|did that, you are requested to store a reason along with it.
+|For example you could be issueing:
+|<p><b> /block 207.46.130. no microserfs on this server! </b></p>
+|It is a good idea to always terminate your masks with a period
+|so that 10.10.10 wouldn't match 10.10.103.3.
+|Use the same command to unblock a host.
+|
+|<a name="config"></a>
+|<DT><P><B> /config &lt;entry&gt; &lt;setting&gt; [&lt;value&gt;] </B></P><DD>
+|
+|Configure a setting for a specific entity, usually remote servers.
+|But we are currently not using this function to do any job.
+|
+|<a name="patch"></a>
+|<DT><P><B> /patch &lt;nick&gt; &lt;setting&gt; [&lt;value&gt;] </B></P><DD>
+|
+|This allows to change a setting for a local user, as if the user entered
+|a /set command. But in fact this is currently limited to resetting the
+|password.
+|
+|<a name="reload"></a>
+|<DT><P><B> /(re)load &lt;file&gt; </B></P><DD>
+|
+|Recompile an object class. Typically necessary when modifying an existing
+|place (<b> /load place/space </b>) without restarting the server.
+|
+|<a name="destruct"></a>
+|<DT><P><B> /destruct &lt;object&gt; </B></P><DD>
+|
+|Destruct an object or object class without reloading it. Can be abused
+|to disconnect a user without a polite message.
+|
+|<a name="shutdown"></a>
+|<DT><P><B> /shutdown </B></P><DD>
+|
+|Shutdown the server. The actual shutdown happens in several phases and
+|takes a few seconds for hopefully all connections to be safely closed.
+|
+|<a name="restart"></a>
+|<DT><P><B> /restart </B></P><DD>
+|
+|Restart the server.
+
+_PAGES_help_settings
+|<h5>USER SETTINGS</h5>
+|
+|Most of the following functions can also be changed using the <b>/edit</b>
+|command, if you are using the web interface.
+|
+|<dl>
+|
+|<a name="password"></a>
+|<DT><P><B> /set password &lt;newWord&gt; </B> or<br>
+|       <B> /set password &lt;oldWord&gt; &lt;newWord&gt; </B></p><dd>
+|register or modify a password. Once a password is set your chat name
+|can only be accessed by providing such password.
+|
+|<a name="email"></a>
+|<DT><P><B> /set email &lt;emailAddress&gt; </B></p><dd>
+|sets your e-mail address. This information is visible to your <i>friends</i>
+|only, and to the server administrator if he necessitates to reach you.
+|Best of all, it enables the server to forward messages to you by email when
+|you're not online.
+|
+|<DT><P><B> /set telephone &lt;phoneNumbers&gt; </B></p><dd>
+|is a good place to keep phone numbers for your friends to call you.
+|
+|<DT><P><B> /set home &lt;homeRoom&gt; </B></p><dd>
+|sets your "home" room, a room you are sent to when you type <b>/home</b>.
+|
+|<DT><P><B> /set publicname &lt;Your Name&gt; </B></p><dd>
+|shows everybody what your real name is.
+|
+|<DT><P><B> /set name &lt;yourNickname&gt; </B></p><dd>
+|changes the uppercase/lowercase style in which your name should be
+|displayed, so you can be sure your name will always appear in the proper
+|way even when people type your name in the wrong case.
+|
+|<DT><P><B> /set speakaction &lt;verb&gt; </B></p><dd>
+|lets you speak with a different verb than "says", for instance try
+|"whispers" or "yells".
+|
+|<DT><P><B> /set visiblespeakaction [ on | off | mixed ] </B></p><dd>
+|if your IRC client shows actions in a nice way, you may want
+|to activate them!
+|
+|<DT><P><B> /set filter [ s(trangers) | off ] </B></p><dd>
+|disables receiving messages from people that are neither your friends
+|nor in the same room with you. You can make friends using the rather
+|obvious <b>/friend</b> command.
+|
+|<DT><P><B> /set presencefilter [ on | off | all | automatic ] </B></p><dd>
+|helps you limit the choice of friends' presence updates that are shown to you.
+|by default, automatic away messages are filtered, whereas other types are
+|shown. when this is set to "on", only explicitly manually set away messages
+|are shown. by setting this value to "off" you can see any presence message
+|while the "all" setting will disable any display of presence messages.
+|you can still see who's on or away by looking at your buddy list however.
+|
+|<DT><P><B> /set echo [ off | on | automatic ] </B></p><dd>
+|Normally you will see everything you type echoed to your screen
+|so you can be sure they arrived safely. But you may prefer not to
+|see such echo. If you're using the IRC access port, then you will
+|automatically not receive any echo, since that's uncommon on IRC,
+|but you can switch it on explicitedly.
+|
+|<DT><P><B> /set greeting [ off | on | automatic ] </B></p><dd>
+|When you connect to psyced you are shown your last login data
+|which is useful for you to ensure nobody else connected to your
+|account in the meantime. You are also informed about your current
+|command character and a few other things. You can turn this greeting
+|information off using this setting. If you're a Jabber user, then these
+|greetings will be off by default, as it is unusual behaviour for Jabber
+|servers. In that case you may want to intentionally turn them on to
+|improve your safety.
+|
+|<DT><P><B> /set multiplace [ on | off ] </B></p><dd>
+|allows you to enter more than one room at a time in some access forms.
+|An essential feature for advanced users, yet confusing for some beginners.
+|
+|<DT><P><B> /set clearscreen [ on | off ] </B></p><dd>
+|only applies to the telnet access. Hitting carriage return without
+|any other input will normally clear the terminal screen.
+|
+|<DT><P><B> /set visibility [ off | on ] </B></p><dd>
+|makes you invisible from <b>/who</b> or <b>/people</b> commands.
+|
+|<DT><P><B> /set exposetime [ off | on ] </B></p><dd>
+|hides the information when you were last active also from your friends.
+|
+|</dl>
+|{_HTML_info_split}
+|<dl>
+|
+|<DT><P><B> /set publicpage http://&lt;web-address&gt; </B></p><dd>
+|lets you publish your homepage address. It appears whenever someone
+|clicks on your name.
+|
+|<DT><P><B> /set privatepage http://&lt;web-address&gt; </B></p><dd>
+|allows you to set up a page just for your chat friends. It will not
+|be shown to chatters that haven't exchanged <b>/friend</b>-ship
+|with you.
+|
+|<DT><P><B> /set photopage http://&lt;web-address&gt; </B></p><dd>
+|A page that shows more photos of you. Will be linked to your
+|profile photo.
+|
+|<DT><P><B> /set photofile http://&lt;web-address&gt; </B></p><dd>
+|A medium size photo of yours, stored on a web server of your choice.
+|The photo appears when you or your friends use <b>/surf</b> to look
+|at your profile.
+|
+|<DT><P><B> /set miniphotofile http://&lt;web-address&gt; </B></p><dd>
+|A thumbnail size photo of yours, to be used for lists of friends.
+|
+|<DT><P><B> /set keyfile http://&lt;web-address&gt; </B></p><dd>
+|invites you to store the address of your public key file,
+|allowing for encrypted communication to happen between you and
+|your friends, provided you are both using an encryption capable
+|<a target=psyc href="http://www.psyc.eu">PSYC</a> client,
+|or at least email.
+|
+|<DT><P><B> /set stylefile http://&lt;web-address&gt; </B></p><dd>
+|lets you specify a cascading style sheet file for personalized
+|presentation of your profile!
+|
+|</dl>
+|{_HTML_info_split}
+|<dl>
+|
+|<DT><P><B> /set commandcharacter &lt;prefix&gt; </B></p><dd>
+|Also accepted as <b>cmdchar</b> this setting allows you to change
+|the character that prefixes commands. The cmdchar normally is
+|set to <b>/</b> (slash) except for IRC users, for them it is
+|a <b>+</b> (plus sign) by default.
+|
+|<DT><P><B> /set actioncharacter [ &lt;prefix&gt; | off ] </B></p><dd>
+|Also understood as <b>actchar</b> this setting allows you to change
+|or even disable the character that prefixes actions. The actchar normally
+|is set to <b>:</b> (colon). You can also produce actions by issuing my
+|popular <b>/me</b> command.
+|
+|<DT><P><B> /set charset [ &lt;character-set&gt; | - ] </B></p><dd>
+|Some access technologies (telnet, applet, IRC) may need you to set the
+|client's character set manually. If your umlauts look all wrong, try
+|<b>/set charset latin1</b>. This setting will have no influence on
+|other access technologies.
+|The system charset on this server is {_VAR_charset}.
+|
+|<a name="timestamp"></a>
+|<DT><P><B> /set timestamp [ on | off | - ] </B></p><dd>
+|The normal behaviour is to show timestamps with messages that did not
+|happen "just now." When turned "on," IRC clients will receive CTCP
+|TS messages instead of plain text timestamps.
+|
+|## <DT><P><B> /set verbatimuniform [ on | off ] </B></p><dd>
+|## If you run a very polite IRC client, you may find this useful. It
+|## stops patching addresses of remote users. But it's even better to
+|## use the <b>/alias</b> command.
+|## 
+|</dl>
+|
+|Further possible settings are currently listed in the
+|<a href="http://about.psyc.eu/Profile">PROFILING FIELD NAMES COMPARISON CHART</a>.
+
+_PAGES_user_index
+|Welcome to the user web interface.<br />
+|Here you are able to change your settings and profile.<br />
+|<br />
+|* <a href="?username=[_username]&password=[_password]&action=settings">settings</a><br />
+|* <a href="?username=[_username]&password=[_password]&action=profile">profile</a><br />
+
+_PAGES_user_footer
+|</body>
+
+_PAGES_user_header
+|<title>psyced user control panel</title>
+|<style type="text/css"><!--
+|body,td,input,th {font-family: helvetica;
+|    font-size:10pt;}
+|input {color:#fe0; background-color:#000;}
+|a {font-weight:bold;
+|   font-variant:small-caps;
+|   text-decoration:none;
+|   margin-left:4px;
+|   margin-right:4px;}
+|th {color:#fc0;
+|    font-variant:small-caps;}
+|a:link {color:#fc0;}
+|a:visited {color:#f90;}
+|a:hover {border-left:2px solid #f90;
+|	 border-right:2px solid #f90;
+|	 padding-left:2px;
+|	 padding-right:2px;
+|         margin:0px;
+|         color:#fe0;}
+|h2 {font-variant:small-caps;}
+|  //--></style>
+|<body bgcolor="#002200" text="#eeeeee">
+
+_PAGES_user_login_failed
+|<b>Error:</b> Login failed.
+
+_PAGES_user_login_empty
+|<b>Error:</b> Username/Password can't be empty.
+
+_PAGES_user_login_body
+|Please enter your username and password to access your control panel.<br />
+|<br />
+|<form method="get">
+|Username: <input type="text" name="username" /><br />
+|Password: <input type="password" name="password" /><br />
+|<input type="submit" value="Login" />
+|</form>
+
+_PAGES_user_login_successful
+|Login successful. <a href="?username=[_username]&password=[_password]">continue</a>
+
+_PAGES_user_login_notregistered
+|<b>Error:</b> User does not exist.
+
+_PAGES_user_settings_body
+|Change your settings:<br />
+|<form method="get">
+|* Password: <input type="password" name="password" /><br />
+|* Speakaction: <input type="text" name="speakaction" value="[_speakaction]" /><br />
+|* Command character: <input type="text" name="commandcharacter" value="[_commandcharacter]" /><br />
+|<br />
+|<input type="submit" /><br />
+|<input type="button" value="Back" onclick="location.href='?username=[_username]&password=[_password]'" /><br />
+|
+|<input type="hidden" name="username" value="[_username]" />
+|<input type="hidden" name="password" value="[_password]" />
+|<input type="hidden" name="action" value="settings" />
+|<input type="hidden" name="set" value="1" />
+|</form>
+
+_PAGES_user_settings_changed
+|Settings changed.<br />
+|<a href="?username=[_username]&password=[_password]">continue</a>
+
+_PAGES_group_scratchpad
+|<title>scratchpad for [_nick_place]@{_VAR_host}</title>
+|
+|{_HTML_head}
+|<div align=center>
+|<!-- a class=top target="_top" href="http://www.psyc.eu"
+|><img src="/static/psyc.gif" width=464 height=93 border=0></a><p -->
+|
+|<form method="GET">
+|<input type="hidden" name="id" value="[_id]">
+|<textarea name="scratchpad" cols=80 rows=30 nowrap>[_scratchpad]</textarea>
+|<br><br>
+|<input type=submit value=" {_TEXT_StoreChanges} "></form>
+|
+|</div>
+|{_HTML_tail}
+
+_PAGES_configure_menu
+|{_PAGES_configure_head}
+|<ul>
+|    <li> 
+|	<a href="configure?option=edit_config">Edit Config</a><br>
+|	Edit your settings, like <i>hostname, administrators, </i>and such
+|    </li>
+|     <li> 
+|	<a href="configure?option=basic_mgm">Basic Server Management</a><br>
+|	Restart your chatserver
+|    </li>
+|     <li> 
+|	<a href="configure?option=room_mgm">Room Management</a><br>
+|	Add new rooms, configure existing ones
+|    </li>
+|     <li> 
+|	<a href="configure?option=user_mgm">User Management</a><br>
+|	Ban, lookup IPs, reset passwords, ...
+|    </li>
+|    
+|   
+|    
+|
+|</ul>
+
+_PAGES_configure_basic
+|{_PAGES_configure_head}
+|<ul>
+|    <li>
+|	<a href="configure?option=restart">Restart</a><br>
+|	Restart your chatserver
+|    </li>
+|    <li>
+|	<a href="configure?option=list_udp">List UDP Ports</a><br>
+|	List UDP ports managed by the UDP daemon
+|    </li>
+|</ul>
+|	
+
+_PAGES_configure_room
+|{_PAGES_configure_head}
+|<ul>
+|    <li>
+|	<a href="configure?option=room_public">Public Rooms</a><br>
+|	Add or Edit a public chatroom
+|    </li>
+|    <li>
+|	<a href="configure?option=room_owned">Owned Rooms</a><br>
+|	Add or Edit an owned chatroom
+|    </li>
+|</ul>
+
+_PAGES_configure_user
+|{_PAGES_configure_head}
+|
+|<ul>
+|    <li>
+|        <a href="configure?option=list_users">List Users</a><br>
+|        List users and their .. settings, like UserAgent, IP and such
+|    </li>
+|    <li>
+|        <a href="configure?option=list_blocks">List Blocks</a><br>
+|	Manage blocked IPs and IP-ranges
+|    </li>
+|    <li>
+|        <a href="configure?option=user_password">Reset Password</a><br>
+|	Reset a users password
+|    </li>
+|</ul>
+
+_PAGES_configure_head
+|<title>psyced configuration interface - [_title]</title>
+|<style type="text/css"><!--
+|body,td,input,th {font-family: helvetica;
+|    font-size:10pt;}
+|input {color:#fe0; background-color:#000;}
+|a {font-weight:bold;
+|   font-variant:small-caps;
+|   text-decoration:none;
+|   margin-left:4px;
+|   margin-right:4px;}
+|th {color:#fc0;
+|    font-variant:small-caps;}
+|a:link {color:#fc0;}
+|a:visited {color:#f90;}
+|a:hover {border-left:2px solid #f90;
+|	 border-right:2px solid #f90;
+|	 padding-left:2px;
+|	 padding-right:2px;
+|         margin:0px;
+|         color:#fe0;}
+|h2 {font-variant:small-caps;}
+|  //--></style>
+|<body bgcolor="#002200" text="#eeeeee">
+|{_PAGES_configure_menu_small}
+|<h2><img alt='' src="http://www.psyc.eu/img/psyc.gif"><br>
+|psyced Configuration Interface &#149; [_title]</h2>
+|<p>&nbsp;</p>
+
+_PAGES_configure_submit
+|<noscript><input type=submit value=" [_submit_value] "></noscript>
+|<a href="javascript:document.forms.zero.submit();">[_submit_value]</a>
+
+_PAGES_configure_menu_small
+|<div style="background-color:#041; text-align:right;"><a href="configure">Main Page</a> &#149; <a href="configure?option=edit_config">Edit Config</a> &#149; <a href="configure?option=basic_mgm">Basic Management</a> &#149; <a href="configure?option=room_mgm">Room Management</a> &#149; <a href="configure?option=user_mgm">User Managenemt</a></div>
+
+_PAGES_configure_room_new
+|#include <place.gen>
+|
+
+_PAGES_configure_room_deleted
+|{_PAGES_configure_head}
+|<b>Room [_name] has been deleted.</b>
+
+_PAGES_configure_room_owned
+|{_PAGES_configure_head}
+|
+|
+|
+|<form method=GET action=configure name=zero>
+|<input type=hidden name=option value="room_owned_edit">
+|<input name=NAME>&#160;
+|{_PAGES_configure_submit}
+|</form>
+|
+
+_PAGES_configure_room_public
+|{_PAGES_configure_head}
+|
+|
+|
+|<form method=GET action=configure name=zero>
+|<input type=hidden name=option value="room_public_edit">
+|<input name=NAME>&#160;
+|{_PAGES_configure_submit}
+|</form>
+|
+
+_PAGES_configure_room_error_type
+|{_PAGES_configure_head}
+|<b>Room [_name] isn't a [_expected] room, but a [_type] room.</b>
+
+_PAGES_configure_room_error_type_undefined
+|{_PAGES_configure_head}
+|<b>Room [_name] should be of type [_expected], but it isn't.</b>
+
+_PAGES_configure_room_owned_edit
+|{_PAGES_configure_head}
+|
+|<div align="center" style="float:clear; text-align:center;">
+|<table bgcolor="#004411" cellspacing=0 cellpadding=3>
+|<form method=GET action=configure name=zero>
+|<input type=hidden name=option value="room_owned_save">
+|
+|<tr><td style="border-left: 1px solid #f90; border-top: 1px solid #f90;"><b>NAME:</b></td><td style="border-top: 1px solid #f90; border-right: 1px solid #f90;"><input type=input name=NAME value="[_name]"></td></tr>
+|<tr><td colspan=2 style="padding-left:10px; border-bottom: 1px solid #fc0; border-right: 1px solid #f90; border-left: 3px solid #fc0;">Change the case of the rooms name<td></tr>
+|
+|<tr><td><span style="font-size:1px;">&nbsp;</span></td></tr>
+|
+|<tr><td style="border-left: 1px solid #f90; border-top: 1px solid #f90;"><b>OWNED:</b></td><td style="border-top: 1px solid #f90; border-right: 1px solid #f90;"><input type=input name=OWNED value="[_owned]"></td></tr>
+|<tr><td colspan=2 style="padding-left:10px; border-bottom: 1px solid #fc0; border-right: 1px solid #f90; border-left: 3px solid #fc0;">Room admins (&quot;nick1&quot;, &quot;nick2&quot; ...)<td></tr>
+|
+|<tr><td><span style="font-size:1px;">&nbsp;</span></td></tr>
+|
+|<tr><td style="border-left: 1px solid #f90; border-top: 1px solid #f90;"><b>ALLOW_EXTERNAL:</b></td><td style="border-top: 1px solid #f90; border-right: 1px solid #f90;"><input type=checkbox name="ALLOW_EXTERNAL" value="1"[_external]></td></tr>
+|<tr><td colspan=2 style="padding-left:10px; border-bottom: 1px solid #fc0; border-right: 1px solid #f90; border-left: 3px solid #fc0;">Accept messages from people which aren't in the room<td></tr>
+|
+|<tr><td><span style="font-size:1px;">&nbsp;</span></td></tr>
+|
+|<tr><td style="border-left: 1px solid #f90; border-top: 1px solid #f90;"><b>REGISTERED:</b></td><td style="border-top: 1px solid #f90; border-right: 1px solid #f90;"><input type=checkbox name="REGISTERED" value="1"[_registered]></td></tr>
+|<tr><td colspan=2 style="padding-left:10px; border-bottom: 1px solid #fc0; border-right: 1px solid #f90; border-left: 3px solid #fc0;">Keep out unregistered users.<td></tr>
+|
+|<tr><td><span style="font-size:1px;">&nbsp;</span></td></tr>
+|
+|<tr><td style="border-left: 1px solid #f90; border-top: 1px solid #f90;"><b>Delete:</b></td><td style="border-top: 1px solid #f90; border-right: 1px solid #f90;"><input type=checkbox name=delete value="1"></td></tr>
+|<tr><td colspan=2 style="padding-left:10px; border-bottom: 1px solid #fc0; border-right: 1px solid #f90; border-left: 3px solid #fc0;">Delete this Room<td></tr>
+|
+|
+|<tr><td><span style="font-size:1px;">&nbsp;</span></td></tr>
+|<tr><td colspan=2 align=center><p>&nbsp;</p>{_PAGES_configure_submit}</td></tr>
+|
+|</form>
+|</table>
+|</div>
+
+_PAGES_configure_room_public_edit
+|{_PAGES_configure_head}
+|
+|<div align="center" style="float:clear; text-align:center;">
+|<table bgcolor="#004411" cellspacing=0 cellpadding=3>
+|<form method=GET action=configure name=zero>
+|<input type=hidden name=option value="room_public_save">
+|
+|<tr><td style="border-left: 1px solid #f90; border-top: 1px solid #f90;"><b>NAME:</b></td><td style="border-top: 1px solid #f90; border-right: 1px solid #f90;"><input type=input name=NAME value="[_name]"></td></tr>
+|<tr><td colspan=2 style="padding-left:10px; border-bottom: 1px solid #fc0; border-right: 1px solid #f90; border-left: 3px solid #fc0;">Change the case of the rooms name<td></tr>
+|
+|<tr><td><span style="font-size:1px;">&nbsp;</span></td></tr>
+|
+|<tr><td style="border-left: 1px solid #f90; border-top: 1px solid #f90;"><b>HISTORY:</b></td><td style="border-top: 1px solid #f90; border-right: 1px solid #f90;"><input type=checkbox name=HISTORY value="1"[_history]></td></tr>
+|<tr><td colspan=2 style="padding-left:10px; border-bottom: 1px solid #fc0; border-right: 1px solid #f90; border-left: 3px solid #fc0;">Decide whether this chatroom provides a history<td></tr>
+|
+|<tr><td><span style="font-size:1px;">&nbsp;</span></td></tr>
+|
+|<tr><td style="border-left: 1px solid #f90; border-top: 1px solid #f90;"><b>ALLOW_EXTERNAL:</b></td><td style="border-top: 1px solid #f90; border-right: 1px solid #f90;"><input type=checkbox name="ALLOW_EXTERNAL" value="1"[_external]></td></tr>
+|<tr><td colspan=2 style="padding-left:10px; border-bottom: 1px solid #fc0; border-right: 1px solid #f90; border-left: 3px solid #fc0;">Accept messages from people which aren't in the room<td></tr>
+|
+|<tr><td><span style="font-size:1px;">&nbsp;</span></td></tr>
+|
+|<tr><td style="border-left: 1px solid #f90; border-top: 1px solid #f90;"><b>REGISTERED:</b></td><td style="border-top: 1px solid #f90; border-right: 1px solid #f90;"><input type=checkbox name="REGISTERED" value="1"[_registered]></td></tr>
+|<tr><td colspan=2 style="padding-left:10px; border-bottom: 1px solid #fc0; border-right: 1px solid #f90; border-left: 3px solid #fc0;">Keep out unregistered users.<td></tr>
+|
+|<tr><td><span style="font-size:1px;">&nbsp;</span></td></tr>
+|
+|<tr><td style="border-left: 1px solid #f90; border-top: 1px solid #f90;"><b>Delete:</b></td><td style="border-top: 1px solid #f90; border-right: 1px solid #f90;"><input type=checkbox name=delete value="1"></td></tr>
+|<tr><td colspan=2 style="padding-left:10px; border-bottom: 1px solid #fc0; border-right: 1px solid #f90; border-left: 3px solid #fc0;">Delete this Room<td></tr>
+|
+|<tr><td><span style="font-size:1px;">&nbsp;</span></td></tr>
+|
+|
+|<tr><td colspan=2 align=center><p>&nbsp;</p>{_PAGES_configure_submit}</td></tr>
+|
+|</form>
+|</table>
+|</div>
+
+_PAGES_configure_user_list
+|{_PAGES_configure_head}
+|
+|<center>
+
+_PAGES_configure_user_password
+|{_PAGES_configure_head}
+|<form action=configure method=GET name=zero>
+|<input type=hidden name=option value="user_password_edit">
+|Username: <input name=nick>
+|{_PAGES_configure_submit}
+
+_PAGES_configure_user_block_tail
+|</table>
+|</center>
+
+_PAGES_configure_user_block_head
+|{_PAGES_configure_head}
+|
+|<b>ATTENTION: Do not use the reload button of your browser while surfing this page!</b><br><br>
+|
+|<form action=configure method=GET name=zero>
+|<input type=hidden name=option value="block_modify">
+|(Un)Block IP/Range: <input name=ip>
+|{_PAGES_configure_submit}
+|</form>
+|
+|<h2>List of Blocked IP/Ranges</h2>
+|<center>
+|<table bgcolor="#004411">
+|<tr><th>IP/Range</th><th>Reason</h><th>Action</th></tr>
+|
+
+_PAGES_configure_user_password_failure
+|{_PAGES_configure_head}
+|<b>The user doesn't exist or is unregistered</b>
+
+_PAGES_configure_user_password_edit
+|{_PAGES_configure_head}
+|<form action=configure method=GET name=zero>
+|<input type=hidden name=option value="user_password_save">
+|<input type=hidden name=nick value="[_nick]">
+|Reset password to: <input type=text name=password>
+|{_PAGES_configure_submit}
+
+_PAGES_configure_user_password_save
+|{_PAGES_configure_head}
+|<b>The password of &quot;[_nick]&quot; has been set to &quot;[_password]&quot;</b>
+
+_PAGES_configure_user_password_failure_bad
+|{_PAGES_configure_head}
+|<b>The password is not acceptable (empty, to short, containing special chars, ...)</b>
+
+_PAGES_configure_basic_udp_tail
+|</table>
+|
+
+_PAGES_configure_basic_udp_entry
+|<tr><td bgcolor="#002200">[_port]</td><td bgcolor="#002200">[_state]</td><td bgcolor="#002200">[_callback]</td>
+|
+
+_PAGES_configure_basic_udp_head
+|{_PAGES_configure_head}
+|<table bgcolor="#004411">
+|<tr><th>Port</th><th>State</th><th>Callback</th>
+|
+
+_PAGES_configure_advice_restart
+|You should propably do a <a href="configure?option=restart">Restart</a> now, to make the Changes effective.
+
+_PAGES_login
+|<title>{_MISC_server_software}: logging into {_VAR_host}</title>
+|<script>
+|	setTimeout("Plf.submit()", 1234)
+|</script>
+|<form name="Plf" action="examine">
+|## piccolo spazio pubblicità
+|<input type="hidden" name="visit" value="psyced.org">
+|</form>
+|{_echo_login_web}
+
+_echo_login_web
+|You are being logged in.
+
+_PAGES_start_description
+|<title>{_MISC_server_software}: examine profile on {_VAR_host}</title>
+|<script>
+|var longer = 44
+|
+|function cmd(wish) {
+|	Pef.cmd.value = wish
+|	Pef.submit()
+|	longer = 44
+|	return false
+|}
+|function hom() {
+|	/* one day we shall give you a real starting page.. */
+|	cmd('EXAMINE [_nick_me] [_nick] _surf')
+|	longer = 3303
+|	return false
+|}
+|function exa(who) {
+|	cmd('EXAMINE '+ who +' [_nick] _surf')
+|	longer = 3303
+|	return false
+|}
+|function setdis(sel, ni) {
+|	return cmd(sel.options[ sel.options.selectedIndex ].value+ni)
+|}
+|function fokuss() {
+|## this dirty ole trick doesnt work w/ opera
+|	if (window.name == "refresh") {
+|		window.name = "psyced"
+|## geht auch ohne timeout, aber sicher ist sicher
+|		setTimeout("top.location.reload()", longer)
+|	}
+|}
+|</script>
+|##{_HTML_head}
+|<body class="Pe" onFocus="fokuss()">
+|[_HTML_photo]
+|[_FORM_start]
+
+_PAGES_end_description
+|[_FORM_end]
+|##{_HTML_tail}
+
+_HTML_examine_display
+|<p class="Ped">{_TEXT_display_Title}:
+|<select name=display onChange="setdis(this,' [_nick]')">
+|<option value="DISPLAY" [_display_normal]>{_TEXT_display_normal} &nbsp;</option>
+|<option value="IGNORE" [_display_none]>{_TEXT_display_none} &nbsp;</option>
+|</select></p>
+
+_HTML_examine_buttons_start
+|## SELF? whatever.. text needs to be intlized
+|<p class="Peb"><a id="Pebh" href="javascript:hom()">HOME</a> &nbsp;
+
+_HTML_examine_buttons_end
+|</p>
+
+_HTML_examine_context_enter
+|&nbsp; &nbsp; &nbsp;
+|&nbsp; <a id="Pebe" href="javascript:cmd('ENTER [_nick_place]')">ENTER</a>
+|&nbsp; <a id="Pebs" href="javascript:cmd('SUBSCRIBE [_nick_place]')">SUBSCRIBE</a>
+
+_HTML_examine_context_leave
+|&nbsp; &nbsp; &nbsp;
+|&nbsp; <a id="Peben" href="javascript:cmd('LEAVE [_nick_place]')">LEAVE</a>
+|&nbsp; <a id="Pebsn" href="javascript:cmd('UNSUBSCRIBE [_nick_place]')">UNSUBSCRIBE</a>
+
+_HTML_examine_friend_delete
+|&nbsp; <a id="Pebfn" href="javascript:cmd('UNFRIEND [_nick]')">{_TEXT_button_friend_delete}</a>
+
+_HTML_examine_friend_new
+|&nbsp; <a id="Pebf" href="javascript:cmd('FRIEND [_nick]')">{_TEXT_button_friend_new}</a>
+
+_HTML_call
+|<object width="[_amount_width_object]" height="[_amount_height_object]">
+|<param name="movie" value="[_path_object_local]"></param>
+|<param name="bgcolor" value="#cc9999" />
+|<embed src="[_path_object_local]?bgcolor=#ff6666" type="application/x-shockwave-flash" width="[_amount_width_object]" height="[_amount_height_object]"></embed>
+|</object><object width="[_amount_width_object]" height="[_amount_height_object]">
+|<param name="movie" value="[_path_object]"></param>
+|## <param name="bgcolor" value="#9999cc"></param>
+|## <param name="user" value="[_nick]"></param>
+|## <param name="expiry" value="[_time_expire]"></param>
+|## <param name="role" value="[_role]"></param>
+|## <param name="jack" value="[_check_call]"></param>
+|## <param name="server" value="[_uniform_server_media]"></param>
+|<param name="flashVars" value="bgcolor=#9999cc&user=[_nick]&expiry=[_time_expire]&role=[_role]&jack=[_check_call]&server=[_uniform_server_media]"></param>
+|<embed src="[_path_object]" flashVars="bgcolor=#66ff66&user=[_nick]&expiry=[_time_expire]&role=[_role]&jack=[_check_call]&server=[_uniform_server_media]" type="application/x-shockwave-flash" width="[_amount_width_object]" height="[_amount_height_object]"></embed>
+|</object>
+
+_HTML_call_OLD
+|<object width="[_amount_width_object]" height="[_amount_height_object]">
+|<param name="movie" value="[_path_object]"></param>
+|<param name="ns0Name" value="(0)"></param>
+|<param name="stream" value="([_nick])[_time_expire][_role][_check_call]"></param>
+|<param name="url" value="[_uniform_server_media]"></param>
+|<embed src="[_path_object]?ns0Name=(0)&stream=([_nick])[_time_expire][_role][_check_call]&url=[_uniform_server_media]" type="application/x-shockwave-flash" width="[_amount_width_object]" height="[_amount_height_object]"></embed>
+|</object>
+
+_list_description_each
+|## would be nice to have <tr id='_meth'> so we can do
+|## ._meth #ldpek { ... } in the css, but that requires a
+|## switch to psyctext at least when rendering to html.. maybe someday..
+|<tr><td class="ldpek">%s</td><td class="ldpev">%s</td></tr>
+
+_list_description_image
+|<img class="ldpi" src="data:[_type_image];base64,[_image_base64]">
+
+_list_description_on
+|<table class="ldp" border=0>
+|<tr class="ldpc"><th colspan=2>{_TEXT_description_nick}:</th></tr>
+
+_list_description_off
+|</table>
+
+_echo_execute_web
+|{_echo_execute}
+|
+|<script><!--
+|window.name = 'refresh';
+|setTimeout("history.back()", 1234);
+|// --></script>
+
+_echo_execute
+|Command is being executed.
+
+_failure_unavailable_description
+|Sorry, there is no description waiting to be viewed.
+

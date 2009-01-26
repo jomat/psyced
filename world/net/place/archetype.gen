@@ -1,0 +1,2558 @@
+// vim:foldmethod=marker:syntax=lpc:noexpandtab
+// $Id: archetype.gen,v 1.66 2008/04/13 14:07:07 lynx Exp $
+//
+// the meta-generator that contains all sorts of PSYC room code and with
+// a few defines and an include generates cloneable room implementations.
+// inheritance was not the answer for plugging together the best of room
+// behaviours. not even multiple inheritance.
+
+// psyced rooms store members by object:nick or UNI:nick, nick just being
+// an optimization. but don't we really want to have UNI:object or UNI:UNL ...?
+// should we use an array as value for the member mapping? this kind of
+// discussion belongs into CHANGESTODO anyway, so go read there.
+
+// the "default" configuration for dynamically instantiated places
+#ifdef DEFAULT
+// here is an alphabetic list of selectors available for archetype includers.
+// some of them commented out when not useful for the default case.
+// some simply unfinished/unusable as yet. this file is also used by
+// archetype.pl to find out which selectors exist. it uses the letters
+// in square brackets for its model filenames. the + was meant to indicate
+// things that every model should define, but that's in ESSENTIALS now.
+//
+//# define PLACE_FILTERS		// [+] provide /silence for public rooms
+# define PLACE_HISTORY			// [h] provide history functionality
+# define PLACE_HISTORY_SWITCH		// TODO: history off by default
+//# define PLACE_HISTORY_EXPORT		// [e] export history to websites
+# define PLACE_SCRATCHPAD		// [s] provide a scratchpad via web
+//# define PLACE_LOGGING		//     provide /logging for public rooms
+# define PLACE_MASQUERADE		// [m] provide a local /nick command
+//# define PLACE_MASQUERADE_COMMAND	//     provide a /masq admin command
+//# define PLACE_MASQUERADE_SECRET	-- see FIXME first
+//# define PLACE_MAY_HISTORY		// provide a MAY_HISTORY hook
+//# define PLACE_NEWSFEED		-- be a newsfeed.. TODO
+//# define PLACE_OWNED			// [o] owners and aides logic
+# define PLACE_PUBLIC_COMMAND		//     provide a /public admin command
+# define PLACE_STORE_COMMAND		// [+] provide a /store command
+# define PLACE_STYLE_COMMAND		// [+] owners can define /style sheet
+# define PLACE_TOPIC			// [+] provide a topic function
+# define PLACE_TOPIC_COMMAND		// [+] provide a /topic command
+//# define PLACE_TOPIC_FOR_ALL		//     allow anybody to set the topic
+#endif
+
+// things that every archetype auto-model gets.
+// the rest is #define'able via place.gen
+#ifdef ESSENTIALS
+# define PLACE_FILTERS			// [+] provide /silence for public rooms
+# define PLACE_STORE_COMMAND		// [+] provide a /store command
+# define PLACE_STYLE_COMMAND		// [+] owners can define /style sheet
+# define PLACE_TOPIC			// [+] provide a topic function
+# define PLACE_TOPIC_COMMAND		// [+] provide a /topic command
+#endif
+
+// the former "basic" place that older place code still inherits
+#ifdef BASIC
+// this recreates the functionality of the former net/place/basic
+// which is still being inherited by some special applications
+# define PLACE_TOPIC			// provide a topic function
+# define PLACE_TOPIC_COMMAND		// provide a /topic command
+#endif
+
+// some words about signatures, hooks, method overloading and macros
+// are waiting for you to read at..
+// http://about.psyc.eu/Create_place#Message_flow_in_psyced_places
+// and a MAY_HISTORY hook is just hanging around in this file waiting
+// for you to be seen as an example on how to extract code into its
+// own hook. pretty simple really. in fact, before writing these
+// words and making this my official plan I considered several other
+// architectural plans on how to make efficient extensible places.
+// first the one which is in place now. the following paragraphs discuss
+// that and are essentially deadly boring and mostly a note to myself.
+// so stop reading this. anyway, here goes:
+//
+// the design that i took uses a single table of known signatures for the
+// entire system, since signatures are meant to be constant information
+// at all times. yeah it could even be implemented in some preprocessor
+// form so that signature unpacking actually happens in the code. but for
+// now it's in the call_signature() library function.
+//
+// behaviour extensions are solved by the handler mentioned in the signature,
+// thus the hook calls and inheritance requirement. the function table lookup
+// of a string function name is slightly costy - in exchange we don't have
+// baggage closure mappings in the objects. one more advantage is, that after
+// several other thoughts i figured out that what looks like chaos at first
+// glance (this file really does) is actually close to optimal. hooks only
+// where necessary, and more than just before/after if necessary (as in a
+// complex operation such as _request_enter), and macros as an abstraction
+// layer to provide a consistent interface to the place writer.
+//
+// and these were the alternatives considered:
+//
+// 1. have before and after hooks (only?) also in the signatures, which
+// however need to be called by function table lookup in each object no
+// matter if it actually makes use of them: very inefficient.
+//
+// 2. have all behaviour filters generated by place.gen, even the default
+// ones. like every place with a /topic command would be compiled with yet
+// another copy of the same bytecode which tells it who is in charge of
+// changing the topic. very memory unfriendly.
+//
+// 3. another option was to put before/after hooks into big switches around
+// the signature call. this means several switch lookups additional to the
+// signature lookup and you can't access the unpacked variables in the before
+// part unless you split signature unpacking from calling the handler. so
+// you even have to put the before and after switches into their own functions
+// or it will be impossible to extend them. wah.
+//
+// 4. each place keeps a data structure which describes its signatures
+// together with closures for handlers, before and after hooks (ppp
+// style). this is cool for extensibility as you don't need inheritance
+// to extend functionality (but why would you want to do that in LPC?),
+// but the trade-off is larger memory consumption in large installations
+// with large amounts of identical place programs, each of them carrying
+// a signature table along even though it was supposed to be constant.
+// may be worth it anyhow. yeah it could have been an ok alternative.
+// but the advantages just don't make sense in the LPC environment.
+// also it is limited to before/after hooks unless you make the structure
+// complex enough to carry unlimited hooks (ppp doesn't and tries to cope).
+
+#include <net.h>
+#include <person.h>
+#include <status.h>
+#include <url.h>
+#include <driver.h>
+
+#ifdef PLACE_HISTORY
+# include <text.h>		// inherits textc
+
+inherit NET_PATH "lastlog";
+
+# ifndef _limit_amount_history_persistent
+#  define _limit_amount_history_persistent 444
+# endif
+
+# ifndef _limit_amount_history_export
+#  define _limit_amount_history_export 24
+# endif
+
+# define DEFAULT_GLIMPSE 3
+# define MAX_SIMPLE_HISTCLEAR 100
+
+volatile int _histChange;
+#endif // PLACE_HISTORY
+
+// internal (was basic.c)
+#define MEMBER(UNIFORM)	member(_u, UNIFORM)
+#define DATA_FILE(name) (DATA_PATH "place/" + lower_case(name))
+
+inherit NET_PATH "group/master";
+
+#ifdef PERSISTENT_MASTERS
+mapping _u;
+#endif
+
+// used by new /reload
+members(recover) {
+	if (recover) {
+		ASSERT("members() recovering", mappingp(recover), recover)
+		PT(("%O recovering members %O\n", ME, recover))
+		_u = recover;
+	}
+	return _u;
+}
+
+#ifdef PLACE_OWNED
+volatile mapping banned;
+
+// sometimes overridden by place.gen
+mixed qOwners() { return 0; }
+#endif
+
+#ifdef PLACE_SCRATCHPAD
+volatile mapping used, given; // used/given scratchpad IDs
+#endif
+
+#ifdef PLACE_MASQUERADE
+//
+// OPTIMIZE: the new !DONT_REWRITE_NICKS code serves the purpose of enabling
+// local nicks according to jabber MUC. the code may also be used by NICKS
+// that is: instead of having an extra snames mapping we could put local
+// nicks into our _u[uniform] value field. but this is just a quick thought
+// and may not be viable after all, have to look at this closer ... TODO
+//
+protected volatile mapping snames;
+//
+# ifdef PLACE_MASQUERADE_COMMAND
+qMasquerade() {
+	ASSERT("qMasquerade called", 1==0, 0)
+	return 1;
+}
+# else
+qMasquerade() { return v("masquerade"); }
+# endif
+#endif
+
+#ifdef PLACE_LOGGING
+private volatile string _logfile;
+
+qLogging() { return v("logging"); }
+#endif
+
+// to be overloaded by place.gen
+qNewsfeed() { return 0; }
+// _request_list_feature uses this in *all* place objects, dont ifdef
+
+#ifdef PLACE_HISTORY
+mayLog(mc) { return abbrev("_message", mc); }
+
+qHistory() { return v("log"); }
+
+qHistoryGlimpse() { return DEFAULT_GLIMPSE; }
+
+histClear(a, b, source, vars) {
+	int l = logSize();
+
+	if (a == "") a = 0;
+	if (!a && l > MAX_SIMPLE_HISTCLEAR) {
+		sendmsg(source, "_warning_usage_histclear",
+		     "The history is [_amount_history] entries long. "
+		     "Usage: /histclear «amount»",
+		    ([ "_amount_history" : l ]));
+		return 1;
+	}
+	logClear(a);
+	save();
+	sendmsg(source, "_echo_place_history_cleared",
+	     "The history has been reduced from [_amount_history_old] "
+	     "entries to [_amount_history].",
+		    // the "0" is needed for remote delivery by PSYC
+		    // i wonder if i should change psyc/parse instead
+		    // or if this is the correct way to indicate that
+		    // the variable is zero, not removed
+		([ "_amount_history" : logSize() || "0",
+		   "_amount_history_old" : l || "0",
+		   "_amount_removed" : a ]));
+	return 1;
+}
+
+msgView(source, mc, data, vars, showingLog) {
+	string fmt;
+
+# ifdef PLACE_HISTORY_EXPORT
+#  if HAS_PORT(HTTP_PORT, HTTP_PATH) || HAS_PORT(HTTPS_PORT, HTTP_PATH)
+	// 'ecmascript' output is effectively JSON, but more than that,
+	// since it is intended for output as html, it uses html quoting
+	// rather than json quoting, and quotes all html characters on
+	// top of just quoting javascript's own. also, since we only
+	// output strings, we can leave out all the other special cases
+	// of make_json(). all in all this function may belong into json.c
+	// as a special case - make_htjson().
+	//
+	if (showingLog == "ecmascript" || showingLog == "html") {
+		string s, *t;
+//		s = psyctext( T("x"+mc, ""), vars, data, source );
+// first we render the message into a default plain text string
+		s = psyctext( T(mc, ""), vars, data, source );
+		if (strlen(s) < 7) return;
+		s = s[..<2];
+// htquote ist nicht so gründlich wie für javascript notwendig
+		s = regreplace(s, "\&", "\\\&amp;", 1);
+		s = regreplace(s, "<", "\\\&lt;", 1);
+		s = regreplace(s, ">", "\\\&gt;", 1);
+		s = regreplace(s, "\"", "\\\&quot;", 1);
+		s = regreplace(s, "\n|\\\\", " ", 1);
+//		unless (sscanf(s, "%s: %s", s, tx) == 2) return;
+// then we parse the plain text string to seperate nick from
+// action and text. this isn't very elegant really.
+		t = regexplode (s, " [a-z_1-9]*: ");
+// under funny circumstances it may match more than once
+		if (sizeof(t) > 3) t[2] = implode(t[2..], "");
+// and when "en_g" is set as default language, the output may not
+// have an action at all
+		else if (sizeof(t) < 3) {
+			t = ({ 0, "", 0 });
+			unless(sscanf(s, "%s %s", t[0], t[2])) {
+			    P1(("%O could not reparse %O for %s\n", ME, s,
+				showingLog))
+			    return;
+			}
+		}
+		P3(("%O becomes %O\n", s, t))
+//		t = regreplace(s, ": ", "\", \"", 1);
+//		if (s == t) return;
+		if (showingLog == "html")
+//			fmt = "(<i>%s</i>) <b>%s %s</b>: %s<br>\n";
+			fmt = stringp(t[2]) ? "<tr><td nowrap class=ts>%s</td><td nowrap class=sp><b>%s</b> %s</td><td class=tx>%s</td></tr>\n" : "<tr><td nowrap class=ts>%s</td><td colspan=2 nowrap class=sp><b>%s</b> %s</td></tr>\n";
+		else // showingLog == "ecmascript"
+			fmt = "\t%O, %O, %O, %O,\n";
+		
+		if (vars["_action_possessive"])
+		    printf(fmt, isotime(vars["_time_place"]
+				 || vars["_time_INTERNAL"] || 4404, 0),
+			t[0]+"s", vars["_action_possessive"], t[2]
+		    );
+		else printf(fmt, isotime(vars["_time_place"]
+				 || vars["_time_INTERNAL"] || 4404, 0),
+			t[0], vars["_action"] || t[1][1..<3], t[2]
+		    );
+	} else
+#  endif
+# endif
+       	{
+# if 0 //def BRAIN
+		// this is just because old storage files on fly
+		// contain _context's in their history data
+		// you can delete this after 2004
+		m_delete(vars, "_context");
+		// showing history is a unicast operation
+		// and may not contain a _context
+	// .. then again, isn't _context necessary to calculate
+	// the message id? okay we don't have msg ids yet..
+# endif
+		// and we don't wanna fake the origin of the message either..
+# ifdef UNSAFE_LASTLOG
+		if (source) {
+# endif
+			// stow away the original source, then send
+			// ME as source, so that clients can figure
+			// out in which frame to display this
+			vars["_source_relay"] = source;
+					// UNIFORM(source) ?
+			// storing psyc_name for local object looks neat
+			// but actually messes with history display logic.
+			// if it's a local object the _nick is enough anyway
+# ifdef UNSAFE_LASTLOG
+		}
+# endif
+		source = ME;
+# if 1 //def NOT_EXPERIMENTAL
+		// yes history is not multicast, but when retransmitting
+		// earlier multicasts you are supposed to provide
+		// both _target and _context
+	// see http://about.psyc.eu/Routing#Unicast_Message_for_State_Signaling
+		// mark this message as a retransmission from this context
+		vars["_INTERNAL_context"] = ME; // vars["_context"] = ME;
+# endif
+# ifdef VARS_IS_SACRED
+		// in this case net/irc takes care of protecting vars
+		sendmsg(showingLog, mc, data, vars, source, 1);
+# else
+		// since castmsg is not being used we have to protect
+		// our history database by copying the vars mapping
+		sendmsg(showingLog, mc, data, copy(vars), source, 1);
+# endif
+	}
+}
+
+# ifdef PLACE_HISTORY_EXPORT
+#  ifdef TIME_HISTORY_EXPORT_RELOAD
+#   ifndef TIME_HISTORY_EXPORT_RELOAD_PARANOID
+#    define TIME_HISTORY_EXPORT_RELOAD_PARANOID 12
+#   endif
+
+volatile int lastTime;
+volatile string lastIP;
+#  endif
+# endif
+#endif /* PLACE_HISTORY */
+
+#ifdef PLACE_TOPIC
+// this reminds you of public.c
+qTopic() { return v("topic"); }
+
+#ifdef PLACE_TOPIC_COMMAND
+sTopic(text, source, nick) {
+	unless (nick) return;
+#ifndef PLACE_TOPIC_FOR_ALL
+# ifdef PLACE_OWNED
+#   define OFFICIAL 0
+	if (!qAide(objectp(source) ? nick : source)) {
+		sendmsg(source, "_error_unavailable_function_place_topic",
+			"This function is not available to you here.");
+		return 1;
+	}
+# else
+#  ifdef PLACE_PUBLIC_COMMAND
+#   define OFFICIAL 0
+	if (qPublic()) if (!boss(source) && stringp(v("topic-user"))
+		       && lower_case(nick) != lower_case(v("topic-user"))) {
+		sendmsg(source, "_error_unavailable_function_place_topic",
+			"This function is not available to you here.");
+		return;
+	}
+#  else
+#   define OFFICIAL "_official"
+//#   echo It's official!
+	unless (boss(source) > 59) return;
+#  endif
+# endif
+#else
+# define OFFICIAL 0
+#endif
+	if (stringp(text) && strlen(text) > 1) {
+		vSet("topic", text);
+		vSet("topic-user", nick);
+		// TODO: no support for _official.. yet
+		castmsg(ME, "_notice_place_topic",
+		    "New topic in [_nick_place] by [_nick]: [_topic]",
+			([ "_nick" : v("topic-user"),
+			  "_topic" : v("topic"),
+			  "_nick_place" : MYNICK ]) );
+	} else if (v("topic")) {
+		// TODO: no support for _official.. again
+		castmsg(ME, "_notice_place_topic_removed",
+		    "[_nick] removes [_nick_topic]'s topic: [_topic]",
+			   ([ "_nick": nick,
+			"_nick_topic": v("topic-user"),
+			     "_topic": v("topic"),
+			     "_nick_place" : MYNICK ]) );
+		vDel("topic");
+		vDel("topic-user");
+	}
+	save();
+	return v("topic");
+}
+#endif
+
+showTopic(rcpt, verbose, mc) {
+	P4(("showTopic to %O (%O)\n", rcpt, mc))
+	if (v("topic")) sendmsg(rcpt, mc
+			    ? "_status_place_topic"+ mc
+			    : "_status_place_topic",
+		"Topic by [_nick]: [_topic]",
+		    ([ "_nick" : v("topic-user"),
+		      "_topic" : v("topic"),
+		      "_nick_place" : MYNICK,
+	  ]) );
+	else if (verbose) sendmsg(rcpt, "_status_place_topic_none",
+		     "No topic is set in [_nick_place].", ([
+		      "_nick_place" : MYNICK,
+	  ]) );
+	return 1;
+}
+#endif
+
+#if HAS_PORT(HTTP_PORT, HTTP_PATH) || HAS_PORT(HTTPS_PORT, HTTP_PATH)
+htget(prot, query, headers, qs, data, noprocess) {
+# ifdef PLACE_SCRATCHPAD
+        sTextPath(query["layout"] || MYNICK, query["lang"], "html");
+	if (!noprocess && (!qs || query["scratchpad"])) {
+		string rand, buf;
+// microscopic wiki functionality .. cheap imitation of tobi's save.pike
+//
+// things one could add:
+// 1. advertise URL in /st and change notice
+// 2. call it v("notepad") and volatile scratchpad
+//    so that we can choose if something is persistent or not
+// 3. authentication / compare ip with locations of people in room or schergen
+// 4. implement locking !? or history !???
+// 5. have multiple scratchpads per key in a mapping. like:
+// 	/place/group?scratchpad&key=goodmood
+// 6. autogenerate numeric keys 1,2,3..
+// 7. have a garbage collection for old scratchpads?
+//
+		htok(prot);
+		//unless (v("key")) vSet("key", ([])); <- next evolutionary step
+		// if someone pushes send button after 24h, he might block
+		// someone elses id in the rare case that RANDHEXSTRING
+		// reprovided the specific id to someone else who didn't send
+		// his changes first.. well. might not happen.
+		// TODO: prefix id with epoch?
+		if (stringp(query["scratchpad"])
+			&& strlen(query["scratchpad"]) > 1
+//
+// id logic serves the purpose of not changing the scratchpad while going
+// "back" in the browser history. only a new "post" should change it.
+// it could have been an incremental counter, but then you would have to
+// recopy the contents of your scratchpad if someone else posted in the
+// meantime. it's a question of taste. probably simpler and better.
+//
+			&& (!stringp(query["id"])
+			    || !member(used, query["id"]))) {
+#ifdef __LDMUD__
+		    // problem apparently caused by ldmud input charset logic
+		    buf = replace(query["scratchpad"], "\r", "");
+#else
+		    buf = query["scratchpad"];
+#endif
+		    if (buf != v("scratchpad")) {
+			vSet("scratchpad", buf);
+			m_add(used, query["id"]);
+			call_out(#'m_delete, 86400 /* 24 hours */,
+				 used, query["id"]);
+
+			castmsg(ME, "_notice_update_scratchpad",
+			    "The [_page_scratchpad] has changed.", ([
+#ifdef PRO_PATH
+			       "_page_scratchpad":
+				  ((tls_available() && HTTPS_URL) || HTTP_URL)
+#else
+			    // problem with POST over https apparently..
+			       "_page_scratchpad": (HTTP_URL)
+#endif
+					  // TODO: use psycName() here instead
+						 +"/@"+ MYNICK +"?scratchpad"
+			]));
+		    }
+		}
+
+		while (member(given, rand = time() + "z" + RANDHEXSTRING));
+		m_add(given, rand);
+		// notTODO: time() monotonically increases, so .. holding the
+		// entries for four seconds only might not be sufficient if
+		// time changes to past.
+		// anyway, collisions (and timechanges to past) are quite
+		// unlikely, especially contemporaneous, so we don't need to
+		// hurry with this.
+		call_out(#'m_delete, 4, given, rand);
+		// the whole idea of rands returning the same value while
+		// two people request this page within the same two seconds
+		// is a bit paranoid really. this function would probably
+		// work fine without a "given" mapping. well saga is a
+		// perfectionist and we usually love him for that  ;)
+
+		w("_PAGES_group_scratchpad", 0,
+			([ "_scratchpad" : htquote(v("scratchpad") || ""),
+			   "_id"	 : rand,
+			   //"_group_nick" : MYNICK, -- why?
+			   "_nick_place" : MYNICK ]) );
+		//noprocess = 2;
+		return 1;
+	}
+# endif
+# ifdef PLACE_HISTORY_EXPORT
+	int a;
+
+	PT(("%O inspection %O %O\n", ME, query, headers))
+#  ifdef TIME_HISTORY_EXPORT_RELOAD
+	a = time() - lastTime;
+	if (a < TIME_HISTORY_EXPORT_RELOAD_PARANOID) return 1;
+	if (a < TIME_HISTORY_EXPORT_RELOAD && lastIP == query_ip_number())
+	    return 1;
+	lastTime = time();
+	lastIP = query_ip_number();
+#  endif
+	// limit this to "?format=js", as planned before
+	unless (noprocess) {
+	    if (query["amount"]) {
+		sscanf(query["amount"], "%d", a);
+		a = a < _limit_amount_history_export ? a :
+		       	_limit_amount_history_export;
+		P4(("%O amount is %O\n", ME, a))
+	    }
+	    switch(query["format"]) {
+	    case "js":
+		sTextPath(0, query["lang"], "html");
+		htok3(prot, "application/x-javascript",
+		     "Cache-Control: no-cache\n");
+		write("\ndocument."+ (query["name"] || MYLOWERNICK)
+		    + " = new Array(\n");
+		logView(a, "ecmascript", 15);
+		write("  \""+ implode(names(), ", ")+"\")\n\n");
+		break;
+#if 0
+	    case "json":
+		sTextPath(0, query["lang"], "html");
+		htok3(prot, "application/x-javascript", // probably incorrect
+		     "Cache-Control: no-cache\n");
+		logView(a, "json", 15);
+		// this calls msgView which should probably create a buffer
+		// data structure that can be output with make_json.. 
+		break;
+#endif
+	    default:
+		sTextPath(query["layout"] || MYNICK, query["lang"], "html");
+		htok(prot);
+		// w("_HTML_head");
+		write("\n\n<table>");
+		logView(a, "html", 15);
+		write("</table>");
+		// write("</table>\n\n");
+		// w("_HTML_tail");
+		break;
+	    }
+	}
+#  ifndef _flag_disable_notice_place_examine_web
+	if (query["from"] == "") query["from"] = 0;
+	if (query["location"] == "") query["location"] = 0;
+
+	castmsg(ME, "_notice_place_examine_web", "[_nick_place] inspected on [_web_on] coming from [_web_from].",
+	([	"_web_referrer" : query["from"] || "bookmark",
+		"_web_page" : query["location"] || headers["referer"] || "",
+		"_web_browser" : headers["user-agent"] || "",
+		"_web_on" : query["location"] || headers["referer"] ||
+			    headers["user-agent"] || "",
+		"_web_from" : query["from"] ||
+			//    query_ip_name(this_interactive()) ||
+			    headers["user-agent"] ||
+			     "http",
+		"_host_name" : query_ip_name(this_interactive()) || "",
+		"_nick_place" : MYNICK || "This place",
+	    ]) );
+#  endif
+
+	// this is usually not very interesting really.. like:
+	//   refer= http://euroclash.com jsloc= http://euroclash.com/
+	//
+	D1( if (query["location"] && headers["referer"] &&
+		headers["referer"] != query["location"])
+	    D(S("Interesting: refer= %s jsloc= %s\n",
+		    headers["referer"], query["location"]));
+	)
+# else
+#  ifdef T
+	//sTextPath(query["layout"], query["lang"], "html");
+	unless (noprocess) {
+	    htok(prot);
+	    w("_HTML_head");
+	}
+	w("_PAGES_place_default",
+	    "You are looking at the [_nick_place] default page.\n",
+		([ "_nick_place" : MYNICK ]) );
+	unless (noprocess) w("_HTML_tail");
+#  else
+	write("\n\nYou are looking at the "+MYNICK+" default page.\n");
+#  endif
+# endif
+	return 1;
+}
+#endif
+
+mixed isValidRelay(mixed x) { return x == ME; }
+
+// not in use anywhere
+isMember(source, origin) { return MEMBER(source); }
+
+#ifndef QUIET_REMOTE_MEMBERS
+castPresence(source, mc, data, vars, filterpresence) {
+	P3(("castpresence vars %O to %O\n", vars, source))
+	unless(filterpresence) castmsg(source, mc, data, vars);
+	// vars["_source"] is the link we are on
+	// we have to implement that in slave so it will forward the
+	// _notice_place_enter to _source_relay
+	// <lynX> hmmm.. should this be changed to _INTERNAL_origin? TODO
+	sendmsg(vars["_source"], mc, data, 
+		vars + ([ "_source_relay" : source ]));
+}
+// #else
+// # echo QUIET_REMOTE_MEMBERS is activated.
+#endif
+
+// actually insert the new member into our data structures
+// (happens after all checks have passed)
+insert_member(source, mc, data, vars, ni, neu, again) {
+#ifdef EXPERIMENTAL
+	unless (ni) {
+		P0(("insert_member w/out nick for %O in %O.\n", source, ME))
+		// try to make the ugly three trailing parameters optional
+		ni = vars["_nick"];
+		neu = !MEMBER(source); // don't output the status again
+		again = 0;
+	}
+#endif
+#ifdef PLACE_MASQUERADE
+	if (vars["_nick_local"]) snames[source] = vars["_nick_local"];
+#endif
+	//mc = "_notice_place_enter";
+	// should this be _source_nick and _context_nick instead?
+//		unless (objectp(source))
+//		    data = "[_nick] enters [_nick_place].";
+	data = "[_nick] enters [_nick_place].";		// TODO
+	vars["_nick_place"] = MYNICK;
+
+	P4(("%O: %O is %O (%O)\n", ME, source, neu, v("_filter_presence")))
+	// We ALWAYS do castmsg() before adding the user to 
+	// our members, otherwise the logic on recipient side 
+	// is much higher
+	if (neu) {
+		// TODO: wir wollen eigentlich nicht, dass alle
+		// 	vars da durchgehen... _amount_history
+		// 	z.b. auch nicht
+		unless (v("_filter_presence")) {
+#ifdef PERSISTENT_SLAVES
+		    revision += 1;
+#endif
+		    castmsg(source, mc, data, copy(vars));
+		}
+		// we used to call insert_member() even for people who are
+		// already in.. i guess it was a bug!!
+		::insert_member(source, vars["_INTERNAL_origin"]);
+	}
+	// this was before insert_member(), but shouldn't make a difference
+	//
+	// makeMembers() used to be at this point, but I changed that
+	// to simplify the user.c logic
+#ifdef DONT_REWRITE_NICKS
+	_u[ source ] = ni;
+#else
+	// not sure if this can be a security problem. should it
+	// be so, we need to use an _INTERNAL_nick_local instead.
+	// then again, if any jabberer can propose his nick here,
+	// we might aswell allow it for anybody..
+	_u[ source ] = vars["_nick_local"] || ni;
+#endif
+#ifdef ENTER_MEMBERS
+	// this used to be before adding the new member. if there's a
+	// reason to put it back there, then we need to teach user.c
+	// to add itself to _list_members before calling the w()'s
+	unless(again) vars += makeMembers()[1];
+#endif
+	// experimental: let the clients know this is a non-speaking room.
+	// see also conferencing.pml for a more elaborate scheme for
+	// conference control. this is just something nice to start with.
+	if (v("_filter_conversation")) vars["_control"] = "_silent";
+	// stylesheet support
+	if (v("_uniform_style"))
+	    vars["_uniform_style"] = v("_uniform_style");
+	// we set it on all requests instead
+//		if (v("topic")) vars["_topic"] = v("topic");
+#ifdef PLACE_OWNED	// NOT_EXPERIMENTAL
+	// NEW: if OWNERS have not been provided by place.gen
+	// we'll make the first guy who walks in our owner.
+	unless (v("owners")) {
+		vSet("owners", ([ SNICKER: source ]));
+		sendmsg(source, "_warning_place_duty_owner",
+		    "You are the new owner of [_nick_place].",
+			([ "_nick_place" : MYNICK ]));
+		vars["_duty"] = "_owner";
+	} else {
+		int level = qAide(SNICKER);
+
+		if (level) vars["_duty"] =
+		    level > 2 ? "owner" : "administrator";
+		else vars["_duty"] = "member";
+	}
+#else
+# if 0 //def MODERATED 
+// this code is ignored, since MODERATED is never defined here
+// <fip> schoen waers wenn das hier auch funktionieren wuerd
+// [x] inheritance aware preprocessor now  <- illogical wish ;)
+// what you want here is to turn off inheritance and use code
+// generation by include. that's what we do in place.gen, but
+// to avoid code explosion we use inheritance here. simply put
+// this code into place.gen and it works as you intend it. ok, not
+// *that* simple - you have to put it into the appropriate hook.
+// which in this case is enter() probably. TODO
+	vars["_duty"] = "none"; 
+	// role of "moderator" upon entering?
+# else
+	// only this code runs
+	vars["_duty"] = "member";
+# endif
+#endif // OWNED
+	// we are also echoing his vars back to the requestor
+	// that should normally be harmless and even useful
+	// yes.. in fact we handle _nick_local like that
+	P4(("sending _echo for %O with vars %O to %O\n",
+	    mc, vars, source))
+	// is it okay to remap mc here, or should i use a temp var?
+	// semantically it looks ok
+	mc = "_echo" + mc[7..];
+	//if (v("_filter_conversation")) mc += "_filtered";
+	sendmsg(source, mc, data, vars);
+	// ensure that a client knows this room has been entered
+	// before any room details like topic etc. are sent
+	//
+	// this used to have an unless(quiet), but why not show
+	// the status in public rooms with _filter_presence on?
+	// but what we still can't do is output this twice for
+	// repeating joins, in particular because jabber cannot
+	// distinguish a new join from just a change in presence
+	// (going away or returning from idle looks just like a join)
+	// so we now make sure the user is already in. should we
+	// need further distinction, then we will have to append
+	// a _jabber to the mc just to take care of this jabberish
+	// shortcoming.
+	//
+	// wait.. THIS is the new 'quiet'
+	// newsfeeds and other non-talking rooms do not need to be
+	// visible as channels in any user interface
+	if (neu &&! v("_filter_conversation"))
+	    onEnter(source, mc, data, vars);
+}
+
+private leaveMsg(ni, isError, source, mc, data, vars) {
+	mixed origin;
+				// a direct psyc connection can be its own origin
+	if (isError && vars && (origin = vars["_INTERNAL_origin"] || source)) {
+		mixed m, n, server, t;
+		mapping abandon = ([]);
+
+		// member list clean up logic.
+		//
+		// this stuff mentally belongs to group/master, but
+		// since it doesn't apply for persons, we leave it here.
+
+		if (objectp(origin))
+		    server = origin->qOrigin() || source;
+		else
+		    server = origin;
+
+		P3(("%O: errleave(%O, %O, %O, %O, %O, %O) origin %O\n",
+		    ME, ni, isError, source, mc, data, vars, origin))
+
+		// a previous message from the pushback may already
+		// have removed the subtree
+		unless (t = _routes[server]) return 0;
+
+#ifdef MEMBERS_BY_SOURCE
+# ifdef TIDILY
+		if (mappingp(t)) {
+		    P2(("Tidily looking for netburps for %O via %O in %O\n",
+		       	server, origin, ME))
+		    // does foreach really need a copy() here?
+		    each (m, copy(t)) {
+			abandon[m] = _u[m];
+			remove_member(m, server);
+		    }
+		}
+		else
+# endif
+		if (intp(t)) {
+		    P2(("Messily looking for netburps for %O via %O in %O\n",
+		       	server, origin, ME))
+		    // does foreach really need a copy() here?
+		    mapeach(m, n, copy(_u)) if (stringp(m)
+# if 1 //def we_dont_care_about_virtual_hosts
+			&& abbrev(server, m)
+# else // could run both for maximum paranoia
+			&& find_target_handler(m) == origin
+# endif
+		    ) {
+			    abandon[m] = n;
+			    remove_member(m, server);
+		    }
+		}
+		if (sizeof(abandon)) {
+# if DEBUG == 1
+		    if (t && t != sizeof(abandon) && intp(t)) {
+			P1(("Netburp in %O: supposed to delete %O people coming from %O, but found %O\n",
+			    ME, t, server, abandon))
+		    }
+# else
+		    P2(("Netburp in %O: %O people coming from %O, found %O\n",
+			ME, t, server, abandon))
+# endif
+		    mapeach (m, n, abandon) {
+			castmsg(m, "_notice_place_leave_netburp",
+			    "Lost route to [_nick].",
+				([ "_nick" : n ]));
+		    }
+		} else
+#endif
+		    monitor_report("_notice_forward"+mc,
+			 "could not handle the error coming from "+
+			 to_string(source));
+		return 1;
+	}
+	// should use object, not nickname... old story
+#ifndef QUIET_REMOTE_MEMBERS
+	if (isValidRelay(source)
+	    || isValidRelay(vars["_source_relay"])) {
+		// we have to do sendmsg first... daher kein castPresence().. doof!
+		sendmsg(vars["_source"], mc, data, vars + ([ "_source_relay" : source ]));
+		unless(v("_filter_presence")) castmsg(source, mc, data, vars);
+	} else unless (objectp(source) || is_formal(source)) {
+	    return;
+	}
+#endif
+	unless (MEMBER(source)) {
+		if (isError) error(source, mc, data, vars);
+		// probably room got reloaded .. or person first left the
+		// place, then unsubscribed..   just let them leave
+		// _notice not _echo? was: _failure_invalid_place_membership
+		else if (mc == "_notice_place_leave_subscribe")
+		    sendmsg(source, mc,
+			"You unsubscribe [_nick_place]. Bye bye.",
+			([ "_nick_place" : MYNICK,
+			 "_nick" : vars["_nick"] ]) );
+		// careful: detected some recursions here..
+		// and.. _echo shouldnt be used for enter/leave meguesses
+		//else if (mc != "_echo_place_leave_invalid")
+		else if (mc != "_notice_place_leave_invalid") 
+		    // couldn't it be a real _warning ?
+		    sendmsg(source, "_notice_place_leave_invalid",
+			"[_nick_place] doesn't remember seeing you anyway.",
+			([ "_nick_place" : MYNICK,
+			 "_nick_local" : vars["_nick_local"],
+			 "_nick" : vars["_nick"] ]) );
+		return 1;
+	}
+ //	unless (member(_u, vars["_nick"])) return 1;
+ //	unless (_u[who] == previous_object() ||
+ //	  find_person(who) == previous_object()) return 0;
+
+	//mc = "_notice_place_leave";
+	data = "[_nick] leaves [_nick_place].";		// TODO
+	vars["_nick_place"] = MYNICK;
+#ifdef PERSISTENT_SLAVES
+	revision += 1;
+#endif
+	unless(isError) {
+		if (v("_filter_presence")) {
+			// arent you a little heavy on the relays here? i dont get it
+			sendmsg(source, mc, data, vars+ ([ "_source_relay" : source ]));
+		} 
+		else castmsg(source, mc, data, vars);
+	}
+	remove_member(source, vars["_INTERNAL_origin"]);
+	// it's probably safer to call this hook _after_ removing
+	// the candidate to avoid risking loops
+	leave(source, mc, data, vars);  // hook here.. hardly ever used
+	// in fact it should no longer be necessary as you can extend leaveMsg()
+	// from place.gen (need to add a #define for it.. TODO)
+	return 1;
+}
+
+// extending this to hook up operations is more complete, as it also sees
+// people dropping out of the place by errors, but it is also a bit more
+// dangerous: if you castmsg() from here, you may be recursively triggering
+// more errors, since there may be more then one person dropping out of
+// the place from the same origin. add a #define to place.gen anyway.. TODO
+remove_member(source, origin) {
+	m_delete(_u, source);
+#ifdef PLACE_MASQUERADE
+	m_delete(snames, source);
+#endif
+	::remove_member(source, origin);
+}
+
+msg(source, mc, data, mapping vars) {
+	string t;
+	string ni;
+
+	P4(("PRE %O msg(%O,%O,%O,%O) from %O\n", ME, source, mc, data, vars,
+		previous_object()))
+
+#if 1 //def NOT_EXPERIMENTAL
+	unless (source) {
+		source = vars["_INTERNAL_source"];
+		ASSERT("source", source, source)
+	}
+#endif
+
+	// this can indeed happen when the object has already been terminated
+	// during shutdown procedure, but something comes back to talk to it.
+	// in fact it's enough to type something (^L) in telnet after
+	// officially having left all places. should set place=0 in user.c...
+	// ASSERT() is no good here, as this is not a debug case
+	if (!_u) {
+                //raise_error("place not initialized!?\n");
+                P1(("Warn: Unitialized %O got %O from %O\n", ME, mc, source))
+                return;
+        }
+
+#ifdef PLACE_OWNED
+	// belongs into the enter() hook
+	if (abbrev("_request_enter", mc) || abbrev("_request_context_enter", mc)) {
+		// let NICKLESS pass
+		if (member(banned, lower_case(SNICKER))) {
+		    sendmsg(source, "_error_place_enter_necessary_invitation",
+			// let's pretend this is an invite-only room
+			"[_nick_place] can only be entered upon invitation.",
+			// "You are not allowed to join [_nick_place].",
+			([ "_nick_place" : MYNICK ]));
+		    return;
+		}
+	}
+	// new hook necessary here
+	else if (mc == "_request_invitation" && v("_restrict_invitation")) {
+		mixed supplicant;
+		unless (supplicant = vars["_invitation"]) return;
+		if (qOwner(SNICKER)) {
+			if (objectp(supplicant))
+			    supplicant = supplicant->qName();
+			sAide(supplicant, source);
+			PT(("implied mandate for %O with invitation into "
+			    "restricted room: %O\n", supplicant, ME))
+		} else {
+			castmsg(ME,
+			    "_failure_place_invitation_necessary_ownership",
+	"[_nick] tries to invite [_nick_target] but fails.",
+				vars);
+			// be kind and also inform the supplicant
+			sendmsg(supplicant,
+			    "_failure_place_invitation_necessary_ownership",
+	"[_nick] tries to invite [_nick_target] but fails.",
+				vars);
+			return;
+		}
+	}
+#endif
+#if 0
+	// zero source means it's a system message
+	// currently only used by monitor_report()
+	// but we should work on that
+	unless(source) {
+		//D2( raise_error("caught zero source\n"); )
+		// server warn gets here!
+		P1(("%O caught zero source (%O,%O,%O)\n",
+			ME, mc, data, vars))
+		return;
+	}
+#endif
+	// if (data && member(data, '\n') != -1)
+	//	data = replace(data, "\n", " ");
+
+	//t = lookup_identification(source, (qExists(source) ? 0 : vars["_source_identification"]));
+	t = source;
+	// should this happen for string sources only? as in person.c? TODO
+	//
+	// again, entity.c replaces UNLs with UNIs here and later patches things
+	// back in uni::sendmsg so on the way out stuff goes to the UNLs
+	unless (::msg(&source, mc, data, vars)) return 0;
+	P4(("POST %O msg(%O,%O,%O,%O) from %O in %O\n", ME, source, mc, data, vars,
+		t, previous_object()))
+//	ASSERT("seen local uniform",
+//	   objectp(source) || ... is_formal(source), source)
+#ifdef SIGS
+	if (call_signature(source, mc, data, vars)) return 1;
+#endif
+// TODO: drin weil das unten nicht geht
+	if (abbrev("_status", mc)) {
+		P1(("%O rejecting status(%O,%O..)\n",
+		    ME,source,mc))
+		return;
+	}
+	// uni and unl differ
+	if (t != source) {
+P1(("ident: %O is really %O\n", t, source))
+		//source = t;
+		// if (!member(vars, "_nick"))   -- dont trust the UNL
+		if (objectp(source)) {
+			if (objectp(t)) // location is local, we can trust him
+			    ni = vars["_nick"] || source->qName();
+			else	// uni is here but msg comes from client
+			    ni = vars["_nick"] = source->qName();
+		} else {
+#if 1
+// hier folgt ein block mit der komplexen extraktion des nicknames aus
+// der url der UNI. was mich dabei verwundert ist, wenn wir schon nicht
+// der _nick variable vertrauen wollen, warum machen wir das nur bei der UNI
+// und nicht bei jeder remote suorce generell? TODO
+		    mixed *u = parse_uniform(source);
+		    if (u) {
+			string n = u[UUser];
+
+			if (!n && u[UResource]
+				&& u[UResource][0] == '~') {
+			    n = u[UResource][1..];
+			}
+			unless (n) return 0; // not n? hm...
+
+			unless (vars["_nick"]
+				&& (lower_case(n)
+				    == lower_case(ni = vars["_nick"])))
+			    ni = vars["_nick"] = n;
+		    } else //return 0; // uhm.
+			// just think of non-chat apps where a host may
+			// have a good reason to enter a group..
+			ni = source;
+#else
+		    vars["_nick"] = source;
+#endif
+		}
+	} else {
+		// uni and unl are the same
+		if (vars["_nick"]) ni = vars["_nick"];
+		else 
+		    ni = vars["_nick"] = UNIFORM(source);
+	}
+
+	// to avoid recursions, we catch this right from the start
+	if (abbrev("_warning", mc)) {
+		t = objectp(source) ? vars["_source_relay"] : source;
+		P1(("Ignored: %O got %s from %O via %O\n",
+		    ME, mc, t, previous_object()))
+		return;
+	}
+	if (abbrev("_error", mc) || abbrev("_failure", mc)) {
+		t = objectp(source) ? vars["_source_relay"] : source;
+		P1(("Netburp: %O got %s from %O via %O\n",
+			ME, mc, t, previous_object()))
+		ni = vars["_nick_target"] || t;
+		if (leaveMsg(ni, 1, t, mc, data, vars)) {
+#if 0
+		    // klappt immernoch nicht zuverlässig!
+			castmsg(t, "_notice_place_leave_netburp",
+			    "Error delivering to [_nick].",
+				([ "_nick" : ni ]));
+	        } else {
+#endif
+//		    monitor_report("_notice_forward"+mc,
+//			 S("%O got %O from %O\n",
+//			 ME, psyctext(data, vars, mc, source), source));
+		    log_file("PLACE_ERROR", "%O « (%O,%s,%O,%O)\n",
+			     ME, source, mc, data, vars);
+//		    monitor_report(mc, psyctext(source+": "+data,vars,"",source));
+		}
+		return;
+	}
+	if (abbrev("_request", mc)) {
+		// needs a rewrite into a switch()
+		// mc inheritance should be handled at parsing time, not here
+		if (abbrev("_request_enter", mc)
+		    || abbrev("_request_leave", mc)
+		    || abbrev("_request_invitation", mc)) {
+			mc = "_notice_place"+mc[8..];
+#ifdef PLACE_TOPIC
+			if (v("topic") &&! abbrev("_request_leave", mc))
+			    vars["_topic"] = v("topic");
+#endif
+		// should become the common family for all three of the above
+		} else if (abbrev("_request_context", mc)) {	// SPEC
+			// we're not ready for this:
+			//mc = "_notice"+mc[8..];	// keep the _context
+			// instead:
+			mc = "_notice_place"+mc[16..];
+#ifdef PLACE_TOPIC
+			// we even set it on leaves.. so what.
+			if (v("topic")) vars["_topic"] = v("topic");
+#endif
+		} else if (abbrev("_request_description", mc)) {
+		    unless (mappingp(t = qDescription(source, vars, ni))) {
+			    // should we issue a _failure_unavailable..?
+			    // then again person.c says: be quiet do not reply
+			    return 1;
+		    }
+		    t["_nick_place"] = MYNICK;
+		    return sendmsg(source, "_status_description_place", 0, t);
+#ifdef JABBER_PATH
+		} else if (abbrev("_request_list_feature", mc)) {
+		    mixed isfeed = qNewsfeed();
+		    mixed rv = ([ "_nick_place" : MYNICK,
+				"_name" : MYNICK,
+				"_list_feature" : ({ "list_feature" }),	// _tab
+				]);
+		    if (isfeed) {
+			rv["_identity"] = "news";
+		    } else {
+			rv["_identity"] = "place";
+			rv["_list_feature"] += ({ "jabber-gc-1.0", "jabber-muc", "nonanonymous", v("public") ? "public" : "private", "persistent" });
+		    }
+		    // _notice??? this is a _status! FIXME
+		    sendmsg(source, "_notice_list_feature" + 
+			    (isfeed ? "_newsfeed" : "_place"),
+			    "[_nick] is a [_identity] called [_name] offering features [_list_feature].",
+			    rv);
+		    return 1;
+		} else if (abbrev("_request_list_item", mc)) {
+		    // after the cmd parser rewrite we may offer so-called
+		    // ad-hoc commands
+		    mixed rv = ([ "_nick_place" : MYNICK,
+				"_name" : MYNICK,
+				]);
+		    unless(MEMBER(source)) {
+			// TODO: send an appropriate error
+			// for now, just continue as it doesnt make 
+			// a difference
+		    }
+		    PT(("_target_fragment: %O\n", vars["_target_fragment"]))
+		    switch(vars["_target_fragment"]) {
+		    case 0:
+			rv["_list_item"] = ({ }),   // _tab
+			rv["_list_item_description"] = ({ });	// _tab
+		    }
+		    // _notice??? this is a _status! FIXME
+		    sendmsg(source, "_notice_list_item",
+			    "[_nick] has lots of items: [_list_item_description].",
+			    rv);
+		    return 1;
+#endif
+		} else if (!MEMBER(source)) {
+/*
+ * everything below this check is member-only
+ * so when rewriting commands and functions into
+ * signature handlers, the checks need to be
+ * transplanted accordingly. this makes the
+ * blueprints a bit larger, as you have the same
+ * if-member checks in each handler, but that is no
+ * problem. nothing gets less efficient by that.
+ * in fact the signature call should be a lot
+ * faster than going through a series of switches
+ * or -gasp- if/else trees of abbrev checks. 
+ */
+		    P1(("ARCHETYPE (%O,%O,%O,%O..) needs to enter %O first"
+		        " (members: %O).\n",
+			source,mc,data,vars, ME, _u))
+		    // do not allow _request_history etc.
+		    return sendmsg(source, "_error_necessary_membership",
+		    "You need to enter [_nick_place] first.",
+			 ([ "_nick_place" : MYNICK ]) );
+		} else if (abbrev("_request_members", mc)) {
+		    P4(("%O from %O.\n", mc, ME))
+		    return showMembers(VERBOSITY_REQUEST_MEMBERS, source);
+		} else if (abbrev("_request_status", mc)) {
+		    mixed b = 0, vy = VERBOSITY_STATUS_TERSE;
+
+		    if (!abbrev("_request_status_terse", mc)) {
+			b = boss(source);
+			vy = VERBOSITY_STATUS;
+		    }
+		    // irc clients use extra requests for topic 
+		    if (trail("_IRC", mc))
+			vy -= VERBOSITY_TOPIC;
+		    // irc clients don't like unexpected member lists
+		    else if (vy & VERBOSITY_MEMBERS)
+			showMembers(vy, source);
+		    return showStatus(vy, b, source, mc, data, vars);
+		} else if (abbrev("_request_execute", mc)) {
+		    string *args = explode(data, " ");
+		    data = lower_case(args[0]);
+		    unless(vars["_nick"]) vars["_nick"] = objectp(source) ?
+					    source->qName() : to_string(source);
+		    unless(cmd(data, args, boss(source), source, vars, mc))
+		      sendmsg(source,
+			      "_failure_unsupported_execute_place_command",
+			    "Sorry, no such command here.");
+		    return 1;
+#ifdef PLACE_HISTORY
+# ifndef SIGS
+		} else if (abbrev("_request_history", mc)) {
+		    return _request_history(source, mc, data, vars, 0);
+# endif
+#endif
+#ifdef PLACE_TOPIC_COMMAND
+		} else if (abbrev("_request_set_topic", mc)) {
+		    sTopic(vars["_topic"], source, vars["_nick"]);
+		    return 0;
+#endif
+		} else return;
+	}
+	// it is correct to leave a place with _notice_place_leave instead
+	// of _request_leave because a room is not entitled to keep a
+	// member in, when he doesn't want to. the place also accepts
+	// _notice_place_enter as a _request_enter, but you shouldn't use that
+	if (abbrev("_notice_place_enter", mc)
+	     || abbrev("_notice_context_enter", mc)) {  // actually a _request
+		int neu, again;
+
+#ifdef PLACE_MASQUERADE
+					// könnte ungut enden.. lieber nicht
+		// if (vars["_nick_local"]) ni = vars["_nick_local"];
+#endif
+		P3(("ENTER (%O, %O)\n", source, vars))
+		unless (stringp(vars["_nick"]) && strlen(ni)) {
+			sendmsg(source, "_error_place_enter_necessary_nick",
+    "Sorry, you can't just walk into here without a proper nickname.");
+			return;
+		}
+		// TODO: double usage of this flag is bad:
+		// 	/1/ send history, memberlist, ...
+		// 	/2/ cast new presence to room
+		// 	i would like to differentiate this and do /1/ always
+		// 	because the only st00pid clients that have problems
+		// 	with that are jabber clients which may send a 
+		// 	different mc (_request_enter_this_may_be_a_presence_change)
+		neu = !MEMBER(source); // don't output the status again
+		if (trail("_again", mc)) {
+		    mc = mc[..<7];
+		    again = !neu;
+		}
+
+		// zero return value means user is not allowed to enter!
+#ifndef QUIET_REMOTE_MEMBERS
+		// TODO: haeh? das is doch fuer den basic vollkommen wurst
+		// das gehoert wenn schon in den master und dort 
+		// unter SILENT oder so gehandelt
+		// der basic koennte es generell einfach rejecten
+		// wenn source relay oder context gesetzt ist. 
+		// aber die Nachrichten erzeugen die der master machen
+		// sollte... nene.
+		P1(("enter! %O relay? ", source))
+		// simplify for all objects that have no isValidRelay()
+		if (isValidRelay(source)
+		    || isValidRelay(vars["_source_relay"])
+		    || isValidRelay(vars["_context"])) {
+			P1(("yes. cast & out.\n"))
+			return castPresence(source, mc, data, vars,
+			    // don't broadcast the user's presence
+			    !neu || v("_filter_presence"));
+		} else unless (objectp(source) || is_formal(source)) {
+			P1(("no, but what is it? returning.\n"))
+			return;
+		}
+		if (vars["_source_relay"]) {
+			P1(("no, he forgot to link. returning.\n"))
+			sendmsg(source, "_error_necessary_link_place",
+    "Sorry, you can't just walk into here without a proper link."); 
+			return;
+		}
+		P1(("no. he's local.\n"))
+#endif
+#ifdef FORK // {{{
+		if (member(vars, "_INTERNAL_origin")
+		    && !vars["_INTERNAL_origin"]) return;
+#endif // }}}
+		if (neu)    // mayEnter hook
+		    unless (enter(source, mc, data, vars)) return;
+		insert_member(source, mc, data, vars, ni, neu, again);
+		return 1;
+	} else if (abbrev("_notice_place_leave", mc)
+#if 0
+		    || (t = abbrev("_failure", mc))
+		    || (t = abbrev("_warning", mc))
+		    || (t = abbrev("_error", mc))
+#endif
+		    || (abbrev("_notice_context_leave", mc)) ) {
+		// this is not a hook, this is behaviour!
+		leaveMsg(ni, 0, source, mc, data, vars);
+		return 1;
+	}
+#ifdef PLACE_TOPIC
+    	else if (abbrev("_query_topic", mc)) return showTopic(source, 1, OFFICIAL);
+#endif
+		// would be nice to lighten up this orgy of ors
+	else unless (!source
+		     || qAllowExternal(&source, mc, vars)   // mayExternal hook
+		     || MEMBER(source)
+		     || isValidRelay(source)
+		     || isValidRelay(vars["_source_relay"])
+		     || isValidRelay(vars["_context"])) {
+		P1(("(%O,%O,%O..) needs to enter %O first (members: %O).\n",
+		    source,mc,data, ME, _u))
+#if !( defined(PRO_PATH) && DEBUG < 2 )
+		sendmsg(source, "_error_necessary_membership",
+		    "You need to enter [_nick_place] first.",
+			 ([ "_nick_place" : MYNICK ]) );
+		//P1(("==> source, relay: %O, %O\n", source, vars["_source_relay"]))
+#endif
+		return 1;
+	} else if (v("_filter_presence") && abbrev("_notice_place", mc) ) {
+#ifdef PLACE_TOPIC
+		if (strstr(mc, "_topic") == -1) return 1;
+#endif
+		D2(D(mc+" has passed the silence check!\n");)
+		return castmsg(source, mc, data, vars);
+#if 0	// TODO: this causes bugs
+	} else unless (objectp(source) || abbrev("_message", mc)) {
+		// fängt auch _notice_link ab!?
+		P1(("%O rejecting %O from %O\n", ME,mc,source))
+		return;
+#endif
+	}
+#if 0
+	// and here it belongs, the new flood protection
+	// store lasttime per user
+
+        if (time() - lasttime1 < MIN_INPUT_TIME && !boss(ME)) {
+                pr("_error_invalid_input_speed",
+                        "Too much input! %O rejected.\n", a);
+                return 1;
+        } else {
+                lasttime1 = lasttime2;
+                lasttime2 = time();
+        }
+#endif
+	if (abbrev("_message", mc)
+#ifdef JABBER_PATH
+		    // specially requested by fippo for MUC
+		    // still wondering whether this is generally
+		    // a good idea or not..
+		|| mc == "_request_message_public"
+#endif
+	) {
+		if (v("_filter_conversation")) {
+			// add hook here?
+#ifdef PLACE_TOPIC
+			sendmsg(source,
+			    "_error_place_silent_configuration_topic",
+				"This room is not for talking. [_topic]",
+				([ "_topic" : (v("topic") || "") ]) );
+#else
+			sendmsg(source,
+			    "_error_place_silent_configuration",
+				"This room is not for talking.");
+#endif
+			return 0;
+		}
+		// ist das die nette antwort auf /m channel ?
+		// vorsicht aber mit _message_public_question
+		if (!abbrev("_message_public", mc)) mc = "_message_public";
+	}
+	/* if the source is not a member of the room and was allowed 
+	 * because of qAllowExternal* we probably should use the rooms
+	 * psycName instead of the source
+	 * yes, I admit it, afaik this only fixes bugs in net/jabber!
+	 */
+	castmsg(source, mc, data, vars);
+}
+
+// distribution being done by place object..
+// this is not the final PSYC plan, but at least
+// it is protocol-conformant!
+//
+// this function is here to be enhanced by net/place/public and master
+//
+castmsg(source, mc, data, vars) {
+	mixed rc;
+#ifdef PLACE_MASQUERADE
+	string nick;
+
+	// we could also overwrite _nick, but then we end up with some
+	// identity headaches in user.c which probably need to be solved 1st
+	if (nick = snames[source]) vars["_nick_local"] = nick;
+#endif
+#ifdef PLACE_LOGGING
+	if (v("logging")) {
+		unless (_logfile)
+			_logfile = "place/"+ MYLOWERNICK +".plog";
+		log_file(_logfile, "%O %O %O\n", mc,
+			     vars + ([ "_time" : time() ]), data);
+	}
+#endif
+#ifndef DONT_REWRITE_NICKS
+	if (vars["_nick"] && _u[source] && vars["_nick"] != _u[source])
+	    vars["_nick"] = _u[source];
+#endif
+	vars["_nick_place"] = MYNICK;
+#ifdef IRC_PATH
+	// a clear case of _state here.. this is being used by irc/user:w()
+	// only, currently, so we might as well make it _INTERNAL.
+	if (v("_filter_conversation")) vars["_INTERNAL_control"] = "_silent";
+#endif
+#ifndef HISTORY_COUNT
+	// here we create a copy(vars) by subtracting the _tag
+	// later mods like adding _context will not arrive at the upper
+	// layer but the _nick changes just above are returned.
+	// we could change that by creating our own vars right from the
+	// start of this function, but it will probably not do the right thing
+	// (all apps and in particular history may not depend on _nick_place
+	//  and _nick having been set by this function)
+	rc = ::castmsg(source, mc, data, vars - ([ "_tag" ])); // == copy(vars)
+#else
+	// in this case, calling castmsg() removes tags and makes _context
+	// and _count show up in vars and go into history. all apps have to
+	// ensure they no longer need the _tag before going into here.  :(
+	m_delete(vars, "_tag");
+	rc = ::castmsg(source, mc, data, vars);
+	// restore the _tag after the cast?
+#endif
+#ifdef PLACE_HISTORY
+	if (mayLog(mc)) {	// mayLog hook!
+		// _context should not go into history
+		// because history is never multicast
+		// to its viewers.. we first need to make
+		// a copy of the vars as inheriters may want
+		// to keep on using vars after we were here
+# if 1 //ndef EXPERIMENTAL
+		// all of the above is incorrect. yes history
+		// is not multicast, but when retransmitting
+		// earlier multicasts you are supposed to provide
+		// both _target and _context
+	// see http://about.psyc.eu/Routing#Unicast_Message_for_State_Signaling
+		// but since object pointers get lost in persistence
+		// we re-add the _context at sending time
+		if (member(vars, "_context")) {
+			// we normally don't get here anyway, because castmsg()
+			// created a copy of the vars before setting _context
+			// so only a _context mistakenly set by the caller
+			// can appear here.
+			P1(("Archetype Warning: _context provided to castmsg(%O)\nin %O. Traceback (this is NOT an error):\n%s\n", mc, ME, DEBUG_TRACE))
+#  ifndef VARS_IS_SACRED
+			vars = copy(vars);
+#  endif
+			m_delete(vars, "_context");
+		}
+# endif
+		logAppend(source, mc, data, vars, 0, "_time_place");
+		_histChange++;
+		// cannot just call ::castmsg after logAppend because
+		// logAppend adds the _time_place var so i have to
+		// patch around one way or the other
+	}
+#endif /* PLACE_HISTORY */
+	return rc;
+}
+
+reboot(reason, restart) {
+	// some place objects are clones, some are their blueprints
+	// but some are originals. this weeds out the blueprints:
+	unless (MYNICK) {
+	    P3(("reboot: %O has no MYNICK. good\n", ME))
+	    return;
+	}
+	// if _u were persistent we could recover the (remote) member list
+	// after reboot, we should try if that makes sense.. not sure
+	save();
+	if (mappingp(_u) && sizeof(_u)) {
+		P2(("%O shutting down\n", ME))
+		if (restart)
+		     castmsg(ME,
+#ifdef PERSISTENT_MASTERS
+			 // not so sure about this mc  ;)
+			 "_warning_unavailable_temporary_shutdown",
+#else
+			 "_notice_place_leave_temporary_shutdown",
+#endif
+			// used to output _source here, but when a UNI relays
+			// the message to a UNL, the UNI is shown instead of ME
+		      "Server for [_nick_place] is being restarted: [_reason]", 
+			([ "_reason": reason ]) );
+		else castmsg(ME, "_notice_place_leave_shutdown", // _permanent ?
+		      "Server for [_nick_place] is shutting down: [_reason]",
+			([ "_reason": reason ]) );
+#ifndef PERSISTENT_MASTERS
+		_u = 0;
+#endif
+		// circuits still need our object id to process the
+		// unlink request from the queue. also this part gets
+		// called before slave::reboot has run. so lets not destruct.
+		//destruct(ME);
+	}
+}
+
+// administrative call to reload the object
+quit() {
+	save();
+#ifndef PERSISTENT_MASTERS
+	castmsg(ME, "_notice_place_leave_temporary",
+	    "[_nick_place] is temporarily being shut down for reload.",
+	     ([ "_nick_place" : MYNICK ]) );
+#endif
+	destruct(ME);
+}
+
+// called from prepare_destruct() in modern MUDs and now also in psyced
+remove() {
+	PT(("%O getting destructed...\n", ME))
+#ifdef MUD
+	quit();
+#else
+	save();
+#endif
+}
+
+// create() gets called in clones (of standard), in inheriters
+// (like place/europe.c) and inheritees (so-called "super" objects)
+// alike.. so you have to be somewhat careful. we could split that,
+// but that would worsen the chances of MUD compatibility.
+void create() {
+	mixed t;
+
+	P2((" [@ %O] ", ME))
+#ifdef PLACE_SCRATCHPAD
+	used = m_allocate(0, 1);
+	given = m_allocate(0, 1);
+#endif
+#ifdef PLACE_MASQUERADE
+	snames = ([]);
+#endif
+#ifdef PLACE_HISTORY
+	_histChange = 0;
+	logInit();
+	P4(("logInit() in %O\n", ME))
+#endif
+	// this will allocate empty mappings even in "super" objects
+	// (classes which are only used for inheritance)
+	// they are useless, but also harmless
+	vInit();
+	::create();
+#ifdef T
+	sTextPath();
+#endif
+	// this will optimize one or two instances of ([]) away
+	//if (!_u || clonep(ME)) _u = ([]);
+	// not really worth the hassle.. thanks however
+	_u = ([]);
+	// geht nicht: if (!a) load();
+	// wir müssen den richtigen namen abwarten
+#ifdef PLACE_OWNED
+	banned = ([]);
+	if (t = qOwners()) vSet("owners", (mapping) t);
+#endif
+}
+
+#ifdef PLACE_HISTORY
+void reset(int again) {
+//	::reset(again);
+	if (_histChange) {
+		logClip(2 * _limit_amount_history_persistent,
+			    _limit_amount_history_persistent);
+		save();
+		P2(("RESET: %O stores its history (+%O)\n",
+			ME, _histChange))
+	}
+	_histChange = 0;
+#if 0 //ndef NOCLEANUP
+	// keep the server clean. unused places may exit.
+	// shall this peace of code resist here ... or better in leave()?
+	if (clonep() && ! sizeof(_u)) {
+	    P2(("%O is empty, shutting down.\n", ME))
+	    reboot("Self-destructing"); // msg should never be seen
+	} else
+	    P2(("%O is not empty (or is booting up), staying up.\n", ME))
+#endif
+}
+#endif
+
+// see also doc/applied/clean_up: A room defines clean_up() to
+//	self-destruct if it is neither inherited nor used as a
+//	blueprint, is empty and was not entered for a long time.
+//
+clean_up(ref) {
+    P3(("REFCOUNT for %O is %O.\n", ME, ref))
+	if (ref < 1 && clonep(ME)) {
+	    unless (sizeof(_u)) {
+		P2(("%O is empty, shutting down.\n", ME))
+		reboot("Self-destructing"); // msg should never be seen
+	    } else {
+		P2(("%O is not empty. staying up.\n", ME))
+		return 1; // clean_up wouldn't (under some circumstances?) be
+			  // called again afterwards.
+	    }
+	}
+	D3(else D(S("%O is a blueprint or special crafted. staying up. "
+		   "won't be clean_up()ed again.\n", ME));)
+}
+
+load(name, keep) {
+	unless (v("name")) {
+		unless (name) {
+			sscanf(o2s(ME), PLACE_PATH "%s", name);
+			if (!name) return;  // the blueprint?
+
+			name = capitalize(name);
+			keep = 0;
+		}
+		::load(DATA_FILE(name));
+		if (keep || !v("name") || stricmp(v("name"), name))
+		    vSet("name", name);
+		else
+		    name = v("name");
+		sName(name);
+		unless (identification)
+		    identification = psyc_name(ME, psycName());
+#ifdef PERSISTENT_MASTERS
+		if (!mappingp(_u)) _u = ([]);
+		D2( else if (sizeof(_u))
+		    PP(("members in %O: %O\n", ME, _u)); )
+		if (!mappingp(_routes)) _routes = ([]);
+		D2( else if (sizeof(_routes))
+		    PP(("_routes in %O: %O\n", ME, _routes)); )
+#endif
+#ifdef PLACE_OWNED
+		// override storage data
+		if (qOwners()) vSet("owners", (mapping) qOwners());
+#endif
+	}
+	//return MYNICK;
+	return ME;
+}
+
+save() {
+	// the ldmud way to check this probably is
+	//	clonep() || object_info(ME)[OIB_REF]
+	unless (MYNICK) {
+		PT(("Should not save() %O !!\n", ME))
+		return;	// blueprint? skip!
+	}
+	P4(("save() %O\n", ME))
+#ifndef VOLATILE
+        if (index(MYNICK, '/') >= 0) {
+		D("Will not save() a place called "+MYNICK+"\n");
+		return; 
+        }
+#endif
+	return ::save(DATA_FILE(MYNICK));
+}
+
+// called by user object when unknown commands have been entered
+// with the advent of signatures, which allow for a proper "psyc"
+// way to do commands, this strategy is slowly being evaporated.
+cmd(a, args, b, source, vars) {
+	P2(("cmd(%O, %O, %O)\n", a, b, source))
+	P4(("cmd(%O %O %O %O %O)\n", a, args, b, source, vars))
+#ifdef SIGS
+	if (call_signature(source, "_request_"+a, args, vars, b)) return 1;
+#endif
+	switch(a) {
+#ifndef SIGS
+#ifdef PLACE_MASQUERADE
+	case "nickname":
+	case "nick":
+	case "ni":
+#ifdef PLACE_MASQUERADE_COMMAND
+		unless (qMasquerade()) break;
+#endif
+		if (sizeof(args) >= 2 && args[1]) {
+			if(args[1] == "-") {
+				snames = m_delete(snames, source);
+				previous_object()->w("_echo_place_nick_removed",
+					"You have removed your mask.");
+			} else {
+				snames[source] = ARGS(1);
+#ifndef PLACE_MASQUERADE_SECRET
+				castmsg(ME, "_notice_place_masquerade",
+				    "[_nick] now masquerades as [_nick_local].",
+				     ([ "_nick" : previous_object()->qName(),
+				  "_nick_local" : snames[source] ]));
+#else
+				// FIXME
+				previous_object()->w("_echo_place_nick",
+			"You are now masquerading as [_nick_local].",
+			    ([ "_nick_local" : snames[source] ]));
+#endif
+			}
+		}
+		else if (snames[source])
+			previous_object()->w("_status_place_nick",
+			    "You are masquerading as [_nick_local].",
+			    ([ "_nick_local" : snames[source] ]));
+		else
+			previous_object()->w("_warning_usage_nick",
+			    "Usage: /nick (Mask)");
+		return 1;
+#ifdef PLACE_MASQUERADE_COMMAND
+	case "masquerade":
+	case "masq":
+//		if (!b && stringp(v("topic-user"))
+//		       && lower_case(previous_object()->qName()) !=
+//		          lower_case(v("topic-user"))) {
+//	previous_object()->pr("_error_unavailable_function_place_masquerade",
+//			"This function is not available to you here.\n");
+//			return 1;
+//		}
+		if (b > 0) {
+			if (sizeof(args) == 2) sMasquerade(args[1]);
+			else previous_object()->pr("_warning_usage_masquerade",
+			    "Usage: /masquerade [yes|no]\n");
+			return 1;
+		}
+		break;
+#endif
+#endif
+#ifdef PLACE_PUBLIC_COMMAND
+	case "public":
+		if (b > 20) {
+		    if (sizeof(args) == 2) sPublic(args[1]);
+		    else previous_object()->pr("_warning_usage_public",
+			"Usage: /public [yes|no]\n");
+		    return 1;
+		}
+		break;
+#endif
+#endif /* !SIGS */
+#ifdef PLACE_HISTORY
+# ifndef SIGS
+	case "hist":
+	case "history":
+		if (sizeof(args)>1) vars["_parameter"] = ARGS(1);
+		_request_history(source, 0, 0, vars, b);
+		return 1;
+# endif
+	case "hc":
+	case "histclear": // wieso um alles in der welt soll das jeder dürfen?
+//			    liest denn keiner die cvs kommentare? da stands
+//			    drin.. ok wir sind realistisch und schreiben es
+//			    gleich in den source... ja also manche menschen
+//			    merken erst nachtraeglich dass sie zu private
+//			    dinge oeffentlich gesagt haben.. dann sollen sie
+//			    nicht betteln muessen.. jeder hat das recht die
+//			    history zu killen.. mal schaun ob das mal ein
+//			    problem ist, aber bisher hatte ich nicht den
+//			    eindruck als sei das der fall
+//		if (b > 49) return histClear();
+		return histClear(sizeof(args)>1? args[1]: 0, b, source, vars);
+		break;
+#endif
+#ifdef PLACE_STORE_COMMAND
+	case "store":
+	case "save":
+		save();
+		return 1;
+#endif
+#ifdef PLACE_TOPIC_COMMAND
+	case "topic":
+	case "topi":
+	case "top":
+	case "to":
+	case "t":
+		sTopic(ARGS(1), source, vars["_nick"]);
+		return 1;
+#endif
+#ifdef PLACE_OWNED
+	case "mandates":
+	case "listaides":
+	case "listschergen":
+		// warum nicht einfach bei /st ausgeben?
+		if (qOwner(SNICKER)) return listAides(source);
+		return;
+	case "uninvite":
+		unless (v("_restrict_invitation")) return;
+		// fall thru
+	case "unmandate":
+	case "unmand":
+	case "unmd":
+	case "unchop":
+		// fall thru. i think we should provide real /unmandate
+	case "mandate":
+	case "mand":
+	case "md":
+	case "schergify":
+	case "chop":
+		if (qOwner(SNICKER)) {
+		    unless (sizeof(args) == 2) {
+#if 0
+			sendmsg(source, "_warning_usage_mandate",
+				"Usage: /mandate Â«aideÂ»");
+			return 1;
+#else
+			return listAides(source);
+#endif
+		    }
+		    switch(sAide(args[1], source)) {
+		    case 1:
+			sendmsg(source, "_notice_place_aide_removed",
+				"[_aide] was removed from the list of "
+				"aides.", ([ "_aide" : args[1] ]) );
+			return 1;
+		    case 2:
+			sendmsg(source, "_notice_place_aide_added",
+				"[_aide] was added to the list of "
+				"aides.", ([ "_aide" : args[1] ]) );
+			return 1;
+		    }
+		}
+		return;
+#endif // PLACE_OWNED
+	}
+#if defined(PLACE_LOGGING) || defined(PLACE_FILTERS)
+	if (b) switch(a) {
+#ifdef PLACE_LOGGING
+	case "logging":
+                if (sizeof(args) == 2 && stringp(a = args[1])) {
+			string state;
+
+			if (a == "on") vSet("logging", SNICKER);
+			else vDel("logging");
+			save();
+			state = v("logging") ? "on" : "off";
+			sendmsg(source, "_echo_place_set_logging_"+state,
+				"You switch logging "+ state +".");
+		}
+                else sendmsg(source, "_warning_usage_logging",
+                    "Usage: /logging (on|off)");
+                return 1;
+#endif
+#ifdef PLACE_FILTERS
+	case "quiet": 
+	case "filter": 
+	case "silent": 
+                sendmsg(source, "_error_usage_quiet",
+	"The /quiet and /silent functions have been replaced by /silence.\n\
+See the manual for details.");
+                return 1;
+	case "silence": 
+		// thought about calling this /filter, but maybe we need that
+		// in the user as /filter <method> <flags> someday..
+                if (sizeof(args) == 2 && a = lower_case(args[1])) {
+			string who = SNICKER;
+
+			if (a == "presence") {
+			     vSet("_filter_presence", who);
+			     vDel("_filter_conversation");
+			} else if (a == "conversation" || a == "talk") {
+			     vSet("_filter_conversation", who);
+			     vDel("_filter_presence");
+			} else if (a=="all" || a=="on" || a=="yes") {
+			     vSet("_filter_presence", who);
+			     vSet("_filter_conversation", who);
+			} else {
+			     vDel("_filter_conversation");
+			     vDel("_filter_presence");
+			}
+			save();
+		}
+                else sendmsg(source, "_warning_usage_silence",
+		  "Usage: /silence [presence|conversation|all|none]");
+		sendmsg(source, "_status_place_filter_presence_"+
+			(v("_filter_presence") ? "on" : "off"),
+		    "Presence (enter/leave) messages are "
+		    +( v("_filter_presence") ? "disabled" : "enabled" )+
+		    " in this place.");
+		sendmsg(source, "_status_place_filter_conversation_"+
+			(v("_filter_conversation") ? "on" : "off"),
+		    "Conversational messages are "
+		    +( v("_filter_conversation") ? "disabled" : "enabled" )+
+		    " in this place.");
+                return 1;
+#endif
+#if 0
+	case "banhost":
+	case "tiehost":
+                sendmsg(source, "_warning_usage_tiehost",
+                    "Usage: /tiehost <ip-match>");
+                return 1;
+#endif
+	case "rou":
+	case "routes":
+		sendmsg(source, "_status_place_routes",
+		    sprintf("The route data structure for %O is: %O",
+			    ME, routes()));
+		return 1;
+	case "obj":
+	case "objects":
+		sendmsg(source, "_status_place_members_technical",
+		    sprintf("The member data structure for %O is: %O",
+			    ME, _u));
+		return 1;
+	case "remove":
+		if (sizeof(args) > 1
+		    // we disable this check so we can also
+		    // remove routes, not just single users.
+		    //&& member(_u, args[1])
+		    ) {
+			// this admin command quietly removes a user
+			log_file("BEHAVIOUR", "[%s] %O removes %s from %O\n",
+			    ctime(), previous_object(), args[1], ME);
+			// this can trigger a _failure_destruct_circuit
+			// should provide origin here, huh? don't have it!
+			// let the user make it up..
+			remove_member(args[1], sizeof(args) > 2 && args[2]);
+			return 1;
+		}
+		sendmsg(source, "_warning_usage_remove",
+		    "Usage: /remove <member> [<origin>]");
+		return 1;
+	}
+#endif
+	return 0;
+}
+
+#ifndef MAX_VISIBLE_USERS
+#define MAX_VISIBLE_USERS 4404
+#endif
+// amountOnly used by news.c by inheritance
+makeMembers(amountOnly) {
+	if (sizeof(_u) == 0)
+	    return ({ "_none", ([ "_amount_members" : 0 ]) });
+	else
+	if (amountOnly || sizeof(_u) > MAX_VISIBLE_USERS)
+	    return ({ "_amount", ([ "_amount_members" : sizeof(_u) ]) });
+	else
+	    return ({ "", ([
+		 "_list_members" : objects(),	// _tab
+		 "_list_members_nicks" : names(),   // _tab
+	    ]) });
+}
+
+// also called from net/usercmd.i and tn/user
+showMembers(verbosity, person) {
+	array(mixed) a = makeMembers();
+	string auto = verbosity & VERBOSITY_AUTOMATIC ? "_automatic" : "";
+
+	P4(("showMembers for %O. verbosity %O.\n", person, verbosity))
+	sendmsg(person, "_status_place_members"+ a[0] + auto,
+	    0, ([ "_nick_place" : MYNICK, ]) + a[1] );
+	return 1;
+}
+
+showStatus(verbosity, al, person, mc, data, vars) {
+	if (verbosity & VERBOSITY_UNIFORMS) {
+		// should room status be compatible to person description?
+		sendmsg(person,
+// similar code also in net/person.c
+#ifdef IRC_PATH
+		    "_status_place_identification_aliases",
+		    "PSYC Identification of [_nick_place]: [_identification]"
+		    "\nAliases: [_identification_alias]",
+#else
+		    "_status_place_identification",
+		    "PSYC Identification of [_nick_place]: [_identification]",
+#endif
+		    	([ "_identification": identification,
+#ifdef IRC_PATH
+			   "_identification_alias":
+# if HAS_PORT(HTTP_PORT, HTTP_PATH) || HAS_PORT(HTTPS_PORT, HTTP_PATH)
+#  ifdef PRO_PATH
+			       ((tls_available() && HTTPS_URL) || HTTP_URL)
+#  else
+				// problem with POST over https apparently..
+			       (HTTP_URL)
+#  endif
+				 + "/@"+ MYNICK +" "+
+# endif
+# ifdef SIP_PATH
+		//	     "sip:#"+ MYLOWERNICK +"@"+ SERVER_HOST +" "+
+# endif
+# ifdef JABBER_HOST
+			     "xmpp:*"+ MYLOWERNICK +"@"+ JABBER_HOST +" "+
+# else
+#  ifdef JABBER_PATH
+			     "xmpp:*"+ MYLOWERNICK +"@"+ SERVER_HOST +" "+
+#  endif
+# endif
+			     "irc://"+ SERVER_HOST +"/"+ MYNICK,
+#endif
+#ifdef JABBER_PATH
+			   "_identification_scheme_XMPP":
+# ifdef JABBER_HOST
+			     "*"+ MYLOWERNICK +"@" JABBER_HOST,
+# else
+			     "*"+ MYLOWERNICK +"@" SERVER_HOST,
+# endif
+#endif
+			    "_nick_place": MYNICK ]) );
+	}
+#ifdef PLACE_TOPIC
+	if (verbosity & VERBOSITY_TOPIC) showTopic(person, 0, OFFICIAL);
+#endif
+	if (al) {
+#ifdef PLACE_PUBLIC_COMMAND
+		if (verbosity & VERBOSITY_PUBLICIZED && v("public")) {
+			sendmsg(person, "_status_place_public",
+			    "[_nick_place] publicized by [_nick].",
+			    ([ "_nick" : v("public"),
+			 "_nick_place" : MYNICK ]) );
+		}
+#endif
+		// tiehosts ?
+#ifdef PLACE_LOGGING
+		if (verbosity & VERBOSITY_LOGGING && v("logging")) {
+			sendmsg(person, "_status_place_logging",
+			    "Logging activated by [_nick].",
+			    ([ "_nick" : v("logging"),
+			 "_nick_place" : MYNICK ]) );
+		}
+#endif
+	}
+#ifdef PLACE_MASQUERADE
+	if (verbosity & VERBOSITY_MASQUERADE
+#ifdef PLACE_MASQUERADE_COMMAND
+	    && qMasquerade()
+#endif
+	) {
+		string ni = snames[person];
+
+		if (ni) sendmsg(person, "_status_place_nick_local",
+		    0, ([ "_nick_local" : ni, "_nick_place" : MYNICK ]));
+		else sendmsg(person, "_status_place_masquerade",
+		    "Masquerading in [_nick_place] is permitted. Try out the /nick command.",
+		       	([ "_nick_place" : MYNICK ]));
+	}
+#endif
+#ifdef PLACE_FILTERS
+# ifndef VOLATILE
+	if (v("_filter_presence") && verbosity & VERBOSITY_FILTER) {
+		sendmsg(person, "_status_place_filter_presence",
+		    "Presence noise silenced by [_nick].",
+		    ([ "_nick" : v("_filter_presence"),
+		 "_nick_place" : MYNICK ]) );
+	}
+# endif
+#endif
+#ifdef PLACE_HISTORY
+	if (verbosity & VERBOSITY_HISTORY && qHistoryGlimpse() && mc
+//	   && !abbrev("_echo_place_enter_automatic", mc)
+	   && !abbrev("_echo_place_enter_other", mc)	// TODO
+//	   && !abbrev("_request_status", mc)
+	   ) {
+		logView(qHistoryGlimpse(), person);
+	}
+#endif
+	return 1;
+}
+
+names() { return m_values(_u); }	// used by irc/user, applet/user
+					// place/owned and place/storic
+objects() { return m_indices(_u); }	// used by place/owned
+
+size() { return sizeof(_u); }		// who needs this!?
+
+// this is overridden in more complex rooms to provide continous status output
+memberInfo() { return _u; }		// used by showRoom() in http/user
+
+psycName() {
+	ASSERT("psycName", stringp(MYNICK), MYNICK)
+	return "@"+MYLOWERNICK;
+}
+
+// inheritance hooks
+leave(source, mc, data, vars) { return 1; }
+enter(source, mc, data, vars) {	// mayEnter?
+        string t, ni;
+
+	// muss der _nick_local auch legal sein? TODO
+	if (mappingp(vars)) ni = vars["_nick"];
+	if ( !(t = legal_name(ni)) || stricmp(t, ni) ) {
+		P2(("illegal name %O vs %O in %O\n", ni, t, ME))
+		sendmsg(source, "_error_illegal_name_person_place", 0,
+		  ([ "_nick_place" : MYNICK, "_nick" : ni ])); 
+		return 0;
+	}
+	return 1;
+}
+
+// we shouldn't get here for _filter_conversation rooms (news etc)
+// btw. should all "after" hooks be named onSomething() or hasSomethinged() ?
+onEnter(source, mc, data, vars) {
+	// this does not include _other which is issued on /c - that's good
+	int verbosity = abbrev("_echo_place_enter_automatic", mc)
+		? VERBOSITY_ENTER_AUTOMATIC + VERBOSITY_AUTOMATIC
+	       	: VERBOSITY_ENTER;
+#ifndef ENTER_MEMBERS
+	if (verbosity & VERBOSITY_MEMBERS) showMembers(verbosity, source);
+#endif
+#ifdef PLACE_HISTORY
+	if (vars["_amount_history"]) {
+	    int max = qHistoryGlimpse();
+	    int amount = to_int(vars["_amount_history"]);
+	    logView(amount > max ? max : amount, source);
+	}
+#endif
+	showStatus(verbosity, boss(source), source, mc, data, vars);
+}
+
+// onError hook
+error(source, mc, data, vars) {
+	P2 (("%O « unexpected msg(%O,%s,%O,%O)\n",
+	     ME, source, mc, data, vars))
+	return 1; 
+}
+
+qAllowExternal() { return 0; }	// mayExternal hook
+
+qInstance() { return 0; }
+
+qDescription(source, vars, nick) {
+			// should thus be renamed
+	mapping dv = ([ "_topic": v("topic") || "" ]);
+	mixed k, l;
+
+	// should distinguish members from strangers..?
+	foreach (k, l: vMapping()) {
+		// st00pid simple way of distinguishing exportable vars
+		if (k[0] == '_') dv[k] = l;
+	}
+	P1(("%O qDesc returns %O\n", ME, dv))
+	return dv;
+}
+
+// this is usually done using sName() or load()
+//object compile() { return ME; }
+
+#ifndef DONT_REWRITE_NICKS
+sendmsg(target, mc, data, vars, source, showingLog, callback) {
+	// some usage: sendmsg calls do not provide vars.
+	// change it there, or change it here?
+	// actually here we get to 'else' which is nice too
+	if (!vars) vars = ([]);
+	else if (vars["_nick"] && _u[source] && vars["_nick"] != _u[source]) {
+		P1(("rewriting %O into %O\n", vars["_nick"],  _u[source]))
+		vars["_nick"] = _u[source];
+	}
+	return ::sendmsg(target, mc, data, vars, source, showingLog, callback); 
+}
+#else
+# echo OOPS... DONT_REWRITE_NICKS is on!
+#endif
+
+#ifdef SIGS
+_request_set(source, mc, data, vars, b) {
+	string k;
+
+	PT(("set(%O, %O, %O, %O, %O) called\n", source, mc, data, vars, b))
+	if (k = vars["_key"])
+	    // pass on to a subhandler
+	    if (call_signature(source, "_request_set"+ k, data, vars, b))
+	    	return 1;
+	return 0;
+}
+
+#ifdef PLACE_OWNED
+_request_owners(source, mc, data, vars, b) {
+	mixed t;
+	P1(("_request_owners(%O, %O, %O, %O, %O)\n", source, mc, data, vars, b))
+	// this kind of 3 different policies logic needs to be integrated TODO
+	if (v("owners") &&! (b || vars["_INTERNAL_trust"] > 5
+#ifdef _flag_trust_place_owners
+	       	|| qOwner(SNICKER)
+#endif
+		)) return;
+	// not sure if _value is needed here
+	t = vars["_list_owners"] || vars["_value"];	// _tab
+	// should check for legal nicks & uniforms
+	// should provide for a way to make a place unowned again   TODO
+	if (pointerp(t)) t = mkmapping(t);
+	else if (stringp(t)) t = mkmapping(explode(t, " "));
+	if (mappingp(t) && sizeof(t)) vSet("owners", t);
+	sendmsg(source, "_echo_place_owners",
+	    "The owner list of [_nick_place] is [_list_owners].",
+		  ([ "_list_owners" : m_indices(v("owners")),
+		      "_nick_place" : MYNICK ]) );
+	return 1;
+}
+
+_request_kick(source, mc, data, vars, b) {
+	mixed target, t, handler;
+
+	P1(("_request_kick(%O, %O, %O, %O, %O)\n", source, mc, data, vars, b))
+	//unless (source) source = previous_object();
+	unless (qOwner(SNICKER)) return;
+	if (vars["_person"]) {
+		target = find_person(vars["_person"])
+		       	|| lower_case(vars["_person"]);
+		if (objectp(target)) {
+//		    if (member(objects(), target) == -1) {
+//			return;
+//		    }
+		    t = target->qName();
+		    handler = 0;
+		} else {
+//		    if (member(names(), target) == -1) {
+//			return;
+//		    }
+		    t = target;
+		    // lower_case should be unnecessary here.. but who cares
+		    handler = find_target_handler(lower_case(
+#ifdef UNL_ROUTING
+							     uni2unl[t] ||
+#endif
+							     t));
+		}
+		PT(("%O KICK %O in %O? banned: %O\n",
+		    ME, target, names(), banned))
+		// allow to elrid someone even if he isn't here right now
+		banned[lower_case(t)] = vars["_person"];
+		// but if he is, kick him, too
+		if (member(objects(), target) != -1)
+		    // TODO: irc fehlt das format hierfuer
+		    // und.. oops.. der betroffene empfängt das nicht!!
+		    sendmsg(ME,
+#ifdef SPEC                  
+                             "_request_context_leave"
+#else                        
+                             "_request_leave"
+#endif
+			     "_banned",
+			"[_nick] got banned from [_nick_place]", ([
+				"_nick" : t,
+				"_nick_place" : MYNICK,
+				"_INTERNAL_origin" : handler
+			   ]), target);
+	}
+	sendmsg(source, "_status_place_banned",
+		"These bozos are banned: [_list_banned]",   // _tab
+		 ([ "_list_banned" : m_indices(banned) ]) );
+	return 1;
+}
+#endif
+
+# ifdef PLACE_STYLE_COMMAND
+// this could turn into a generic _request_set*** as it does the
+// default thing to do: store the setting.
+_request_set_style(source, mc, data, vars, b) {
+	if (qOwner(SNICKER)) {
+		string value = vars["_uniform_style"] || vars["_value"];
+		if (value && (value = legal_url(value, "http")))
+		    vSet("_uniform_style", value);
+		else {
+			sendmsg(source, 
+			    "_error_illegal_scheme",
+	    "That is not a valid [_scheme] URL for a file.",
+			    ([ "_scheme" : "http" ]));
+			return 1;
+		}
+		sendmsg(source, "_status_place_uniform_style",
+		    "Style file [_uniform_style] is in use here.",
+			([ "_uniform_style" :
+			 v("_uniform_style") || "-" ]));
+		return 1;
+	}
+	return 0;
+}
+# endif
+#endif
+
+#define complainMembership(source)			\
+	sendmsg(source, "_error_necessary_membership",	\
+	"You need to enter [_nick_place] first.",	\
+			 ([ "_nick_place" : MYNICK ]) )
+
+#ifdef PLACE_MAY_HISTORY
+// only provide this hook if PLACE_MAY_HISTORY was defined above.
+// this hook can then be overridden using #define MAY_HISTORY in
+// place.gen should you ever need it.. otherwise MAY_HISTORY will
+// have no effect. since that is my current default, i will not
+// document MAY_HISTORY.
+//
+int mayHistory(source, mc, data, vars, b) {
+	if (MEMBER(source)) return 1;
+	complainMembership(source);
+	return 0;
+}
+#endif
+
+#ifdef PLACE_HISTORY
+_request_history(source, mc, data, vars, b) {
+	// it's good to have separate vars in the protocol
+	// but logView() doesn't want to know..
+	P3(("_request_history(%O,%O,%O,%O,%O)\n",
+	    source, mc, data, vars, b))
+# ifdef SIGS
+#  ifdef PLACE_MAY_HISTORY
+	unless (mayHistory(source, mc, data, vars, b)) return;
+#  else
+	unless (MEMBER(source)) return complainMembership(source);
+#  endif
+# endif
+	logView(vars["_match"] || vars["_parameter"] || vars["_amount"],
+	    source);
+	sendmsg(source, "_echo_history"); // indicate end of history
+	return 1;
+}
+#endif
+
+#ifdef PLACE_PUBLIC_COMMAND
+// should we use v("public") and ->vQuery("public") only? no, bad idea.
+// then an operator can change a #define PUBLIC room into non-public.
+// let's keep this mixed behaviour where v("public") can be overridden
+// by place.gen.
+qPublic() { return v("public"); }
+qPublicName() { return qPublic() ? MYNICK : 0; }
+
+#ifdef SIGS
+_request_public(source, mc, data, vars, b) {
+	// API to be decided..
+	string a = vars["_flag_public"] || vars["_value"];
+#else
+sPublic(a) {
+	object source = previous_object();
+#endif
+	string state;
+
+	unless (stringp(a) && strlen(a)) {
+#ifdef SIGS
+		showStatus(VERBOSITY_PUBLICIZED, b, source, 0, data, vars);
+#endif
+		return 1;
+	}
+#ifdef SIGS
+	// this *could* go into a mayPublic() if anyone cares..
+	if (b <= 20) {
+		sendmsg(source, "_error_necessary_privilege", 0,
+		    ([ "_command": "public" ]) );
+		return 1;
+	}
+#endif
+	if (a == "on" || a == "yes") {
+		if (qPublic()) {
+			sendmsg(source, "_warning_place_set_public_on",
+			    "This room is already public.");
+			return 1;
+		}
+		vSet("public", UNIFORM(source));
+	} else if (a == "off" || a == "no") {
+		unless (qPublic()) {
+			sendmsg(source, "_warning_place_set_public_off",
+			    "This room is already private.");
+			return 1;
+		}
+		vDel("public");
+	} else {
+		sendmsg(source, "_warning_usage_public",
+		    "Usage: /public [yes|no]");
+		return 1;
+	}
+	save();
+	state = v("public") ? "on" : "off";
+	log_file("PUBLIC", "[%s] %O %s %O (%O)\n",
+	    ctime(), source, state, MYNICK, ME);
+	sendmsg(source, "_echo_place_set_public_"+state,
+		"You make this room "+
+		(v("public") ? "public" : "private") +".");
+	return 1;
+}
+#endif
+
+#ifdef PLACE_MASQUERADE
+# ifdef SIGS
+_request_masquerade(source, mc, data, vars, b) {
+	// API to be decided..
+	string a = vars["_flag_masquerade"] || vars["_value"];
+# else
+sMasquerade(a) {
+	object source = previous_object();
+# endif
+	string state;
+
+	unless (stringp(a) && strlen(a)) {
+# ifdef SIGS
+		showStatus(VERBOSITY_MASQUERADE, b, source, 0, data, vars);
+# endif
+		return 1;
+	}
+# ifdef SIGS
+	if (b < 1) {
+		// this *could* go into a mayMasquerade() if anyone cares..
+		sendmsg(source, "_error_necessary_privilege", 0,
+		    ([ "_command": "masquerade" ]) );
+		return 1;
+	}
+# endif
+# ifdef PLACE_MASQUERADE_COMMAND
+	if (a == "on" || a == "yes") {
+		if (qMasquerade()) {
+			sendmsg(source, "_warning_place_set_masquerade_on",
+			    "This room is already in a masquerade.");
+			return 1;
+		}
+		vSet("masquerade", UNIFORM(source));
+	} else if (a == "off" || a == "no") {
+		unless (qMasquerade()) {
+			sendmsg(source, "_warning_place_set_masquerade_off",
+			    "This room already isn't in a masquerade.");
+			return 1;
+		}
+		vDel("masquerade");
+		snames = ([ ]);	    // important detail  ;)
+	} else {
+		sendmsg(source, "_warning_usage_masquerade",
+		    "Usage: /masquerade [yes|no]");
+		return 1;
+	}
+	save();
+	state = v("masquerade") ? "on" : "off";
+	log_file("MASQUERADE", "[%s] %O %s %O (%O)\n",
+	    ctime(), source, state, MYNICK, ME);
+	sendmsg(source, "_echo_place_set_masquerade_"+state,
+		    "You "+ (v("masquerade") ? "en" : "dis")
+		    +"able masquerading.");
+# else
+	sendmsg(source, "_warning_place_set_masquerade_on_always",
+	    "This room is always in a masquerade.");
+# endif // PLACE_MASQUERADE_COMMAND
+	return 1;
+}
+
+# ifdef SIGS
+_request_nick_local(source, mc, data, vars, b) {
+	string a;
+
+# ifdef PLACE_MASQUERADE_COMMAND
+	unless (qMasquerade()) {
+		sendmsg(source, "_error_disabled_masquerade");
+		return 1;
+	}
+# endif
+	a = vars["_nick_local"] || vars["_value"];
+	unless (stringp(a) && strlen(a)) {
+		string ni = snames[source];
+
+		if (ni) {
+			sendmsg(source, "_echo_place_nick_removed",
+			    0, ([ "_nick_local" : ni ]));
+			snames = m_delete(snames, source);
+		} else sendmsg(source, "_status_place_nick_local_none");
+			// w("_warning_usage_nick", "Usage: /nick (Mask)");
+		return 1;
+	}
+	if (vars["_INTERNAL_stuss"]) {
+		sendmsg(source, "_warning_usage_nick", "Usage: /nick (Mask)");
+		return 1;
+	}
+	snames[source] = a;
+# ifndef PLACE_MASQUERADE_SECRET
+	castmsg(source, "_notice_place_masquerade",
+	    "[_nick] now masquerades as [_nick_local].",
+	     ([ "_nick" : vars["_nick"], "_nick_local" : a ]));
+# else
+				// FIXME
+	previous_object()->w("_echo_place_nick",
+	    "You are now masquerading as [_nick_local].",
+		([ "_nick_local" : snames[source] ]));
+# endif
+	return 1;
+}
+# endif	// SIGS
+#endif	// PLACE_MASQUERADE
+
+#ifdef PLACE_OWNED
+/* SOME NOTES ON AIDES
+ *
+ * Aides are (in the context of owned rooms) privileged users, which the
+ * room owners (or at least one of them) put some special trust in.
+ * Therefore aides have more rights than ordinary users, but less than
+ * the owners. In a default owned room, aides have no more rights than
+ * the one to set the topic. This is for the following reasons:
+ *
+ * * Even owned rooms have few privileged commands, most of them deal with
+ *   aides - room owners can /mandate someone (make him an aide),
+ *   request a list of aides and such.
+ * * Elrid (which gets you rid of a malicious user) is, beside of the
+ *   aides-related commands the only privileged command, which aides
+ *   cannot use, as elrid is a really powerful command. Once you elrided
+ *   someone, he cannot join the room again (with his current identity). A
+ *   server restart is needed to clear the list of elridded identities. So
+ *   elrid is in no case a fun command like KICK on IRC, but the last resort
+ *   against really malicious users. Ignoring bad behaving users, or talking
+ *   to them is highly preferred to an elrid.
+ *   So as an elrid cannot be undone by simple means, it should be up to the
+ *   room owner(s) to decide what people will be denied to access the room
+ *
+ * You might ask: What are aides good for then? Setting topics isn't a
+ * quite fulfilling task after all, is it?
+ * No of course it is not. Aides were originally designed for special
+ * crafted places, like psyc://psyced.org/@GoodAdvice, which is quite
+ * similar to fortune, except for it is better and generates webpages
+ * containing the fortunes and such. As it wasn't acceptable to let anybody
+ * add fortunes and neither that only owners add fortunes a special rank
+ * was needed: Aides. In that special environment of GoodAdvice, aides
+ * are allowed to add fortunes, to go through the list of all existing
+ * fortunes, to search for existing ones and to delete fortunes they added
+ * themselves. Owners can delete all fortunes, no matter who added them,
+ * which was not a power the usual team members should be able to use.
+ *
+ * So, as the example describes, aides are a rank for special-crafted
+ * rooms building up on owned rooms, which do need more levels than owner
+ * and user. Should you want to write your own special crafted room with
+ * extra-features nobody but you ever imagined, consider using qAide()
+ * and such to give your friends privileged access to all the extra-
+ * functions you invented.
+ */
+
+sAide(whom) {
+    string t;
+    int ret;
+    mapping aides = v("aides") || ([]);
+
+    t = lower_case(whom);
+    if (aides[t]) {
+	aides -= ([ t ]);
+	ret = 1;
+    } else {
+	aides[t] = 1;
+	ret = 2;
+    }
+    
+    vSet("aides", aides);
+    save();
+    return ret;
+}
+
+listAides(source) {
+    if (mappingp(v("aides")))
+	sendmsg(source, "_status_place_aides",
+	     "This room knows the following aides: [_aides]", ([ 
+		  "_aides" : v("aides")
+	      ]) );
+    else
+	sendmsg(source, "_status_place_aides_none",
+	     "No aides defined in this owned room.");
+    return 1;
+}
+
+qAide(snicker, aidesonly) {
+// never call with objectp.. use SNICKER
+//  if (objectp(whom)) whom = whom->qName();
+    snicker = lower_case(snicker);	// should we enforce SNICKER to be lc?
+    if (!aidesonly && sizeof(v("owners")) && member(v("owners"), snicker)) return 4;
+    unless (mappingp(v("aides"))) return 0;
+    return v("aides")[snicker];
+}
+
+qOwner(snicker) { return member(v("owners"), lower_case(snicker)); }
+#endif
+
+

@@ -1,0 +1,22 @@
+Newer drivers will either use the system default certificates, or you
+may choose to put trusted certificates into here.
+
+Add the certificates you trust (they have to end with .pem), 
+then run `c_rehash .` from the openssl package.
+
+psyclpc drivers also support certificate revocation lists when
+started with the --tlscrldirectory arguments. You may keep CA
+certificates and CRLs in the same directory.
+
+If you use CRLs, you need CRLs for each CA that you are trusting. 
+If they provide them in PEM format, take them and put the files into 
+this directory and `c_rehash .` as usual.
+
+If they provide them in DER format, grab them, convert them to pem
+using `openssl crl -in some.der -inform der -outform pem -out some.pem`
+and `c_rehash .` again.
+
+Note that you will have to periodically update the CRLs, as 
+otherwise you'll get problems. Maybe one day we'll have multicast
+revocation announcements, but until then, CRL is all we have.
+

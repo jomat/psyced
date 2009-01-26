@@ -1,0 +1,114 @@
+<PSYC:TEXTDB> ## vim:syntax=mail
+## so called 'cards' of WAP WML
+## but first we start with the exception
+##
+## probably historic:
+##|
+##|vorsicht: die chat-dienste funktionieren mit WinWAP nicht,
+##|          da dieser HTTP nicht korrekt implementiert.
+
+_error_invalid_agent_HTML
+|<title>wap2psyc gateway</title>
+|<body bgcolor=red text=white link=black vlink=black>
+|<pre><font size=6>
+|WAP2PSYC GATEWAY VERSION 0.2
+|======== ======= ======= ===
+|
+|this site can only be viewed with a
+|WAP-enabled gadget or emulator, sorry.
+|
+|diese website kann nur mit einem
+|WAP-fähigen spielzeug betrachtet werden.
+|
+|... getting <a href="http://www.psyced.org">psyced</a> again.
+|</font></pre>
+
+_WML_head
+|<?xml version="1.0" ?>
+|<!DOCTYPE wml PUBLIC "-//WAPFORUM//DTD WML 1.1//EN"
+| "http://www.wapforum.org/DTD/wml_1.1.xml"><wml>
+|<template><do type="prev" label="Back"><prev/></do></template>
+
+_WML_tail
+|</wml>
+
+_CARD_index
+|{_WML_head}
+|
+|<card title="gewappnet">
+|<p align='right'>
+|<small>your <a href="#t">tech</a> data</small><br/>
+|<i><a href="users">who</a>'s online now?</i><br/>
+|</p>
+|<p align='center'>
+|<b>leave me a <a href="#m">msg</a></b><br/>
+|</p>
+|<p>
+|<small><a href="#s">wapsurfing</a></small><br/>
+|</p>
+|</card>
+|
+|
+|<card id="m" title="page the lynx">
+|<p>
+|<small><b>Message:</b></small>
+|</p>
+|<p align='center'>
+|<input format="*m" name="msg" title="msg text" value="hallo?" />
+|<do type="accept" label="Go ...">
+|	<go href="msg " sendreferer="true">
+|		<postfield name="nick" value="lynx" />
+|		<postfield name="data" value="$msg" />
+|	</go>
+|</do>
+|</p>
+|<p align='right'>
+|<small><i>
+|	<a href="msg?nick=lynx&amp;data=$(msg:escape) ">GO</a>
+|</i></small>
+|</p>
+|</card>
+|
+|
+|<card id="t" title="tech data">
+|<p><b>Gateway:</b></p>
+|<p align='right'><small>
+|[_host]
+|</small></p>
+|<p><b>Browser:</b></p>
+|<p align='right'><small>
+|[_version_agent]
+|</small></p>
+|<p><b>Charsets:</b></p>
+|<p align='right'><small>
+|[_list_charset]
+|</small></p>
+|</card>
+|
+|
+|<card id="s" title="wapsurfing">
+|<p align='right'>
+|<big><a href="http://altavista.towap.com/wrtpl/av.wmlc"
+|>älta</a></big>VISTA
+|</p>
+|<p align='center'>
+|M<b><a href="http://mmm.mnemonx.nl/">nemo</a></b>nX
+|</p>
+|<p>
+|Yellöw<a href="http://wap.cas.de/">MAP</a>
+|</p>
+|<p align='center'>
+|<i><a href="http://www.wapsite.de/ebay/">e</a></i><b>baY</b>
+|</p>
+|<p align='right'>
+|<a href="http://www.wapsite.de/">wap</a><small>SITE</small>
+|</p>
+|<p align='center'>
+|de<i><a href="http://mmm.decuple.nl/">Cup</a></i>le
+|</p>
+|<p>
+|<i><a href="http://www.orktopas.com/">ork</a></i>topas
+|</p>
+|</card>
+|
+|{_WML_tail}

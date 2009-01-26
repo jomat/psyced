@@ -1,0 +1,88 @@
+This patch is necessary to apply to the Pike language source code to teach it
+to not complain so much about LPC code in an #ifndef __PIKE__ part. So this
+is necessary before you can try out the bin/psyked experiment to use psyced
+code in pike.
+
+You would think the preprocessor ignores anything that is not __PIKE__, but
+Pike's preprocessor doesn't do that very well. To change that completely is
+hard to achieve and would not be backward compatible to the custom extensions
+that have been added to Pike.
+
+Therefore this patch gently teaches Pike to deal with a few LPC specific things:
+
+* LPC's #'lambda closure syntax is dealt as if the #' wasn't there. This means
+  that the code will not trigger errors when ifdef'd out. In some cases it may
+  even produce useful Pike code, as in the case of a #'callback function.
+
+* Pike will not break on LPC's #include MACRO capability. Would be even better
+  if Pike learned to support this syntax:
+        #define CONFIG_PATH "/my/filesystem/is/not/like/yours/"
+        #include CONFIG_PATH "myconfig.h"
+
+* In LPC, #echo allows to quickly put a compile-time debug message into the code
+  to figure out if ifdefs are properly set. Something like:
+        #echo Warning: LPC version probably too old!
+  This patch teaches Pike to ignore #echo statements. Would be better to
+  support them.
+
+
+
+
+--- preprocessor.h-orig	2007-09-04 22:56:07.002487000 +0200
++++ preprocessor.h	2007-09-16 19:15:32.179227455 +0200
+@@ -1407,6 +1407,15 @@
+ 
+     switch(data[pos])
+     {
++    case '\'':
++       /*
++	* deal with LPC lambda syntax: skip the #' in #'<token>
++	* this makes function pointers syntax compatible, and allows other
++	* lambda statements to exist in an #ifndef __PIKE__ area.
++	* healthy for writing code that runs on both LPC and pike.    --lynX
++	*/
++      pos++;
++      break;
+     case 'l':
+       {
+ 	static WCHAR line_[] = { 'l', 'i', 'n', 'e' };
+@@ -1568,7 +1577,12 @@
+ 	      }
+ 
+ 	    default:
+-	      cpp_error(this, "Expected file to include.");
++		/* used to complain about LPC's macro #include syntax
++		 * even when in an #ifndef __PIKE__ zone. this is a
++		 * clear case where pike should mind its own business.
++		 * luckily an if is enough.  --lynX
++		 */
++	      if (OUTP()) cpp_error(this, "Expected file to include.");
+ 	      break;
+ 	    }
+ 
+@@ -1799,6 +1813,7 @@
+ 	static WCHAR elseif_[] = { 'e', 'l', 's', 'e', 'i', 'f' };
+ 	static WCHAR elif_[] = { 'e', 'l', 'i', 'f' };
+ 	static WCHAR error_[] = { 'e', 'r', 'r', 'o', 'r' };
++	static WCHAR echo_[] = { 'e', 'c', 'h', 'o' };
+ 
+       if(WGOBBLE2(endif_))
+       {
+@@ -1869,6 +1884,17 @@
+ 	break;
+       }
+ 
++	/* very rudimentary implementation of the LPC #echo directive:
++	 * just skip it quietly. would be better to output it when OUTP()
++	 * but doing so looks like more work than I am willing to invest
++	 * right now..  --lynX
++	 */
++      if(WGOBBLE2(echo_)) {
++          SKIPSPACE();
++          FIND_EOL();
++	  break;
++      }
++
+       if(WGOBBLE2(error_))
+ 	{
+           ptrdiff_t foo;

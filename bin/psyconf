@@ -1,0 +1,632 @@
+#!/usr/bin/perl
+### -I/opt/psyced/utility
+# the include path would help finding INI.pm, but what if you the user
+# have decided to install psyced elsewhere?
+#
+# psyconf(8)  - tool that generates psyc configuration
+#		files out of a common psyced.ini
+#
+# $Id: psyconf,v 1.75 2008/02/08 11:44:57 lynx Exp $
+
+=head1 NAME
+
+psyconf - a configuration tool for PSYCED
+
+=head1 SYNOPSIS
+
+Usage: psyconf [ <file> ]
+
+The default configuration file used is /etc/psyced.ini
+
+=cut
+
+use File::Spec;
+
+# this approach still doesn't work when installing on gentoo
+# we need a seperate ebuild for INI.pm. until then we will use
+# the stupid parser
+#
+#BEGIN { # BEGIN just in case somebody ever accesses INI::something by hand
+#    unless (%INI::) { # get INI, if it isn't in this file (somewhere above)
+#	my @dir;
+#	my $inilocation;
+#
+#	@dir = File::Spec->splitdir($0);
+#	pop @dir;
+#	$inilocation = File::Spec->catfile(@dir, qw".. utility INI.pm");
+#
+#	if (-f $inilocation) {
+#	    require $inilocation;
+#	} else {
+#	    require INI;
+#	}
+#    }
+#}
+
+# append something while testing
+#my $test = "-NEW";
+use Data::Dumper;
+
+sub say {
+	print join('', @_); # if $test;
+}
+
+
+	### MAIN ###
+	# if you are manually compiling an ldmud, rename it or change here.
+	my $driver = 'psyclpc';
+
+	use Getopt::Std;
+	&getopt;
+
+	print STDERR '$Id: psyconf,v 1.75 2008/02/08 11:44:57 lynx Exp $', "\n";
+
+	my $conf = shift || 'psyced.ini';
+	$conf = '/etc/psyc/psyced.ini' unless -r $conf;
+	# should we complain if two psyced.ini files exist?
+	# lymeca got confused at this point, expecting the systemwide
+	# psyced.ini to be used, but actually having a local copy
+	say "The PSYCED configuration tool. Looking at $conf\n\n";
+
+# this is the super-duper fancy amazing INI handler
+#	#use INI; # ":verbose";
+#	my %c;
+#	tie(%c, INI, $conf, 5);
+
+# and this is the stupider INI parser in a couple of lines
+# cute, but we'd like to have the features of INI.pm one happy day
+	my %c, $f = "";
+	open C, $conf;
+	while(<C>) {
+		next if /^;/;
+		next if /^\s*$/;
+		$f = $1, next if /^\[(\w+)\]\s*$/;
+		#   Room name 'ornia ' is not permitted.
+		# isn't this stripping trailing whitespace properly?
+		# should it read \S.+\S ? or at least .+\S ?
+		$c{"$f$1"} = $2, next if /^(\w+)\s*=\s*(.+)\s*$/;
+		die "cannot parse line $. in $conf:\n\t$_\n";
+	}
+	close C;
+
+	if ($opt_D) {
+		if ($c{_basic_list_script_init}) {
+			foreach (split /\s+/, $c{_basic_list_script_init}) {
+				say "Deinstallation! Removing $_\n";
+				unlink $_;
+			}
+		}
+		exit;
+	}
+
+	use POSIX;
+	my @uname = POSIX::uname();
+	# if POSIX.pm is unavailable, this also works:
+	# @uname = split ' ', `uname -s -r -n -m -v`;
+	#print Dumper(@uname);
+	my $_type_machine = $uname[$#uname];
+	$_ = $uname[2];
+	/^(\w+\.\w+)\b/ or /^(\w+)\b/;
+	my $_type_system = "\L$uname[0]\E";
+	my $_version_system = "$uname[0]/$1";
+	my $_type_architecture = lc "$_type_machine-$uname[0]";
+	say "Machine Type: $_type_machine. OS Type: $_type_system. ",
+	    "Arch: $_type_architecture\n";
+#Typical outputs:
+# Machine Type: i686. OS Type: linux. Arch: i686-linux
+# Machine Type: x86_64. OS Type: linux. Arch: x86_64-linux
+# Machine Type: Power Macintosh. OS Type: darwin. Arch: power macintosh-darwin
+
+	my $base = $c{_basic_path_base};
+	die "_basic_path_base not defined in config" unless $base;
+	die "Base directory $base defined as _basic_path_base not available"
+	    unless -x $base;
+	my $sandbox = "$base/world";
+	die "psyced library $sandbox does not exist" unless -x $sandbox;
+	my $arch = "$base/bin-$_type_architecture";
+	my $config = $c{_basic_path_configuration} || $base;
+	# this isn't taking $ARCH_DIR from install.sh into account
+	# but maybe it shouldn't anyway..
+	unless (-x $arch && -x "$arch/$driver") {
+		$arch = "$base/bin-$_type_system";
+		unless (-x $arch && -x "$arch/$driver") {
+			$arch = "$base/bin-linux";
+			if (-x $arch && -x "$arch/$driver") {
+				say "\nBug in $0: We didn't find $base/bin-linux in the appropriate way.\nThat's not nice. Continuing however.\n"
+			} elsif (not -x ($arch = "$base/bin") && -x "$arch/$driver") {
+				# bad place for psyclpc really..
+				# since it is usually of no commandline use
+				# but where else should psyclpc.ebuild
+				# install it? in /opt/psyclpc? for two files?
+				$arch = "/usr/sbin";
+				# the following is very unlikely to happen:
+				die <<X unless -x $arch && -x "$arch/$driver";
+could not find any directory containing $driver.
+X
+			}
+		}
+	}
+
+	my $user = $c{_basic_system_user} || 'daemon';
+	my ($login,$pass,$uid,$gid) = getpwnam($user)
+	    or die "uid '$user' not defined on this system";
+	# this doesn't mean psyconf is intended to run as $user too!!
+	say "psyced will later be running as user $user ($uid:$gid)\n";
+
+	my $ho = $c{_basic_host_name} || $ENV{HOST} || 'psyc';
+	my $chatname = $c{_basic_nick_server} ||
+		         $c{_basic_host_name} || 'psyced';
+	$chatname = 'psyced' if $chatname eq 'psyc';
+
+#	say "Generating control files in $c{_basic_path_base} ..\n\n";
+	my $t = "$base/local/ports.h$test";
+	say "Generating control file $t ..\n";
+	rename $t, "$t~";
+	open O, '>', $t or die "Cannot write to $t";
+
+	print O <<X;
+// CAUTION! This file has been generated using $0.
+// Don't edit unless you are no longer going to use the configuration tool.
+// Edit $conf instead, then run $0 again.
+
+/* the values in here may be the same as in services.h
+ * or they may be not. so always be aware which one's you
+ * are using to which purpose.	-lynX
+ */
+#ifndef PORTS_H
+#define PORTS_H
+
+#define	PSYC_PORT	$c{_protocols_port_PSYC}
+#define	PSYCS_PORT	$c{_protocols_port_PSYC_encrypted}
+
+#define	HTTP_PORT	$c{_protocols_port_HTTP}
+#define	HTTPS_PORT	$c{_protocols_port_HTTP_encrypted}
+
+#define	IRC_PORT	$c{_protocols_port_IRC}
+#define	IRCS_PORT	$c{_protocols_port_IRC_encrypted}
+
+#define	JABBER_PORT	$c{_protocols_port_jabber_clients}
+#define	JABBERS_PORT	$c{_protocols_port_jabber_clients_encrypted}
+#define	JABBER_S2S_PORT	$c{_protocols_port_jabber_S2S}
+
+#define	TELNET_PORT	$c{_protocols_port_telnet}
+#define	TELNETS_PORT	$c{_protocols_port_telnet_encrypted}
+
+#define	APPLET_PORT	$c{_protocols_port_applet}
+
+#define	POP3_PORT	$c{_protocols_port_POP3}
+#define	POP3S_PORT	$c{_protocols_port_POP3_encrypted}
+
+#define	SMTP_PORT	$c{_protocols_port_SMTP}
+#define	SMTPS_PORT	$c{_protocols_port_SMTP_encrypted}
+
+#define	NTTP_PORT	$c{_protocols_port_NNTP}
+#define	NNTPS_PORT	$c{_protocols_port_NNTP_encrypted}
+
+// experimental PSYC 1.0 implementation
+#define	SPYC_PORT	$c{_protocols_port_SPYC}
+
+#endif
+X
+	close O;
+	chmod 0644, $t;
+
+	my $ports="$c{_protocols_port_PSYC} $c{_protocols_port_jabber_S2S} $c{_protocols_port_applet} $c{_protocols_port_telnet} $c{_protocols_port_HTTP} $c{_protocols_port_IRC} $c{_protocols_port_jabber_clients} $c{_protocols_port_SMTP} $c{_protocols_port_NNTP} $c{_protocols_port_SPYC}";
+	$ports .= " $c{_protocols_port_PSYC_encrypted} $c{_protocols_port_telnet_encrypted} $c{_protocols_port_HTTP_encrypted} $c{_protocols_port_IRC_encrypted} $c{_protocols_port_jabber_clients_encrypted} $c{_protocols_port_SMTP_encrypted} $c{_protocols_port_NNTP_encrypted}" if $c{_protocols_use_encryption};
+
+	my @adm;
+	unless ($c{_administrators_list_nicks}) {
+		print STDERR <<X;
+
+You have decided to run an unadministered psyced. That's a socially quite
+interesting idea, but the software can't deal with that yet.
+Continue nonetheless? (hit ctrl-c for mental sanity)
+X
+		<STDIN>;
+	} else {
+		foreach (split /\s+/, $c{_administrators_list_nicks}) {
+			my $ni = lc($_);
+			push @adm, $ni;
+
+			$t = "$base/data/person/$ni.o$test";
+			next if -e $t;
+
+			say "Creating administrator in $t\n";
+			open O, '>', $t or die "Cannot write to $t";
+			my $pw = $c{_administrators_password_default};
+			unless ($pw) {
+				print STDERR "Please input a password for $_: ";
+				$pw = <STDIN>;
+				chomp $pw;
+			}
+			print O <<X;
+#0:0
+_v (["password":"$pw","name":"$_",])
+X
+			close O;
+			chmod 0600, $t;
+			chown $uid, $gid, $t if $uid;
+		}
+	}
+	my $adm = join '", "', @adm;
+
+	$t = "$base/local/psyconf.h$test";
+	say "Generating control file $t ..\n";
+	rename $t, "$t~";
+	open O, '>', $t or die "Cannot write to $t";
+
+	print O <<X;
+// CAUTION! This file has been generated using $0.
+// Don't edit unless you are no longer going to use the configuration tool.
+// Edit $conf instead, then run $0 again.
+
+X
+	if ( $c{_optional_config_HTTP} ) {
+		print O <<X;
+# define WEB_CONFIGURE
+
+X
+		print STDERR <<X unless $c{_protocols_port_HTTP} or $c{_protocols_port_HTTP_encrypted};
+
+Warning: _optional_config_HTTP activated without any HTTP port. You won't be
+	 able to use the web configuration tool without webserver.
+
+X
+	}
+	print STDERR <<X if $c{_optional_charset_system};
+Warning: _optional_charset_system is obsolete. Please remove it.
+X
+#	print O <<X if $c{_optional_charset_system};
+## define SYSTEM_CHARSET "$c{_optional_charset_system}"
+#
+#X
+	print O <<X if $c{_optional_charset_console};
+// optional
+# define CONSOLE_CHARSET "$c{_optional_charset_console}"
+
+X
+
+#	if ( $c{_basic_host_domain} ) {
+#		print O <<X;
+## undef __DOMAIN_NAME__
+## define __DOMAIN_NAME__	"$c{_basic_host_domain}"
+## define SERVER_HOST	"$ho." __DOMAIN_NAME__
+#
+#X
+#	} else {
+#		print O <<X;
+## if __DOMAIN_NAME__ != "unknown"
+##  define SERVER_HOST	"$ho." __DOMAIN_NAME__
+## else
+##  if __HOST_IP_NUMBER__ == "127.0.0.1"
+##   define SERVER_HOST	__HOST_NAME__
+##  else
+##   define SERVER_HOST	"$ho"
+##  endif
+## endif
+#
+#X
+#	}
+	print O <<X if $c{_basic_host_domain};
+# define CHATDOMAIN	"$c{_basic_host_domain}"
+X
+	my $pl = lc($c{_basic_place_default}) || 'rendezvous';
+	my $la = lc($c{_basic_language_default}) || 'en';
+
+	print O <<X;
+# define CHATHOST	"$ho"
+# define CHATNAME	"$chatname"
+
+# define DEFPLACE 	"$pl"
+# define DEFLANG 	"$la"
+
+// only required field, really
+# define ADMINISTRATORS	"$adm"
+
+// architecture and operating system (used in PSYC headers etc.)
+# define MACHTYPE	"$_type_machine"
+# define OSTYPE		"$_version_system"
+X
+	close O;
+	chmod 0640, $t;
+	chown $uid, $gid, $t if $uid;
+
+# PSYCED LAUNCHER
+	$t = "$base/bin/psyced$test";
+	say "Generating control file $t ..\n";
+	rename $t, "$t~";
+	open O, '>', $t or die "Cannot write to $t";
+
+	my $db = $c{_optional_level_debug} || '0';
+	my $psyced = "$arch/$driver -DDEBUG=$db";
+	my $debugfile;
+
+	if ( $c{_optional_use_file_debug} ) {
+		$debugfile = "$sandbox/log/psyced.debug";
+		$psyced .= " --debug-file ". $debugfile;
+# since psyclpc 4.0.4 backtraces are also in the regular console log.. yippie!
+#		say "ATTENTION: $debugfile will contain runtime error backtraces.\n";
+	}
+	# else: ldmud tries to create $hostname.debug.log in $sandbox
+	# psyclpc is good boy instead. so we can keep this optional.
+
+	my $hc = 0;
+	## ldmud bug number one: you have to provide hostname AFTER hostaddr
+	if ($c{_basic_host_IP}) {
+		$psyced .= " --hostaddr $c{_basic_host_IP}";
+		$hc = 1;	# problem?
+	}
+	if ($c{_basic_host_domain} and $c{_basic_host_name}) {
+		my $fqdn = "$c{_basic_host_name}.$c{_basic_host_domain}";
+		$psyced .= " --hostname $fqdn";
+		$hc = 0;	# no problem
+	}
+	## ldmud bug number two
+#WARNING: Because of some funny bug the driver will probably not bind properly
+#to _basic_host_IP as it also needs _basic_host_name and _basic_host_domain
+#to be provided. Hopefully this shortcoming will soon be history.
+#In the meantime please re-edit the psyconf.ini to provide all variables.
+	print STDERR <<X if $hc == 1;
+
+WARNING: _basic_host_IP, _basic_host_name and _basic_host_domain need to be
+provided together as the driver won't figure out the proper name for the IP
+number or vice versa. Please re-edit the psyconf.ini to provide all variables.
+
+X
+	if ($c{_protocols_use_encryption}) {
+		$psyced .= " --tls-key $config/$c{_basic_path_PEM_key}"
+		    if $c{_basic_path_PEM_key};
+		$psyced .= " --tls-cert $config/$c{_basic_path_PEM_certificate}"
+		    if $c{_basic_path_PEM_certificate};
+		$psyced .= " --tls-trustdirectory $config/$c{_basic_path_trust}"
+		    if $c{_basic_path_trust};
+# ldmud doesn't support this yet
+#		$psyced .= " --tlscrldirectory $config/$c{_basic_path_revocation}"
+#		    if $c{_basic_path_revocation};
+	}
+
+	# you can divert UDP if you know what you are doing.
+	my $portUDP = $c{_protocols_port_UDP} || $c{_protocols_port_PSYC};
+	my $umask = $c{_optional_umask} || '007';
+	print O <<X;
+#!/bin/sh
+#
+# CAUTION! This file has been generated using $0.
+# Don't edit unless you are no longer going to use the configuration tool.
+# Edit $conf instead, then run $0 again.
+
+X
+	# if the installation isn't intentionally using root rights
+	# make sure the admin won't run psyced or do "psyced -u" as root
+	# as it will most probably mess up file permissions and break psyced
+	print O <<X if $user ne 'root';
+userid=`id | sed "s/).*//" | sed "s/.*(//"`
+# We could even test for != "x$user" here. Should we?
+if test "x\$userid" = "xroot"
+then
+	echo "${hi}ERROR: ${lo}You can't run \$0 with root privileges unintentionally.\nUse 'su $user' or edit psyced.ini."
+	exit 2
+fi
+
+X
+	print O <<X;
+umask $umask
+
+# with this chdir, old ldmud should be able to find its keys anyhow
+cd $base
+
+# available flags: -u and -d
+# TODO: i'd like for -b to make a backup archive of the psyced tree before
+# updating, and -r to revert to the last backupped version. whatchathink?
+
+# the following if-block handles the -u option for updating your
+# installation by CVS. it ensures your installation is still basically
+# compatible with the one in the CVS or complains.
+#
+if test "\$1" = "-u"
+then
+    # it's not a security issue really,
+    # but shouldn't these CVS control
+    # files by outside the sandbox?	-lynX
+
+    if ! test -e $sandbox/status-0-beta-OK
+    then
+	echo ""
+	echo "${hi}ATTENTION:${lo}"
+	echo "The version of psyced you are using is outdated. You cannot"
+	echo "get new updates because of incompatibility."
+	echo ""
+	echo "More information following.."
+	echo ""
+	cat $sandbox/status-0-DEPRECATED
+	echo ""
+	echo "The file you just saw is: ${hi}${lib}/status-0-DEPRECATED${lo}."
+	exit 1
+    else
+	echo ""
+	echo "${hi}ATTENTION: ${lo}Please give an empty password to log in (-> press enter)"
+	(cd $sandbox/.. && cvs login && cvs -q update -dP && cvs logout)
+    fi
+    if ! test -e $sandbox/status-0-beta-OK
+    then
+        echo ""
+	echo "${hi}ATTENTION:${lo}"
+        echo "The version of psyced you are using is outdated. You 
+cannot"
+        echo "get new updates because of incompatibility."
+        echo ""
+        echo "More information following.."
+        echo "" 
+        cat $sandbox/status-0-DEPRECATED
+	echo ""
+	echo "The file you just saw is: ${hi}${lib}/status-0-DEPRECATED${lo}."
+        exit 1
+    else
+	echo "It may be a good idea to run ${hi}$0${lo} again before you continue."
+    fi
+    exit
+fi
+
+# the -d option let's you inspect all the changes done in the CVS
+# before you go for an update using -u
+if test "\$1" = "-d"
+then
+    if ! test -e $sandbox/status-0-beta-OK
+    then
+	echo ""
+	echo "${hi}ATTENTION:${lo}"
+	echo "The version of psyced you are using is outdated. You cannot"
+	echo "get new updates because of incompatibility."
+	echo ""
+	echo "More information following.."
+	echo ""
+	cat $sandbox/status-0-DEPRECATED
+	echo ""
+	echo "The file you just saw is: ${hi}${lib}/status-0-DEPRECATED${lo}."
+	exit 1
+    else
+	(cd $base && cvs -q diff -ur HEAD|\$PAGER)
+    fi
+    exit
+fi
+
+# if your ldmud is too old, it may not understand --pidfile and --tls-*
+commandline="$psyced -s 0 -s v0 --swap-file $base/psyced.swap --erq $arch/erq --pidfile $sandbox/data/$driver.pid -m $sandbox -u $portUDP $ports"
+
+# keep the pid of this wrapper process, too
+echo \$\$ >data/psyced.pid
+
+# neat feature of gnu mv
+VERSION_CONTROL=numbered;
+export VERSION_CONTROL
+
+# rm'ing this allows the administrator commands in psyced to stop the loop
+touch $sandbox/data/.autorestart
+while [ -r $sandbox/data/.autorestart ]
+do
+X
+	# we can presume gnu mv on linux
+	#my $domv = $_type_system eq 'linux' ? 'mv -b' : 'mv -f';
+	# yes, but all these backups are overkill
+	# who needs these debug logs archived for all eternity anyway?
+	my $domv = 'mv -f';
+	# maybe we should develop a strategy for all the OTHER logfiles.....
+	# but luckily psyclpc has some support for that itself
+
+	print O <<X if $debugfile;
+	touch $debugfile
+	$domv $debugfile $debugfile-old
+X
+	if ($c{_optional_console_debug}) {
+		print O "\t\$commandline\n";
+	} else {
+		say "The file $sandbox/log/psyced.out will contain the runtime output.\n";
+		print O <<X;
+	touch $sandbox/log/psyced.out $sandbox/log/psyced.err
+	$domv $sandbox/log/psyced.err $sandbox/log/psyced.err-old
+	# the gnu date manual doesn't mention if +FORMAT is a posix
+	# standard or a gnu extension. is this call going to work
+	# in most current environments? it does work on bsd, *phew*
+	#$domv $sandbox/log/psyced.out $sandbox/log/`date +%Y-%m-%d`.out
+	# ah whatever.. let's not make it too complicated..
+	# who needs these debug logs archived for all eternity anyway?
+	$domv $sandbox/log/psyced.out $sandbox/log/psyced.out-old
+	echo ---------------------------------------- >>$sandbox/log/psyced.out
+	date >>$sandbox/log/psyced.out
+	echo ---------------------------------------- >>$sandbox/log/psyced.out
+	\$commandline >>$sandbox/log/psyced.out 2>>$sandbox/log/psyced.err
+X
+	}
+	print O <<X;
+	sleep 3
+done
+X
+	close O;
+	chmod 0744, $t;
+	chown $uid, $gid, $t if $uid;
+
+# PSYCED INIT.D SCRIPT
+	$t = "$base/etc";
+	mkdir($t);
+	$t .= "/init.d";
+	mkdir($t);
+	$t .= "/psyced$test";
+	say "Generating control file $t ..\n";
+	rename $t, "$t~";
+
+	# HerraBRE: the init script uses "su -s" which os x doesn't understand.
+	#
+	# alright, so now i could let it do something else in case of OS X
+	# but I need to know (1) how to recognize OSX (2) what to put here!
+	$su = 'su -s';
+
+			# or die.. mention at this point that we should
+			# probably be running as root?
+	open O, '>', $t or die "Cannot write to $t";
+	print O <<X;
+#!/bin/sh
+#
+# CAUTION! This file has been generated using $0.
+# Don't edit unless you are no longer going to use the configuration tool.
+# Edit $conf instead, then run $0 again.
+
+test -x $base/bin/psyced || exit 0
+
+case "\$1" in
+    start)
+	echo -n "Starting psyced in background ... "
+	# in nei's environment a zsh would be started to execute the
+	# psyced script. so he suggests to add a -s parameter. in our
+	# environment both strategies work.
+	$su /bin/sh $user $base/bin/psyced &
+	# some distributions no longer have /bin/sh in /etc/shells.
+	# use a better distribution if they don't!  :)
+	# this script has to remain posix compatible. bash is no option here.
+	echo "OK"
+	;;
+    stop)
+	rm $sandbox/data/.autorestart
+	if test -r $sandbox/data/$driver.pid
+	then
+		echo -n "Instructing psyced to gently shut down ... "
+		kill -1 \`cat $sandbox/data/$driver.pid\`
+		# this should be enough ideally
+		# but we can remove the pid file so a
+		# second stop call will kill bill
+		rm $sandbox/data/$driver.pid && echo "OK"
+	else 
+		echo -n "Killing psyced brutally ... "
+		kill -1 \`cat $sandbox/data/$driver.pid\` >/dev/null 2>&1
+		kill -3 \`cat $sandbox/data/psyced.pid\` && echo "OK"
+	fi
+	;;
+    kill)
+	echo -n "Killing psyced brutally ... "
+	kill -3 \`cat $sandbox/data/psyced.pid\` && echo "OK"
+	;;
+    restart)
+	echo -n "Instructing psyced to restart ... "
+	kill -1 \`cat $sandbox/data/$driver.pid\` && echo "OK"
+	;;
+    status)
+	;;
+    *)
+	echo "Usage: \$0 {start|stop|restart|kill}"
+	exit 1
+	;;
+esac
+
+X
+	close O;
+	chmod 0744, $t;
+
+	if ($c{_basic_list_script_init}) {
+		foreach (split /\s+/, $c{_basic_list_script_init}) {
+			say "... copying to $_\n";
+			`cp "$t" "$_"`;
+		}
+	}
+
+	chdir "$sandbox/net/place" or die "Where is my net/place? $!";
+	require "archetype.pl";
+

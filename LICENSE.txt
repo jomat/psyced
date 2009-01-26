@@ -1,0 +1,54 @@
+ [ «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» ]
+
+  psyced, a scalable distributed multi-protocol chat and messaging server
+	 solution based on the PSYC protocol for synchronous conferencing.
+___
+
+  Copyright (C) since 1997 by:
+      Carlo von Loesch	(psyc://ve.symlynX.com/~lynX).
+
+  Since 2002 copyright also in parts by:
+      Philipp Hancke	(psyc://goodadvice.pages.de/~fippo)
+      Tobias Josefowitz	(psyc://goodadvice.pages.de/~heldensaga)
+      Arne Gödeke	(psyc://psyced.org/~el) and
+      Dominik Sander	(psyc://psyced.org/~depairet).
+___
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of version 2 of the GNU General Public License as
+    published by the Free Software Foundation.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+___
+
+    This program is also available under different license from
+    Carlo von Loesch and symlynX. To this purpose all copyright
+    owners grant Carlo von Loesch and symlynX the right to use
+    and license this program in whatever suitable way.
+
+    Should you wish to contribute to this program, you can receive a
+    write access to the psyced software repository from symlynX. By checking
+    code in, you grant us permission to license your contribution under
+    both the GNU General Public License and under other licenses as
+    described above.
+
+    With the act of checking into the software repository, you guarantee
+    that you are either the author and copyright owner of the contribution
+    you are making, or that you have a license to use said contribution in
+    a way compatible with our terms of use. If you fail to do so, you
+    remain the sole responsible for your acting; no part of the
+    responsibility will be transferred to symlynX.
+
+    This means, for example, that you cannot contribute code elements
+    which stem from an other GPL project, as this would not comply with
+    the dual licensing requirement described above.
+
+    You can however keep this kind of modifications to yourself, or
+    publish your own GPL licensed fork of this software, or - in agreement
+    with us - add optional parts to this software clearly marked as not
+    adhering to the dual license described above.
+
+ [ «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» ]

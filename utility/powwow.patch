@@ -1,0 +1,22 @@
+there is a sample configuration for using powwow as a telnet-based
+client application for psyc in the config directory. unfortunately
+the default powwow configuration comes with a very stupid setting
+for command continuation, the ';' -- which makes it very hard to
+wink in a conversation, unless you #quote on which means all of
+your #alias'es will no longer work. the solution is to apply this
+little patch before you compile or emerge powwow. maybe one day
+someone will make it a setting, then this patch will become useless
+but in the year 2005 this is still not the case.	-lynX
+
+
+--- defines.h~	2005-08-14 19:34:58.000000000 +0200
++++ defines.h	2005-08-14 19:35:02.000000000 +0200
+@@ -117,7 +117,7 @@
+ #define STRESC		"\\"
+ #define ESC2		'`'	/* other special escape char */
+ #define STRESC2		"`"
+-#define CMDSEP		';'	/* command separator character */
++#define CMDSEP		'§'	/* command separator character */
+ #define SPECIAL_CHARS	"{}();\"=" /* specials chars needing escape */
+ #define MPI		"~$#E"	/* MUME protocol introducer */
+ #define MPILEN		4	/* strlen(MPI) */

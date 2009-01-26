@@ -1,0 +1,497 @@
+<PSYC:TEXTDB> ## vim:syntax=mail
+
+_MISC_character_command
+|## since several clients started catching / commands..
+|+
+
+_MISC_jabber_conference
+|place.{_VAR_server_XMPP}
+
+_echo_request_friendship
+|<iq type='set'><query xmlns='jabber:iq:roster'><item jid='[_nick]' name='[_nick]' subscription='none' ask='subscribe'>[_list_groups]</item></query></iq>
+
+_echo_place_enter
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' id='[_tag]'><x xmlns='http://jabber.org/protocol/muc#user'><item affiliation='[_duty]' jid='[_source_relay]' role='participant'/><status code='100'/><status code='110'/><status code='170'/></x></presence>
+
+_echo_place_leave
+|<presence type='unavailable' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' id='[_tag]'><x xmlns='http://jabber.org/protocol/muc#user'/><status code='110'/></presence>
+
+_echo_friendship_removed
+|<iq to='[_INTERNAL_target_jabber]' type='set' id='[_tag_reply]'><query xmlns='jabber:iq:roster'><item jid='[_nick_target]' name='[_nick_target]' subscription='remove'><group>friends</group></item></query></iq>
+
+_list_acquaintance_notification_delayed_roster
+|<item jid='[_friend]' subscription='both' name='[_nick]'>[_list_groups]</item>
+
+_list_acquaintance_notification_immediate_roster
+|<item jid='[_friend]' subscription='both' name='[_nick]'>[_list_groups]</item>
+
+_list_acquaintance_notification_offered_roster
+|<presence from='[_friend]' type='subscribe'/>
+
+_list_acquaintance_notification_pending_roster
+|<item jid='[_friend]' ask='subscribe' subscription='none' name='[_nick]' />
+
+_list_friends_present_each
+|<item jid='[_friend]' subscription='[_acquaintance]' name='[_nick]'><group>friends</group></item>
+
+_dialback_request_verify
+|<db:verify to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' id='[_tag]'>[_dialback_key]</db:verify>
+
+_request_version
+|<iq id='[_tag]' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='get'><query xmlns='jabber:iq:version'/></iq>
+
+_request_friendship
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber_bare]' type='subscribe'/>
+
+_request_enter
+|<presence from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber_bare]/[_nick]' id='[_tag]'><x xmlns='http://jabber.org/protocol/muc'/></presence>
+
+_request_execute_ban
+|## mh... we have a hard time finding out the real jid of the participant
+|<iq type='set' to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]' id='[_tag]'><query xmlns='http://jabber.org/protocol/muc#admin'><item affiliation='outcast' jid='jid-of-roomnick'><reason>[_reason]</reason></item></query></iq>
+
+_request_execute_kick
+|<iq type='set' to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]' id='[_tag]'><query xmlns='http://jabber.org/protocol/muc#admin'><item nick='[_nick_target]' role='none'><reason>[_reason]</reason></item></query></iq>
+
+_request_execute_topic
+|<message to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]' type='groupchat'><subject>[_data]</subject></message>
+
+_request_leave
+|<presence from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber_bare]/[_nick]' type='unavailable' id='[_tag]'><x xmlns='http://jabber.org/protocol/muc'/></presence>
+
+_request_examine_vCard
+|<iq from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber_bare]' type='get' id='[_tag]'><vCard xmlns='vcard-temp'/></iq>
+
+_request_status_person
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber_bare]' type='probe'/>
+
+_request_friendship_implied
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber_bare]' type='subscribe'/>
+
+_request_list_feature
+|<iq type='get' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' id='[_tag]'><query xmlns='http://jabber.org/protocol/disco#info'/></iq>
+
+_request_list_feature_node
+|# we only need node if it is set, therefore we have this variant
+|<iq type='get' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' id='[_tag]'><query xmlns='http://jabber.org/protocol/disco#info' node='[_node]'/></iq>
+
+_request_list_item
+|<iq type='get' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' id='[_tag]'><query xmlns='http://jabber.org/protocol/disco#items'/></iq>
+
+_request_list_item_node
+|# we only need node if it is set, therefore we have this variant
+|<iq type='get' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' id='[_tag]'><query xmlns='http://jabber.org/protocol/disco#items' node='[_node]'/></iq>
+
+_request_ping
+|<iq type='get' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' id='[_tag]'><query xmlns='urn:xmpp:ping'/></iq>
+
+_request_authentication
+|<iq type='get' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' id='[_tag]'><confirm xmlns='http://jabber.org/protocol/http-auth' id='[_nonce]' method='GET' url='TODO'/></iq>
+
+_echo_ping
+|<iq type='result' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' id='[_tag_reply]'><query xmlns='urn:xmpp:ping'/></iq>
+
+_request_description_time
+|<iq type='get' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' id='[_tag]'><query xmlns='jabber:iq:last'/></iq>
+
+_error_place_enter
+|<presence from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber]' type='error'><error code='406' type='modify'>[_data]<not-acceptable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><text xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'>[_data]</text></error></presence>
+
+_error_unknown_name_user
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='error'><error code='503' type='cancel'><service-unavailable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error></message>
+
+_error_unavailable_nick_place
+|<presence from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber]' type='error'><error code='409' type='cancel'><text xmlns='urn:ietf:params:xml:ns:xmpp-stanzas' xml:lang='en'>Sorry, you have to use the node identifier of your JID (the part before the @) as nickname here</text><conflict xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error></presence>
+
+_error_illegal_name_person_place
+|<presence type='error' from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber]'><error code='406' type='modify'><not-acceptable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error></presence>
+
+_error_unsupported_method
+|<iq from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='error' id='[_tag_reply]'><error code='503' type='cancel'><service-unavailable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error></iq>
+
+_error_unsupported_method_request_friendship
+|<presence from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber_bare]' type='unsubscribed'/>
+
+_error_unsupported_method_notice_friendship_established
+|<presence from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber_bare]' type='unsubscribe'/>
+
+_error_unsupported_method_notice_friendship_removed
+|<presence from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber_bare]' type='unsubscribed'/>
+
+_error_duplicate_friendship
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber_bare]' type='subscribed'/><presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'/>
+
+_error_invalid_password
+|<iq type='error' id='[_tag_reply]'><error code='401' type='auth'><not-authorized xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error></iq>
+
+_query_password
+|<iq type='result' id='[_tag_reply]'><query xmlns='jabber:iq:auth'><username/><password/><digest/><resource/></query></iq>
+
+_query_password_sha1
+|<iq type='result' from='{_VAR_server_XMPP}' id='[_tag_reply]'><query xmlns='jabber:iq:auth'><username/><sha1/><resource/></query></iq>
+
+_request_user_amount
+|<iq type='get' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]'  id='[_tag]'><query xmlns='http://jabber.org/protocol/stats'><stat name='users/online'/><stat name='users/total'/></query></iq>
+
+_request_registration_query
+|<iq type='get' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' id='[_tag]' xml:lang='[_language]'><query xmlns='jabber:iq:register'/></iq>
+
+_request_registration
+|<iq type='set' from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber]' id='[_tag]' xml:lang='[_language]'><query xmlns='jabber:iq:register'><username>[_username]</username><password>[_password]</password></query></iq>
+
+_request_attention_wake
+|<message from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='headline'>
+| <attention xmlns='http://www.xmpp.org/extensions/xep-0224.html#ns'/>
+| <body>{_request_attention_wake}</body>
+|</message>
+
+_failure_unsupported_function_whisper
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='error'><body>{_failure_unsupported_function_whisper}</body><error code='503' type='cancel'><service-unavailable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><text xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'>{_failure_unsupported_function_whisper}</text></error></message>
+
+_failure_filter_strangers
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='error'><body>{_failure_unsupported_function_whisper}</body><error code='503' type='cancel'><service-unavailable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/><text xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'>{_failure_filter_strangers}</text></error></message>
+
+_notice_received_email_UNUSED
+|<message from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='headline'><body>{_notice_received_email}</body></message>
+
+_message_private
+|<message from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='chat'><body>[_data]</body></message>
+
+_message_public
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>[_data]</body></message>
+
+_request_message_public
+|<message to='[_INTERNAL_target_jabber_bare]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>[_data]</body></message>
+
+_message_echo_public
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>[_data]</body></message>
+
+_message_echo_text_action
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>[_data]</body></message>
+
+_message_echo_public_action
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me [_action]</body></message>
+
+_message_echo_public_ask
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_asks}: [_data]</body></message>
+
+_message_echo_public_text_action
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>[_data]</body></message>
+
+_message_echo_public_action_possessive
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me 's [_action_possessive]</body></message>
+
+_message_public_history
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>[_data]</body><x xmlns='jabber:x:delay' from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_place_jabber]'/></message>
+
+_message_public_action
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me [_action]</body></message>
+
+_message_public_magnify
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>« [_data] »</body></message>
+
+_message_public_whisper
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me whispers to [_nick_target]: [_data]</body></message>
+
+_message_public_reduce
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_says} {_TEXT_something}.</body></message>
+
+_message_public_question
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_asks}: [_data]</body></message>
+
+_message_public_ask
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_asks}: [_data]</body></message>
+
+_message_public_text_action
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>[_data]</body></message>
+
+_message_public_action_magnify
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me [_action] «««</body></message>
+
+_message_public_action_possessive
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me 's [_action_possessive]</body></message>
+
+_message_public_action_reduce
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_does} {_TEXT_something}.</body></message>
+
+_message_public_question_magnify
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_asks} « [_data] »</body></message>
+
+_message_public_question_reduce
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_asks} {_TEXT_something}.</body></message>
+
+_message_private_action
+|<message from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='chat'><body>/me [_action]</body></message>
+
+_message_private_magnify
+|<message from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='chat'><body>« [_data] »</body></message>
+
+_message_private_reduce
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_tells} {_TEXT_dir} {_TEXT_something}.</body></message>
+
+_message_private_question
+|## all those clients which show actions in an ugly fashion
+|## either we do *everything* as actions or nothing..
+|## occasional "asks" looks silly
+|## <message from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='chat'><body>/me {_TEXT_action_asks}: [_data]</body></message>
+|{_message_private}
+
+_message_private_ask
+|## <message from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='chat'><body>/me {_TEXT_action_asks}: [_data]</body></message>
+|{_message_private}
+
+_message_private_ask_magnify
+|{_message_private_ask}
+
+_message_private_ask_reduce
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_asks} {_TEXT_dich} {_TEXT_something}.</body></message>
+
+_message_private_action_magnify
+|<message from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='chat'><body>/me [_action] «««</body></message>
+
+_message_private_action_reduce
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_does} {_TEXT_something}.</body></message>
+
+_jabber_message
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'>[_jabber_XML]</message>
+
+_jabber_presence
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'>[_jabber_XML]</presence>
+
+_jabber_iq_set
+|<iq type='set' id='[_tag]' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'>[_jabber_XML]</iq>
+
+_jabber_iq_get
+|<iq type='get' id='[_tag]' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'>[_jabber_XML]</iq>
+
+_jabber_iq_result
+|<iq type='result' id='[_tag_reply]' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'>[_jabber_XML]</iq>
+
+_jabber_iq_error
+|<iq type='error' id='[_tag_reply]' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'>[_jabber_XML]</iq>
+
+_jabber_message_groupchat
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='groupchat'>[_jabber_XML]</message>
+
+_jabber_presence_error
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='error'>[_jabber_XML]</presence>
+
+_jabber_presence_unavailable
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='unavailable'>[_jabber_XML]</presence>
+
+_jabber_disco_gateway
+|<iq from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' id='[_tag_reply]' type='result'><query xmlns='jabber:iq:gateway'><desc>Enter the Jabber/XMPP address of the user</desc><prompt>[_address]</prompt></query></iq>
+
+_notice_list_feature_server
+|<iq type='result' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' id='[_tag_reply]'><query xmlns='http://jabber.org/protocol/disco#info'><identity name='[_name]' category='server' type='[_identity]'/>[_list_feature]</query></iq>
+
+_notice_list_feature_person
+|<iq type='result' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' id='[_tag_reply]'><query xmlns='http://jabber.org/protocol/disco#info'><identity name='[_name]' category='account' type='[_identity]'/>[_list_feature]</query></iq>
+
+_notice_list_feature_place
+|<iq type='result' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' id='[_tag_reply]'><query xmlns='http://jabber.org/protocol/disco#info'><identity name='[_name]' category='conference' type='[_identity]'/>[_list_feature]</query></iq>
+
+_notice_list_feature_newsfeed
+|<iq type='result' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' id='[_tag_reply]'><query xmlns='http://jabber.org/protocol/disco#info'><identity name='[_name]' category='headline' type='[_identity]'/>[_list_feature]</query></iq>
+
+_notice_list_item
+|<iq from='[_INTERNAL_source_jabber]' type='result' to='[_INTERNAL_target_jabber]' id='[_tag_reply]'><query xmlns='http://jabber.org/protocol/disco#items'>[_list_item]</query></iq>
+
+_notice_login
+|<iq type='result' id='[_tag_reply]'/>
+
+_notice_list_feature_newsfeed
+|<iq type='result' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' id='[_tag_reply]'><query xmlns='http://jabber.org/protocol/disco#info'><identity name='[_name]' category='headline' type='[_identity]'/>[_list_feature]</query></iq>
+
+_notice_list_item
+|<iq from='[_INTERNAL_source_jabber]' type='result' to='[_INTERNAL_target_jabber]' id='[_tag_reply]'><query xmlns='http://jabber.org/protocol/disco#items'>[_list_item]</query></iq>
+
+_notice_login
+|<iq type='result' id='[_tag_reply]'/>
+
+_notice_invitation
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><x jid='[_place]' xmlns='jabber:x:conference'/><body>{_notice_invitation}</body></message>
+ 
+_notice_typing_inactive
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><inactive xmlns='http://jabber.org/protocol/chatstates'/></message>
+
+_notice_typing_paused
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><paused xmlns='http://jabber.org/protocol/chatstates'/></message>
+
+_notice_typing_composing
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><composing xmlns='http://jabber.org/protocol/chatstates'/></message>
+
+_notice_typing_active
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><active xmlns='http://jabber.org/protocol/chatstates'/></message>
+
+_notice_typing_gone
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><gone xmlns='http://jabber.org/protocol/chatstates'/></message>
+
+_notice_typing_inactive
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><inactive xmlns='http://jabber.org/protocol/chatstates'/></message>
+
+_notice_typing_paused
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><paused xmlns='http://jabber.org/protocol/chatstates'/></message>
+
+_notice_typing_composing
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><composing xmlns='http://jabber.org/protocol/chatstates'/></message>
+
+_notice_typing_active
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><active xmlns='http://jabber.org/protocol/chatstates'/></message>
+
+_notice_typing_gone
+|<message to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><gone xmlns='http://jabber.org/protocol/chatstates'/></message>
+
+_notice_place
+|<message from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber]' type='groupchat'>
+|	<body>[_data]</body>
+|</message>
+
+_notice_place_topic
+|<message type='groupchat' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><subject>[_topic]</subject><body>Topic is: [_topic]</body></message> 
+
+_notice_place_enter
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><x xmlns='http://jabber.org/protocol/muc#user'><item affiliation='none' jid='[_source_relay]' role='participant'/></x></presence>
+
+_notice_place_leave
+|<presence type='unavailable' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' id='[_tag]'><x xmlns='http://jabber.org/protocol/muc#user'><item affiliation='none' role='none'/></x></presence>
+
+_status_presence_here
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><status>[_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+
+_status_presence_here_talkative
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>chat</show><status>[_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+
+_status_presence_here_busy
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>dnd</show><status>[_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+
+_status_presence_away
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>away</show><status>[_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+
+_status_presence_absent_vacation
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>xa</show><status>[_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+
+_status_presence_absent
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='unavailable'><status>[_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+
+_status_presence_here_quiet
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'/>
+
+_notice_presence_here
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber_bare]'><status>[_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+
+_notice_presence_here_plain
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'/>
+
+_notice_presence_here_quiet
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'/>
+
+_notice_presence_here_talkative
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber_bare]'><show>chat</show><status>[_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+
+_notice_presence_here_busy
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'><show>dnd</show><status>[_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+
+_notice_presence_away
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'><show>away</show><status>[_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+
+_notice_presence_absent_vacation
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'><show>xa</show><status>[_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+
+_notice_presence_absent
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]' type='unavailable'><status>[_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+
+_notice_person_absent_netburp
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>xa</show><status>{_notice_person_absent_netburp}</status></presence>
+
+_notice_headline_news
+|<message from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber]' type='headline'><body></body><x xmlns='jabber:iq:oob'><url>[_page_news]</url></x></message>
+
+_echo_notice_friendship_established
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber_bare]' type='subscribed'/><presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'/>
+
+_notice_friendship_established
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber_bare]' type='subscribed'/><presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'/>
+
+_notice_friendship_removed
+|<presence from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber_bare]' type='unsubscribe'/><presence from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber_bare]' type='unsubscribed'/><presence from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='unavailable'/>
+
+_notice_friendship_removed_implied
+|<presence from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber_bare]' type='unsubscribed'/><presence from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber]' type='unsubscribe'/><presence from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' type='unavailable'/>
+
+_status_version
+|<iq to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='result' id='[_tag_reply]'><query xmlns='jabber:iq:version'><name>[_version_description]</name><version>[_version]</version></query></iq>
+
+_status_version_agent
+|<iq to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='result' id='[_tag_reply]'><query xmlns='jabber:iq:version'><name>[_version_description]</name><version>[_version]</version></query></iq>
+
+_status_log_none
+|
+
+_status_log_new
+|
+
+_status_time_boot
+|<iq id='[_tag_reply]' type='result' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]'><query xmlns='jabber:iq:last' seconds='[_time_boot_duration]'></query></iq>
+|	  
+
+_status_place_topic
+|<message type='groupchat' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber_bare]'><subject>[_topic]</subject><body>Topic is: [_topic]</body></message> 
+
+_status_place_identification
+|<message from='[_INTERNAL_source_jabber_bare]' to='[_INTERNAL_target_jabber]' type='groupchat'>
+|<body>{_status_place_identification}</body>
+|</message>
+
+_status_place_topic_official
+|<message type='groupchat' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber_bare]'><subject>[_topic]</subject><body>Topic is: [_topic]</body></message> 
+
+_status_place_members_each
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><x xmlns='http://jabber.org/protocol/muc#user'><item affiliation='[_duty]' jid='[_source_relay]' role='participant'/></x></presence>
+
+_status_place_members_self
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><x xmlns='http://jabber.org/protocol/muc#user'><item affiliation='[_duty]' jid='[_source_relay]' role='participant'/><status code='110'/></x></presence>
+
+_status_description_time
+|<iq id='[_tag_reply]' type='result' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]'><query xmlns='jabber:iq:last' seconds='[_time_idle]'></query></iq>
+
+_status_description_vCard
+|<iq type='result' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' id='[_tag_reply]'>[_INTERNAL_data_XML]</iq>
+
+_status_person_present
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><x from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_jabber]' xmlns='jabber:x:delay'/></presence>
+
+_status_person_present_implied
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><x from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_jabber]' xmlns='jabber:x:delay'/></presence>
+
+_status_person_present_action
+|{_status_person_present}
+
+_status_person_present_text_action
+|{_status_person_present}
+
+_status_person_present_netburp
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><status>{_status_person_present_netburp}</status></presence>
+
+_status_person_present_netburp_action
+|{_status_person_present_netburp}
+
+_status_person_away
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>away</show><status>[_action]</status><x from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_jabber]' xmlns='jabber:x:delay'/></presence>
+
+_status_person_absent
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='unavailable'><status>Offline</status></presence>
+
+_status_person_absent_action
+|## until we come up with something smarter
+|{_status_person_absent}
+
+_status_person_absent_offline
+|## until we come up with something smarter
+|{_status_person_absent}
+
+_status_friendship_established
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber_bare]' type='subscribed'/>
+
+_warning_usage_set_language
+|##

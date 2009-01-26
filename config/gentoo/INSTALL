@@ -1,0 +1,36 @@
+================ AUTOMATED PORTAGE INSTALLATION =============================
+
+The Makefile in this directory will create a portage overlay for psyclpc and
+psyced if necessary, than generate ebuild digests and get you ready for
+emerge. All you need to do is type:
+
+	make
+
+If you tried this previously and ran into trouble, you may have to clean out
+the 'psyced' and 'psyclpc' subdirectories from your portage overlay before
+doing make, so it starts anew. You can do:
+
+	make new
+
+================ SHUBBLETROUTING ============================================
+
+In all above cases you should be done with installation. If anything goes wrong
+get in touch with us on psyc://psyced.org/@welcome so we can fix the problem
+not only for you, but for everyone who might run into the same problem.
+
+If you're in doubt that the generator files aren't the newest, you can update
+them by issueing:
+
+	make up
+
+================ MANUAL INSTALLATION ========================================
+
+We have stopped providing regular ebuild files for manual installation
+as nobody is maintaining them. Feel free to step in.
+
+================ WHY STILL LDMUD? ===========================================
+
+We are just leaving it in as there are no newer releases of ldmud and so
+this ebuild is still up to date for anyone who needs an ldmud ebuild.
+We may however simplify things later and therefore remove it.
+

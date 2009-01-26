@@ -1,0 +1,15 @@
+# typical way of routing privileged ports to a psyced running non-privileged
+# install.sh will generate a copy reflecting your port configuration
+
+IF_EX=eth0
+IP_PSYC=127.0.0.1
+IPT=/sbin/iptables
+
+$IPT -t nat -A PREROUTING -i $IF_EX -d $IP_PSYC -p tcp --dport 23 -j DNAT --to :2323
+$IPT -t nat -A PREROUTING -i $IF_EX -d $IP_PSYC -p tcp --dport 80 -j DNAT --to :44444
+$IPT -t nat -A PREROUTING -i $IF_EX -d $IP_PSYC -p tcp --dport 119 -j DNAT --to :1199
+$IPT -t nat -A PREROUTING -i $IF_EX -d $IP_PSYC -p tcp --dport 194 -j DNAT --to :6667
+$IPT -t nat -A PREROUTING -i $IF_EX -d $IP_PSYC -p tcp --dport 465 -j DNAT --to :4654
+$IPT -t nat -A PREROUTING -i $IF_EX -d $IP_PSYC -p tcp --dport 563 -j DNAT --to :5633
+$IPT -t nat -A PREROUTING -i $IF_EX -d $IP_PSYC -p tcp --dport 992 -j DNAT --to :9922
+$IPT -t nat -A PREROUTING -i $IF_EX -d $IP_PSYC -p tcp --dport 994 -j DNAT --to :9944
