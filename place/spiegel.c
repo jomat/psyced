@@ -1,4 +1,8 @@
+// we are currently experiencing some problems with this feed *shrug*
+#if 0
+
 #include <net.h>
+
 #define SILENCE
 #define NAME "Spiegel"
 
@@ -7,6 +11,8 @@
 # define RESET_INTERVAL	5 // they suggest 5 minutes
 #else
 # define CONNECT_DEFAULT
+#endif
+
 #endif
 
 #include <place.gen>

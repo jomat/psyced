@@ -5,6 +5,8 @@ CVS
 .metadata
 .actionScriptProperties
 .#*
+world/net/place/_*.c
+world/net/include/place.i
 *~
 *.swf
 *.swp
@@ -15,4 +17,3 @@ CVS
 *bak
 *diff
 *orig
-world/net/place/_*.c
