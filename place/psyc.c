@@ -35,8 +35,10 @@ mymsg(source, mc, data, vars) {
 qAllowExternal(source, mc, vars) {
 	P3(("qAllowExternal: %O,%O,%O\n", source,mc,vars))
 	unless (stringp(source)) return 0;
-	if (abbrev( "psyc://213.73.91.20:" , source)) return 1;
-	if (abbrev( "psyc://fly.symlynx.com:" , lower_case(source))) return 1;
+	source = lower_case(source);
+	// should allow for all hostnames and ips of lectern.. oerks
+	if (abbrev( "psyc://lectern.tobij.de:" , source)) return 1;
+	if (abbrev( "psyc://psyced.org:" , source)) return 1;
 	return 0;
 }
 #endif
