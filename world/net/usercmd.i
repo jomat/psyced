@@ -3110,8 +3110,9 @@ listAcq(ppltype, pplvalue) { // Acq(uaintance) to be renamed into Peer
 				   "_nick": pdisp ]) );
 		    }
 		}
-	}
+	}			  // not really a _list method then, huh?
 	if (ppltype == PPL_JSON) w("_list_acquaintance_JSON", make_json(all));
+	else w("_list_acquaintance_end");   // end marker for psyc clients
 #ifdef pdisp
 # undef pdisp
 #endif
