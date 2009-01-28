@@ -534,7 +534,7 @@ open_stream(XMLNode node) {
 		// and we have verified it as X509_V_OK (0)
 		// we offer SASL external (authentication via name
 		// presented in x509 certificate
-		P0(("gateway::certinfo %O\n", certinfo))
+		P3(("gateway::certinfo %O\n", certinfo))
 		if (mappingp(certinfo) && certinfo[0] == 0) {
 		    // if from attribute is present we only offer
 		    // sasl external if we know that it will succeed
