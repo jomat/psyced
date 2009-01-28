@@ -775,6 +775,7 @@ insert_member(source, mc, data, vars, ni, neu, again) {
 	// semantically it looks ok
 	mc = "_echo" + mc[7..];
 	//if (v("_filter_conversation")) mc += "_filtered";
+	m_delete(vars, "_group"); // why are we merging vars from a _do anyway?
 	sendmsg(source, mc, data, vars);
 	// ensure that a client knows this room has been entered
 	// before any room details like topic etc. are sent

@@ -135,7 +135,7 @@ volatile mapping share = ([
 	]),
 #endif
 	// this table defines variable names to go into the routing layer
-	// of PSYC. default is to handle them locally in the routing layer
+	// of PSYC. default is to handle them locally in the routing layer.
 	// PSYC_ROUTING_MERGE means to merge them into end-to-end vars at
 	// parsing time. PSYC_ROUTING_RENDER to accept and render them from
 	// application provided vars. same data structure also in Net::PSYC.pm
@@ -143,6 +143,9 @@ volatile mapping share = ([
 	       "_amount_fragments" : PSYC_ROUTING,
 	       "_context" : PSYC_ROUTING + PSYC_ROUTING_MERGE,
 	       "_count" : PSYC_ROUTING + PSYC_ROUTING_MERGE,
+	       // the name for this is supposed to be _count, not _counter
+	       // this is brought in by ppp - let's ignore it for now
+	       "_counter" : PSYC_ROUTING, // don't merge, don't render..
 	       "_fragment" : PSYC_ROUTING,
 	       "_length" : PSYC_ROUTING,
 	       "_source" : PSYC_ROUTING + PSYC_ROUTING_MERGE,
