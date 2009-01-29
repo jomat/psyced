@@ -127,6 +127,12 @@
 # endif
 #endif
 
+#ifdef _uniform_node
+# define SERVER_UNIFORM _uniform_node
+#else
+# define SERVER_UNIFORM query_server_unl()
+#endif
+
 #ifdef MUD
 # define	NO_NEWBIES
 #endif
@@ -167,6 +173,11 @@
 
 // pick the psyc: uniform for objects, otherwise keep what we have
 #define UNIFORM(x)  (objectp(x)? psyc_name(x): x)
+// convert a plain nickname to a local uniform when necessary
+#define PERSON2UNIFORM(x)  (is_formal(x) ? x : (SERVER_UNIFORM +"~"+ x))
+// here's a variant that summons an appropriate object.. unused however
+//#define MAKEPERSON2UNIFORM(x) \
+//     	(is_formal(t) ? t : psyc_name(summon_person(t, load_name())))
 
 // we currently make no distinction
 // now we do.

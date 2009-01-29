@@ -3018,17 +3018,17 @@ listAcq(ppltype, pplvalue) { // Acq(uaintance) to be renamed into Peer
 //			      "_level_expose": PPLDEC(prof[PPL_EXPOSE]),
 //			     "_level_display": PPLDEC(prof[PPL_DISPLAY]),
 //			"_level_notification": PPLDEC(prof[PPL_NOTIFY]),
-			    "[_nick] ([_acquaintance]): D[_type_display], N[_type_notification], T[_degree_trust], E[_degree_expose].", ([
+			    "[_acquaintance] ([_nick]): D[_type_display], N[_type_notification], T[_degree_trust], E[_degree_expose].", ([
 		    "_degree_trust" : PPLDEC(prof[PPL_TRUST]),
 		    "_degree_expose": PPLDEC(prof[PPL_EXPOSE]),
 		"_type_display"     : share["_display"][prof[PPL_DISPLAY]],
 		"_type_notification": share["_notification"][prof[PPL_NOTIFY]],
-			    // should we always deliver a uniform?
-			      "_acquaintance": person,
-				      "_nick": pdisp ]) );
+		   // should we call _acquaintance _person instead?
+		     "_acquaintance": PERSON2UNIFORM(person),
+			     "_nick": pdisp ]) );
 		    else if (ppltype == PPL_JSON) {
-			    // should we always deliver a uniform?
-			mapping m = ([ "_contact": person ]);
+			// should we call _contact _person instead?
+			mapping m = ([ "_contact": PERSON2UNIFORM(person) ]);
 #ifdef ALIASES
 			if (pdisp != person) m["_nick_alias"] = pdisp;
 #endif
