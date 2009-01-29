@@ -136,7 +136,7 @@ int greet() {
 #ifdef FORK // {{{
 	emit(S_GLYPH_PACKET_DELIMITER "\n");
 	emit("\
-=_source	"+ query_server_unl() +"\n\
+=_source	"+ SERVER_UNIFORM +"\n\
 =_target_peer	psyc://"+ peeraddr +"/\n\
 =_available_characters	UTF-8\n\
 =_available_protocols	" PROTS "\n\
@@ -157,7 +157,7 @@ Available protocols: [_available_protocols].\n" S_GLYPH_PACKET_DELIMITER "\n");
 	// other side tells us her name
 	emit(S_GLYPH_PACKET_DELIMITER "\n");
 	emit("\
-:_source	"+ query_server_unl() +"\n\
+:_source	"+ SERVER_UNIFORM +"\n\
 :_target_peer	psyc://"+ peeraddr +"/\n"
 "\n\
 :_implementation	"+ SERVER_VERSION +" "+ DRIVER_VERSION +" "+ OSTYPE +" "+ MACHTYPE +"\n\
@@ -167,7 +167,7 @@ Hello [_target_peer].\n\
 Circuit to [_source] running [_implementation] established.\n" S_GLYPH_PACKET_DELIMITER "\n");
 	// ;ISO-8859-1;ISO-8859-15\n
 	emit("\
-:_source	"+ query_server_unl() +"\n\
+:_source	"+ SERVER_UNIFORM +"\n\
 \n\
 :_available_hashes	"
 #if __EFUN_DEFINED__(sha1)
@@ -314,12 +314,12 @@ int logon(int neverfails) {
 #ifdef FORK // {{{
 	// init the out-state. these will be sent by greet()
 	_o = ([
-		"_source" : query_server_unl(),
+		"_source" : SERVER_UNIFORM,
 		"_target" : "psyc:"+ peeraddr +"/",
 	     ]);
 	memory = copy(_o);
 #if 0
-	memory = ([ "_source" : query_server_unl(); 4,
+	memory = ([ "_source" : SERVER_UNIFORM; 4,
 		    "_target" : "psyc:" + peeraddr +"/"; 4,
 		  ]);
 #endif

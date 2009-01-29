@@ -360,7 +360,7 @@ w(string mc, string data, mapping vars, mixed source) {
 	// give away your own nickname. i think that is unnecessary geek pride.
 	// so be it!
 	vars["_nick_me"] = aliases[MYLOWERNICK]
-				? query_server_unl() +"~"+ MYNICK
+				? SERVER_UNIFORM +"~"+ MYNICK
 				: MYNICK;
 #else
 	vars["_nick_me"] = MYNICK;
@@ -379,7 +379,7 @@ w(string mc, string data, mapping vars, mixed source) {
 					   // source == 0 msgs.
 					   // those might be simple w()s... hm.
 #ifndef UNSAFE_LASTLOG
-		|| abbrev(query_server_unl() +"~", source)
+		|| abbrev(SERVER_UNIFORM +"~", source)
 #endif
 		) {
 #ifdef GHOST //{{{
@@ -665,10 +665,10 @@ w(string mc, string data, mapping vars, mixed source) {
 		// psyctext ist an dieser stelle in der tat ohne vorteil
 		// aber auch kein performancefaktor.. also egal
 		emit(":"+ vars["_alias"] +" NICK "+ 
-		     query_server_unl() +"~"+ vars["_alias"] + "\n");
+		     SERVER_UNIFORM +"~"+ vars["_alias"] + "\n");
 		emit(psyctext(":[_nick_old] NICK [_nick_new]", 
 		  ([ "_nick_old" : aliases[lower_case(vars["_address"])]
-				  ? query_server_unl() +"~"+
+				  ? SERVER_UNIFORM +"~"+
 				    vars["_address"]
 				  : uniform2irc(vars["_address"]),
 		     "_nick_new" : vars["_alias"] ])) + "\n");
@@ -677,11 +677,11 @@ w(string mc, string data, mapping vars, mixed source) {
 		emit(psyctext(":[_nick_old] NICK [_nick_new]", 
 		  ([ "_nick_old" : vars["_alias"],
 		     "_nick_new" : aliases[lower_case(vars["_address"])]
-				  ? query_server_unl() +"~"+ vars["_address"]
+				  ? SERVER_UNIFORM +"~"+ vars["_address"]
 				  : uniform2irc(vars["_address"])
                    ])) + "\n");
 		emit(psyctext(":[_nick_old] NICK [_nick_new]", 
-		  ([ "_nick_old" : query_server_unl() +"~"+ vars["_alias"],
+		  ([ "_nick_old" : SERVER_UNIFORM +"~"+ vars["_alias"],
 		     "_nick_new" : vars["_alias"] ])) + "\n");
 		break;
 #endif
@@ -890,7 +890,7 @@ logon() {
 	// version strings, only IRC makes it terribly complicated and
 	// even political. oh of course, that's because on irc the server
 	// admin isn't necessarily a person of your trusting.
-	w("_request_version", 0, 0, query_server_unl());
+	w("_request_version", 0, 0, SERVER_UNIFORM);
 # endif
 #endif
 	return rc;

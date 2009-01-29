@@ -30,7 +30,7 @@ string make_json(mixed d);
 void monitor_report(string mc, string text);
 array(object) objects_people();
 varargs string psyc_name(mixed source, vastring localpart);
-string query_server_unl();
+string query_server_uniform();
 varargs mixed sendmsg(mixed target, string mc, mixed data, mapping vars,
 	    mixed source, int showingLog, closure callback, varargs array(mixed) extra);
 varargs void shout(mixed who, string what, string text, mapping vars);
@@ -55,7 +55,7 @@ string _psyc_make_json(mixed d);
 void _psyc_monitor_report(string mc, string text);
 object* _psyc_objects_people();
 varargs string _psyc_psyc_name(mixed source, vastring localpart);
-string _psyc_query_server_unl();
+string _psyc_query_server_uniform();
 varargs mixed _psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
             mixed source, int showingLog, closure callback, varargs array(mixed) extra);
 varargs void _psyc_shout(mixed who, string what, string text, mapping vars);

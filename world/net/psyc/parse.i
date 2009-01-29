@@ -996,7 +996,7 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
                                     source, t, ME))
                                 unless (cvars["_source_relay"])
                                     cvars["_source_relay"] = source;
-                                source = cvars["_source"] || query_server_unl();
+                                source = cvars["_source"] || SERVER_UNIFORM;
 				// relay the message!
 				// this is used by procmail for example, whenever
 				// it needs to send to an xmpp: recipient.
@@ -1101,7 +1101,7 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
 		    return restart();
 		}
 		// else if (t)  return _error_rejected_relay_outgoing TODO
-		t2 = query_server_unl();
+		t2 = SERVER_UNIFORM;
 		// this part is new and maybe can be optimized.. TODO
                 // the main optimization would be to check for is_localhost
                 // with host part of target

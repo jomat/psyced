@@ -68,12 +68,12 @@ void greet() {
 	// three separate packets follow (thus three emits)
 	//emit(S_GLYPH_PACKET_DELIMITER "\n");
 	emit("\
-:_source\t"+ query_server_unl() +"\n\
+:_source\t"+ SERVER_UNIFORM +"\n\
 :_target_peer\tpsyc://"+ peeraddr +"/\n\
 \n\
 _notice_circuit_established\n" S_GLYPH_PACKET_DELIMITER "\n");
 	emit("\
-:_source\t"+ query_server_unl() +"\n\
+:_source\t"+ SERVER_UNIFORM +"\n\
 \n\
 _status_circuit\n" S_GLYPH_PACKET_DELIMITER "\n");
 #ifdef _flag_log_sockets_SPYC

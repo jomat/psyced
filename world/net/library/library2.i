@@ -14,7 +14,7 @@ void monitor_report(string mc, string text) {
 	log_file("MONITOR", mc +"\t"+ text +"\n");
 #ifndef __PIKE__    // TPD
 	unless (monitor) monitor = load_object(PLACE_PATH "monitor");
-	if (monitor) monitor->msg(previous_object() || query_server_unl(),
+	if (monitor) monitor->msg(previous_object() || SERVER_UNIFORM,
                                      mc, text, ([]));
 #endif
 }

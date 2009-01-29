@@ -29,7 +29,7 @@
 #ifdef ALIASES
 # define DEALIAS(to, from)	{ string t;\
     to = raliases[t = lower_case(from)]\
-	 || (aliases[t] ? query_server_unl() +"~"+ from : from);\
+	 || (aliases[t] ? SERVER_UNIFORM +"~"+ from : from);\
 }
 #endif
 

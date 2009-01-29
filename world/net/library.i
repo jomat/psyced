@@ -55,7 +55,7 @@ varargs int register_target(string uniform, vaobject handler, vaint shy) {
             raise_error("register_target without uniform\n");
 #endif
 #if 0
-        if (query_server_unl() == uniform)
+        if (SERVER_UNIFORM == uniform)
             raise_error("register_target for root!?\n");
 #endif
 	if (targets[uniform]) {
@@ -84,8 +84,8 @@ object find_target_handler(string target) { return targets[target]; }
 
 // LOCALHOST STUFF
 
-string query_server_unl() { return myUNL; }     // proto.h!
-string query_server_unl_ip() { return myUNLIP; }
+string query_server_uniform() { return myUNL; }     // proto.h!
+string query_server_uniform_ip() { return myUNLIP; }
 string my_lower_case_host() { return myLowerCaseHost; }
 
 static varargs void ready_freddie(vamixed ip) {
@@ -273,7 +273,7 @@ static void create() {
 //	//call_out(#'psyc_sendmsg, 1, PSYC_SYNCHRONIZE, "_request_synchronize",
 //	call_out(#'sendmsg, 1, PSYC_SYNCHRONIZE, "_request_synchronize",
 //	    "I'm up and ready for some hot sync action!", ([ ]),
-//	    query_server_unl()); //, parse_uniform(PSYC_SYNCHRONIZE));
+//	    SERVER_UNIFORM); //, parse_uniform(PSYC_SYNCHRONIZE));
 //# echo PSYC_SYNCHRONIZE activated.
 //#endif
 }

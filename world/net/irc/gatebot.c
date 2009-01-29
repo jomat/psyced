@@ -48,12 +48,8 @@ inherit IRC_PATH "decode";
 // message queueing and automatic reconnect mgmt
 inherit NET_PATH "circuit";
 
-#ifndef _uniform_node
-# define _uniform_node query_server_unl()
-#endif
-
 #ifdef RELAY
-# define IRCER_UNIFORM(NICK)	(_uniform_node +"~"+ NICK)
+# define IRCER_UNIFORM(NICK)	(SERVER_UNIFORM +"~"+ NICK)
 #else
 		    // will upgrade to irc: syntax..
 # define IRCER_UNIFORM(NICK)	(MYLOWERNICK +":"+ NICK)

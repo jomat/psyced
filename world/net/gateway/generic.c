@@ -16,10 +16,6 @@ Find more information at " URL_DOC
 
 virtual inherit NET_PATH "output";
 
-#ifndef SERVER_UNL
-# define SERVER_UNL query_server_unl()
-#endif
-
 volatile object psycer;
 volatile string joe, joe_nick;
 volatile mixed joe_unl;
@@ -81,7 +77,7 @@ static help() {
 #endif
 #ifdef WEBMASTER_EMAIL
 	reply("This gateway is operated by " WEBMASTER_EMAIL);
-	    // " on "+ SERVER_UNL);
+	    // " on "+ SERVER_UNIFORM);
 #endif
 	reply("My PSYC Identification is "+ psyc_name(ME));
 //	reply("Can you imagine this is the new version of the first ever IRC bot written in LPC?");
@@ -103,7 +99,7 @@ static tell(a) {
 		} else {
 		    reply("Usage: T(ELL) or MSG <psycer> <textmessage>");
 		    reply("Usage: T(ALK) or QUERY <psycer>");
-		    reply("<psycer> may either be a nickname on "+ SERVER_UNL +
+		    reply("<psycer> may either be a nickname on "+ SERVER_UNIFORM +
 			  " or a uniform network identification anywhere"
 			  " in PSYCspace.");
 		}
@@ -111,7 +107,7 @@ static tell(a) {
 	}
 	unless (is_formal(p = whom)) {
 		p = summon_person(whom);
-		if (!p) return reply(whom+" ain't here on "+ SERVER_UNL);
+		if (!p) return reply(whom+" ain't here on "+ SERVER_UNIFORM);
 	}
 	if (text) {
 		reply("You tell "+ UNIFORM(p) +": "+text);
@@ -140,7 +136,7 @@ static who() {
         mixed idle;
         string desc;
 
-	reply("--- /who of local users of "+ SERVER_UNL);
+	reply("--- /who of local users of "+ SERVER_UNIFORM);
 	u = objects_people();
 	all = sizeof(u) < 23;
 	// same code in usercmd.i

@@ -366,7 +366,7 @@ msg(source, mc, data, mapping vars, showingLog) {
 	    // evil scary rewrite to support changed lastlog behaviour ,)
 	    // TODO:: watch for _source_relay||(source resp. t)
 	    &&! (stringp(source)
-		 && abbrev(query_server_unl() +"~", source))
+		 && abbrev(SERVER_UNIFORM +"~", source))
 #endif
 	  ) {
 		if (data && index(data, '\n') != -1)
@@ -1279,7 +1279,7 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 			    // the context was an object, but got lost
 			    // during ldmud's lastlog persistence. let's
 			    // reconstruct it!
-			    vars["_INTERNAL_context"] = query_server_unl();
+			    vars["_INTERNAL_context"] = SERVER_UNIFORM;
 			    // the place nick shouldn't be missing, but
 			    // sometimes it does. let's figure out why
 			    if (stringp(vars["_nick_place"]))
@@ -1838,7 +1838,7 @@ listDescription(vars, eachout, nicklink) {
 			if (nicklink) {
 			    int i;
 			    string n, u;
-			    string s = query_server_unl();
+			    string s = SERVER_UNIFORM;
 
 			    va = copy(va);
 			    for (i=sizeof(va)-1; i>=0; --i) {
@@ -1863,7 +1863,7 @@ listDescription(vars, eachout, nicklink) {
 			if (nicklink) {
 			    int i;
 			    string n, u;
-			    string s = query_server_unl();
+			    string s = SERVER_UNIFORM;
 
 			    va = copy(va);
 			    for (i=sizeof(va)-1; i>=0; --i) {

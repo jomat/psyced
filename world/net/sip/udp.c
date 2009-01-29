@@ -357,7 +357,7 @@ parseUDP(ip, port, msg) {
 			//v["to"] += ";tag=1234567890abcde"; // ??? TODO
 			/* need authorization
 			 */
-			v["www-authenticate"] = "Digest realm=\"" + query_server_unl() + "\", nonce=\"" + time() + "\"";
+			v["www-authenticate"] = "Digest realm=\"" + SERVER_UNIFORM + "\", nonce=\"" + time() + "\"";
 			reply = makeResponse(prot, 401, v, "");
 			// TODO: nonce generation has to be secure
 			send_udp(ip, port, reply);

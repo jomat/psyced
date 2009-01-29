@@ -200,7 +200,7 @@ cmd(a, args, dest, command) {
 # ifdef WEBMASTER_EMAIL
 		w("_info_administration_gateway",
 		  "This gateway is operated by " WEBMASTER_EMAIL);
-			// " on "+ SERVER_UNL);
+			// " on "+ SERVER_UNIFORM);
 # endif
 	// ARGH MULTILINE!!
 		w("_info_commands_gateway",
@@ -981,7 +981,7 @@ cmd(a, args, dest, command) {
 				   (vr = lower_case(vr)) != lower_case(vq))) {
 #ifdef ALIASES
 			    talk(raliases[vr] || (aliases[vr]
-				       	? query_server_unl()
+				       	? SERVER_UNIFORM
 					  +"~"+ v("reply")
 					: v("reply")) );
 			    // let /r have its toggle-behaviour again, almost

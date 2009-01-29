@@ -80,7 +80,7 @@ varargs int rootMsg(mixed source, string mc, string data,
 					croak("_request_compression",
 				    "Requesting compression using [_method]", 
 						([ "_method" : "zlib" ]),
-						query_server_unl());
+						SERVER_UNIFORM);
 					return;
 				}
 #endif
@@ -89,14 +89,14 @@ varargs int rootMsg(mixed source, string mc, string data,
 				if (module == "_encrypt") {
 				    croak("_request_circuit_encrypt",
 					"Requesting transport layer security",
-					([ ]), query_server_unl());
+					([ ]), SERVER_UNIFORM);
 					return;
 				}
 #endif
 			}
 		}
 #endif
-		if (source == query_server_unl()) {
+		if (source == SERVER_UNIFORM) {
 #ifndef __PIKE__ // TPD
 			if (function_exists("connect_failure"))
 			    connect_failure("_self",
@@ -152,7 +152,7 @@ varargs int rootMsg(mixed source, string mc, string data,
 		croak("_notice_circuit_compress", 
 			"Will restart with compression using [_method]",
 			([ "_method" : vars["_method"] || "zlib" ]),
-			query_server_unl());
+			SERVER_UNIFORM);
 		enable_telnet(0);
 		start_mccp_compress(TELOPT_COMPRESS2);
 		// greet(); // TODO: calling it directly kills pypsyc 
@@ -166,7 +166,7 @@ varargs int rootMsg(mixed source, string mc, string data,
 #else
 		croak("_error_unavailable_circuit_compress",
 			"Did I really flaunt compression to you?",
-			([ ]), query_server_unl());
+			([ ]), SERVER_UNIFORM);
 #endif
 		break;
 	case "_request_circuit_encryption":
@@ -179,14 +179,14 @@ varargs int rootMsg(mixed source, string mc, string data,
 		if (t = tls_query_connection_state(ME) == 0) {
 			croak("_notice_circuit_encrypt",
 				"Enabling TLS encryption.", ([ ]), 
-				query_server_unl());
+				SERVER_UNIFORM);
 			tls_init_connection(ME);
 			// here we could actually need lars style 
 			// to call greet when ready()
 		} else if (t > 0) {
 			/* sendmsg(source, "_error_tls_active",
 				"TLS is already active",
-				([ ]), query_server_unl()); */
+				([ ]), SERVER_UNIFORM); */
 			P0(("received %O for %O who already has TLS\n", mc, ME))
 		} else {
 			// negative numbers (current behaviour of ldmud)
@@ -197,7 +197,7 @@ varargs int rootMsg(mixed source, string mc, string data,
 		// we can not be advertising it
 		croak("_error_unavailable_circuit_encrypt",
 			"Can not remember telling you I had TLS.",
-			([ ]), query_server_unl());
+			([ ]), SERVER_UNIFORM);
 #endif
 		break;
 	case "_notice_circuit_encrypt":

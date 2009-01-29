@@ -332,7 +332,7 @@ int msg(string source, string mc, string data,
             // and adjust rendered[i] accordingly
             if (rendered[i] == clashnick) {
                 // this only happens with local users
-		rendered[i] = query_server_unl() +"~"+ clashnick;
+		rendered[i] = SERVER_UNIFORM +"~"+ clashnick;
             }
             render("_status_place_members_each", "", ([
 		"_INTERNAL_target_jabber": vars["_INTERNAL_target_jabber"],
@@ -452,7 +452,7 @@ int msg(string source, string mc, string data,
 		    // and adjust rendered[i] accordingly
 		    if (rendered[i] == vars["_nick"]) {
 			// this only happens with local users
-			rendered[i] = query_server_unl() +"~"+ rendered[i];
+			rendered[i] = SERVER_UNIFORM +"~"+ rendered[i];
 		    }
 		    render("_notice_place_enter", "",
 		   ([ "_INTERNAL_target_jabber": vars["_INTERNAL_target_jabber"],

@@ -130,7 +130,7 @@
 #ifdef _uniform_node
 # define SERVER_UNIFORM _uniform_node
 #else
-# define SERVER_UNIFORM query_server_unl()
+# define SERVER_UNIFORM query_server_uniform()
 #endif
 
 #ifdef MUD

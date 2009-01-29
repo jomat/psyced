@@ -173,7 +173,7 @@ object find_psyc_object(array(mixed) u) {
 		}
 	}
 	else unless (user) {
-		//return 0;	// return SERVER_UNI !?
+		//return 0;	// return SERVER_UNIFORM !?
 		return find_target_handler("/");
 	}
 	if (!objectp(o) && user) {

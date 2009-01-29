@@ -99,7 +99,7 @@ msg(source, mc, data, mapping vars, showingLog) {
 #if 0
 		if (rendered[i] == vars["_nick"]) {
 		    // this only happens with local users
-		    rendered[i] = query_server_unl() +"~"+ rendered[i];
+		    rendered[i] = SERVER_UNIFORM +"~"+ rendered[i];
 		}
 #endif
 		packet += psyctext(template, ([ 

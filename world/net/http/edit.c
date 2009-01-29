@@ -119,7 +119,7 @@ htget(prot, query, headers, qs) {
 	    // note: the immediateness is not really used these days
 	    write("<div class='each'><a href='");
 	    unless(is_formal(key)) {
-		write(query_server_unl() + "@" + key);
+		write(SERVER_UNIFORM + "@" + key);
 	    } else {
 		write(key);
 	    }

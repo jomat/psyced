@@ -327,7 +327,7 @@ lookup(string mc, mixed fmt, object ghost, object curse) {
 				in = before + _host_XMPP + after;
 				break;
 			case "VAR_server_uniform":
-				in = before + query_server_unl() + after;
+				in = before + SERVER_UNIFORM + after;
 				break;
 			case "VAR_method":
 				PT(("using %O for %O\n", mc, code))

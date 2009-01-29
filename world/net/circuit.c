@@ -145,7 +145,7 @@ void pushback(string failmc) {
 		  "_nick": vars["_nick_target"],
 		  "_source": t[4],
 		  "_host": host,
-		  "_source_origin": query_server_unl(),
+		  "_source_origin": SERVER_UNIFORM,
 		  "_INTERNAL_origin" : ME,
 		  // so that tag-operated queues can be rolled back
 		  "_tag_reply" : t[3]["_tag"],

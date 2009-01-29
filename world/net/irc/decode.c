@@ -47,7 +47,7 @@ version(text, target, req, srcnick, source) {
 		     "[_nick] requests your version.",
 		    ([ "_nick" : srcnick ]), source );
 #ifndef _flag_disable_request_version_IRC
-	} else if (target == query_server_unl()) {
+	} else if (target == SERVER_UNIFORM) {
 		if (text) vSet("agent", text);
 #endif
 	} else {

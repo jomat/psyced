@@ -13,7 +13,7 @@
 //inherit NET_PATH "entity"
 
 msg(source, mc, data, vars, showingLog, target) {
-	mapping rv = ([ "_nick" : query_server_unl() ]);
+	mapping rv = ([ "_nick" : SERVER_UNIFORM ]);
 	mixed t;
 	string family;
 	int glyph;
