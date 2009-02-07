@@ -653,3 +653,6 @@ X
 	chdir "$sandbox/net/place" or die "Where is my net/place? $!";
 	require "archetype.pl";
 
+	say "\nCaution: You may have to completely shut down and restart psyced\n";
+	say "to ensure the newly generated start-up scripts are actually used.\n";
+
