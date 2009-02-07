@@ -1035,7 +1035,7 @@ _config_HTTP = ${HTTPCONFIG_10}
 _console_debug = $CONSOLE_10
 ; '0' is tranquility unless something serious happens. best choice.
 ; '1' gives you slightly interesting output and LPC development debug.
-; '2' or '3' is too much and too detailed. we only use this as _extra_debug.
+; '2' or '3' is too much and too detailed. don't use it globally, as it         ; may even trigger exceptions. use it only with _extra_debug below.
 _level_debug = $DEBUG
 ; Advanced extra debug flags for the psyclpc command line. You can debug
 ; specific parts of psyced like for example the textdb subsystem by adding
