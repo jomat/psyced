@@ -265,13 +265,14 @@ static int logon(int failure) {
 	     "version='1.0'>");
 #if 1 // not strictly necessary, but more spec conformant
     } else if (!qSize(me)) { // no retry for dialback-only
-	if (sizeof(dialback_queue) > 1) {
-	    P0(("tell fippo that sizeof(dialback queue) was > 1\n"))
-	}
+	//if (sizeof(dialback_queue) > 1) {
+	    P2(("%O failed to connect. dialback queue is %O\n",
+	       	ME, dialback_queue))
+	//}
 	if (sizeof(gateways)) {
-	    P0(("%O notifies gateways %O of failure\n", ME, gateways))
 	    foreach(string id, mixed gw : gateways) {
 		if (objectp(gw)) {
+		    P2(("%O notifies %O of failure (%O).\n", ME, gw, id))
 		    gw->remote_connection_failed();
 		}
 	    }
