@@ -44,7 +44,7 @@ xmlparse(a) {
 
 #ifdef JABBER_PARSE
 # ifdef _flag_log_sockets_XMPP
-        D0( log_file("RAW_XMPP", "\n» %O\t%s", ME, a); )
+        log_file("RAW_XMPP", "\n» %O\t%s", ME, a);
 # endif
         length += sizeof(a);
         pos = index(a, '<', pos) + 1;

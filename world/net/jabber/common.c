@@ -67,7 +67,7 @@ int emit(string message) {
 	}
 #endif
 #ifdef _flag_log_sockets_XMPP
-	D0( log_file("RAW_XMPP", "\n« %O\t%s", ME, message); )
+	log_file("RAW_XMPP", "\n« %O\t%s", ME, message);
 #endif
 	return ::emit(message);
 }
@@ -76,7 +76,7 @@ int emit(string message) {
 // to be sending safe data
 int emitraw(string message) {
 #ifdef _flag_log_sockets_XMPP
-	D0( log_file("RAW_XMPP", "\n« %O\t%s", ME, message); )
+	log_file("RAW_XMPP", "\n« %O\t%s", ME, message);
 #endif
 	return ::emit(message);
 }

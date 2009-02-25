@@ -40,7 +40,7 @@ tls_logon(); // prototype
 quit() {
 	emitraw("</stream:stream>");
 #ifdef _flag_log_sockets_XMPP
-	D0( log_file("RAW_XMPP", "\n%O: shutting down, quit called\n", ME); )
+	log_file("RAW_XMPP", "\n%O: shutting down, quit called\n", ME);
 #endif
 	remove_interactive(ME);	// not XEP-0190 conformant, but shouldn't
 				// matter on an outgoing-only socket
@@ -88,7 +88,7 @@ handle_starttls(XMLNode node) {
 	P0(("%O: expecting xmpp-tls proceed or failure, got %O:%O\n",
 	    ME, node[Tag], node["@xmlns"]))
 #ifdef _flag_log_sockets_XMPP
-	D0( log_file("RAW_XMPP", "\n%O: expecting xmpp-tls proceed or failure, got %O:%O\t%O", ME, node[Tag], node["@xmlns"], ctime()); )
+	log_file("RAW_XMPP", "\n%O: expecting xmpp-tls proceed or failure, got %O:%O\t%O", ME, node[Tag], node["@xmlns"], ctime());
 #endif
 	nodeHandler = #'jabberMsg;
 	return jabberMsg(node);
@@ -114,7 +114,7 @@ handle_stream_features(XMLNode node) {
 	start_dialback(); 
 	process_dialback_queue();
 #ifdef _flag_log_sockets_XMPP
-	D0( log_file("RAW_XMPP", "\nprocessing dialback queue, expecting stream features but not found" ); ) 
+	log_file("RAW_XMPP", "\nprocessing dialback queue, expecting stream features but not found");
 #endif
 	return jabberMsg(node);
     }
@@ -214,7 +214,7 @@ handle_stream_features(XMLNode node) {
 disconnected(remainder) {
     P2(("active %O disconnected\n", ME))
 #ifdef _flag_log_sockets_XMPP
-    D0( log_file("RAW_XMPP", "\n%O disc\t%O", ME, ctime()); )
+    log_file("RAW_XMPP", "\n%O disc\t%O", ME, ctime());
 #endif
     authenticated = 0;
     ready = 0;
@@ -224,7 +224,7 @@ disconnected(remainder) {
 	P0(("%O got disconnected with dialback outgoing != 0\n", ME))
 	// TODO: reconnect koennte sinnvoll sein
 #ifdef _flag_log_sockets_XMPP
-	D0( log_file("RAW_XMPP", "\n%O disconnected with dialback outgoing != 0\t%O", ME, ctime()); )
+	log_file("RAW_XMPP", "\n%O disconnected with dialback outgoing != 0\t%O", ME, ctime());
 #endif
 	dialback_outgoing = 0;
     }
@@ -254,7 +254,7 @@ static int logon(int failure) {
 #endif
 	sTextPath(0, "en", "jabber");
 #ifdef _flag_log_sockets_XMPP
-	D0( log_file("RAW_XMPP", "\n%O logon\t%O", ME, ctime()); )
+	log_file("RAW_XMPP", "\n%O logon\t%O", ME, ctime());
 #endif
 /* 2. Originating Server sends a stream header to Receiving Server */
 	emit("<stream:stream xmlns:stream='http://etherx.jabber.org/streams' "

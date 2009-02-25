@@ -64,7 +64,7 @@ disconnected(remainder) {
 #endif
         if (objectp(active)) active -> removeGateway(streamid);
 #ifdef _flag_log_sockets_XMPP
-        D0( log_file("RAW_XMPP", "\n%O disc\t%O", ME, ctime()); )
+        log_file("RAW_XMPP", "\n%O disc\t%O", ME, ctime());
 #endif
         destruct(ME);
         // expected or unexpected disconnect? flags shall tell
@@ -121,7 +121,7 @@ logon(a) {
     input_to(#'feed, INPUT_IGNORE_BANG | INPUT_CHARMODE);
 #endif
 #ifdef _flag_log_sockets_XMPP
-    D0( log_file("RAW_XMPP", "\n%O logon\t%O", ME, ctime()); )
+    log_file("RAW_XMPP", "\n%O logon\t%O", ME, ctime());
 #endif
     // return ::logon(a);
 }

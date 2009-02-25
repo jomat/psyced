@@ -89,7 +89,7 @@ promptForPassword(user) {
 
 logon(a) {
 #ifdef _flag_log_sockets_XMPP
-	D0( log_file("RAW_XMPP", "\n%O logon\t%O", ME, ctime()); )
+	log_file("RAW_XMPP", "\n%O logon\t%O", ME, ctime());
 #endif
 	P3(("logon(%O) beim jabber:server.c\n", a))
 	set_combine_charset(COMBINE_CHARSET);

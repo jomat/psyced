@@ -23,7 +23,7 @@ volatile int authenticated;
 
 logon(arg) {
 #ifdef _flag_log_sockets_XMPP
-    D0( log_file("RAW_XMPP", "\n%O logon\t%O", ME, ctime()); )
+    log_file("RAW_XMPP", "\n%O logon\t%O", ME, ctime());
 #endif
 #ifdef INPUT_NO_TELNET
     input_to(#'feed, INPUT_IGNORE_BANG | INPUT_CHARMODE | INPUT_NO_TELNET);
