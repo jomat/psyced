@@ -9,6 +9,8 @@ ________________________________________________________________________
 ? marenz says, remote topic isn't working
   http://about.psyc.eu/?title=Talk:Bug_Report&curid=1506&diff=10174&oldid=10173
 
++ show chiffre in /tcp
+
 - remote IRC place does not send names listing on /join
 - remote IRC /part shows no reaction at first attempt
     +++ not limited to IRC!! thx marenz
@@ -259,6 +261,10 @@ ________________________________________________________________________
 ________________________________________________________________________
 == MINOR DELEGATES =====================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- xxx ist eigentlich xxx in Verkleidung.
+  /nick should silently ignore when a user tries to use its real nick
+  as its masquerade.
+
 - psyced generates tags for /enter operations. since these weren't generated
   by a client they may confuse a client. fippo thinks these _tag and _tag_reply
   should be removed from the messages before the get forwarded to clients.

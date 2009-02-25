@@ -926,7 +926,7 @@ iq(XMLNode node) {
 		// setting the vcard of someone else is an error
 		emit("<iq type='error' id='" + tag + "'>"
 		     "<x xmlns='vcard-temp'/>"
-		     "<error code='403' tyle='cancel'/>"
+		     "<error code='403' type='cancel'/>"
 		     "<forbidden xmlns='" NS_XMPP "xmpp-stanzas'/>"
 		     "</error>"
 		     "</iq>");
