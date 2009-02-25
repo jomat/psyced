@@ -279,7 +279,7 @@ vamixed parse(string a) {
 	mixed vvalue;
 
 #ifdef _flag_log_sockets_PSYC
-	log_file("RAW_PSYC", "%O «\t%s\n", ME, a);
+	log_file("RAW_PSYC", "» %O\t%s\n", ME, a);
 #endif
 //	P3(("CVARS (%O):\n %O, %O\n", a, query_ip_number(ME), ME))
 	D3( if (a && strlen(a) > 2) D(S("pp:parse %O\n", a)); )
@@ -572,7 +572,7 @@ private repatch(string t) {
 
 vamixed getdata(string a) {
 #ifdef _flag_log_sockets_PSYC
-	log_file("RAW_PSYC", "%O «\t%s\n", ME, a);
+	log_file("RAW_PSYC", "» %O\t%s\n", ME, a);
 #endif
 	if (a != ".") {
 #ifdef SYSTEM_SECRET

@@ -189,7 +189,7 @@ _status_circuit\n\
 Available protocols: [_available_protocols].\n" S_GLYPH_PACKET_DELIMITER "\n");
 #endif // !FORK
 #ifdef _flag_log_sockets_PSYC
-	log_file("RAW_PSYC", "» %O greeted.\n", ME);
+	log_file("RAW_PSYC", "« %O greeted.\n", ME);
 #endif
 	return 1;
 }
@@ -477,7 +477,7 @@ varargs int msg(string source, string mc, string data,
 # endif
 #endif
 # ifdef _flag_log_sockets_PSYC
-	log_file("RAW_PSYC", "» %O\n%s\n", ME, buf);
+	log_file("RAW_PSYC", "« %O\n%s\n", ME, buf);
 # endif
 	//PT(("» %O\t%s\n", ME, buf))
 	return emit(buf);
@@ -504,14 +504,14 @@ varargs int msg(string source, string mc, string data,
 	else buf = make_psyc(mc, data, vars);
 
 #ifdef _flag_log_sockets_PSYC
-	log_file("RAW_PSYC", "» %O\n%s\n", ME, buf);
+	log_file("RAW_PSYC", "« %O\n%s\n", ME, buf);
 #endif
 	return emit(make_mmp(buf, vars, ME)); 
 }
 
 int send(string data, mapping vars) {
 #ifdef _flag_log_sockets_PSYC
-	log_file("RAW_PSYC", "» %O send(%O)\n", ME, data);
+	log_file("RAW_PSYC", "« %O send(%O)\n", ME, data);
 #endif
 	return emit(make_mmp(data, vars, ME)); 
 }

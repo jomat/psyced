@@ -293,7 +293,7 @@ varargs int msg(string source, string mc, string data,
     unless(vars) vars = ([ ]);
     buf = psyc_render(source, mc, data, vars, showingLog, target);
 #ifdef _flag_log_sockets_SPYC
-    log_file("RAW_SPYC", "» %O\n%s\n", ME, buf);
+    log_file("RAW_SPYC", "« %O\n%s\n", ME, buf);
 #endif
     return emit(buf);
 }

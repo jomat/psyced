@@ -77,7 +77,7 @@ _notice_circuit_established\n" S_GLYPH_PACKET_DELIMITER "\n");
 \n\
 _status_circuit\n" S_GLYPH_PACKET_DELIMITER "\n");
 #ifdef _flag_log_sockets_SPYC
-	log_file("RAW_SPYC", "» %O greeted.\n", ME);
+	log_file("RAW_SPYC", "« %O greeted.\n", ME);
 #endif
 }
 

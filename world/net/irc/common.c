@@ -22,7 +22,7 @@ parse(a) {
 	string t, from, cmd, args, text;
 
 #ifdef _flag_log_sockets_IRC
-	log_file("RAW_IRC", "%d %O\t<< %s\n", time(), ME, a);
+	log_file("RAW_IRC", "%d %O\t» %s\n", time(), ME, a);
 #endif
 	IRCD( D("IRC< '"+a+"'\n"); )
 
@@ -287,7 +287,7 @@ emit(string output) {
 	// misteries of virtual inheritance.. why doesnt this get called
 	// from gatebot? we need to get this working for 512-split!!
 #ifdef _flag_log_sockets_IRC
-# define EMIT(OUT) (log_file("RAW_IRC", "%d %O\t>> %s", time(), ME, OUT), ::emit(OUT))
+# define EMIT(OUT) (log_file("RAW_IRC", "%d %O\t« %s", time(), ME, OUT), ::emit(OUT))
 # else
 # define EMIT ::emit
 #endif

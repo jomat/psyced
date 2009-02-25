@@ -64,7 +64,7 @@ void resume_parse() {
 // input data to the buffer
 void feed(string data) {
 # ifdef _flag_log_sockets_SPYC
-    log_file("RAW_SPYC", "« %O\n%s\n", ME, data);
+    log_file("RAW_SPYC", "» %O\n%s\n", ME, data);
 # endif
     buffer += data;
 
