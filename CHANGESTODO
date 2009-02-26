@@ -261,10 +261,6 @@ ________________________________________________________________________
 ________________________________________________________________________
 == MINOR DELEGATES =====================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-- xxx ist eigentlich xxx in Verkleidung.
-  /nick should silently ignore when a user tries to use its real nick
-  as its masquerade.
-
 - psyced generates tags for /enter operations. since these weren't generated
   by a client they may confuse a client. fippo thinks these _tag and _tag_reply
   should be removed from the messages before the get forwarded to clients.
@@ -3873,7 +3869,6 @@ net/library/legal
 	"/register /password whatever" - so: disabled ' ' in passwords now
 psycmuve.i renamed into master/accept
 +	added support for TLS autodetect
-== BETA ==
 archetype
 -	fixed "/topic x" with a single letter
 +	added timestamps to topic
@@ -3915,4 +3910,6 @@ irc.textdb
 install.sh
 -	many a million times people presumed they should edit local.h in
 	config/default. maybe it helps if it's called config/blueprint.
-
+=== 200902 ============================================================
+archetype
++	when joe says "/nick joe" it is understood as removing the /nick

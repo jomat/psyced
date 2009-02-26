@@ -2483,6 +2483,7 @@ sMasquerade(a) {
 # ifdef SIGS
 _request_nick_local(source, mc, data, vars, b) {
 	string a;
+	string ni;
 
 # ifdef PLACE_MASQUERADE_COMMAND
 	unless (qMasquerade()) {
@@ -2490,10 +2491,12 @@ _request_nick_local(source, mc, data, vars, b) {
 		return 1;
 	}
 # endif
+       	ni = vars["_nick"];
+	ASSERT("_request_nick_local (source has nick)",
+	       stringp(ni) && strlen(ni), ni)
 	a = vars["_nick_local"] || vars["_value"];
-	unless (stringp(a) && strlen(a)) {
-		string ni = snames[source];
-
+	unless (stringp(a) && strlen(a) && stricmp(a, ni)) {
+		ni = snames[source];
 		if (ni) {
 			sendmsg(source, "_echo_place_nick_removed",
 			    0, ([ "_nick_local" : ni ]));
@@ -2510,7 +2513,7 @@ _request_nick_local(source, mc, data, vars, b) {
 # ifndef PLACE_MASQUERADE_SECRET
 	castmsg(source, "_notice_place_masquerade",
 	    "[_nick] now masquerades as [_nick_local].",
-	     ([ "_nick" : vars["_nick"], "_nick_local" : a ]));
+	     ([ "_nick" : ni, "_nick_local" : a ]));
 # else
 				// FIXME
 	previous_object()->w("_echo_place_nick",
