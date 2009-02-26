@@ -793,21 +793,24 @@ cmd(a, args, dest, command) {
 		     ]));
 		w("_echo_end_places_entered");
 		break;
+#ifdef _flag_enable_place_single
+# define STAY v("multiplace")
+#else
+# define STAY 1
+#endif
 	case "change":
 	//se "channel":
 	case "ch":
 	case "c":
 		if (sizeof(args) < 2) {
 			if (v("lastplace") && v("lastplace") != NICKPLACE)
-                            teleport(v("lastplace"), "_other",
-                                     0, v("multiplace"));
+                            teleport(v("lastplace"), "_other", 0, STAY);
 			else
                             w("_error_unavailable_place_other", 
                             "You haven't entered any other room yet.");
 			break;
 		}
-		teleport(args[1], 0, 0 , v("multiplace"));
-		    // , sizeof(args) > 2 ? ARGS(2) : 0
+		teleport(args[1], 0, 0, STAY);
 		break;
 	case "go":
 		if (sizeof(args) < 2) {
@@ -815,7 +818,6 @@ cmd(a, args, dest, command) {
 			break;
 		}
 		teleport(args[1]);
-		    // , sizeof(args) > 2 ? ARGS(2) : 0
 		break;
         case "f":
 	case "follow":
@@ -825,7 +827,7 @@ cmd(a, args, dest, command) {
 			return;
 		}
 		if (v("otherplace")) {
-			teleport(v("otherplace"), "_other", 0, v("multiplace"));
+			teleport(v("otherplace"), "_other", 0, STAY);
 			vDel("otherplace");
 			return;
 		}
@@ -835,8 +837,7 @@ cmd(a, args, dest, command) {
 	case "h":
 	case "ho":
 	case "home":
-		teleport(v("home") || DEFPLACE, "_home", 0, v("multiplace"));
-		    //	 ARGS(1)
+		teleport(v("home") || DEFPLACE, "_home", 0, STAY);
 		break;
 #ifndef _flag_disable_place_enter_automatic
 	case "subscribe":
@@ -2602,7 +2603,10 @@ checkVar(key, value) {
 #ifndef NO_CTCP_PRESENCE
 	case "ctcppresence":	// just for irc users really..
 #endif
-	case "multiplace":	// toggle settings with negative default
+#ifdef _flag_enable_place_single
+	case "multiplace":
+#endif
+		// toggle settings with negative default
 		if (value == "off" || value == "-") value = "-";
 		else if (value) value = "on";
 		break;

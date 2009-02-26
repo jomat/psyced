@@ -518,9 +518,7 @@ _PAGES_help_room
 |<p><b> /f(ollow) </b></p><dd>
 |Der Empfänger einer Einladung braucht einfach nur <b>/f</b> wie
 |<b>/follow</b> einzugeben, um jenen Raum zu betreten. Sollte keine
-|Einladung vorliegen, wird in den zuletzt aktiven Raum gewechselt. Auch
-|eine sehr nützliche Funktion, falls man die <b>multiplace</b>-Einstellung
-|aktiviert hat. Einfach ausprobieren.
+|Einladung vorliegen, wird in den zuletzt aktiven Raum gewechselt.
 |
 |<dt><h5>ALLGEMEINE RAUMFUNKTIONEN</h5>
 |<a name="topic"></a>
@@ -754,11 +752,10 @@ _PAGES_help_settings
 |Man kann sich aber bewusst dafür entscheiden, diese Informationen
 |ebenfalls erhalten zu wollen, in dem man <b>greeting</b> einschaltet.
 |
-|<a name="multiplace"></a>
-|<DT><P><B> /set multiplace [ on | off ] </B></p><dd>
-|erlaubt das Betreten mehrerer Räume gleichzeitig. Für fortgeschrittene
-|Anwender essentiell, und in vielen Zugangsformen sowieso normal.
-|
+|## <DT><P><B> /set multiplace [ on | off ] </B></p><dd>
+|## erlaubt das Betreten mehrerer Räume gleichzeitig. Für fortgeschrittene
+|## Anwender essentiell, und in vielen Zugangsformen sowieso normal.
+|##
 |<a name="clearscreen"></a>
 |<DT><P><B> /set clearscreen [ on | off ] </B></p><dd>
 |betrifft nur den telnet-Zugang. Mit einer Leereingabe kann

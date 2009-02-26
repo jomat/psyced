@@ -565,8 +565,7 @@ _PAGES_help_room
 |<p><b> /f(ollow) </b></p><dd>
 |The recipient of an invitation just needs to type <b>/f</b> as in
 |<b>/follow</b> to enter the room. If there was no invitation, then
-|the last active room is selected (if you are using <b>multiplace</b>).
-|Very useful, just try it out.
+|the last active room is selected.
 |
 |<dt><h5>BASIC FUNCTIONS</h5>
 |<a name="topic"></a>
@@ -839,10 +838,10 @@ _PAGES_help_settings
 |servers. In that case you may want to intentionally turn them on to
 |improve your safety.
 |
-|<DT><P><B> /set multiplace [ on | off ] </B></p><dd>
-|allows you to enter more than one room at a time in some access forms.
-|An essential feature for advanced users, yet confusing for some beginners.
-|
+|## <DT><P><B> /set multiplace [ on | off ] </B></p><dd>
+|## allows you to enter more than one room at a time in some access forms.
+|## An essential feature for advanced users, yet confusing for some beginners.
+|## 
 |<DT><P><B> /set clearscreen [ on | off ] </B></p><dd>
 |only applies to the telnet access. Hitting carriage return without
 |any other input will normally clear the terminal screen.

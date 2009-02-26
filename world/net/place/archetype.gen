@@ -1135,8 +1135,8 @@ P1(("ident: %O is really %O\n", t, source))
 		return;
 	}
 	if (abbrev("_request", mc)) {
-		// needs a rewrite into a switch()
-		// mc inheritance should be handled at parsing time, not here
+		// needs a rewrite into a try-and-slice switch()
+		// or shouldn't this stuff just move into the signature table?
 		if (abbrev("_request_enter", mc)
 		    || abbrev("_request_leave", mc)
 		    || abbrev("_request_invitation", mc)) {
