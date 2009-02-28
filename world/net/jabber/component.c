@@ -119,9 +119,6 @@ int msg(string source, string mc, string data,
 #else
     unless(vars["_language"]) vars["_language"] = "en";
 #endif
-#ifdef PREFIXES
-    if (abbrev("_prefix", mc)) return 1;
-#endif
 #ifndef GAMMA	// TODO: decide if this is good or bad
     else if (abbrev("_status_person_absent", mc)) {
 	PT(("Intercepted absent from %O to %O\n", mc, source, ME))

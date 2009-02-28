@@ -1256,11 +1256,6 @@ w(string mc, string data, mapping vars, mixed source) {
 	}
 	vars["_list_item"] = t;
 	break;
-#ifdef PREFIXES
-    default:
-	// until we have a better way to deal with them..
-	if (abbrev("_prefix", mc)) return;
-#endif
     }
 
     if (source)

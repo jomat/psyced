@@ -530,19 +530,6 @@ msg(source, mc, data, mapping vars, showingLog) {
 		}
 		P3(("%O time %O data %O from %O\n", ME, t, data, vars))
 	}
-#ifdef PREFIXES
-	if (t && intp(t)) {
-		// similar to time_or_date()
-		if (time() - t > 24*60*60)
-		    w("_prefix_time_date", isotime( t, 0 ));
-		else
-		    w("_prefix_time", hhmm(ctime( t )));
-		unless (showingLog) {
-			P0(("%O got _time_place w/out showingLog in %O\n",
-			    ME, vars))
-		}
-	}
-#endif
 	PSYC_TRY(mc) {
 case "_jabber_iq_error": // DONT reply
 		P2(("%O got %O", ME, mc))
@@ -1182,18 +1169,13 @@ pr(mc, fmt, a,b,c,d,e,f,g,h,i,j,k) {
 w(string mc, string data, mapping vars, mixed source, int showingLog) {
 	string template, output, type, loc;
 	mapping di = printStyle(mc); // display infos
-#ifdef PREFIXES
-	int isfix = abbrev("_prefix", mc);
-#else
 	int t;
-#endif
+
 	unless (vars) vars = ([]);
-#ifndef PREFIXES
 	else t = vars["_time_log"] || vars["_time_place"];
 	// would be nicer to have _time_log in /log rather than showingLog
 	if (!t && showingLog) t = vars["_time_INTERNAL"];
 	if (t && intp(t)) di["_prefix"] = time_or_date(t) +" ";
-#endif
 #if 0
 	template = T(di["_method"] || mc, 0);
 #else
@@ -1203,11 +1185,7 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 
 #ifndef _flag_enable_alternate_location_forward
 	// why did it say.. if (mc != lastmc && ...
-	if (mappingp(v("locations")) && sizeof(v("locations"))
-#ifdef PREFIXES
-	    && !isfix
-#endif
-	    ) {
+	if (mappingp(v("locations")) && sizeof(v("locations"))) {
 	    string nudata = data;
 	   
 	    // this little thing enables languages for psyc clients etc.
@@ -1336,18 +1314,10 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 		    if (!stringp(source)|| (vars["_INTERNAL_trust"] >5
 			 || (vars["_nick"] && data && strlen(data)
 			     && strstr(data, "[_nick]") != -1)))
-#ifdef PREFIXES
-			output += isfix ? " " : "\n";
-#else
 			output += "\n";
-#endif
 		    else {
 			//PT(("notemp %O %O %O\n", source, vars, data))
-#ifdef PREFIXES
-			output = "«"+source+"» "+output+( isfix ? " " : "\n" );
-#else
 			output = "«"+source+"» "+ output +"\n";
-#endif
 		    }
 		}
 		if (output != "")

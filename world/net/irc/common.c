@@ -184,13 +184,7 @@ render(string mc, string data, mapping vars, mixed source) {
 #ifdef NEW_LINE
 	output += "\n";
 #else
-	if (template == "") {
-# ifdef PREFIXES //{{{
-	    if (abbrev("_prefix", mc)) return prefix = output+" ";
-	    else
-# endif //}}}
-		output += "\n";
-	}
+	if (template == "") output += "\n";
 #endif
 	if (output[0] == '#') output = SERVER_SOURCE + output[1 ..];
 	else if (output[0] != ':') {

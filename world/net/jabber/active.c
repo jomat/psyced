@@ -546,10 +546,6 @@ int msg(string source, string mc, string data,
      * the output from emit (use the new net/outputb ?)
      * this avoids bugs with destructed objects
      */
-#ifdef PREFIXES
-    // completely skip these methods
-    if (abbrev("_prefix", mc)) return 1;
-#endif
 #if 0 // !EXPERIMENTAL
     /* currently, we want _status_person_absent
      * this may change...

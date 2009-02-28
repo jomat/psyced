@@ -50,12 +50,7 @@ pr(mc, fmt, a,b,c,d,e,f,g,h,i,j,k) {
 			// weil sonst die logout-meldung den bach runtergeht
 		}
 #endif
-		if (!(abbrev("_message", mc)
-# ifdef PREFIXES
-		       	|| abbrev("_prefix", mc)
-# endif
-			)) {
-
+		if (!(abbrev("_message", mc))) {
 			if (abbrev("_list", mc) || abbrev("_echo", mc))
 			    fmt = "|* "+ fmt;
 			else {

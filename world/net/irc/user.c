@@ -37,14 +37,6 @@ msg(source, mc, data, mapping vars, showingLog) {
 	int special;
 	mixed a, res;
 	
-#ifdef PREFIXES //{{{
-	//ob das folgende so klug ist müssen wir (ich?) noch ergründen.
-	//aber da es temporär eh nicht genutzt wird...
-	//bis dahin erstmal jedesmal löschen.
-	if (prefix) {
-	    prefix = 0;
-	}
-#endif //}}}
 	P4(("irc:msg (%O,%s,%O,%O)\n", source, mc, data, vars))
 	P2(("irc:msg (%O,%s,%O..)\n", source, mc, data))
 
@@ -237,11 +229,6 @@ w(string mc, string data, mapping vars, mixed source) {
 	int glyph;
 
 	P3(("%O: irc:w(%O, %O, %O, %O) %O\n", ME, mc, data, 0, source, vars))
-
-#ifdef PREFIXES //{{{
-	// completely skip these methods.. sagt fippo.. na ob das richtig ist!?
-	if (abbrev("_prefix", mc)) return 1;
-#endif //}}}
 
 #ifndef GHOST
 	// should it be..?

@@ -153,10 +153,6 @@ w(string mc, string data, mapping vars, mixed source) {
 
 #ifdef NEW_LINE
 	output += "\n";
-#else
-# ifdef PREFIXES
-	if (template == "") output += abbrev("_prefix", mc) ? " " : "\n";
-# endif
 #endif
 	//PT(("textc:w(%O,%O,%O,%O) - %O\n", mc,data,vars,source, template))
 
