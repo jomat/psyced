@@ -1215,6 +1215,10 @@ w(string mc, string data, mapping vars, mixed source) {
 	// suppresses the jabber:iq:auth reply in the SASL case
 	unless (stringp(tag)) return;
 	break;
+    case "_notice_session_end":
+	// jabber clients do not want to know
+	// (they already closed the connection when we get here)
+	return;
     case "_error_status_place_matches":
 	PT(("still _error_status_place_matches?\n"))
 	return;
@@ -1280,5 +1284,9 @@ w(string mc, string data, mapping vars, mixed source) {
     if (vars["_list_groups"])
 	vars["_list_groups"] = IMPLODE_XML(vars["_list_groups"], "<group>");
 
+    unless (interactive(ME)) {
+	P1(("%O not interactive. w(%O) from %O.\n", ME, mc, source))
+	return;
+    }
     return render(mc, data, vars, source);
 }

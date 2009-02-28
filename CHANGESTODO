@@ -6,6 +6,9 @@ Essentially: whenever you fix something, move that line to the end of file.
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- when a jabber clients disconnects and reconnects quickly, before the sane
+  quit delay has operated, it will not be given other people's presence again.
+
 ? marenz says, remote topic isn't working
   http://about.psyc.eu/?title=Talk:Bug_Report&curid=1506&diff=10174&oldid=10173
 
