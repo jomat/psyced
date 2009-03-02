@@ -50,13 +50,13 @@ src_unpack() {
 	einfo "Unpacking ${PN}"
 	tar xf data.tar
 #	# only for development purposes
-#	cvs login && cvs -q update -d && cvs logout
+#	git pull
 	# things we won't need
 	rm -rf makefile install.sh local data log erq run INSTALL.txt
 	# new: makefile needs to be removed or newer portage will
 	# automatically run 'make install'
 	rm -f world/log world/data world/local world/place
-	# cvs sometimes comes with funny permissions
+	# this used to be necessary with cvs
 	chmod -R go-w .
 }
 

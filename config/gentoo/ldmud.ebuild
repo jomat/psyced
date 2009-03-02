@@ -11,9 +11,8 @@
 # Suggestions? tell psyc://psyced.org/~lynX
 #
 # WARNING/REMINDER to myself: When checking in a new version of this file
-# into CVS I have to run 'make up' in the gentoo download tar, as it also
-# relinks all the ldmud/ldmud-VERSION.ebuild files. 'cvs update' alone
-# wouldn't do that.
+# I have to run 'make up' in the gentoo download tar, as it also
+# relinks all the ldmud/ldmud-VERSION.ebuild files.
 
 inherit toolchain-funcs eutils
 

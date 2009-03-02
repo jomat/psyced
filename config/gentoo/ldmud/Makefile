@@ -41,7 +41,7 @@ files/erq:
 
 files:
 	-mkdir files
-#	# we don't want to have each of those in cvs, so this is a place too
+# we don't want to have each of those in version control, so this is a place too
 #	echo "MD5 419eb1c21747fe2cd6de8089b47271ff ldmud-3.3.687.tar.bz2 2107415" >files/digest-ldmud-3.3.687
 #	echo "MD5 ab0027411928bef96aa41bf316cde954 ldmud-3.3.712.tar.gz 26515635" >files/digest-ldmud-3.3.712
 

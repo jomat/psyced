@@ -36,7 +36,7 @@ files/psyced.ini:
 
 files:
 	-mkdir files
-# we don't want to have each of those in cvs, so this is a place too
+# we don't want to have each of those in version control, so this is a place too
 #	echo "MD5 bacce96afd75b8034a9247883f3765e1 psycmuve.99-gamma.tar.gz 587447" >files/digest-psycmuve.99-gamma
 
 clean:

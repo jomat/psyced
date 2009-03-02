@@ -460,27 +460,30 @@ then
 	echo "The file you just saw is: ${hi}${lib}/status-0-DEPRECATED${lo}."
 	exit 1
     else
-	echo ""
-	echo "${hi}ATTENTION: ${lo}Please give an empty password to log in (-> press enter)"
-	(cd $sandbox/.. && cvs login && cvs -q update -dP && cvs logout)
-    fi
-    if ! test -e $sandbox/status-0-beta-OK
-    then
-        echo ""
-	echo "${hi}ATTENTION:${lo}"
-        echo "The version of psyced you are using is outdated. You 
-cannot"
-        echo "get new updates because of incompatibility."
-        echo ""
-        echo "More information following.."
-        echo "" 
-        cat $sandbox/status-0-DEPRECATED
-	echo ""
-	echo "The file you just saw is: ${hi}${lib}/status-0-DEPRECATED${lo}."
-        exit 1
-    else
-	echo "It may be a good idea to run ${hi}$0${lo} again before you continue."
-    fi
+	echo "automated update functionality no longer available. try"
+	echo "'git fetch origin', optionally 'git diff master..origin/master'"
+	echo "and finally 'git merge -s resolve origin' instead"
+	exit 1
+#	echo ""
+#	echo "${hi}ATTENTION: ${lo}Please give an empty password to log in (-> press enter)"
+#	(cd $sandbox/.. && cvs login && cvs -q update -dP && cvs logout)
+#   fi
+#   if ! test -e $sandbox/status-0-beta-OK
+#   then
+#       echo ""
+#	echo "${hi}ATTENTION:${lo}"
+#       echo "The version of psyced you are using is outdated. You cannot"
+#       echo "get new updates because of incompatibility."
+#       echo ""
+#       echo "More information following.."
+#       echo "" 
+#       cat $sandbox/status-0-DEPRECATED
+#	echo ""
+#	echo "The file you just saw is: ${hi}${lib}/status-0-DEPRECATED${lo}."
+#		exit 1
+#   else
+#	echo "It may be a good idea to run ${hi}$0${lo} again before you continue."
+#   fi
     exit
 fi
 
@@ -502,7 +505,9 @@ then
 	echo "The file you just saw is: ${hi}${lib}/status-0-DEPRECATED${lo}."
 	exit 1
     else
-	(cd $base && cvs -q diff -ur HEAD|\$PAGER)
+#	(cd $base && cvs -q diff -ur HEAD|\$PAGER)
+	echo "diff functionality no longer available. see psyced -u."
+	exit 1
     fi
     exit
 fi
@@ -656,3 +661,4 @@ X
 	say "\nCaution: You may have to completely shut down and restart psyced\n";
 	say "to ensure the newly generated start-up scripts are actually used.\n";
 
+# vim:ts=8

@@ -1,6 +1,3 @@
-# you can also create a ~/.cvsrc where you keep your favorite
-# cvs flags. we recommend to put 'cvs -z9' in there
-
 alias	difvu	'vim -R "+set syntax=diff"'
 
 alias	cup	cvs -q update -dP
@@ -37,4 +34,5 @@ alias	Cdif	'(cd $PSYCEDHOME;cdif)'
 
 alias	ctoc	'(cd $CVSHOME;cvs diff -bur HEAD CHANGESTODO|& difvu -'
 alias	ctodo	'(cd $PSYCEDHOME;cvs update CHANGESTODO;$EDITOR CHANGESTODO;cvs ci -m + CHANGESTODO)'
+alias	todo	'(cd $PSYCEDHOME;$EDITOR CHANGESTODO)'
 

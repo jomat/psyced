@@ -8,7 +8,7 @@
 # implementation of the protocol for synchronous conferencing.
 # Please execute this instead of ./configure before compilation.
 #
-# The latest version of this file is in the psyced-CVS and usually also
+# The latest version of this file is in the psyced repository and usually also
 # at	http://www.psyced.org/dist/config/psyced.settings
 # The version in the LDMUD distribution may be slightly outdated.
 #

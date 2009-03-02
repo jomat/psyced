@@ -848,31 +848,23 @@ else
 	echo "[no port rules written.]"
 fi
 
-# cvs update kann wochenlang nicht zu empfehlen sein.
-# wir machen lieber ab sofort immer wenn's grad heile ist
-# nen snapshot. dank pkggen kein großes problem.
-get WANT_CVSUP "n"
-
+#get WANT_CVSUP "n"
+#
 # would be soooo smart if we'd ask for update before we even enter
 # the install.sh interview because frequently there is a better
 # install.sh in the repo worth running instead. TODO
-echo ""
-echo ""
-echo "The version you are about to install is considered stable,"
-echo "If you need to run the latest off-the-mill version you can"
-echo "update the code tree via CVS. You can choose to do so now or"
-echo "anytime later using the -u option of psyced. You can"
-echo "even inspect the changes in the code before updating, using"
-echo "psyced -d. We think this feature is quite cool."
-echo ""
-echo "${hi}But be aware, by updating you may be switching"
-echo "to an unstable or otherwise unusable version.${lo}"
-ask "Update your installation by CVS?" WANT_CVSUP
-
-#if test "$WANT_CVSUP" != "n"
-#then
-#	echo "Using CVSROOT :pserver:anonymous@andrack.tobij.de:/CVS/anonCVS"
-#fi
+#echo ""
+#echo ""
+#echo "The version you are about to install is considered stable,"
+#echo "If you need to run the latest off-the-mill version you can"
+#echo "update the code tree via CVS. You can choose to do so now or"
+#echo "anytime later using the -u option of psyced. You can"
+#echo "even inspect the changes in the code before updating, using"
+#echo "psyced -d. We think this feature is quite cool."
+#echo ""
+#echo "${hi}But be aware, by updating you may be switching"
+#echo "to an unstable or otherwise unusable version.${lo}"
+#ask "Update your installation by CVS?" WANT_CVSUP
 
 echo ""
 echo ""
@@ -1251,7 +1243,7 @@ rm -f $BASE_DIR/local 2> /dev/null
 cp -rp "$BASE_DIR/config/blueprint" "$BASE_DIR/local"
 #
 # let's make sure it won't happen again   ;)
-rm -rf "$BASE_DIR/local/CVS"
+#rm -rf "$BASE_DIR/local/CVS"
 
 if test "$RUNTIME_OUTPUT" = "files"
 then
@@ -1267,19 +1259,19 @@ then
 	fi
 fi
 
-if ! test "$WANT_CVSUP" = "n"
-then
-    echo "Updating to newest state by using CVS"
-    echo "Using CVSROOT `cat $BASE_DIR/CVS/Root`"
-    echo "${hi}ATTENTION: ${lo}Please give an empty password to log in (-> press enter)"
-    if (cd $BASE_DIR && cvs login && cvs -q update -d && cvs logout)
-    then
-	:
-    else
-	echo "${hi}Warning: ${lo}Something failed while trying to update. No CVS available?"
-	echo "The installation should be functioning however, using the stable code."
-    fi
-fi
+#if ! test "$WANT_CVSUP" = "n"
+#then
+#    echo "Updating to newest state by using CVS"
+#    echo "Using CVSROOT `cat $BASE_DIR/CVS/Root`"
+#    echo "${hi}ATTENTION: ${lo}Please give an empty password to log in (-> press enter)"
+#    if (cd $BASE_DIR && cvs login && cvs -q update -d && cvs logout)
+#    then
+#	:
+#    else
+#	echo "${hi}Warning: ${lo}Something failed while trying to update. No CVS available?"
+#	echo "The installation should be functioning however, using the stable code."
+#    fi
+#fi
 
 echo ""
 echo "Setting permissions for program files..."

@@ -824,7 +824,7 @@ ________________________________________________________________________
 
 - elmex: disco geht auch nicht
   fiPP: dass wir auf iq teilweise mit message antworten ist nen uralter bug
-    end<< 2nd_testxmpp@beta.ve.example.com/x
+    send<< 2nd_testxmpp@beta.ve.example.com/x
     <deb>
       <presence id="4">
 	<priority>10</priority>
@@ -835,15 +835,6 @@ ________________________________________________________________________
       <iq id="6" to="testxmpp@beta.ve.example.com/x" type="get">
 	<query xmlns="broken:iq:request"/>
       </iq>
-    </deb>
-
-    recv>> 2nd_testxmpp@beta.ve.example.com/x
-    <deb>
-      <message from="beta.ve.symlynx.com" to="2nd_testxmpp@beta.ve.example.com/x" type="error">
-	<error code="503" type="cancel">
-	  <service-unavailable xmlns="urn:ietf:params:xml:ns:xmpp-stanzas"/>
-	</error>
-      </message>
     </deb>
 
     recv>> 2nd_testxmpp@beta.ve.example.com/x

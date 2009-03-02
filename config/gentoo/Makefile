@@ -74,9 +74,9 @@ clean:
 up:
 	-rm ldmud/ldmud-*.ebuild psyced/psyced-*.ebuild psyclpc/psyclpc-*.ebuild
 	-mkdir psyced/files
-	# If 'cvs update' updates this Makefile itself, it may be necessary
+	# If version control updates this Makefile itself, it may be necessary
 	# to run 'make up' twice as the update requirements may have changed.
-	cvs update
+	git pull
 	$G http://www.psyced.org/dist/config/psyced.ini >psyced/files/psyced.ini
 	@(cd psyced;make ebuild)
 	@(cd psyclpc;make ebuild)
