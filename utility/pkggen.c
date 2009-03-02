@@ -130,8 +130,14 @@ int main(int argc, char **argv) {
 	return 1;
     }
 
-    /* because we want to keep it out of the snapshots anyway */
-    unlink("CHANGESTODO");
+    puts(">> Doing a git garbage collection");
+    if (system("git gc")) {
+	puts(">> Error during git gc. Exiting.");
+	return 1;
+    }
+
+    /* we used to do this with cvs.. for git we could do .gitignore
+    unlink("CHANGESTODO"); */
     /* system("rm .#CHANGESTODO*") */
 
     puts(">> Now is your chance to make manual changes. Suspend now.");
