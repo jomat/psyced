@@ -444,7 +444,7 @@ open_stream(XMLNode node) {
 	string features;
 	string header;
 
-	P2(("jabber/server open_stream\n"))
+	P2(("%O open_stream from %O\n", ME, query_ip_name()))
 	streamid = RANDHEXSTRING;
 
 	unless(node["@xmlns"] == "jabber:client") {

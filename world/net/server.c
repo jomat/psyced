@@ -46,8 +46,7 @@ void create() {
 
 // supercede this in inheriting server class
 createUser(nick) {
-	PT(("net/server:createUser() called in %O\n", ME))
-	// this is pretty unlikely to work
+	P3(("%O net/server:createUser(%O)\n", ME, nick))
 	return named_clone(NET_PATH "user", nick);
 }
 
@@ -82,7 +81,7 @@ hello(ni, elm, try, method, salt) {
 				     ni, try, elm);
 }
 
-#ifdef REGISTERED_USERS_ONLY
+#ifdef REGISTERED_USERS_ONLY	// TODO: rename into a _flag
 ohYeah(whatever) {
 	input_to(#'ohYeah, input_to_settings);
 	// input ignore warning? inverting mc's is really a good idea!
@@ -177,8 +176,8 @@ authChecked(int result, ni, try, elm) {
 password(try, method, salt) {
 	mixed authCb;
 	unless (user) {
-		pr("_failure_object_destructed",
-			"Huh? Your user object has disappeared!\n");
+		w("_failure_object_destructed",	    // never happens
+		    "Huh? Your user object has disappeared!");
 		QUIT
 	}
 	// nick, guesses needed?
@@ -212,8 +211,8 @@ morph() {
 		if (user) destruct(user);
 
 		unless (user = createUser(nick)) {
-			pr("_failure_object_creation",
-			    "Cannot create new user object.\n");
+			w("_failure_object_creation",
+			    "Cannot create new user object.");
 			QUIT
 		}
 	}
@@ -249,12 +248,6 @@ disconnected(remaining) {
 logon() {
 	if (nick) {
 		// authlocal support!
-#if 0
-		// replace former interactive of nick
-		user = find_person(nick) || createUser(nick);
-		morph();
-		return 0;
-#else
 		// only auto-login the first instance of nick
 		user = find_person(nick);
 		unless (user) {
@@ -268,18 +261,15 @@ logon() {
 		}
 		// otherwise prompt regularely
 		nick = user = 0;
-#endif
 	}
 #ifdef LIMIT_USERS
 	// TODO: admins MUST be able to login!
-	// hmm.. what does 'nick &&' do here?
 	if (AMOUNT_SOCKETS >= LIMIT_USERS) {
 		w("_failure_exceeded_limit_users", "Extremely sorry, but "
 		   "the maximum possible amount of people has been reached.");
 		QUIT
 	}
 #endif
-	// bei jabber.. input_to(): Change in CHARMODE mode requested for object 'net/jabber/server#2107' with telnet disabled.
 	input_to(#'hello, input_to_settings);
 	call_out(#'quit, TIME_LOGIN_IDLE);
 	guesses = 0;

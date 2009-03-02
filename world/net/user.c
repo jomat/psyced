@@ -1675,7 +1675,7 @@ static showFriends(verbose) {
 	array(mixed) k;
 	mixed o, n, *fmt;
 
-	P3(("showFriends: %O\n", friends))
+	P3(("showFriends in %O: %O\n", ME, friends))
 	k = m_indices(friends);
 	unless(k && sizeof(k)) return;
 

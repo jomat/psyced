@@ -9,6 +9,9 @@ ________________________________________________________________________
 - when a jabber clients disconnects and reconnects quickly, before the sane
   quit delay has operated, it will not be given other people's presence again.
 
++ should ignored people receive an echo for the sake of not being
+  distinguishable from not ignored people? yes...
+
 ? marenz says, remote topic isn't working
   http://about.psyc.eu/?title=Talk:Bug_Report&curid=1506&diff=10174&oldid=10173
 
@@ -3916,3 +3919,6 @@ install.sh
 === 200902 ============================================================
 archetype
 +	when joe says "/nick joe" it is understood as removing the /nick
+jabber/user
+-	fixed major bug in output of presence state (showFriends)
+

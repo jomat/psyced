@@ -1557,8 +1557,14 @@ request(source, mc, vars, data) {
 	mixed t, s;
 	int glyph;
 
-	P2(("»»> request(%O) %O from %O in %O (%O)\n",
+#if DEBUG > 3
+	// in case of _store from jabber client vars may contain photo data
+	P4(("»»> request(%O) %O from %O in %O (%O)\n",
 	    mc, data, source, ME, vars))
+#else
+	P2(("»»> request(%O) %O from %O in %O\n",
+	    mc, data, source, ME))
+#endif
 	PSYC_TRY(mc) {
 // quite dubious choice of method names.. sigh
 case "_message_private":

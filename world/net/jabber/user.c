@@ -30,8 +30,6 @@ qResource() { return resource; }
 
 qHasCurrentPlace() { return 0; }
 
-showFriends() {}
-
 /* it should be posible to do some things in a way that can be shared between
  * user and active/gateway... mostly stuff like MUC-support, version requests
  * and such -- TODO
@@ -129,14 +127,14 @@ msg(source, mc, data, mapping vars, showingLog) {
     case "_status_person_present_implied":
     case "_status_person_absent":
     case "_status_person_absent_recorded":
-	PT(("%O got %O\n", ME, mc))
+	P2(("%O got %O\n", ME, mc))
 
 	// actually.. we never send _time_idle with this
         if (member(vars, "_time_idle")) {
             t = vars["_time_idle"];
             if (stringp(t)) {
                 t = to_int(t);
-                PT(("_time_idle %O == %O, right?\n", vars["_time_idle"], t))
+                P2(("_time_idle %O == %O, right?\n", vars["_time_idle"], t))
             }
             t = gmtime(time() - t);
             vars["_INTERNAL_time_jabber"] = JABBERTIME(t);
@@ -232,6 +230,25 @@ msg(source, mc, data, mapping vars, showingLog) {
     return ::msg(source, mc, data, vars, showingLog);
 }
 
+showFriends() {
+    // send presence for online friends
+    string template = T("_notice_presence_here_plain",
+		 "<presence to='[_INTERNAL_target_jabber]' "
+		 "from='[_INTERNAL_source_jabber]'/>");
+    string packet = "";
+
+    foreach(mixed friend : m_indices(friends)) {
+	if (friend) 
+	    packet += psyctext(template, ([
+		  "_INTERNAL_target_jabber" : myjid, 
+		  "_INTERNAL_source_jabber" : mkjid(friend),
+		  "_INTERNAL_mood_jabber" : "neutral"
+	    ]));
+    }
+    if (strlen(packet)) emit(packet);
+    P2(("%O jabberish showFriends: %O outputs as %O\n", ME, friends, packet))
+}
+
 logon() {
     // language support is in server.c
     vSet("scheme", "jabber");
@@ -250,6 +267,8 @@ logon() {
     myjid = NODEPREP(MYLOWERNICK) +"@" + NAMEPREP(SERVER_HOST);
     myjidresource = myjid +"/"+ RESOURCEPREP(resource);
     P2(("%O ready to rumble (%O)\n", myjidresource, ME))
+    // reicht auch aufzurufen, wenn announce 0 returned..
+    showFriends();
     return ::logon();
 }
 
@@ -708,7 +727,7 @@ iq(XMLNode node) {
 		]));
 		if (ro) packet += ro;
 		else {
-		    PT(("%O empty result for %O with buddy %O\n",
+		    P2(("%O empty result for %O with buddy %O\n",
 			ME, "_list_acquaintance_notification" + variant + "_roster", friend))
 		}
 	    }
@@ -718,21 +737,8 @@ iq(XMLNode node) {
 	    // foreach skipped
 	    // 	_list_acquaintance_notification_pending
 	    // 	_list_acquaintance_notification_offered
-	    packet = "";
-	    // send presence for online friends
-	    // P2(("friends: %O\n", friends))
-	    template = T("_notice_presence_here_plain",
-			 "<presence to='[_INTERNAL_target_jabber]' "
-			 "from='[_INTERNAL_source_jabber]'/>");
-	    foreach(friend : m_values(friends)) {
-		if (friend) 
-		    packet += psyctext(template, ([
-			  "_INTERNAL_target_jabber" : myjid, 
-			  "_INTERNAL_source_jabber" : mkjid(friend),
-			  "_INTERNAL_mood_jabber" : "neutral"
-		    ]));
-	    }
-	    break; // showFriends() ?
+	    showFriends();
+	    break;
 	case "set":
 	    helper = helper["/item"];
 	    if (helper && helper["@subscription"] == "remove") {
@@ -936,7 +942,7 @@ iq(XMLNode node) {
 		// this one is public while v("email") is more
 		// private
 		mvars = convert_profile(node["/vCard"], "jCard");
-		PT(("%O received vCard from client (%O)\n", ME, sizeof(mvars)))
+		P2(("%O received vCard from client (%O)\n", ME, sizeof(mvars)))
 		emit("<iq type='result' id='" + tag + "'/>");
 		request(ME, "_store", mvars);
 		return;
@@ -1220,7 +1226,7 @@ w(string mc, string data, mapping vars, mixed source) {
 	// (they already closed the connection when we get here)
 	return;
     case "_error_status_place_matches":
-	PT(("still _error_status_place_matches?\n"))
+	P2(("still _error_status_place_matches?\n"))
 	return;
     case "_echo_request_friendship":
 	vars["_list_groups"] = xbuddylist[vars["_nick"]] || "";

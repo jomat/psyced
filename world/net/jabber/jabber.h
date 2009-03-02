@@ -11,6 +11,12 @@
 #define	JABBER_TRANSPARENCY	// switching this off improves parser
 				// performance but kills file transfers
 
+// local debug messages - turn them on by using psyclpc -DDjabber=<level>
+#ifdef Djabber
+# undef DEBUG
+# define DEBUG Djabber
+#endif
+
 #include <net.h>
 #include <xml.h>
 #include <sys/time.h>
@@ -25,8 +31,6 @@ virtual inherit JABBER_PATH "common";
 #endif
 
 #define COMBINE_CHARSET	XML_CHARSET
-//"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 </=\"'?.:@-"
-// combining > errors
 
 // eigentlich schon ein fall für textdb
 // siehe auch MISC/jabber/conference.fmt

@@ -2479,7 +2479,9 @@ logon(host) {
 #endif
 	    host = "?";
 
-	P2(("%O person:logon %O\n", ME, IS_NEWBIE? "(newbie)": "(registered)" ))
+	P2(("%O person:logon %s, logged_on = %O\n", ME,
+	    IS_NEWBIE? "(newbie)": "(registered)",
+	    logged_on ))
 	log_file("LOGON", "[%s] %s %s %s(%s) %s/%s/%s \"%s\"\n", ctime(),
 		logged_on ? "O" : IS_NEWBIE ? "*" : "+", MYNICK,
 #ifdef _flag_log_hosts
@@ -2543,9 +2545,7 @@ logon(host) {
 		// check by raising a version counter
 	    }
 	}
-# ifdef XMPPERIMENTAL
-	PT(("smarticast distribution structure: %O\n", _routes))
-# endif
+	P3(("smarticast distribution structure in %O: %O\n", ME, _routes))
 #endif
 #ifndef _flag_disable_module_presence
 	switch(v("scheme")) {
@@ -2780,6 +2780,7 @@ announce(level, manual, verbose, text) {
 		text = text ? (MYNICK +" "+ text +".") : "";
 		    // fun: "Reclaim your chat. Use PSYC. PSYC delivers.";
 	}
+	// can this "optimization" cause async presence effects..?
 	if (!changed && availability == level) return 0;
 	if (level) vSet("availability", availability = level);
 	else level = availability;	// sending EXPIRED not permitted here
