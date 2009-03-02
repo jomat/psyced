@@ -19,7 +19,8 @@ volatile int isplacemsg;
 
 volatile int hasroster = 0; // client has requested roster
 
-volatile mapping affiliations = ([ ]); // hack to support affiliations
+volatile mapping jabber2avail,
+		 affiliations = ([ ]); // hack to support affiliations
 
 #include JABBER_PATH "disco.c"
 // #include NET_PATH "members.i"    // isn't this include redundant?
@@ -29,6 +30,11 @@ sResource(r) { resource = r; }
 qResource() { return resource; }
 
 qHasCurrentPlace() { return 0; }
+
+void create() {
+    jabber2avail = shared_memory("jabber2avail");
+    return ::create();
+}
 
 /* it should be posible to do some things in a way that can be shared between
  * user and active/gateway... mostly stuff like MUC-support, version requests
@@ -400,32 +406,16 @@ presence(XMLNode node) {
 	}
     } /* end of directed presence handling */
 #endif // _flag_disable_presence_directed_XMPP
-#ifdef AVAILABILITY_AWAY
-    else if (node["/show"]) { 
-	// else this is one of the so-called "presence broadcasts"
-	// we will never support stupid broadcasts although we could 
-	// do some fancy castmsg now
-	switch (node["/show"][Cdata]) {
-	case "away":
-	case "xa":
-	case "dnd":
-	    // we simply map them to away
-	    vSet("me", (node["/status"] && 
-			node["/status"][Cdata]) || "away");
-	    announce(AVAILABILITY_AWAY);
-	    break;
-	case "chat":
-	    // chattativ? ab in den flirt-raum mit dir!
-	    break;
-	default:
-	    // away loeschen wenn gesetzt
-	    break;
-	}
-    } else if (node["@type"] == "unavailable") {
-	// hey... we should logout those guys ;)
+    else if (node["@type"] == "unavailable") {
 	// announce OFFLINE manually here? no.. see comment in person:quit()
 	// _flag_enable_manual_announce_XMPP is nothing we really need.. i think
 	return quit(); 
+    }
+#ifdef AVAILABILITY_AWAY
+    else if (node["/show"]) { 
+	// this is one of the so-called "presence broadcasts"
+	announce(jabber2avail[node["/show"] && node["/show"][Cdata]], 0, 0,
+	    node["/status"] && node["/status"][Cdata]);
     } else {
 	// TODO: quiet?
 	announce(AVAILABILITY_HERE);

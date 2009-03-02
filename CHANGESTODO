@@ -3921,4 +3921,4 @@ archetype
 +	when joe says "/nick joe" it is understood as removing the /nick
 jabber/user
 -	fixed major bug in output of presence state (showFriends)
-
+-	fixed outgoing presence support (announce)
