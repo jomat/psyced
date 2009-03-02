@@ -13,7 +13,7 @@
 
 #define unless(x)	if (!(x))
 
-void cvscp(char *filename) {
+void vcscp(char *filename) {
     char cmdline[1000];
     printf(">>> %s\n", filename);
 
@@ -115,12 +115,18 @@ int main(int argc, char **argv) {
        hmm, doesn't really work like that
      */
 
-    puts(">> Now is your chance to inspect a cvs diff. Suspend now.");
+    puts(">> Doing a git fetch");
+    if (system("git fetch origin")) {
+	puts(">> Error during git fetch. Exiting.");
+	return 1;
+    }
+
+    puts(">> Now is your chance to inspect a 'git diff master..origin/master'. Suspend now.");
     sleep(4);
 
-    puts(">> Doing a CVS update");
-    if (system("cvs -q update -dP")) {
-	puts(">> Error during CVS update. Exiting.");
+    puts(">> Doing a git merge");
+    if (system("git merge -s resolve origin")) {
+	puts(">> Error during git merge. Exiting.");
 	return 1;
     }
 
@@ -138,9 +144,9 @@ int main(int argc, char **argv) {
 	return 1;
     }
 
-    puts(">> Updating files from CVS");
+    puts(">> Updating files from version control system");
 
-    cvscp("install.sh");
+    vcscp("install.sh");
 
     puts(">> Cleaning up data/");
     chdir("..");

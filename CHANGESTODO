@@ -6,9 +6,6 @@ Essentially: whenever you fix something, move that line to the end of file.
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-- when a jabber clients disconnects and reconnects quickly, before the sane
-  quit delay has operated, it will not be given other people's presence again.
-
 + should ignored people receive an echo for the sake of not being
   distinguishable from not ignored people? yes...
 
@@ -3919,6 +3916,12 @@ install.sh
 === 200902 ============================================================
 archetype
 +	when joe says "/nick joe" it is understood as removing the /nick
+net/user
+-	by default we no longer support /set multiplace
+-	removed old _prefix code
+=== 200903 ============================================================
 jabber/user
 -	fixed major bug in output of presence state (showFriends)
 -	fixed outgoing presence support (announce)
+pkggen
++	ported from cvs to git
