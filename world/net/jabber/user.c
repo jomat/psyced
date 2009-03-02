@@ -19,8 +19,8 @@ volatile int isplacemsg;
 
 volatile int hasroster = 0; // client has requested roster
 
-volatile mapping jabber2avail,
-		 affiliations = ([ ]); // hack to support affiliations
+volatile mapping affiliations = ([ ]); // hack to support affiliations
+volatile mapping jabber2avail;
 
 #include JABBER_PATH "disco.c"
 // #include NET_PATH "members.i"    // isn't this include redundant?
@@ -238,21 +238,23 @@ msg(source, mc, data, mapping vars, showingLog) {
 
 showFriends() {
     // send presence for online friends
-    string template = T("_notice_presence_here_plain",
-		 "<presence to='[_INTERNAL_target_jabber]' "
-		 "from='[_INTERNAL_source_jabber]'/>");
     string packet = "";
+    mixed person;
+    int av;
 
-    foreach(mixed friend : m_indices(friends)) {
-	if (friend) 
-	    packet += psyctext(template, ([
-		  "_INTERNAL_target_jabber" : myjid, 
-		  "_INTERNAL_source_jabber" : mkjid(friend),
-		  "_INTERNAL_mood_jabber" : "neutral"
-	    ]));
+    foreach(person: m_indices(friends)) if (person) {
+	av = friends[person, FRIEND_AVAILABILITY];
+	packet += psyctext(T("_status_presence"+ avail2mc[av], 
+		     "<presence to='[_INTERNAL_target_jabber]' "
+		     "from='[_INTERNAL_source_jabber]'/>"), ([
+	      "_INTERNAL_target_jabber" : myjid, 
+	      "_INTERNAL_source_jabber" : mkjid(person),
+	      "_description_presence" : "",  // TODO: get these from state
+	      "_INTERNAL_mood_jabber" : "neutral"
+	]));
     }
     if (strlen(packet)) emit(packet);
-    P2(("%O jabberish showFriends: %O outputs as %O\n", ME, friends, packet))
+    PT(("%O jabberish showFriends: %O outputs as %O\n", ME, friends, packet))
 }
 
 logon() {
@@ -312,7 +314,7 @@ presence(XMLNode node) {
     }
 #ifndef _flag_disable_presence_directed_XMPP
     if (node["@to"]) {
-	target = jid2unl(node["@to"]);
+	target = jid2ppl(node["@to"]);
 	if (isplacemsg) {
 	    mixed *u = parse_uniform(XMPP + node["@to"]);
 	    P2(("some kind of place stuff\n"))
@@ -358,10 +360,9 @@ presence(XMLNode node) {
 	    }
 # ifndef _flag_disable_module_friendship
 	} else if (node["@type"] == "subscribe") {
-	    // was: friend(({ jid2unl(node["@to"]) }), 0);
-	    friend(0, jid2unl(node["@to"]));
+	    friend(0, 0, jid2ppl(node["@to"]));
 	} else if (node["@type"] == "unsubscribe") {
-	    friend(1, jid2unl(node["@to"]));
+	    friend(1, 0, jid2ppl(node["@to"]));
 # endif // _flag_disable_module_friendship
 	} else if (abbrev(XMPP, target)) {
 	    // if the person is not on our buddylist,
@@ -436,7 +437,7 @@ message(XMLNode node) {
 	P0(("%O jabber message() without 'to'-attribute\n"))
 	return;
     }
-    target = jid2unl(node["@to"]);
+    target = jid2ppl(node["@to"]);
 
     unless (u = parse_uniform(XMPP + node["@to"])) { D("impossible!\n"); }
     isplacemsg = ISPLACEMSG(node["@to"]); 
@@ -538,7 +539,7 @@ message(XMLNode node) {
 	}
 
 	// _message_private
-	nick = jid2unl(node["@to"]);
+	nick = jid2ppl(node["@to"]);
 	// P2(("nick: %s\n", nick))
 	// TODO: vars["_time_INTERNAL"] => jabber:x:delay, JEP-0091
 #if 0
@@ -565,7 +566,7 @@ iq(XMLNode node) {
     mixed *vars;
 
     vars = ([ "_nick": MYNICK ]);
-    target = jid2unl(node["@to"]);
+    target = jid2ppl(node["@to"]);
     isplacemsg = stringp(target) && strlen(target) && ISPLACEMSG(target);
 
     P3(("%O IQ node %O\n", ME, node))
@@ -721,7 +722,7 @@ iq(XMLNode node) {
 			ME, "_list_acquaintance_notification" + variant + "_roster", friend))
 		}
 	    }
-	    emit(packet + IQ_OFF);
+	    emit(packet +"</query></iq>");
 	    // here we should redisplay requests skipped above
 	    // oder kann man die einfach reinmixen - nein
 	    // foreach skipped
@@ -732,10 +733,10 @@ iq(XMLNode node) {
 	case "set":
 	    helper = helper["/item"];
 	    if (helper && helper["@subscription"] == "remove") {
-		string buddy = jid2unl(helper["@jid"]);
+		string buddy = jid2ppl(helper["@jid"]);
 #ifndef _flag_disable_module_friendship
 		P2(("remove %O from roster\n", helper["@jid"]))
-		friend(1, buddy);
+		friend(1, 0, buddy);
 #endif
 		m_delete(xbuddylist, buddy);
 		emit(sprintf("<iq type='result' id='%s'/>", tag));
@@ -747,7 +748,11 @@ iq(XMLNode node) {
 		string name;
 
 		jid = helper["@jid"];
-		buddy = jid2unl(jid);
+		unless (stringp(jid)) {
+		    P0(("invalid jid for %O in %O\n", name, ME))
+		    break;
+		}
+		buddy = jid2ppl(jid);
 		unless (xbuddylist[buddy]) 
 		    subscription = "none";
 		else 
@@ -776,14 +781,6 @@ iq(XMLNode node) {
 		//
 		// roster push
 		// maybe we can just implode the former "groups" here
-		unless (stringp(jid)) {
-		    P0(("invalid jid for %O in %O\n", name, ME))
-		    break;
-		}
-		unless (stringp(subscription)) {
-		    P0(("invalid subscription for %O in %O\n", jid, ME))
-		    break;
-		}
 		unless (stringp(name)) {
 		    // nicht schlimm.. hat der user das alias-feld
 		    // einfach leergelassen
@@ -798,7 +795,14 @@ iq(XMLNode node) {
 			    IMPLODE_XML(xbuddylist[buddy], "<group>")));
 		if (stringp(tag))
 		    emit(sprintf("<iq type='result' id='%s'/>", tag));
+#ifndef _flag_disable_module_friendship
+		// client will send presence subscribe in opposite direction
+		// so we shouldn't need this. alas, there seems to be a bug
+		// with re-subscribe
+		friend(0, 0, buddy);
+#else
 		save();
+#endif
 	    }
 	    break;
 	case "result":
@@ -1075,12 +1079,13 @@ iq(XMLNode node) {
     }
 }
 
-// this isn't really used consistently...
-string jid2unl(string jid) {
+// this converts a user@host into a local nick or uniform
+// in a potentially not too consistent way
+string jid2ppl(string jid) {
     string node, host, resource;
     string t;
 
-    P3(("jid2unl saw %O\n", jid))
+    P3(("jid2ppl saw %O\n", jid))
     unless(jid) return 0;
     //
     // TODO: what if jid == SERVER_HOST?

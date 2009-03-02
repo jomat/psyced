@@ -73,7 +73,16 @@ volatile mapping lastaway;
 volatile mixed availability;
 #endif // _flag_disable_module_presence
 
+// complex data structure of peers. see peer.h
 volatile mapping ppl;
+
+// friends contains the currently available peers.
+// technically, friends is a multi-dimensional mapping:
+//	uniforms or objects pointing to nick and availability.
+// it should be 0-dimensional instead, only containing objects:
+//	local entities vs. context slaves for remote entities.
+// in both cases providing the typical state information:
+//	availability, mood, presence text, icons and photos...
 volatile mapping friends;
 
 #ifdef RELAY
@@ -2094,7 +2103,9 @@ case "_request_friendship_implied":
 		// but the other side may be confused or have lost its
 		// state, so we let it know once more
 		default:
-//			if (mc != "_notice_friendship_established") {
+			// this stops loops of _status_friendship_established
+			// but maybe we should just never act on that mc
+			if (mc != t2) {
 				sendmsg(source, t2, data,
 				    ([ "_nick": MYNICK ]) );
 				// friendship with oneself..
@@ -2117,7 +2128,7 @@ case "_request_friendship_implied":
 				// why did we want to filter this?
 				// weil das zeug nervt.
 				//display = 0;
-//			}
+			}
 			myLogAppend(source, mc, data, vars);
 			// display sollte hier gleich 0 sein wenn man
 			// schon mit der person befreundet ist...

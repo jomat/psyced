@@ -2232,9 +2232,10 @@ protected invite(nick, vars) {
 // two ways to call this:
 // the gui style is	friend(deleteflag, entity, optlNick))
 // the cmdline style is	friend(deleteflag, 0, nickname)
-protected friend(rm, entity, ni, trustee) {
+friend(rm, entity, ni, trustee) {
 	mixed t;
 
+	P0(("friend(%O, %O, %O, %O) in %O\n", rm, entity, ni, trustee, ME))
 	if (IS_NEWBIE) {
 #ifdef VOLATILE
 		w("_error_unavailable_function_here",
@@ -2287,6 +2288,7 @@ protected friend(rm, entity, ni, trustee) {
 			    "All contact data for [_nick_target] deleted.", 
 			    ([ "_nick_target": ni ]) );
 			m_delete(ppl, t);
+			m_delete(friends, entity);
 			return 1;
 		}
 		w("_error_unknown_acquaintance",
@@ -2318,6 +2320,8 @@ protected friend(rm, entity, ni, trustee) {
 						// TODO: gender support
 			    ([ "_nick": MYNICK, "_possessive": "the" ]) );
 			m_delete(friends, entity);
+			PT(("entity %O (%O) removed from friends %O\n",
+			     entity, t, friends))
 			//}
 			return 1;
 		}

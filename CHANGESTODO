@@ -750,6 +750,13 @@ remoteMUC:
 ________________________________________________________________________
 == JABBER CLIENT ISSUES (...experimental is justified...) ==============
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- accurate availability values from friends aren't stored and delivered
+
+- re-subscribe isn't properly handled (so we do friend(0) earlier instead)
+
+- when unsubscribing a user, no proper ack is sent to client
+  (but relogin helps ;))
+
 - v("place") isn't automatically set when actively joining a chat
 - the /me command ist not properly treated
 
@@ -769,16 +776,6 @@ ________________________________________________________________________
 
 - elmex: fippo: psyced.org failt soweit ichs seh bei mir alle tests bis auf den IQ auth test.
   ... Net::XMPP2 installieren und damit den muve testen?
-
-- <iq id="2" type="error">
-    <query xmlns="jabber:iq:register">
-      <error code="406" type="cancel">
-        <conflict xmlns="urn:ietf:params:xml:ns:xmpp-stanzas"/>
-      </error>
-    </query>
-  </iq>
-  elmex: der error muss aussen in den  iq error
-	 <iq><query/><error/></iq>
 
 - elmex: ausserdem geht das unregister wohl net richtig, denn
   beim registrieren bekomme ich halt den conflict da.
@@ -824,8 +821,6 @@ ________________________________________________________________________
   elmex: testxmpp@beta.ve.example.com/x bekommt den nichtmal
   fiPP: wir mögen resourcen überhaupt nicht
   fiPP: das wird alles gefiltert und vom server beantwortet
-
-- elmex: fippo: von subscription prozedur brauch ich garnicht anfangen oder?
 
 - elmex: disco geht auch nicht
   fiPP: dass wir auf iq teilweise mit message antworten ist nen uralter bug
@@ -898,9 +893,6 @@ ________________________________________________________________________
 
 - aimgate sendeoptimierung auf #if 0
 
-? ouch.. wir haben immernoch psyctext fehler:
-  net/jabber/user#example       <presence to='example@example.org/Home' from='oops@example.org/irc'><x from='oops@example.org/irc' stamp='[_INTERNAL_time_jabber]' xmlns='jabber:x:delay'/></presence>
-
 - niekie entered #welcome both by telnet and xmpp. when the telnet
   logged out, his xmpp client thought he had left the muc also.
     ok, so the psyced did correctly handle both your identities.. only that your client interpreted the other you leaving as you leaving.. kind of logical
@@ -911,6 +903,8 @@ ________________________________________________________________________
   erscheint er also immernoch online)
 + In welcome spricht mb: is there a way to turn off the welcome messages everytime someone gets connected to psyc, it is a bit irritating when you use clients like ichat who do not filter those messages into a seperate channel
 
+? ouch.. wir haben immernoch psyctext fehler:
+  net/jabber/user#example       <presence to='example@example.org/Home' from='oops@example.org/irc'><x from='oops@example.org/irc' stamp='[_INTERNAL_time_jabber]' xmlns='jabber:x:delay'/></presence>
 - <presence to="example@example.org/mozdev" from="test@example.org">
   <x xmlns="jabber:x:delay" from="test@example.org"
      stamp="[_INTERNAL_time_jabber]"/>
@@ -986,9 +980,6 @@ ________________________________________________________________________
 - wenn man im client einen alias ("name" feld im xml code) setzt beim
   buddymachen, dann geht der im laufe der transaktion verloren und man
   muss ihn später nochmal setzen!
-
-- "00:05   ... Ich bin gerade nicht hier."
-  net/jabber/user maps away messages to mottoaction instead of presencetext
 
 ________________________________________________________________________
 == JABBER FILE TRANSFERS ===============================================
@@ -3923,5 +3914,7 @@ net/user
 jabber/user
 -	fixed major bug in output of presence state (showFriends)
 -	fixed outgoing presence support (announce)
+jabber/server
+-	fixed various iq errors as elmex noted: <iq><query/><error/></iq>
 pkggen
 +	ported from cvs to git

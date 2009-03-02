@@ -500,5 +500,11 @@ _status_person_absent_offline
 _status_friendship_established
 |<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber_bare]' type='subscribed'/>
 
+_warning_duplicate_friendship
+|## useless information
+
+_warning_pending_friendship
+|## useless information
+
 _warning_usage_set_language
-|##
+|## doesn't look good on jabber

@@ -38,8 +38,6 @@ virtual inherit JABBER_PATH "common";
 
 #define XMPP	"xmpp:"
 
-#define IQ_OFF	"</query></iq>"
-
 #define NS_XMPP "urn:ietf:params:xml:ns:"
 
 #define IMPLODE_XML(list, tag) pointerp(list) ? tag + implode(list, "</" + tag[1..] + tag) + "</" + tag[1..] : tag[..<2] + "/>"

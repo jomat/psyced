@@ -1640,7 +1640,10 @@ disconnected(remainder) {
 	// actually - we could show all messages since last activity
 	// from user. TODO
 #ifdef AVAILABILITY_OFFLINE
-	if (availability == AVAILABILITY_OFFLINE) return;
+	if (availability == AVAILABILITY_OFFLINE) {
+		P1(("i think i am already offline, so i won't quit (%O)\n", ME))
+		return;
+	}
 #endif
 	if (find_call_out(#'quit) != -1) return;
 //	if (place) sendmsg(place, "_notice_place_leave_disconnect",

@@ -236,8 +236,9 @@ jabberisten die freundschaft zum user#fippo entfernte:
 			    ME, t, source, _routes))
 		}
 	} else {
-		// happens when doing /unfr. must be a bug in user.c
-		P0(("%O encountered unnecessary remove of %O from %O\n",
+		// happens when doing /unfr. it's when the implied unfriend
+		// comes back from the other side.
+		P2(("%O encountered unnecessary remove of %O from %O\n",
 		    ME, source, _routes))
 	}
 }

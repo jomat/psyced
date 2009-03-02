@@ -251,13 +251,13 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 	}
 	host = lower_case(u[UHost]);
 	if (query_udp_port() == port && is_localhost(host)) {
+	    // this happens when a psyc client sends to a local
+	    // target that hasn't been incarnated yet...
 	    o = find_psyc_object(u);
 	    // cache the resulting object for the url
 	    if (o) {
-                    // currently find_psyc_object returns 0 for the
-                    // local root, thus register_target messes up next. ouch.
-    P1(("psyc_sendmsg registering target %O for %O found through %O\n",
-                        target, o, u))
+	P2(("psyc_sendmsg registering %O for %O found by parsing uniform\n",
+                        target, o))
                     register_target(target, o);
             }
 #ifndef __PIKE__ // TPD

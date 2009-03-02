@@ -193,14 +193,14 @@ jabberMsg(XMLNode node) {
 		    // super dirty.. this should all be in textdb
 		    packet = sprintf("<iq type='result' id='%s'>"
 				     "<query xmlns='jabber:iq:register'/>"
-	 "<error code='501>Registration by XMPP not permitted.</error>" IQ_OFF,
+	 "<error code='501>Registration by XMPP not permitted.</error></iq>",
 				     id);
 #else
 		    packet = sprintf("<iq type='result' id='%s'>"
 				     "<query xmlns='jabber:iq:register'>" 
 				     "<instructions>You dont even need to register, "
 				     "this is psyced. Manual at http://help.pages.de</instructions>"
-				     "<name/><email/><username/><password/>" IQ_OFF,
+				     "<name/><email/><username/><password/></query></iq>",
 				     id);
 #endif
 		    emit(packet);
@@ -219,20 +219,18 @@ jabberMsg(XMLNode node) {
 		    }
 		    unless (user -> isNewbie()) {
 			// already registered to someone else
-			packet += "<error code='406' type='cancel'>"
+			packet += "</query><error code='406' type='cancel'>"
 				"<conflict xmlns='" NS_XMPP "xmpp-stanzas'/>"
-				"</error>"
-				IQ_OFF;
+				"</error></iq>";
 			emit(packet);
 			QUIT
 		    } else unless ((t = helper["/username"]) &&
 				   t[Cdata] &&
 				   (t = helper["/password"]) &&
 				   t[Cdata]) {
-			packet += "<error code='406' type='modify'>"
+			packet += "</query><error code='406' type='modify'>"
 				"<not-acceptable xmlns='" NS_XMPP "xmpp-stanzas'/>"
-				"</error>"
-				IQ_OFF;
+				"</error></iq>";
 			emit(packet);
 			QUIT
 		    } else {
