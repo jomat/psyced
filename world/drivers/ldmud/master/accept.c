@@ -346,7 +346,12 @@ object compile_object(string file) {
 		return rob;
 	}
 	if (abbrev("psyc:", file)) {
+#  ifdef USE_SPYC
+#  echo Using SPYC by default! Yeeha!
+		rob = clone_object(SPYC_PATH "active");
+#  else
 		rob = clone_object(PSYC_PATH "active");
+#  endif
 		D2(if (rob) PP(("NAMED CLONE: %O => %s\n", rob, file));)
 		return rob;
 	}

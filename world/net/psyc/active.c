@@ -5,7 +5,12 @@
 #include <net.h>
 #include <services.h>
 
+#ifdef SPYC
+inherit SPYC_PATH "circuit";
+#else
 inherit PSYC_PATH "circuit";
+#endif
+
 inherit NET_PATH "circuit";
 
 volatile object super;
@@ -37,7 +42,11 @@ int logon(int failure) {
 		if (port && port != PSYC_SERVICE) peeraddr += ":"+port;
 		// circuit::logon now also implies a full greeting
 		// therefore it needs peeraddr, and the emit is redundant
+# ifdef SPYC
+		SPYC_PATH "circuit"::logon(failure);
+# else
 		PSYC_PATH "circuit"::logon(failure);
+# endif
 #endif
 		return 1;
 	}

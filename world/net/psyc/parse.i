@@ -1127,7 +1127,7 @@ vamixed startParse(string a) {
 		restart();
 		if (isServer()) greet();
 	}
-# ifdef SPYC_PATH
+# if defined(SPYC_PATH) && defined(USE_SPYC)
 	else if (a == "|") {	// new S_GLYPH_PACKET_DELIMITER
 		object o = clone_object(SPYC_PATH "server");
 		unless (o && exec(o, ME) && o->logon(0)) {

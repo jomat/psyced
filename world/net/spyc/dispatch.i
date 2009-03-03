@@ -29,14 +29,16 @@ void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
     if ((t = vars["_context"] || vars["_source"])) {
         array(mixed) u;
         unless (u = parse_uniform(t)) {
-            DISPATCHERROR("logical source is not an uniform\n")
+            DISPATCHERROR("logical source is not a uniform\n")
         }
-#ifdef PSYC_TCP
+#ifdef USE_VERIFICATION
+# ifdef PSYC_TCP
         unless (qAuthenticated(NAMEPREP(u[UHost]))) {
             DISPATCHERROR("non-authenticated host\n")
         }
-#else
+# else
         // TODO?
+# endif
 #endif
     }
     // check that _target is hosted by us

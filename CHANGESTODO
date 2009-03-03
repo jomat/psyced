@@ -4,6 +4,10 @@ This file contains TODO and CHANGES (at EOF) rolled into one.
 Essentially: whenever you fix something, move that line to the end of file.
 - marks bugs & fixes, + marks new features, ? marks issues, * marks big stuff
 ________________________________________________________________________
+== NEXT RELEASE ========================================================
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+? support tls multiplexing on all suitable ports
+________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 - remote IRC place does not send names listing on /join
@@ -60,22 +64,18 @@ ________________________________________________________________________
 - REGISTERED_USERS_ONLY does not behave properly on IRC port
   (see also NO_NEWBIES ... clean up and rename?)
 
-- still UTF8 problems, once a day typically:
-  [Thu Jul 31 22:10:57 2008] C:xmpp:somewhere "*regexp: bad UTF-8 data
-" "<message to='michael@somewhere' type='groupchat' from='*dev@psyced.org/fippo'><body>/me würde auf &apos;96 tippen</body></message>
-
 ? tg reports inconsistent display of availability states in friend contextes
   so far unable to reproduce
 ________________________________________________________________________
-== NEXT RELEASE ========================================================
-¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-+ before doing an announced new release, psyced should accept old psyc
-  syntax but send new psyc syntax by default!
-
-? support tls multiplexing on all suitable ports
-________________________________________________________________________
 == psyced 1.0 ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+SPYC (implementation of http://about.psyc.eu/Specification)
+* to activate spyc support, defined USE_SPYC
+  it will attempt to use new syntax on outgoing links by default
+* to debug verification, define USE_VERIFICATION
+* to spend an extra round trip time negotiating, define USE_FEATURES
+- net/spyc is buggy and incomplete
+
 INVITE ISSUES
 - remote /invite is shown without uniform, just #nick_place
   remote invite thus doesn't work for ircers..
@@ -173,15 +173,9 @@ see also http://about.psyc.eu/subscription
 ________________________________________________________________________
 == TOP DELEGATES for 1.0 ===============================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-- bartman sagt: psyconf erkennt keine absoluten pfade bei _path_PEM_key und _path_PEM_certificate
-
 - world/static/index.html should be generated to contain applet port
 - fix member list in applet
 * see also APPLET, ANNOUNCEMENT, JABBER, FILE TRANSFER
-
-- el: und irc bekommt keinen join fuer den raum
-  welche? bei newsräumen ist das richtig so
-  .. obwohl? überhaupt keine bestätigung!?
 
 + login message that tells you about amount of pending/offered friendships etc.
 
@@ -1030,6 +1024,7 @@ ________________________________________________________________________
 
 + elmex says: ./install.sh -d(efault)/-l(astrun) to skip all the questions?
   just ask? "Would you like to skip the questions and use last run's inputs?"
+? but why? you shouldn't need to run install.sh more than once!
 
 + rpms! debs! ebuilds fertig machen und submitten!
     - psyced.ebuild: saga meint wir sollten conf.d verwenden statt
@@ -2029,11 +2024,6 @@ thoughts from buddy-heggy.txt:
 + /set speakactionpossessive Meinung ist
   Jemandens Meinung ist: ach leck mich doch
 
-== INTEGRATION OF VIDEO/TELEPHONY ======================================
-+ support launch of video chat apps using infos provided by UNLs
-das ding hier wollte ich einfach mal aufschreiben..
-is natürlich politisch inkorrekt: www.telwell.de
-
 == OPTIONAL PERFORMANCE IMPROVEMENTS ===================================
 - replace(args[2], "%", "@"); would probably be faster if done as
   i = index(str, '%'); if (i >= 0) str[i] = '@';
@@ -2099,48 +2089,9 @@ MISCELLANEOUS STUFF:
     was ich mir wünschen würde wäre eine if-ueberpruefung, ob ne var
     gesetzt ist
 
-? befehl zum (re)starten/stoppen des muves (kill -1 ..)..
-  wird von psyconf nach etc/init.d erzeugt
-  könnte aber auch nach bin.. aber dann braucht er einen anderen namen
-
-? nei suggests we should pass encrypted jabber messages on to other protocols.
-  irc clients may be able to decrypt them. i think the problem only exists
-  for PGP while OTR should work.
-  this is currently blocked by the ldmud which has problems handling large tcp
-  packets
-
 ? fippo findet, psyc sollte zumindest das nodeprep von xmpp übernehmen
   am besten auch noch saslprep benutzen, nameprep sowies.
   Bahnhof? http://about.psyc.eu/Stringprep
-
-== LDMUD ISSUES ========================================================
-... normally belong into http://mantis.bearnip.com - but it isn't always
-up and running. and maybe we should keep a list of _our_ issues with it
-ourselves, anyway
-
-- #define MAX_OUTCONN 5 /* TODO: Move this into config.h */
-- minor: these defines in pkg-tls.h should go into ./configure & settings
-    #define TLS_DEFAULT_KEYFILE  "key.pem"
-    #define TLS_DEFAULT_CERTFILE "cert.pem"
-    #define TLS_DEFAULT_TRUSTDIRECTORY "/etc/ssl/certs"
-
-== XML ISSUES ==========================================================
-Ein kleines Parser-Issue:
-» C:xmpp:amessage.de    
-	<stream:stream xmlns:stream='http://etherx.jabber.org/streams' 
-		id='49f73b6a6b16a12d45af52be2b48444757d88b5a' 
-		xmlns='jabber:server' 
-		xmlns:db='jabber:server:dialback' 
-		version='1.0'>
-C:xmpp:amessage.de active for "amessage.de". opening with 
-	([ /* #1 */
-		"stream": "http://etherx.jabber.org/streams",                  
-		"version": "1.0",
-		"id": "49f73b6a6b16a12d45af52be2b48444757d88b5a",
-		"xmlns": "jabber:server",
-  		"db": "jabber:server:dialback"
-	])
-Wie kommt er hier an das "db" im Parameter-Mapping?
 
 == MOBILE APPS / GPRS / PSYCobile ======================================
 Similar Projexx:

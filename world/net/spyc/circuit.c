@@ -25,7 +25,7 @@ volatile string netloc;
 
 // this is completely anti-psyc. it should take mcs as arguments
 // and look up the actual message from textdb.. FIXME
-#define CIRCUITERROR(reason) { debug_message("PSYC CIRCUIT ERROR: " reason);   \
+#define CIRCUITERROR(reason) { debug_message("SPYC CIRCUIT: " reason "\n");   \
                              croak("_error_circuit", "circuit error: "         \
                                     reason);                                   \
                              return 0;                                         \
@@ -60,6 +60,25 @@ varargs mixed croak(string mc, string data, vamapping vars, vamixed source) {
     destruct(ME);
     return 0;
 }
+
+#ifdef USE_VERIFICATION
+// request sender authentication and/or target acknowledgement 
+// from the remote side
+void sender_verification(array(string) sourcehosts, array(string) targethosts)
+{
+    // FIXME: wrong variables here
+    mapping vars = ([ "_list_sources_hosts" : sourcehosts,
+		    "_list_targets_hosts" : targethosts,
+		    "_tag" : RANDHEXSTRING ]);
+    // assumption: we have already resolved all targethosts and 
+    // they point to the remote ip
+    foreach(string ho : targethosts) {
+	sAuthenticated(ho);
+    }
+
+    msg(0, "_request_verification", 0, vars);
+}
+#endif
 
 // gets called during socket logon
 int logon(int failure) {
@@ -134,7 +153,20 @@ int logon(int failure) {
     // FIXME
     unless(isServer()) {
 	emit("|\n"); // initial greeting
+#ifdef USE_FEATURES
+	// we have no features to request or offer
 	msg(0, "_request_features", 0);
+#else
+# ifdef USE_VERIFICATION
+	// start hostname verification
+	// rather: look at Q and look for the hostnames we need
+	sender_verification(({ SERVER_HOST }), ({ peerhost }));
+# else
+	if (function_exists("runQ")) {
+	    runQ();
+	}
+# endif
+#endif
     }
     return 1;
 }
@@ -192,23 +224,6 @@ mapping process_header(mixed varops) {
 #define PSYC_TCP
 #include "dispatch.i"
 
-// request sender authentication and/or target acknowledgement 
-// from the remote side
-void sender_verification(array(string) sourcehosts, array(string) targethosts)
-{
-    // FIXME: wrong variables here
-    mapping vars = ([ "_list_sources_hosts" : sourcehosts,
-		    "_list_targets_hosts" : targethosts,
-		    "_tag" : RANDHEXSTRING ]);
-    // assumption: we have already resolved all targethosts and 
-    // they point to the remote ip
-    foreach(string ho : targethosts) {
-	sAuthenticated(ho);
-    }
-
-    msg(0, "_request_verification", 0, vars);
-}
-
 // receives a msg from the remote side
 // note: this is circuit-messaging
 void circuit_msg(string mc, mapping vars, string data) {
@@ -245,13 +260,13 @@ void circuit_msg(string mc, mapping vars, string data) {
 	    } else {
 		// FIXME!!!!
 		CIRCUITERROR("sorry, no more than one element in _list_sources_hosts currently");
+		P0(("more than one element in _list_sources_hosts: %O\n", vars["_list_sources_hosts"]))
 	    }
 	    // keep tag if present!!!
 	    // resolve all of _list_sources_hosts
 	    // look at _list_targets_hosts and determine localhostiness
 	} else {
 	    CIRCUITERROR("_request_verification is not allowed on TLS circuits.");
-	    // _request_verification is not allowed on tls circuits
 	}
 	break;
     case "_notice_features":
@@ -262,15 +277,19 @@ void circuit_msg(string mc, mapping vars, string data) {
 	    flags -= TCP_PENDING_TIMEOUT;
 	}
 	sTextPath();
+#ifdef USE_FEATURES
 	if (tls_query_connection_state(ME) == 0) {
+# ifdef USE_VERIFICATION
 	    // start hostname verification
 	    // rather: look at Q and look for the hostnames we need
 	    sender_verification(({ SERVER_HOST }), ({ peerhost }));
+# endif
 	} else {
 	    if (function_exists("runQ")) {
 		runQ();
 	    }
 	}
+#endif
 	break;
     case "_notice_verification":	
 	P0(("_notice verification with %O\n", vars))
