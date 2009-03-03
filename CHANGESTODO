@@ -9,11 +9,8 @@ ________________________________________________________________________
 - remote IRC place does not send names listing on /join
 - remote IRC /part shows no reaction at first attempt
     +++ not limited to IRC!! thx marenz
-- /set multiplace should be ignored for rich accesses
 
 - XMPP: first reply to a stranger's remote psyc message did not show up in psi
-
-? would you prefer psyced to store hashed passwords by default ?
 
 - IRC shows "*** k kindly asks for your friendship." for remote
   friendship requests. eh! where's the uniform!?
@@ -38,12 +35,6 @@ ________________________________________________________________________
   <service-unavailable xmlns="urn:ietf:params:xml:ns:xmpp-stanzas"/>
   </error>
   </message>
-
-- minor paranoia thing:
-  - cvs-move archetype.pl out of the sandbox
-  - change the require in psyconf to point to the new path
-! profiles.pl and its Makefile aren't a real threat, we don't expect
-  anyone to run them, they are for developers only.
 
 - spam by unregistered users: limit unregistered users to 1 per minute for now?
   or force them to do web-based registration? or even.. trustee-based?
@@ -3908,4 +3899,7 @@ pkggen
 +	ported from cvs to git
 sockets
 +	show encryption protocol and cipher in /tcp
+psyconf
++	generate bin/psyced with -u, -d and -m flags using git
++	merged archetype.pl into here, which improves sandbox security
 

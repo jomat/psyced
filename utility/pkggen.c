@@ -131,7 +131,7 @@ int main(int argc, char **argv) {
     }
 
     puts(">> Doing a git garbage collection");
-    if (system("git gc")) {
+    if (system("git gc --aggressive")) {
 	puts(">> Error during git gc. Exiting.");
 	return 1;
     }
