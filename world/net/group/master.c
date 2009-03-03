@@ -28,7 +28,7 @@
 #include <net.h>
 #include <person.h>
 #include <status.h>
-#include <url.h>
+#include <uniform.h>
 
 #ifdef CONTEXT_STATE // {{{
 # define HEADER_ONLY

@@ -4,7 +4,7 @@
 #define NO_INHERIT
 #include "jabber.h"
 #undef NO_INHERIT
-#include <url.h>
+#include <uniform.h>
 
 #ifdef ERQ_WITHOUT_SRV
 # define hostname host	// hostname contains the name before SRV resolution

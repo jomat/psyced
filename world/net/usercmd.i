@@ -40,7 +40,7 @@
 #include <closures.h>
 #include <driver.h>
 #include <misc.h>
-#include <url.h>
+#include <uniform.h>
 #include <services.h>
 #include <status.h>
 
@@ -2422,8 +2422,7 @@ friend(rm, entity, ni, trustee) {
 	// nick, not the one the user typed in.
 	t = ([ "_nick": MYNICK ]);
 	if (trustee) t["_trustee"] = trustee;
-	sendmsg(entity, "_request_friendship",
-	  "[_nick] kindly asks for your friendship.", t);
+	sendmsg(entity, "_request_friendship", 0, t);
 	return 1;
 }
 # endif // _flag_disable_module_friendship

@@ -33,7 +33,7 @@ inherit NET_PATH "library/tls";
 # endif
 inherit NET_PATH "library/text";
 inherit NET_PATH "library/time";
-inherit NET_PATH "library/url";
+inherit NET_PATH "library/uniform";
 #endif
 
 #endif //PIKE

@@ -19,9 +19,10 @@
 #define	UHostPort	12	// just host:port (and transport)
 #define	URoot		13	// root UNI of peer/server
 #define	USlashes	14	// the // if the protocol has them
-//efine	UCircuit	15	// scheme:host:port
+#define	UNick		15	// whatever works as a nickname
+//efine	UCircuit	16	// scheme:host:port
 				// (not provided by parse_uniform)
-#define	USize		15
+#define	USize		16
 
 #define UName(uniform)	(uniform[UUser] || uniform[UResource][1 ..])
 #endif

@@ -322,6 +322,8 @@ vamixed parse(string a) {
 			// intermediate hack in lack of real type support
 			// which needs to be done in net/spyc
 			if (abbrev("_time", vname)) vvalue = to_int(vvalue);
+// unused as yet:	else if (abbrev("_date", vname))
+//			    vvalue = PSYC_EPOCH + to_int(vvalue);
 #endif
 			cvars[lastvar = vname] = vvalue;
 #ifdef SYSTEM_SECRET

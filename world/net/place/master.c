@@ -13,7 +13,7 @@
 #include <status.h>
 #include <driver.h>
 #ifdef WE_PROBABLY_DONT_NEED_THIS
-# include <url.h>
+# include <uniform.h>
 #endif
 
 virtual inherit NET_PATH "place/storic";

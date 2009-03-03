@@ -9,7 +9,13 @@
 // linked to the driver. see also CHANGESTODO for thoughts on how to do a
 // generic template replacement C function in a way that it does psyctext()
 // effectively, but can also be used for other syntaxes.
-//
+
+// local debug messages - turn them on by using psyclpc -DDpsyctext=<level>
+#ifdef Dpsyctext
+# undef DEBUG
+# define DEBUG Dpsyctext
+#endif
+
 #include <net.h>
 #include <proto.h>
 
@@ -17,7 +23,11 @@ varargs string psyctext(string s, mapping m, vastring data,
 			vamixed source, vastring nick) {
 	string r, p, q, v;
 
-	P3(("psyctext(%O)\n", s))
+#if DEBUG > 2
+	P3(("psyctext(%O, .., %O, %O, %O) %O\n", s, data, source, nick, m))
+#else
+	P2(("psyctext(%O, .., %O, %O, %O)\n", s, data, source, nick))
+#endif
 	unless(s) return "";
 	if (s == "") {
 		if (data) s = data;
@@ -31,12 +41,70 @@ varargs string psyctext(string s, mapping m, vastring data,
 	unless (mappingp(m)) return s;
 #endif
 	r="";
-	while (sscanf(s, "%s[%s]%s", p, v, s) && v) {
-		if (v == "_nick") r += p + (nick || m["_nick"]);
-		else if (v == "_data") r += p + (data || "");
-		else unless (member(m, v)) {
-		    if (v == "_source") r += p + UNIFORM(source);
-		    else {
+	while (sscanf(s, "%s[%s]%s", p, v, s) && v) switch(v) {
+	case "_data":
+		r += p + (data || "");
+		break;
+	case "_nick":
+#ifdef USE_THE_NICK
+		r += p + (nick || m["_nick"] || "?");
+#else
+		// _nick can mean _source_relay instead of physical source
+		// and in some dirty cases we do not even provide _source_relay
+		q = m["_source_relay"] || m["_source"];
+		unless (q) {
+			// so we are forced to use the _nick from the message
+			q = m["_nick"] || nick;
+			if (q) {
+				r += p + q;
+				break;
+			}
+			// no _nick? okay, then it has to be this one
+			q = UNIFORM(source) || "?";
+		}
+		if (previous_object()) q = previous_object()->uni2nick(q) || q;
+		r += p + q;
+#endif
+		break;
+	case "_source":
+		// should this support _source_relay? var inheritance!
+#ifdef USE_THE_NICK
+		r += p + (nick || m["_nick"] || m["_source"] || UNIFORM(source) || "?");
+#else
+		q = m["_source"] || UNIFORM(source) || "?";
+		if (previous_object()) q = previous_object()->uni2nick(q) || q;
+		r += p + q;
+#endif
+		break;
+	case "_source_relay":
+#ifdef USE_THE_NICK
+		r += p + (nick || m["_nick"] || m["_source_relay"] || "?");
+#else
+		q = m["_source_relay"] || "?";
+		if (previous_object()) q = previous_object()->uni2nick(q) || q;
+		r += p + q;
+#endif
+		break;
+	case "_target":
+#ifdef USE_THE_NICK
+		r += p + (m["_nick_target"] || m["_target"] || "?");
+#else
+		q = m["_target"] || "?";
+		if (previous_object()) q = previous_object()->uni2nick(q) || q;
+		r += p + q;
+#endif
+		break;
+	case "_context":
+#ifdef USE_THE_NICK
+		r += p + (m["_nick_place"] || m["_context"] || "?");
+#else
+		q = m["_context"] || "?";
+		if (previous_object()) q = previous_object()->uni2nick(q) || q;
+		r += p + q;
+#endif
+		break;
+	default:
+		unless (member(m, v)) {
 #ifdef _flag_debug_unresolved_psyctext
 			raise_error(v +" unresolved in psyctext format\n");
 #else
@@ -44,7 +112,6 @@ varargs string psyctext(string s, mapping m, vastring data,
 			    data, previous_object()))
 #endif
 			r += p + "["+v+"]";	// pretend we havent seen it
-		    }
 		}
 		else if (stringp(m[v])) r += p + m[v];
 		else if (pointerp(m[v])) {	// used by showMembers
@@ -54,7 +121,7 @@ varargs string psyctext(string s, mapping m, vastring data,
 		else if (intp(m[v])) {		// used by /lu and /edit
 			if (v == "_time_idle")
 			    r += p + timedelta(m[v]);
-			else if (abbrev("_time", v))
+			else if (abbrev("_time", v))	// should be _date
 			    r += p + time_or_date(m[v]);
 			else
 			    r += p + to_string(m[v]);
@@ -76,6 +143,7 @@ varargs string psyctext(string s, mapping m, vastring data,
 		}
 	}
 	if (s != "") r += s;
+	P4(("\t-> %s\n", r))
 	return r;
 }
 
@@ -89,7 +157,6 @@ varargs string psyctext(string s, mapping m, vastring data,
 // evil!!  -lynX
 //
 varargs void w(string mc, string data, mixed vars) {
-	// oh my god seit wann gibt's denn das!?
 	raise_error(sprintf("%O ended up in library/text:w(%s) for %O\n",
 	    previous_object(), mc, this_interactive()));
 }

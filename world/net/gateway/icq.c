@@ -19,7 +19,7 @@
 // gateway in python (see aim.c)
 //
 #include <net.h>
-#include <url.h>
+#include <uniform.h>
 //#include <text.h>
 #include <xml.h>
 

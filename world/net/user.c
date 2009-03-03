@@ -11,7 +11,7 @@
 #include <net.h>
 #include <person.h>
 #include <psyc.h>
-#include <url.h>
+#include <uniform.h>
 
 inherit NET_PATH "person";
 inherit NET_PATH "common";
@@ -28,6 +28,48 @@ volatile mixed query;
 volatile mapping tags;
 volatile int showEcho;
 volatile mixed beQuiet;
+
+// my nickspace. used by psyctext(). could be passed as closure, but then
+// it wouldn't be available for *any* psyctext call in user objects.
+uni2nick(n) {
+	PT(("uni2nick(%O) in %O\n", n, ME))
+#ifdef USE_AUTOALIAS
+	string ln = lower_case(n);
+	string al = raliases[ln];
+	if (al) return al;
+	if (member(raliases, ln)) return n; // marked dead
+	mixed u = parse_uniform(n);
+	al = lower_case(u[UNick]);
+	if (aliases[al]) {
+		raliases[ln] = 0; // mark dead
+		PT(("uni2nick: already belongs to %O\n", aliases[al]))
+		w("_failure_unavailable_alias",
+"No alias for [_uniform_new]: [_nick_old] already belongs to [_uniform_old].",
+		    ([ "_uniform_new": n,
+		       "_uniform_old": aliases[al],
+		       "_nick_old": al ]) );
+		return n;
+	}
+	aliases[al] = n;
+	raliases[ln] = al = u[UNick];
+	PT(("uni2nick: autoaliased %O to %O\n", n, al))
+	w("_notice_add_alias_automatic",
+	    "[_uniform_entity] is known as [_nick_entity].",
+	    ([ "_uniform_entity": n,
+	       "_nick_entity": al ]) );
+	return al;
+#else
+    // this enables local nickspace, but it fails on local uniforms,
+    // it fails when local nick collides with alias, so either you make
+    // it super complicated here, or you keep it super stupid.
+	//if (objectp(n)) return n->qName();
+# ifdef ALIASES
+	return raliases[lower_case(n)] || n;
+# else
+	return n;
+# endif
+#endif
+}
 
 // jabber needs no private echo but plenty of public echo..
 // net/jabber takes care of that, we just give it echo here.
@@ -371,12 +413,10 @@ msg(source, mc, data, mapping vars, showingLog) {
 	  ) {
 		if (data && index(data, '\n') != -1)
 			data = replace(data, "\n", " ");
-		// this used to trigger a systemwide _request_authentication
-		//t = lookup_identification(source, vars["_source_identification"]);
-		// now uni::msg does these kind of things
+#ifdef USE_THE_NICK
 		if (t != source) {
 		    if (objectp(source)) {
-#ifdef ALIASES
+# ifdef ALIASES
 			string t2;
 
 			if (t2 = raliases[nick = source->qNameLower()]) {
@@ -384,22 +424,22 @@ msg(source, mc, data, mapping vars, showingLog) {
 			} else if (aliases[lower_case(nick)]) {
 			    nick = t;
 			}
-#else
+# else
 			nick = source->qName();
-#endif
+# endif
 		    } else {
-#ifdef ALIASES
+# ifdef ALIASES
 			nick = raliases[source] || source;
-#else
+# else
 			nick = source;
-#endif
+# endif
 		    }
 
-#ifndef TRUST_PSYC_HACK
-# ifdef ALIASES
+# ifndef TRUST_PSYC_HACK
+#  ifdef ALIASES
 		} else if (raliases[source]) {
 			nick = raliases[source];
-# endif
+#  endif
 		} else {
 			// short term solution (nick manager to follow)
 			//if (nick) nick = "("+ source + ") "+ nick;
@@ -428,7 +468,7 @@ msg(source, mc, data, mapping vars, showingLog) {
 					"_nick":vars["_nick_verbatim"] ]));
 			}
 			else nick = stringp(source) ? source : to_string(source);
-# if 0 //DEBUG > 1
+#  if 0 //DEBUG > 1
 			// checking for validity of messages should
 			// happen at psyc-parsing level.. maybe? YEEEES!!
 			// and.. vars["_context"] is zero when showing log!
@@ -440,17 +480,19 @@ msg(source, mc, data, mapping vars, showingLog) {
 			}
 			// this just wont work.. it even breaks
 			// remote _message_echo_private's
+#  endif
 # endif
-#endif
 		}
 		nick2 = nick;
+#endif // USE_THE_NICK
 		// belongs into person.c?
 		if (mc == "_message") mc = vars["_context"] ?
 					"_message_public" : "_message_private";
 		P3(("%O got msg(%O,%O,%O,%O)\n", ME,source,mc,data,vars))
 	}
+#ifdef USE_THE_NICK
 	else if (nick && nick != MYNICK) {
-#ifdef ALIASES
+# ifdef ALIASES
 	    string tn;
 	    // ein kleines bisschen hilflosigkeit (&&! showingLog)
 	    //
@@ -464,10 +506,11 @@ msg(source, mc, data, mapping vars, showingLog) {
 	    } else if (aliases[tn] &&! showingLog) {
 		nick2 = nick = UNIFORM(source);
 	    } else
-#endif
+# endif
 	    nick2 = vars["_nick_stylish"] || vars["_nick_local"] || nick;
 	} else nick2 = nick = MYNICK;
 	P3(("q/n/n2: %O,%O,%O\n", MYNICK,nick,nick2))
+#endif // USE_THE_NICK
 
 	t = vars && vars["_context"] || source;
 #ifdef SANDBOX

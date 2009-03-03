@@ -4,7 +4,7 @@
  * this is currently broken and I dont have the time to fix it
  */
 #include <net.h>
-#include <url.h>
+#include <uniform.h>
 #include <person.h>
 #include <dns.h>
 
@@ -30,7 +30,7 @@
  *
  */
 #include <net.h>
-#include <url.h>
+#include <uniform.h>
 #include <person.h>
 
 #include "sip.h"

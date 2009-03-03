@@ -4,7 +4,7 @@
 #include <net.h>
 #include <text.h>
 #include <person.h>
-#include <url.h>
+#include <uniform.h>
 
 #define NO_INHERIT
 #include <user.h>

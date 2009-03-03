@@ -2,7 +2,7 @@ Stdio.File s;
 function inputto;
 
 #include <net.h>
-#include <url.h>
+#include <uniform.h>
 
 import net.library.uniforms;
 import net.library;

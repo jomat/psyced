@@ -20,7 +20,7 @@
 
 #include <net.h>
 #include <storage.h>
-#include <url.h>
+#include <uniform.h>
 
 #ifdef ENTITY_STATE //{{{
 # define HEADER_ONLY

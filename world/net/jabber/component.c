@@ -4,7 +4,7 @@
 #define NO_INHERIT
 #include "jabber.h"
 #undef NO_INHERIT
-#include <url.h>
+#include <uniform.h>
 
 inherit NET_PATH "xml/common";
 

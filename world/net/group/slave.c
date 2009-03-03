@@ -18,7 +18,7 @@
 
 #ifdef PERSISTENT_SLAVES
 # define PARANOID_PERSISTENT_SLAVES
-# include <url.h>
+# include <uniform.h>
 inherit NET_PATH "storage";
 
 private volatile string _file;

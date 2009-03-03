@@ -5,7 +5,7 @@
 
 #include "common.h"
 #include <net.h>
-#include <url.h>
+#include <uniform.h>
 #include <psyc.h>
 
 #ifdef __MCCP__

@@ -7,7 +7,7 @@
 // einen generischen relay für allerlei zwecke.
 
 #include <net.h>
-#include <url.h>
+#include <uniform.h>
 //#include <text.h>
 
 //inherit NET_PATH "gateway/generic";

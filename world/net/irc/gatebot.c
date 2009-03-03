@@ -37,7 +37,7 @@
 #include <status.h>
 #include <services.h>
 #include <text.h>
-#include <url.h>
+#include <uniform.h>
 #include "error.h"      // gets numeric codes
 #include "reply.h"      // gets numeric codes
 
@@ -219,7 +219,7 @@ advertise(source) {
 
 //static send(source, text) {
 render(mc, data, vars, source) {
-//# include <url.h>
+//# include <uniform.h>
 //	mixed *u = parse_uniform(psyc_name(source));
 //	unless (mappingp(u) && u[UHost]) {
 //		P1(("failed\n"))

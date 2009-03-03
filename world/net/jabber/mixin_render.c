@@ -1,6 +1,6 @@
 #include "jabber.h"
 #include <net.h>
-#include <url.h>
+#include <uniform.h>
 
 // just renderMembers
 #include NET_PATH "members.i"

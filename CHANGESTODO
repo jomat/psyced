@@ -1,4 +1,4 @@
-$Id: CHANGESTODO,v 1.1650 2008/12/30 12:35:00 lynx Exp $ vim:nosmarttab 
+vim:nosmarttab:syntax=diff
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 This file contains TODO and CHANGES (at EOF) rolled into one.
 Essentially: whenever you fix something, move that line to the end of file.
@@ -7,6 +7,8 @@ ________________________________________________________________________
 == NEXT RELEASE ========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ? support tls multiplexing on all suitable ports
+
+- change UResource and UUser usage to the new UNick
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -98,7 +100,7 @@ INVITE ISSUES
 - /invite should do remote echo like _message_private, not local
 
 REMOVE NICKNAMES FROM PROTOCOL
-+ remote uniforms could be passed around in the psyced as parse_uniform
+? remote uniforms could be passed around in the psyced as parse_uniform
   arrays rather than as strings. this opens up the possibility to have
   a stringprepped+lowercased version of the uniform for comparisons.
   also this could be used as a key in a general hash of known remote objects
@@ -109,9 +111,28 @@ REMOVE NICKNAMES FROM PROTOCOL
   in fact - we already don't need to do that for strings either - thus
   if we want to introduce arrays instead of strings we must ensure we can
   compare them without an extra objectp() distinction.
-+ this also allows us to REMOVE ALL _nick VARS and extract nick from uniforms
-+ support addressing of uniform portions by psyctext entity syntax
-  (how does psyctext state support fit into that picture?)
+  hmm.. not sure about this idea, but we can move forward anyway:
++ REMOVE ALL _nick VARS and extract nick from uniforms
+  or rather, let raliases resolve all uniforms to nicknames (uni2nick)
+? support addressing of uniform portions by psyctext entity syntax
+? shouldn't it be display-side job to decide how a [_source] is to be shown -
+  nick/alias when a friend (or local?), full uniform when unknown...
+  so all [_nick] should simply be replaced by [_source] etc.
+! implementing the latter approach with the uni2nick callback strategy!
+AUTOALIASES & ALIASES FOR PLACES
++ /set aliases auto
+    use temporary aliases for people in places,
+    keep them in [r]aliases mappings only, not in v("aliases")
+    copy them over only when the user decides to have private conversation
+  see also http://about.psyc.eu/nickspace
+? can we even afford to have a setting to *disable* this behaviour?
++ aliases for places
+  we have had requests for a way to shorten or at least maintain (bookmark)
+  addresses of remote rooms. i wonder if we should go ahead and code it in
+  the next obvious way (polluting the output of the /alias command even more)
+  or we should look at presence/subscribe integration first (where the
+  distinction of users and rooms becomes less relevant).
+! whenever a _context is output, its nick will be auto-added to raliases
 
 PRESENCE STATUS
 + all _status_person need to be upgraded to _status_presence with
@@ -518,6 +539,7 @@ PROGRAMMABLE USER IDENTIFICATIONS & MULTIPLE CLIENT INTERFACES
   (and saga has been asking for years) .. read also 'person.gen' below
 - this would probably also solve the issue with the ~nick object name plan
 + and it allows for multiple jabber resources, of course
+  (but it means we need to actively support UNRs for UNLs)
 ? one day we could have a person.gen to create all sorts of user
   objects from, but it sure is confusing that each of them still needs to
   be able to call upon the various protocols..  this may either need a
@@ -621,19 +643,6 @@ TYPE CHECKING AT PARSING TIME
   content, like chars in actions etc.. or maybe switch over the varnames
   and fix the obvious candidates.. if a method is non-standard (we will
   be aware of this by 1.0) we should check each var mentioned in the body.
-
-AUTOALIASES & ALIASES FOR PLACES
-+ /set aliases auto
-    use temporary aliases for people in places,
-    keep them in [r]aliases mappings only, not in v("aliases")
-    copy them over only when the user decides to have private conversation
-  see also http://about.psyc.eu/nickspace
-+ aliases for places
-  we have had requests for a way to shorten or at least maintain (bookmark)
-  addresses of remote rooms. i wonder if we should go ahead and code it in
-  the next obvious way (polluting the output of the /alias command even more)
-  or we should look at presence/subscribe integration first (where the
-  distinction of users and rooms becomes less relevant). see below:
 
 PSYC protokoll verbessern, dass implementationen einfach sein können:
 + die lookup_identification queue in place/basic ist vermutlich nicht
@@ -3853,4 +3862,17 @@ sockets
 psyconf
 +	generate bin/psyced with -u, -d and -m flags using git
 +	merged archetype.pl into here, which improves sandbox security
+uniform
++	added pragmatic UNick field
+user
++	uni2nick(uniform) returns a user's idea of a uniforms nickname.
+	with USE_AUTOALIAS it even allocates nicknames automatically.
+	and it actively disregards the old notion of local server nickspace.
+-	#ifdef USE_THE_NICK disables portions of code dedicated to handling
+	the local server nickspace, for a future that doesn't need that.
+psyctext
++	let previous_object()->uni2nick(uniform) choose the way to display
+	entity nicknames (experimental). allows to remove nicks from protocol.
+spyc/* psyc/*
++	should a _date type run on unixtime minus PSYC_EPOCH?
 

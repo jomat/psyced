@@ -6,7 +6,7 @@
 #include <net.h>
 #include <text.h>
 //virtual inherit NET_PATH "output";
-#include <url.h>
+#include <uniform.h>
 
 #ifdef __psyclpc__
 # if __VERSION_MICRO__ > 4

@@ -8,7 +8,7 @@
 //
 #include <ht/http.h>
 #include <net.h>
-#include <url.h>
+#include <uniform.h>
 #include <xml.h>
 
 #include <lpctypes.h>

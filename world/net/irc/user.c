@@ -14,7 +14,7 @@ inherit IRC_PATH "decode";
 #include "reply.h"
 #include "person.h"
 #include "psyc.h"
-#include "url.h"
+#include "uniform.h"
 #include "hack.i"
 
 

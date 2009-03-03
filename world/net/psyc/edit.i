@@ -73,7 +73,12 @@ static int build_header(string key, mixed val, mapping vars) {
 #endif
             }
 	} else if (intp(val)) {
+#ifdef SPYC
+	    klopp = abbrev("_date", key) ? to_string(val - PSYC_EPOCH)
+					 : to_string(val);
+#else
 	    klopp = to_string(val);
+#endif
 	} else {
             mixed k,d, sep;
 

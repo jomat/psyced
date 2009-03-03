@@ -6,7 +6,7 @@
 //
 #include <ht/http.h>
 #include <net.h>
-#include <url.h>
+#include <uniform.h>
 #include <services.h>
 
 virtual inherit NET_PATH "output"; // virtual: in case we get inherited..

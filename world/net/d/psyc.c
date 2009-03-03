@@ -5,7 +5,7 @@
 #ifdef FORK // {{{
 
 #include <net.h>
-#include <url.h>
+#include <uniform.h>
 #include <services.h>
 
 inherit NET_PATH "state";

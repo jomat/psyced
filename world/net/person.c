@@ -41,7 +41,7 @@
 #include <person.h>
 #include <psyc.h>
 #include <storage.h>
-#include <url.h>
+#include <uniform.h>
 
 #if __EFUN_DEFINED__(tls_query_connection_info)
 # include <sys/tls.h>

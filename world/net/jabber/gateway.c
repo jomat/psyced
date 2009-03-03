@@ -7,7 +7,7 @@
 #define NO_INHERIT
 #include "jabber.h"	// inherits net/jabber/common
 #undef NO_INHERIT
-#include "url.h"
+#include "uniform.h"
 #include "services.h"
 
 #define NO_INHERIT

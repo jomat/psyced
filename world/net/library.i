@@ -4,7 +4,7 @@
 #include <net.h>
 #include <services.h>
 #include <person.h>
-#include <url.h>
+#include <uniform.h>
 
 #ifdef _uniform_node
 # define myUNL  _uniform_node

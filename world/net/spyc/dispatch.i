@@ -81,6 +81,9 @@ void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
 		vop[2] = 0;
 	    }
 	    break;
+	case "_date":
+	    vop[2] = to_int(vop[2]) + PSYC_EPOCH;
+	    break;
 	case "_time":
 	case "_amount":
 	    vop[2] = to_int(vop[2]);

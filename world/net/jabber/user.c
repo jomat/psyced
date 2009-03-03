@@ -2,7 +2,7 @@
 #include "jabber.h"
 #include "user.h"
 #include "person.h"
-#include <url.h>
+#include <uniform.h>
 #include <peers.h>
 
 // important to #include user.h first
@@ -33,7 +33,7 @@ qHasCurrentPlace() { return 0; }
 
 void create() {
     jabber2avail = shared_memory("jabber2avail");
-    return ::create();
+    ::create();
 }
 
 /* it should be posible to do some things in a way that can be shared between

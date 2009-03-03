@@ -1,4 +1,4 @@
-// $Id: url.c,v 1.43 2008/03/29 20:36:43 lynx Exp $ // vim:syntax=lpc
+// $Id: uniform.c,v 1.43 2008/03/29 20:36:43 lynx Exp $ // vim:syntax=lpc
 //
 // URLs.. URIs.. UNLs.. UNIs.. maybe even URNs..
 // the fact they wear a uniform is the only thing these items have in common
@@ -7,10 +7,10 @@
 // common format.. the uniform :)
 //
 // TODO: first move everything called _uniform or url somewhere into here
-// then rename everything into uniform, also url.c and url.h..
+// then rename everything into uniform, also uniform.c and uniform.h..
 
 #include <net.h>
-#include <url.h>
+#include <uniform.h>
 
 string legal_url(string url, string scheme) {
 	if (scheme &&! abbrev(scheme+":", url)) return 0;
@@ -21,7 +21,7 @@ string legal_url(string url, string scheme) {
 }
 
 /** pass it a URL string and it will find out if that string
- ** is a uniform, and if so return an array as defined in url.h
+ ** is a uniform, and if so return an array as defined in uniform.h
  ** 
  ** <fippo> what about using 
  ** 	http://www.gbiv.com/protocols/uri/rfc/rfc3986.html#regexp ?
@@ -90,6 +90,9 @@ varargs array(mixed) parse_uniform(string url, vaint tolerant) {
 	}
 	u[UHost] = t;
 	P4(("parse_uniform %s = %O (tolerant: %O)\n", url, u, tolerant))
+	u[UNick] = u[UUser]
+		    || (strlen(u[UResource]) && u[UResource][1 ..])
+		    || u[UBody];
 	return u;
 }
 

@@ -1,6 +1,6 @@
 #include "jabber.h"
 #include <net.h> // vim:set syntax=lpc
-#include <url.h>
+#include <uniform.h>
 #include "presence.h"
 #include <time.h>
 

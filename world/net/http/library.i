@@ -17,7 +17,7 @@
 # define HTTP_PORT 44444	// should return null instead?
 #endif
 
-// not worthy of summoning url.h for this one..
+// not worthy of summoning uniform.h for this one..
 string htuniform(object server, string prot, mapping headers) {
 	    // it is really totally crazy to trust what the browser says
 	string host = headers["host"];

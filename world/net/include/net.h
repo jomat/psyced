@@ -11,13 +11,11 @@
 
 #define RANDHEXSTRING sprintf("%x", random(__INT_MAX__))
 
-// maybe we should expect psyc usage peak around 2030?
-// or will psyc reform its protocol by then anyway?
-// ok.. let's go for 2009 so we can renovate time formats
-// around 2020.. by the way, 2009-02-14 is a saturday, so
-// we'll be having a hot friday night party for psyc epoch!
-//
-#define	PSYC_EPOCH	1234567890	// 2009-02-14 00:31:30 CET
+// maybe we should expect psyc usage peak around 2030
+//efine	PSYC_EPOCH	1234567890	// 2009-02-14 00:31:30 CET
+#define	PSYC_EPOCH	1440444041	// 2015-08-24 21:20:41 CET (Monday)
+			  // 2000000000 is 2033-05-18 05:33:20 CET (Wednesday)
+			  // 2002002002 is 2033-06-10 09:40:02 CET (Friday)
 
 // TODO: new driver will be able to combine \n, too
 // 	new expat parser will also be able to combine >
@@ -230,6 +228,7 @@
 #endif
 
 #ifdef EXPERIMENTAL
+# define USE_AUTOALIAS
 	// fippo's brilliant single-user channel emulation for jabber MUCs
 	// unfortunately it provides no advantages over the old method, yet.
 	// would be cool to cache a member list at least!  TODO
@@ -243,6 +242,7 @@
 //# ifndef __PIKE__
 //#  define USE_LIVING
 //# endif
+# define USE_THE_NICK
 #endif
 
 #ifdef __NO_SRV__	    // since psyclpc 4.0.4
