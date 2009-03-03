@@ -426,26 +426,41 @@ then
 fi
 
 X
+	# it's not a security issue really, but shouldn't control files
+	# like status-0-beta-OK be outside the sandbox?		-lynX
+
 	print O <<X;
 umask $umask
 
 # with this chdir, old ldmud should be able to find its keys anyhow
 cd $base
 
-# available flags: -u and -d
+# available flags: -u, -d and -m
 # TODO: i'd like for -b to make a backup archive of the psyced tree before
 # updating, and -r to revert to the last backupped version. whatchathink?
 
 # the following if-block handles the -u option for updating your
-# installation by CVS. it ensures your installation is still basically
-# compatible with the one in the CVS or complains.
+# installation by git. it ensures your installation is still basically
+# compatible with the one in the git or complains.
 #
 if test "\$1" = "-u"
 then
-    # it's not a security issue really,
-    # but shouldn't these CVS control
-    # files by outside the sandbox?	-lynX
-
+    if test -e $sandbox/status-0-beta-OK
+    then
+#	echo "automated update functionality no longer available. try"
+#	echo "'git fetch origin', optionally 'git diff master..origin/master'"
+#	echo "and finally 'git merge -s resolve origin' instead"
+#	exit 1
+#	echo "${hi}ATTENTION: ${lo}Please give an empty password to log in (-> press enter)"
+##	(cd $sandbox/.. && cvs login && cvs -q update -dP && cvs logout)
+	echo ""
+	echo "Fetching update from public git repository..."
+	echo ""
+	(cd $sandbox/.. && git fetch origin)
+	echo ""
+	echo "You can now read the changes using ${hi}\$0 -d${lo}"
+	echo "or activate the changes using ${hi}\$0 -m${lo}"
+    fi
     if ! test -e $sandbox/status-0-beta-OK
     then
 	echo ""
@@ -454,61 +469,27 @@ then
 	echo "get new updates because of incompatibility."
 	echo ""
 	echo "More information following.."
-	echo ""
+	echo "" 
 	cat $sandbox/status-0-DEPRECATED
 	echo ""
 	echo "The file you just saw is: ${hi}${lib}/status-0-DEPRECATED${lo}."
 	exit 1
     else
-	echo "automated update functionality no longer available. try"
-	echo "'git fetch origin', optionally 'git diff master..origin/master'"
-	echo "and finally 'git merge -s resolve origin' instead"
-	exit 1
-#	echo ""
-#	echo "${hi}ATTENTION: ${lo}Please give an empty password to log in (-> press enter)"
-#	(cd $sandbox/.. && cvs login && cvs -q update -dP && cvs logout)
-#   fi
-#   if ! test -e $sandbox/status-0-beta-OK
-#   then
-#       echo ""
-#	echo "${hi}ATTENTION:${lo}"
-#       echo "The version of psyced you are using is outdated. You cannot"
-#       echo "get new updates because of incompatibility."
-#       echo ""
-#       echo "More information following.."
-#       echo "" 
-#       cat $sandbox/status-0-DEPRECATED
-#	echo ""
-#	echo "The file you just saw is: ${hi}${lib}/status-0-DEPRECATED${lo}."
-#		exit 1
-#   else
-#	echo "It may be a good idea to run ${hi}$0${lo} again before you continue."
-#   fi
+ 	echo "It may be a good idea to run ${hi}\$0${lo} again before you continue."
+    fi
     exit
 fi
 
-# the -d option let's you inspect all the changes done in the CVS
-# before you go for an update using -u
 if test "\$1" = "-d"
 then
-    if ! test -e $sandbox/status-0-beta-OK
-    then
-	echo ""
-	echo "${hi}ATTENTION:${lo}"
-	echo "The version of psyced you are using is outdated. You cannot"
-	echo "get new updates because of incompatibility."
-	echo ""
-	echo "More information following.."
-	echo ""
-	cat $sandbox/status-0-DEPRECATED
-	echo ""
-	echo "The file you just saw is: ${hi}${lib}/status-0-DEPRECATED${lo}."
-	exit 1
-    else
-#	(cd $base && cvs -q diff -ur HEAD|\$PAGER)
-	echo "diff functionality no longer available. see psyced -u."
-	exit 1
-    fi
+##  (cd $base && cvs -q diff -ur HEAD|\$PAGER)
+    (cd $base && git diff master..origin/master | \$PAGER)
+    exit
+fi
+
+if test "\$1" = "-m"
+then
+    (cd $base && git merge -s resolve origin)
     exit
 fi
 

@@ -7,6 +7,8 @@ CVS
 .#*
 world/net/place/_*.c
 world/net/include/place.i
+README.txt
+INSTALL.txt
 *~
 *.swf
 *.swp
