@@ -1,5 +1,6 @@
 # how do i check if $ENV{PAGER} is already set?
-PAGER=more
+# like this, says ketmar. probably gmake only.
+PAGER ?= more
 
 ##############################################################################
 ## INSTALLATION

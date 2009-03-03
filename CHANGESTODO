@@ -6,14 +6,6 @@ Essentially: whenever you fix something, move that line to the end of file.
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-+ should ignored people receive an echo for the sake of not being
-  distinguishable from not ignored people? yes...
-
-? marenz says, remote topic isn't working
-  http://about.psyc.eu/?title=Talk:Bug_Report&curid=1506&diff=10174&oldid=10173
-
-+ show chiffre in /tcp
-
 - remote IRC place does not send names listing on /join
 - remote IRC /part shows no reaction at first attempt
     +++ not limited to IRC!! thx marenz
@@ -25,6 +17,8 @@ ________________________________________________________________________
 
 - IRC shows "*** k kindly asks for your friendship." for remote
   friendship requests. eh! where's the uniform!?
+
+- remote /topic shows wrong nick (abolish _nick and this problem disappears)
 
 - /m freenode:symlynx hey
     Sorry, _message_private is not supported by the IRC gateway.
@@ -634,6 +628,9 @@ or switches in our muve code, because they will never be needed!
     Circuit got _request_execute to psyc://psyced.org/~White Spaced Username from psyc://10.20.30.40:-54925/: QUIT
 
 == PSYC 1.0 beta =======================================================
+- should ignored people receive an echo for the sake of not being
+  distinguishable from not ignored people? yes... but is a nasty change to do
+
 TYPE CHECKING AT PARSING TIME
 - unless trustworthy > 4 all incoming vars should be checked for legal
   content, like chars in actions etc.. or maybe switch over the varnames
@@ -3909,3 +3906,6 @@ jabber/server
 -	fixed various iq errors as elmex noted: <iq><query/><error/></iq>
 pkggen
 +	ported from cvs to git
+sockets
++	show encryption protocol and cipher in /tcp
+

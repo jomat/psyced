@@ -121,7 +121,7 @@ int main(int argc, char **argv) {
 	return 1;
     }
 
-    puts(">> Now is your chance to inspect a 'git diff master..origin/master'. Suspend now.");
+    puts(">> Suspend to inspect a '(cd data;git diff master..origin/master)'.");
     sleep(4);
 
     puts(">> Doing a git merge");

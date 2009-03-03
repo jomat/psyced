@@ -11,6 +11,10 @@
 #include <net.h>
 #include <misc.h>
 
+#if __EFUN_DEFINED__(tls_query_connection_info)
+# include <sys/tls.h>
+#endif
+
 //#define NO_INHERIT	// virtual ain't workin' .. but leavin it out neither
 #include <text.h>
 
@@ -20,6 +24,7 @@ static int smaller_object_name(object a, object b) {
 
 list_sockets(guy, flags) {
 	array(object) u;
+	array(mixed) tls;
 	mapping uv;
 	string list, name, host, ip, idle, email, scheme, agent, layout;
 	int i, skip = 0;
@@ -48,7 +53,7 @@ list_sockets(guy, flags) {
 			host = uv["forwarded"];
 			unless (host) host = uv["host"];
 			ip = uv["ip"];
-#ifdef _flag_log_hosts
+#if 1 //def _flag_log_hosts	// realtime inspection isn't logging
 			unless (host) host = query_ip_name(o);
 			unless(ip) ip = query_ip_number(o);
 #endif
@@ -58,7 +63,6 @@ list_sockets(guy, flags) {
 			else if (idle = uv["idleTime"]) idle = timedelta(idle);
 			if (boss(o)) name += "*";
 			if (uv["visibility"] == "off") name = "°"+name;
-
 			list += sprintf(T("_list_user_technical_person",
 			  "\n%4.4s%s %s %s %s (%s) <%s> %s"),
 //				scheme ? (layout && scheme=="ht" ?
@@ -82,9 +86,12 @@ list_sockets(guy, flags) {
 		}
 		else {
 		    name = o->qName();
+#if __EFUN_DEFINED__(tls_query_connection_info)
+		    tls = interactive(o) && tls_query_connection_info(o);
+#endif
 		    if (name? flags & SOCKET_LIST_GHOST : flags & SOCKET_LIST_LINK)
 			list += sprintf(T("_list_user_technical_ghost",
-			  "\n%s %s %O %s (%s)"),
+			  "\n%s %s %O %s (%s) %s %s"),
 #if __EFUN_DEFINED__(tls_query_connection_state)
 			    interactive(o) && 
 			      tls_query_connection_state(o) ? "!" : " ",
@@ -93,13 +100,23 @@ list_sockets(guy, flags) {
 #endif
 			    (name && to_string(name)) || "",
 			    o,
-#ifdef _flag_log_hosts
+#if 1 //def _flag_log_hosts	// realtime inspection isn't logging
 			    query_ip_name(o) || "",
-			    query_ip_number(o) || ""
+			    query_ip_number(o) || "",
 #else
-                            "", ""
+                            "", "",
 #endif
-                            );
+#if __EFUN_DEFINED__(tls_query_connection_info)
+			    tls ? intp(tls[TLS_PROT]) ?
+				 TLS_PROT_NAME(tls[TLS_PROT]) :
+			         tls[TLS_PROT] : "",
+			    tls ? intp(tls[TLS_CIPHER]) ?
+				 TLS_CIPHER_NAME(tls[TLS_CIPHER]) :
+			         tls[TLS_CIPHER] : ""
+#else
+			    "", ""
+#endif
+			);
 		    else skip++;
 		}
 	}

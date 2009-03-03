@@ -43,6 +43,10 @@
 #include <storage.h>
 #include <url.h>
 
+#if __EFUN_DEFINED__(tls_query_connection_info)
+# include <sys/tls.h>
+#endif
+
 inherit NET_PATH "group/master";
 inherit NET_PATH "lastlog";
 
@@ -319,7 +323,6 @@ qDescription(source, vars, profile, itsme) {
 		    dv["_agent_design"] = v("layout");
 	}
 #if __EFUN_DEFINED__(tls_query_connection_info)
-# include <sys/tls.h>
 	if (interactive(ME) && tls_query_connection_state(ME)) {
 		array(mixed) tls = tls_query_connection_info(ME);
 
