@@ -91,8 +91,8 @@ varargs array(mixed) parse_uniform(string url, vaint tolerant) {
 	u[UHost] = t;
 	P4(("parse_uniform %s = %O (tolerant: %O)\n", url, u, tolerant))
 	u[UNick] = u[UUser]
-		    || (strlen(u[UResource]) && u[UResource][1 ..])
-		    || u[UBody];
+		    || (strlen(u[UResource]) && u[UResource][1 ..]);
+		    // || u[UBody]; -- not so good
 	return u;
 }
 

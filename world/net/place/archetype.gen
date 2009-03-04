@@ -1078,7 +1078,7 @@ P1(("ident: %O is really %O\n", t, source))
 // und nicht bei jeder remote suorce generell? TODO
 		    mixed *u = parse_uniform(source);
 		    if (u) {
-			n = u[UNick];
+			string n = u[UNick];
 			unless (n) return 0; // not n? hm...
 
 			unless (vars["_nick"]

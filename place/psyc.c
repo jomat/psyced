@@ -10,7 +10,7 @@
 #ifdef BRAIN
 //# define ON_ANY if (mayLog(mc)) mymsg(source, mc, data, vars);
 //# define ALLOW_EXTERNAL_FROM	"psyc://fly.symlyn"
-//# define ALLOW_EXTERNAL
+# define ALLOW_EXTERNAL
 #else
 //# define CONNECT_DEFAULT
 # define REDIRECT "psyc://psyced.org/@welcome"
@@ -18,7 +18,7 @@
 
 #include <place.gen>
 
-#ifdef BRAIN
+#if 0 // def BRAIN
 // it was a bad idea anyway.. you don't wanna autorelease thru cvs..
 #if 0
 mymsg(source, mc, data, vars) {

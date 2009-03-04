@@ -31,43 +31,61 @@ volatile mixed beQuiet;
 
 // my nickspace. used by psyctext(). could be passed as closure, but then
 // it wouldn't be available for *any* psyctext call in user objects.
-uni2nick(n, vars) {
-	P3(("uni2nick(%O) in %O\n", n, ME))
+uni2nick(source, vars) {
+	P2(("uni2nick(%O) in %O\n", source, ME))
 #ifdef USE_AUTOALIAS
-	string ln = lower_case(n);
-	string al = raliases[ln];
-	if (al) return al;
-	if (member(raliases, ln)) return n; // marked dead
-	mixed u = parse_uniform(n);
-	// unfortunately UNick already comes lowercased..
-	// using qName() for objectp would help here
-	// or we start using mixed case uniforms.. TODO
-	al = lower_case(u[UNick]);
-	if (aliases[al]) {
-		raliases[ln] = 0; // mark dead
-		P2(("uni2nick: already belongs to %O\n", aliases[al]))
-		w("_failure_unavailable_alias", 0,
-		    ([ "_uniform_new": n,
-		       "_uniform_old": aliases[al],
-		       "_nick_old": al ]) );
-		return n;
+	string ni = raliases[source];
+	if (ni) return ni;
+	if (member(raliases, source)) return UNIFORM(source); // marked dead
+	// ok let's do an autoalias then
+	string ln;
+	// currently only net/irc employs objects as psyctext sources
+	// we should either use them more aggressively or abolish them
+	// and have mixed case uniforms instead
+	if (objectp(source)) ni = source->qName();
+	else {
+		mixed u = parse_uniform(source);
+		// unfortunately UNick already comes lowercased..
+		// we should start using mixed case uniforms..
+		unless (ni = u[UNick]) {
+			// source is probably a server root
+			raliases[source] = 0; // mark dead
+			return source;
+		}
 	}
-	aliases[al] = n;
-	raliases[ln] = al = u[UNick];
-	P2(("uni2nick: autoaliased %O to %O\n", n, al))
+	ln = lower_case(ni);
+	string al = aliases[ln];
+	if (al) {
+		if (UNIFORM(source) == UNIFORM(al)) {
+			// just the object of a known uniform or vice versa
+			raliases[source] = ni;
+			P2(("uni2nick: re-aliased %O to %O\n", source, al))
+			return ni;
+		}
+		raliases[source] = 0; // mark dead
+		P2(("uni2nick: already belongs to %O\n", al))
+		w("_failure_unavailable_alias", 0,
+		    ([ "_uniform_new": source,
+		       "_uniform_old": al,
+		       "_nick_old": ni ]) );
+		return UNIFORM(source);
+	}
+	aliases[ln] = source;
+	raliases[source] = ni;
+	P2(("uni2nick: autoaliased %O to %O\n", source, ni))
 	w("_notice_add_alias_temporary", 0,
-	    ([ "_uniform_entity": n,
-	       "_nick_entity": al ]) );
-	return al;
+	    ([ "_uniform_entity": source,
+	       "_nick_entity": ni ]) );
+	return ni;
 #else
     // this enables local nickspace, but it fails on local uniforms,
     // it fails when local nick collides with alias, so either you make
     // it super complicated here, or you keep it super stupid.
 	//if (objectp(n)) return n->qName();
 # ifdef ALIASES
-	return raliases[lower_case(n)] || n;
+	return raliases[lower_case(source)] || source;
 # else
-	return n;
+	return source;
 # endif
 #endif
 }
@@ -315,9 +333,12 @@ protected leavePlace(where) {
  ** person:msg() we're here to do the output..
  */
 msg(source, mc, data, mapping vars, showingLog) {
-	string nick, nick2, family;
+	string family;
 	mixed pal, t, variant;
 	int glyph;
+#ifdef USE_THE_NICK
+	string nick, nick2;
+#endif
 
 	P3(("%O user:msg(%O,%O,%O,%O)\n", ME, source, mc, data, vars))
 	// context checking since ip paranoia is applied to context
@@ -393,7 +414,9 @@ msg(source, mc, data, mapping vars, showingLog) {
 	P4(("after p:msg(%O,%O,%O,%O) -> %O\n", source,mc,data,vars, variant))
 //	D2(unless (showingLog) D(S("user:msg(%O,%O,%O..) -> %O\n",
 //	       source, mc, data, variant));)
+#ifdef USE_THE_NICK
 	nick = vars["_nick"];
+#endif
 
 #ifdef ALIASES
 # ifdef BRAIN
@@ -600,6 +623,7 @@ case "_message": 	// sollte schon vorher abgefangen worden sein
 case "_message_private":
 		// question recognition takes place on sender side
 		// for public talk, so it should also for private talk..
+#ifdef USE_THE_NICK
 #if 0
 # ifdef BRAIN
 		P2(( "this shouldn't happen - the brain aliases bug\n" ))
@@ -622,6 +646,7 @@ case "_message_private":
 		}
 #else
 		nick = nick2;
+#endif
 #endif
 #ifdef QUESTION_RECOGNITION_ON_RECEPTION
 		if (variant == "" && data && index(data, '?') != -1) {
@@ -686,18 +711,25 @@ case "_message_public":
 						   : to_string(room));
 			    w((data ? "_message_public_other":
 				     "_message_public_other_action")+variant,
-					 data, vars +
-			       ([ "_nick": nick2, "_nick_place": room ]) );
+					 data, vars + ([
+#ifdef USE_THE_NICK
+					    "_nick": nick2,
+#endif
+					    "_nick_place": room ]) );
 			    return 1;
 			}
 		    }
+#ifdef USE_THE_NICK
 		    nick = nick2;
+#endif
 		    break;
 		}
 		if (vars["_nick_local"] && MYLOWERNICK != lower_case(vars["_nick_local"])) {
 			// should we have special templates for this?
 			//mc = "_message_echo_public_masquerade";
+#ifdef USE_THE_NICK
 			nick = vars["_nick_local"];
+#endif
 			// or should we rather make sure that all clients
 			// learn to detect echo themselves, since future
 			// multicast routing may not give us the possibility
@@ -715,9 +747,11 @@ case "_message_behaviour_punishment":
 case "_message_behaviour":
 		unless (stringp(data)) variant = "_default";
 		else variant = "";
+#ifdef USE_THE_NICK
 		nick = nick2;
 //		fmt = nick ? "%s announces: %s\n"
 //			: "*** Announcement: %s ***\n";
+#endif
 		break;
 case "_request_message_public_question":
 case "_request_message":
@@ -1139,6 +1173,7 @@ case "_status":
 	    }
 	}
 #endif
+#ifdef USE_THE_NICK
 	// imho macht das hier probleme bei _echo_place_enter
 	// da ist der raum die source, es ist kein _context dabei
 	// vars["_nick"] ist der nick des joinenden (==qName())
@@ -1160,8 +1195,12 @@ case "_status":
 #endif
 	vars["_nick"] = nick;
 	// this at least works also for HTTP
-
-	unless (wAction(mc, data, vars, source, variant, nick)) {
+#endif
+	if (! wAction(mc, data, vars, source, variant
+#ifdef USE_THE_NICK
+		       	, nick
+#endif
+	)) {
 	    if (!data && vars["_action_possessive"])
 		w(mc+"_action_possessive", data, vars, source, showingLog);
 	    else

@@ -1,4 +1,12 @@
 // vim:syntax=lpc
+//
+// still fails in some unusual cases, like
+// "Comments? Suggestions? Submissions? Fire away!"
+
+#define ON_CONVERSE \
+    if (stringp(data)) data = zwirbel(0, data); \
+    walk_mapping(vars, #'zwirbel);
+
 #include <place.gen>
 
 mixed* randomize(mixed* abs) {
@@ -36,7 +44,8 @@ mixed zwirbel(mixed name, mixed data) {
 	string* words;
 	int c = 0;
 
-	if (!stringp(data) || strlen(data) >= 3 || name == "_nick") return data;
+	if (!stringp(data) || strlen(data) < 5
+	    || name == "_nick" || name == "_color") return data;
 	words = explode(data, " ");
 	foreach (string w : words) {
 		// hier nochmal nach irgendwelchen satzzeichen am ende gucken
@@ -47,18 +56,9 @@ mixed zwirbel(mixed name, mixed data) {
 		}	
 		c++;
 	}
-	return data = implode(words, " ");
-}
-
-msg(source, mc, data, mapping vars) {
-	// normally we would check for _message but we're being nasty here
-	//if (stringp(data) && abbrev("_message", mc)) {
-	if (stringp(data)) {
-		data = zwirbel(0, data);
-	}
-	// even worse.. we fuck up the vars as well..
-	walk_mapping(vars, #'zwirbel);
-	return ::msg(source, mc, data, vars);
+	data = implode(words, " ");
+	//debug_message(sprintf("%O - %O\n", ME, data));
+	return data;
 }
 
 htget(prot, query, headers, qs) {
