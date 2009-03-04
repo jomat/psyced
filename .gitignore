@@ -15,7 +15,12 @@ INSTALL.txt
 *.rej
 *.log
 *.pem
+*.bz2
+*.gz
 *old
 *bak
 *diff
 *orig
+*.c-*
+*.h-*
+*.fmt-*
