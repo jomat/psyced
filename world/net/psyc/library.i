@@ -120,7 +120,7 @@ object find_psyc_object(array(mixed) u) {
 	string t, r, svc, user;
 	object o;
 
-	user = u[UUser];
+	user = u[UNick];
 	r = u[UResource];
 	if (r && strlen(r)) {
 #if __EFUN_DEFINED__(trim)
@@ -132,13 +132,6 @@ object find_psyc_object(array(mixed) u) {
 		if (strlen(r)) switch(r[0]) {
 		case '^':
 		case '~':
-			if (user) {
-//				croak("_error_invalid_uniform_user_duplicate",
-//				    "Two users in uniform not allowed here.");
-//				QUIT
-				return 0;	// TODO!
-			}
-			user = r[1..];
 			break;
 		case '$':
 			// target wird auf serv/args gesetzt

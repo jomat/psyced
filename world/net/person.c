@@ -2541,7 +2541,7 @@ logon(host) {
 	    if (u = parse_uniform(ni)) {
 		// <lynX> first we change the ppl, then we need this code
 //		if (is_localhost(u[UHost])) {
-//		    o = summon_person(u[UResource][1..]);
+//		    o = summon_person(u[UNick]);
 //		    insert_member(o);
 //		} else {
 		    o = ni;

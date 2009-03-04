@@ -150,7 +150,7 @@ varargs string mkjid(mixed who, mixed vars, mixed ignore_context,  string target
 		    t = PLACEPREFIX + NODEPREP(vars["_nick_place"]) +"@"+ NAMEPREP(jabberhost);
 		} else if (u = parse_uniform(vars["_context"])) {
 		    if (u[UScheme] == "psyc")
-			t = PLACEPREFIX + NODEPREP(u[UResource][1..]) + "@" + NAMEPREP(u[UHost]);
+			t = PLACEPREFIX + NODEPREP(u[UNick]) + "@" + NAMEPREP(u[UHost]);
 		    else // here we presume we have a u@h or xmpp:
 			t = NODEPREP(u[UUser]) + "@" + NAMEPREP(u[UHost]);
 		} else {

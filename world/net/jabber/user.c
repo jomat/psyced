@@ -532,7 +532,7 @@ message(XMLNode node) {
 			P0(("private message in place.. from %O to %O\n",
 			    ME, o))
 			sendmsg(o, "_message_public_whisper",
-				node["/body"][Cdata], ([ "_nick_target": u[UResource] || u[UUser]]));
+				node["/body"][Cdata], ([ "_nick_target": u[UNick]]));
 		}
 #endif
 		return 1;
@@ -1164,9 +1164,9 @@ varargs string mkjid(mixed who, mixed vars, mixed ignore_nick, mixed ignore_cont
 		    // or let psyc users be the same person as on xmpp?
 		    // YES we want transparent upgrades from xmpp to psyc!
 		    if (t[0] == '@')
-			t = PLACEPREFIX+ t[1..] +"@"+ u[UHost];
+			t = PLACEPREFIX+ u[UNick] +"@"+ u[UHost];
 		    else
-			t = t[1..] +"@"+ u[UHost];
+			t = u[UNick] +"@"+ u[UHost];
 		} else {
 		    // the usual "shouldn't happen" case which however does
 		    t = u[UHost];

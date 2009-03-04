@@ -988,7 +988,7 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
 			}
 #ifdef NONIX
 			if (strlen(u[UResource]) > 1)
-			    cvars["_INTERNAL_nick_target"] = u[UResource][1..];
+			    cvars["_INTERNAL_nick_target"] = u[UNick];
 #endif
 			P3(("DEBUG: is_localhost is %O for %O of %O\n",
 			    is_localhost(u[UHost]), u[UHost], u))

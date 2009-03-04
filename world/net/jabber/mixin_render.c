@@ -404,7 +404,7 @@ int msg(string source, string mc, string data,
 	    break;
 	case "kick": // TODO: we could add a callback for this
 	    mc = "_request_execute_kick";
-	    vars["_nick_target"] = is_formal(args[1]) ? parse_uniform(args[1])[UResource] : args[1];
+	    vars["_nick_target"] = is_formal(args[1]) ? parse_uniform(args[1])[UNick] : args[1];
 	    vars["_reason"] = ARGS(2);
 	    break;
 	case "ban": // TODO: we could add a callback for this

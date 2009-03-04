@@ -62,7 +62,8 @@ varargs string psyctext(string s, mapping m, vastring data,
 			// no _nick? okay, then it has to be this one
 			q = UNIFORM(source) || "?";
 		}
-		if (previous_object()) q = previous_object()->uni2nick(q) || q;
+		if (previous_object())
+		    q = previous_object()->uni2nick(q, m) || q;
 		r += p + q;
 #endif
 		break;
@@ -72,7 +73,8 @@ varargs string psyctext(string s, mapping m, vastring data,
 		r += p + (nick || m["_nick"] || m["_source"] || UNIFORM(source) || "?");
 #else
 		q = m["_source"] || UNIFORM(source) || "?";
-		if (previous_object()) q = previous_object()->uni2nick(q) || q;
+		if (previous_object())
+		    q = previous_object()->uni2nick(q, m) || q;
 		r += p + q;
 #endif
 		break;
@@ -81,7 +83,8 @@ varargs string psyctext(string s, mapping m, vastring data,
 		r += p + (nick || m["_nick"] || m["_source_relay"] || "?");
 #else
 		q = m["_source_relay"] || "?";
-		if (previous_object()) q = previous_object()->uni2nick(q) || q;
+		if (previous_object())
+		    q = previous_object()->uni2nick(q, m) || q;
 		r += p + q;
 #endif
 		break;
@@ -90,7 +93,8 @@ varargs string psyctext(string s, mapping m, vastring data,
 		r += p + (m["_nick_target"] || m["_target"] || "?");
 #else
 		q = m["_target"] || "?";
-		if (previous_object()) q = previous_object()->uni2nick(q) || q;
+		if (previous_object())
+		    q = previous_object()->uni2nick(q, m) || q;
 		r += p + q;
 #endif
 		break;
@@ -99,7 +103,8 @@ varargs string psyctext(string s, mapping m, vastring data,
 		r += p + (m["_nick_place"] || m["_context"] || "?");
 #else
 		q = m["_context"] || "?";
-		if (previous_object()) q = previous_object()->uni2nick(q) || q;
+		if (previous_object())
+		    q = previous_object()->uni2nick(q, m) || q;
 		r += p + q;
 #endif
 		break;

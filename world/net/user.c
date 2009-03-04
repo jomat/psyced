@@ -31,20 +31,22 @@ volatile mixed beQuiet;
 
 // my nickspace. used by psyctext(). could be passed as closure, but then
 // it wouldn't be available for *any* psyctext call in user objects.
-uni2nick(n) {
-	PT(("uni2nick(%O) in %O\n", n, ME))
+uni2nick(n, vars) {
+	P3(("uni2nick(%O) in %O\n", n, ME))
 #ifdef USE_AUTOALIAS
 	string ln = lower_case(n);
 	string al = raliases[ln];
 	if (al) return al;
 	if (member(raliases, ln)) return n; // marked dead
 	mixed u = parse_uniform(n);
+	// unfortunately UNick already comes lowercased..
+	// using qName() for objectp would help here
+	// or we start using mixed case uniforms.. TODO
 	al = lower_case(u[UNick]);
 	if (aliases[al]) {
 		raliases[ln] = 0; // mark dead
-		PT(("uni2nick: already belongs to %O\n", aliases[al]))
-		w("_failure_unavailable_alias",
-"No alias for [_uniform_new]: [_nick_old] already belongs to [_uniform_old].",
+		P2(("uni2nick: already belongs to %O\n", aliases[al]))
+		w("_failure_unavailable_alias", 0,
 		    ([ "_uniform_new": n,
 		       "_uniform_old": aliases[al],
 		       "_nick_old": al ]) );
@@ -52,9 +54,8 @@ uni2nick(n) {
 	}
 	aliases[al] = n;
 	raliases[ln] = al = u[UNick];
-	PT(("uni2nick: autoaliased %O to %O\n", n, al))
-	w("_notice_add_alias_automatic",
-	    "[_uniform_entity] is known as [_nick_entity].",
+	P2(("uni2nick: autoaliased %O to %O\n", n, al))
+	w("_notice_add_alias_temporary", 0,
 	    ([ "_uniform_entity": n,
 	       "_nick_entity": al ]) );
 	return al;

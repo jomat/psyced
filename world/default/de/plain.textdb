@@ -1,6 +1,12 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
 ## Check utf-8: Praise Atatürk!
 
+_failure_unavailable_alias
+|Kein Name für [_uniform_new]: [_nick_old] gehört bereits [_uniform_old].
+
+_notice_add_alias_temporary
+|[_uniform_entity] wird als [_nick_entity] dargestellt.
+
 _message
 |[_nick] sendet Dir: [_data]
 

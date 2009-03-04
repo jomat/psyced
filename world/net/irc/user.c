@@ -204,7 +204,7 @@ static int _status_place_members(mixed source, string mc,
 # else
 		       "_nick" : n,
 # endif
-		       "_nick_login" : u[UResource],
+		       "_nick_login" : u[UNick],
 		       "_identification_host" : u[UHost],
 		       "_IRC_away" : "H",
 		       "_IRC_hops" : "1",
@@ -412,12 +412,12 @@ w(string mc, string data, mapping vars, mixed source) {
 # ifdef ALIASES
 	    if (raliases[source]) {
 		nick2 = raliases[source];
-		vars["_source_hack"] = nick2 + ((u[UUser] || 
-				       (u[UResource] && u[UResource][0]))
-		    ? "!"+ UName(u) +"@"+ u[UHost]
-		    : "!"+ (vars["_nick_long"] || vars["_INTERNAL_nick_plain"]
-			    || vars["_nick"])
-		      +"@alias.undefined");
+		vars["_source_hack"] = nick2 +"!"+
+		    u[UNick]? u[UNick] +"@"+ u[UHost]
+			    : (vars["_nick_long"]
+				 || vars["_INTERNAL_nick_plain"]
+				 || vars["_nick"])
+		      +"@alias.undefined";
 	    }
 
 	    unless (nick2) {
@@ -426,7 +426,7 @@ w(string mc, string data, mapping vars, mixed source) {
     case "psyc":
 		    if (u[UUser] || (u[UResource] && strlen(u[UResource])
 				     && u[UResource][0] == '~')) {
-			string tmp = UName(u);
+			string tmp = u[UNick];
 			vars["_source_hack"] = u[UScheme] + "://"
 			    + u[UHostPort] +"/~"+ tmp +"!"+ tmp +"@"
 			    + u[UHostPort];

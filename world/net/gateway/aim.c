@@ -82,7 +82,7 @@ msg(source, mc, data, mapping vars, showingLog, target) {
 	//              if (u[UPort] && u[UPort] == query_imp_port()) {
 			// vergleichen mit bisheriger logik in parse.i  TODO
 			if (u[UResource][0] == '~') 
-			    target = find_person(u[UResource][1..]);
+			    target = find_person(u[UNick]);
 			else if (u[UUser]) target = find_person(u[UUser]);
 			else target = find_object(u[UResource]);
 	//		}

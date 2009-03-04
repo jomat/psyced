@@ -182,12 +182,7 @@ advertise(source) {
 				gated[source] = 1;
 			}
 #endif
-		} else {
-			// maybe this kind of logic should be in parse_uniform?
-			// or is it too rarely needed thus inefficient?
-			login = u[UResource];
-			if (stringp(login) && strlen(login) > 1)
-			     login = login[1 ..];
+		} else login = u[UNick];
 		}
 		unless (login && strlen(login)) return;
 		// introduce the federation user into the ircnet
@@ -226,7 +221,7 @@ render(mc, data, vars, source) {
 //		return;
 //	}
 //	string ircsrc = (u[UScheme] || "xmpp") +";"+
-//			(UName(u) +"|"+
+//			(u[UNick] +"|"+
 //			replace(u[UHost], ".", "_");
 	if (source) {
 		advertise(source);
