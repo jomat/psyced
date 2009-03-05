@@ -138,7 +138,7 @@ static int namreply(mapping vars) {
 	render("_status_place_members", 0, ([
 		  "_nick_place" : vars["_nick_place"],
 		  "_members" : u,
-		  "_nick_me" : MYNICK ]) );
+		  "_INTERNAL_nick_me" : MYNICK ]) );
 	render("_status_place_members_end", 0, vars);
 	return 1;
 }
@@ -340,19 +340,19 @@ w(string mc, string data, mapping vars, mixed source) {
 	vars["_prefix"] = prefix || "";
  
 	D2(
-	   if (vars["_nick_me"] && source)
-		D(S("COLLISION: msg arrived in irc:w had _nick_me with "
-		    "value: %O\n", vars["_nick_me"]));
+	   if (vars["_INTERNAL_nick_me"] && source)
+		D(S("COLLISION: msg arrived in irc:w had _INTERNAL_nick_me with "
+		    "value: %O\n", vars["_INTERNAL_nick_me"]));
 	  )
 #if !defined(PRO_PATH) && defined(ALIASES)
 	// heldensaga thinks nickspaces are perfect only when you can
 	// give away your own nickname. i think that is unnecessary geek pride.
 	// so be it!
-	vars["_nick_me"] = aliases[MYLOWERNICK]
+	vars["_INTERNAL_nick_me"] = aliases[MYLOWERNICK]
 				? SERVER_UNIFORM +"~"+ MYNICK
 				: MYNICK;
 #else
-	vars["_nick_me"] = MYNICK;
+	vars["_INTERNAL_nick_me"] = MYNICK;
 #endif
 	if (vars["_nick"] && places[source] && vars["_time_place"]) {
 		P3(("%O glaubt dem _relay von %O jetz mal, gell?\n",
@@ -560,7 +560,7 @@ w(string mc, string data, mapping vars, mixed source) {
 			       "_list_friends_channel"  // _tab
 # endif
 					, 0, ([ "_friends": u,
-					 "_nick_me" : MYNICK ]) );
+					 "_INTERNAL_nick_me" : MYNICK ]) );
 		} else {
 		    P1(("%O irc/user:w() got %O without friends list in %O\n",
 			ME, mc, vars))
@@ -872,7 +872,7 @@ logon() {
 #  ifndef _flag_disable_query_server
 	sendmsg("/", "_request_user_amount", 0, ([]));
 	// reply.h says RPL_LUSERME is mandatory.. huh.. FIXME?
-	// #255 [_nick_me] :I have 4404 clients and 4404 servers
+	// #255 [_INTERNAL_nick_me] :I have 4404 clients and 4404 servers
 #  endif
 # endif
 # ifndef _flag_disable_request_version_IRC

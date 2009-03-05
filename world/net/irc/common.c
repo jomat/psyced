@@ -265,7 +265,7 @@ render(string mc, string data, mapping vars, mixed source) {
 	    // since irc ALWAYS needs to have a namreply, we
 	    // simply give it one that only contains ourselves
 	    w(mc[..<8], 0, ([ "_nick_place" : vars["_nick_place"],
-			      "_members" : vars["_nick_me"] ]));
+			      "_members" : vars["_INTERNAL_nick_me"] ]));
 	    w(mc[..<8] + "_end", 0, vars);
 	}
 	P4(("calling emit(%O)\n", output));

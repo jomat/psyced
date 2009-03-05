@@ -1813,7 +1813,7 @@ see also: http://about.psyc.eu/SPAM
   sowas möglich (das sollte aber nicht schlimm sein):
 	place/irc caught zero source ("_notice_broadcast_garbage","Test 1.",([
 	  "_INTERNAL_source_IRC": "c|h|a|o|s!c|h|a|o|s@ve.example.com",
-	  "_nick_me": "example",
+	  "_INTERNAL_nick_me": "example",
 	  "_nick": "c|h|a|o|s",
 	  "_prefix": ""
 	]))
