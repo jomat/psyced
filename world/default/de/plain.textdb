@@ -1,6 +1,9 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
 ## Check utf-8: Praise Atatürk!
 
+_error_necessary_nick_local
+|Dieser Befehl akzeptiert nur lokale Spitznamen.
+
 _failure_unavailable_alias
 |Kein Name für [_uniform_new]: [_nick_old] gehört bereits [_uniform_old].
 
@@ -1720,10 +1723,10 @@ _warning_usage_auto
 |Syntax: /[_nick] <beschreibung>
 
 _warning_usage_tell
-|Syntax: /tell <nickname> <nachricht>
+|Syntax: /tell <Spitzname> <Nachricht>
 
 _warning_usage_notify
-|Syntax: /notify <nickname> [ i(mmediate),d(elayed),D(elayedMore) ]
+|Syntax: /notify <Spitzname> [ i(mmediate),d(elayed),D(elayedMore) ]
 
 _warning_usage_acquaintance
 |Syntax: /ignore oder /display <person>
@@ -1754,10 +1757,10 @@ _warning_usage_unalias
 |Syntax: /unalias <Aliasname>
 
 _warning_usage_kill
-|Syntax: /kill <Person> [<Nachricht>]
+|Syntax: /kill <Spitzname> [<Nachricht>]
 
 _warning_usage_warn
-|Syntax: /warn <Person> [<Nachricht>]
+|Syntax: /warn <Spitzname> [<Nachricht>]
 
 _echo_kill
 |[_entity] gekillt.
@@ -1769,10 +1772,10 @@ _warning_usage_invite
 |Syntax: /invite <Person>
 
 _warning_usage_query
-|Syntax: /talk <nickname> und /talk zum Beenden des Zwiegesprächs.
+|Syntax: /talk <Spitzname> und /talk zum Beenden des Zwiegesprächs.
 
 _warning_usage_friend
-|Syntax: /friend <nickname> oder /unfriend <nickname>
+|Syntax: /friend <Spitzname> oder /unfriend <Spitzname>
 
 _warning_usage_authenticate
 |Syntax: /auth(enticate) <Spitzname|psycUNI>

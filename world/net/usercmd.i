@@ -1367,12 +1367,23 @@ cmd(a, args, dest, command) {
 		if (boss(ME)) switch(a) {
 		case "warn":
 		case "kill":
-			if (sizeof(args) > 1) ob = find_person(args[1]);
-			else {
+			unless (sizeof(args) > 1) {
 				w("_warning_usage_"+a,
 				  "Usage: /"+a+" <nick> [<message>]");
 				return 1;
 			}
+#if 0 //def ALIASES
+			// makes no sense for this command to support aliases
+			t3 = aliases[t3 = lower_case(args[1])] || t3;
+#else
+			t3 = args[1];
+#endif
+			// learn to accept local uniforms, too?
+			if (is_formal(t3)) {
+				w("_error_necessary_nick_local");
+				return 1;
+			}
+		       	ob = find_person(t3);
 			if (ob) {
 				t = sizeof(args) > 2 ? ARGS(2) : 0;
 				// log first, after kill ob will be 0
@@ -1382,7 +1393,7 @@ cmd(a, args, dest, command) {
 					"_entity": ob ]));
 				ob -> sanction(a, t);
 			} else w("_error_unknown_name_user", 0, ([
-				 "_nick_target": args[1] ]));
+				 "_nick_target": t3 ]));
 			return 1;
 		case "config":
 			if (sizeof(args) < 3) return

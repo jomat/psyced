@@ -1,6 +1,9 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
 ## Check utf-8: Praise Atatürk!
 
+_error_necessary_nick_local
+|This command only accepts local nicknames.
+
 _failure_unavailable_alias
 |No alias for [_uniform_new]: [_nick_old] already belongs to [_uniform_old].
 
