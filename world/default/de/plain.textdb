@@ -1723,10 +1723,10 @@ _warning_usage_auto
 |Syntax: /[_nick] <beschreibung>
 
 _warning_usage_tell
-|Syntax: /tell <Spitzname> <Nachricht>
+|Syntax: /tell <Person> <Nachricht>
 
 _warning_usage_notify
-|Syntax: /notify <Spitzname> [ i(mmediate),d(elayed),D(elayedMore) ]
+|Syntax: /notify <Person> [ i(mmediate),d(elayed),D(elayedMore) ]
 
 _warning_usage_acquaintance
 |Syntax: /ignore oder /display <person>
@@ -1772,13 +1772,13 @@ _warning_usage_invite
 |Syntax: /invite <Person>
 
 _warning_usage_query
-|Syntax: /talk <Spitzname> und /talk zum Beenden des Zwiegesprächs.
+|Syntax: /talk <Person> und /talk zum Beenden des Zwiegesprächs.
 
 _warning_usage_friend
-|Syntax: /friend <Spitzname> oder /unfriend <Spitzname>
+|Syntax: /friend <Person> oder /unfriend <Person>
 
 _warning_usage_authenticate
-|Syntax: /auth(enticate) <Spitzname|psycUNI>
+|Syntax: /auth(enticate) <Person>
 
 _warning_usage_logging
 |Syntax: /logging (on|off)

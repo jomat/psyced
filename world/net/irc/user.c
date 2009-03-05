@@ -241,7 +241,7 @@ w(string mc, string data, mapping vars, mixed source) {
 	// der raum uns ne kopie gibt.. ist auch gut so, denn der irc code
 	// versaut total die history der räume! einmal ein ircer
 	// drin gehabt und aus vars["_time_place"] sind _prefix'e geworden
-	// und _source_hack's sind im raum gespeichert und mehr so unsinn.
+	// und _INTERNAL_source_IRC's sind im raum gespeichert und mehr so unsinn.
 	if (mappingp(vars)) vars = copy(vars);
 	else vars = ([]);
 	// hmm.. wie die _time_place's aus der room history rausfallen
@@ -302,7 +302,8 @@ w(string mc, string data, mapping vars, mixed source) {
 	    return ::wAction(mc, data, vars
 		 + ([ "_action" : T("_TEXT_action_says", 0) ]),
 			 source, "", vars["_nick"]);
-#ifdef OLD_LOCAL_NICK_PLAIN_TEXTDB_HACK //{{{
+#if 1 //def USE_THE_NICK
+# ifdef OLD_LOCAL_NICK_PLAIN_TEXTDB_HACK //{{{
 	else if (vars["_nick_local"]) {			// less work
 		if (mc == "_message_echo_public_action"
 			&& (t = vars["_INTERNAL_nick_plain"])) {
@@ -318,11 +319,12 @@ w(string mc, string data, mapping vars, mixed source) {
 		    sTextPath(0, v("language"), v("scheme"));
 		}
 	}
-#else //}}}
+# else //}}}
 	else if (vars["_nick_local"] &&
 		 vars["_nick_local"] == vars["_nick"])
 	    vars["_nick"] = vars["_INTERNAL_nick_plain"] || vars["_nick_verbatim"];
-#endif
+# endif
+#endif // USE_THE_NICK
 
 //	if (vars["_nick_local"]) mc += "_masquerade";	// more work
 	di = printStyle(mc); // display infos
@@ -372,32 +374,32 @@ w(string mc, string data, mapping vars, mixed source) {
 #ifdef GHOST //{{{
 	    // in S2S mode we are not supposed to deliver nick!user@host
 	    // thus we use plain nicks or plain uniforms
-	    vars["_source_hack"] = vars["_INTERNAL_nick_plain"] || vars["_nick"];
+	    vars["_INTERNAL_source_IRC"] = vars["_INTERNAL_nick_plain"] || vars["_nick"];
 #else //}}}
 # if 0	// OLD // according to elmex "should never happen" happened...
 	    if (vars["_nick"]) {
-		vars["_source_hack"] = 
+		vars["_INTERNAL_source_IRC"] = 
 			(vars["_INTERNAL_nick_plain"] || vars["_nick"])
 			+ "!"+ (vars["_nick_long"] || vars["_INTERNAL_nick_plain"]
 				|| vars["_nick"])
 			+"@" SERVER_HOST;
 	    } else // should never happen
-		vars["_source_hack"] = to_string(source);
+		vars["_INTERNAL_source_IRC"] = to_string(source);
 # else // EXPERIMENTAL
 	    nick2 = vars["_INTERNAL_nick_plain"] || vars["_nick"];
-	    vars["_source_hack"] = nick2 ? nick2
+	    vars["_INTERNAL_source_IRC"] = nick2 ? nick2
 		  +"!"+ (vars["_nick_long"] || vars["_INTERNAL_nick_plain"]
 					    || vars["_nick"]) +"@" SERVER_HOST
 		    : to_string(source); // should never happen
 # endif
 	} else if (abbrev("_echo_place_enter", mc)) {
-	    vars["_source_hack"] = MYNICK + "!" + MYNICK + "@" SERVER_HOST;
+	    vars["_INTERNAL_source_IRC"] = MYNICK + "!" + MYNICK + "@" SERVER_HOST;
 #endif
 	} else {
 #ifdef GHOST //{{{
 	    // in S2S mode we are not supposed to deliver nick!user@host
 	    // thus we use plain nicks or plain uniforms
-	    vars["_source_hack"] = source;
+	    vars["_INTERNAL_source_IRC"] = source;
 #else //}}}
 	    u = parse_uniform(source);
 	    unless (u) {
@@ -412,7 +414,7 @@ w(string mc, string data, mapping vars, mixed source) {
 # ifdef ALIASES
 	    if (raliases[source]) {
 		nick2 = raliases[source];
-		vars["_source_hack"] = nick2 +"!"+
+		vars["_INTERNAL_source_IRC"] = nick2 +"!"+
 		    u[UNick]? u[UNick] +"@"+ u[UHost]
 			    : (vars["_nick_long"]
 				 || vars["_INTERNAL_nick_plain"]
@@ -422,22 +424,25 @@ w(string mc, string data, mapping vars, mixed source) {
 
 	    unless (nick2) {
 # endif
+		// should all of this go into our own copy of uni2nick() ?
+		// or should we keep protocol source hacks separate from
+		// people nicks in message templates?
 		switch (u[UScheme]) {
     case "psyc":
 		    if (u[UUser] || (u[UResource] && strlen(u[UResource])
 				     && u[UResource][0] == '~')) {
 			string tmp = u[UNick];
-			vars["_source_hack"] = u[UScheme] + "://"
+			vars["_INTERNAL_source_IRC"] = u[UScheme] + "://"
 			    + u[UHostPort] +"/~"+ tmp +"!"+ tmp +"@"
 			    + u[UHostPort];
-			P4(("w:psyc _source_hack %O\n", vars["_source_hack"]))
+			P4(("w:psyc _INTERNAL_source_IRC %O\n", vars["_INTERNAL_source_IRC"]))
 		    } else {
-			vars["_source_hack"] = uniform2irc(source)
+			vars["_INTERNAL_source_IRC"] = uniform2irc(source)
                                 +"!*@"+ (u[UHostPort] || "host.undefined");
                             // '*' nicer than 'undefined' and never a nick
 			// this happens a lot more often then we thought  :(
 			// like for _request_version from server_unl
-			D1( unless(u[UHostPort]) PP(("irc/user %O source %O results in %O for %O\n", ME, source, vars["_source_hack"], mc)); )
+			D1( unless(u[UHostPort]) PP(("irc/user %O source %O results in %O for %O\n", ME, source, vars["_INTERNAL_source_IRC"], mc)); )
 		    }
 		    break;
     case "jabber":
@@ -453,22 +458,22 @@ w(string mc, string data, mapping vars, mixed source) {
 			P3(("changing source from %O to %O\n", source, vars["_location"]))
 			source = vars["_location"];
 		    }
-		    vars["_source_hack"] = uniform2irc(source)
+		    vars["_INTERNAL_source_IRC"] = uniform2irc(source)
                                             + "!" + u[UUserAtHost];
 #ifdef JABBER_PATH // MUC support..
 		    // unfortunately, net/entity has rendered _nick unusable
 		    if (vars["_nick_place"] && vars["_INTERNAL_source_resource"] && member(vars["_INTERNAL_source_resource"], ' ') != -1){
 			// xmpp: is here in cleartext.. TODO maybe?
-			vars["_source_hack"] = "xmpp:"+
+			vars["_INTERNAL_source_IRC"] = "xmpp:"+
                                     uniform2irc(u[UUserAtHost]);
 			t = replace(vars["_INTERNAL_source_resource"], " ", "%20");
-			vars["_source_hack"] += "/" + t + "!" + u[UUserAtHost];
-			PT(("irc/user: XMPP source hack %O for %O\n", vars["_source_hack"], ME))
+			vars["_INTERNAL_source_IRC"] += "/" + t + "!" + u[UUserAtHost];
+			PT(("irc/user: XMPP source hack %O for %O\n", vars["_INTERNAL_source_IRC"], ME))
 		    }
 #endif
 		    break;
     default:
-		    vars["_source_hack"] = source + "!*@*";
+		    vars["_INTERNAL_source_IRC"] = source + "!*@*";
 		}
 # ifdef ALIASES
 	    }
@@ -482,7 +487,7 @@ w(string mc, string data, mapping vars, mixed source) {
 		int l;
 		string output;
 
-		output =":"+ vars["_source_hack"] +" NOTICE "+ MYNICK +" :";
+		output =":"+ vars["_INTERNAL_source_IRC"] +" NOTICE "+ MYNICK +" :";
 		l = strlen(output);
 		output += "#PRESENCE "+ t +" "+ vars["_degree_mood"]
 			       +" :"+ vars["_description_presence"] +"#\n";
@@ -497,20 +502,20 @@ w(string mc, string data, mapping vars, mixed source) {
 
 		if (old <= AVAILABILITY_VACATION) {
 		    if (t >= AVAILABILITY_NEARBY)
-			emit(":"+ vars["_source_hack"] +" JOIN :&HERE\n");
+			emit(":"+ vars["_INTERNAL_source_IRC"] +" JOIN :&HERE\n");
 		    else if (t >= AVAILABILITY_AWAY)
-			emit(":"+ vars["_source_hack"] +" JOIN :&AWAY\n");
+			emit(":"+ vars["_INTERNAL_source_IRC"] +" JOIN :&AWAY\n");
 		} else if (old < AVAILABILITY_NEARBY) {
 		    if (t >= AVAILABILITY_NEARBY) {
-			emit(":"+ vars["_source_hack"] +" PART :&AWAY\n");
-			emit(":"+ vars["_source_hack"] +" JOIN :&HERE\n");
+			emit(":"+ vars["_INTERNAL_source_IRC"] +" PART :&AWAY\n");
+			emit(":"+ vars["_INTERNAL_source_IRC"] +" JOIN :&HERE\n");
 		    } else if (t < AVAILABILITY_AWAY)
-			emit(":"+ vars["_source_hack"] +" PART :&AWAY\n");
+			emit(":"+ vars["_INTERNAL_source_IRC"] +" PART :&AWAY\n");
 		} else {
 		    if (t < AVAILABILITY_NEARBY)
-			emit(":"+ vars["_source_hack"] +" PART :&HERE\n");
+			emit(":"+ vars["_INTERNAL_source_IRC"] +" PART :&HERE\n");
 		    if (t >= AVAILABILITY_AWAY)
-			emit(":"+ vars["_source_hack"] +" JOIN :&AWAY\n");
+			emit(":"+ vars["_INTERNAL_source_IRC"] +" JOIN :&AWAY\n");
 		}
 #   else
 // ... MODE #whateverTesting +v xni3 

@@ -1812,8 +1812,8 @@ see also: http://about.psyc.eu/SPAM
 - "known bug:" die shout()-funktionen betreiben kein vars-cloning, daher ist
   sowas möglich (das sollte aber nicht schlimm sein):
 	place/irc caught zero source ("_notice_broadcast_garbage","Test 1.",([
-	  "_source_hack": "c|h|a|o|s!c|h|a|o|s@ve.example.com",
-	  "_nick_me": "lethe",
+	  "_INTERNAL_source_IRC": "c|h|a|o|s!c|h|a|o|s@ve.example.com",
+	  "_nick_me": "example",
 	  "_nick": "c|h|a|o|s",
 	  "_prefix": ""
 	]))
@@ -2284,8 +2284,8 @@ net/*
 +	room status uses sendmsg/msg and therefore also works remotely
 net/irc/user
 -	::msg() was getting skipped with all sorts of complications
-+	replaced [_nick]![_ident]@[_host] by [_source_hack]
-+	[_source_hack] contains psyc://uni with !*@* appended for remoteUNIs
++	replaced [_nick]![_ident]@[_host] by [_INTERNAL_source_IRC]
++	[_INTERNAL_source_IRC] contains psyc://uni with !*@* appended for remoteUNIs
 net/nntp
 +	fippo's gone crazy and implementing nntp based on user subscriptions
 	of blog rooms. wow.
@@ -3385,7 +3385,7 @@ irc/user
 +	comma-list JOIN ignored unless _flag_allow_IRC_list_comma is set
 -	"TOPIC :" for deleting a topic is now supported
 -	shut up on funny MODEs unless _flag_strict_IRC_mode is set
--	minor mistake in _source_hack generation
+-	minor mistake in _INTERNAL_source_IRC generation
 -	special copy+paste code to handle _list_members at entry discontinued
 -	changed the text in RPL_ISUPPORT to literally what it says in the
 	RFC. messages wheren't supposed to be used for detecting IRC semantics

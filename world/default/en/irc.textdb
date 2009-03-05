@@ -2,7 +2,7 @@
 ## Check utf-8: Praise Atatürk!
 
 _status_AREYOUNUTS
-|:[_source_hack] NOTICE [_nick_me] :[_data]
+|:[_INTERNAL_source_IRC] NOTICE [_nick_me] :[_data]
 
 _MISC_character_command
 |+
@@ -14,28 +14,28 @@ _echo_invitation
 |#341 [_nick_me] [_nick_target] #[_nick_place]
 
 _echo_place_enter
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _echo_place_enter_automatic
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _echo_place_enter_subscribe
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _echo_place_enter_login
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _echo_place_enter_home
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _echo_place_enter_join
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _echo_place_enter_follow
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _echo_place_enter_automatic_subscription
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _info_commands
 |## gaim comes up with a useless popup instead of
@@ -90,7 +90,7 @@ _list_places_end
 _echo_alias_added_NICEBUTCANTWORK
 |:[_alias] NICK {_VAR_server_uniform}~[_alias]
 |:{_VAR_server_uniform}~[_address] NICK [_address]
-|## :[_source_hack] NOTICE :{_VAR_method}
+|## :[_INTERNAL_source_IRC] NOTICE :{_VAR_method}
 |NOTICE :{_VAR_method}
 
 _echo_end_places
@@ -112,13 +112,13 @@ _echo_start_places_entered
 |#321 Channel :Users Topic
 
 _request_legacy_CTCP
-|:[_source_hack] PRIVMSG [_nick_me] :%[_type] [_value]%
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :%[_type] [_value]%
 
 _status_legacy_CTCP
-|:[_source_hack] NOTICE [_nick_me] :%[_type] [_value]%
+|:[_INTERNAL_source_IRC] NOTICE [_nick_me] :%[_type] [_value]%
 
 _request_version
-|:[_source_hack] PRIVMSG [_nick_me] :%VERSION%
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :%VERSION%
 
 _error_unknown_name_user
 |#401 [_nick_me] [_nick_target] :{_error_unknown_name_user}
@@ -141,65 +141,65 @@ _query_password
 |Please provide your password (Set it as the server password, or try /quote pass «your-password» or a syntax like /server {_VAR_server} «ircport» «your-password»)
 
 _message_private
-|:[_source_hack] PRIVMSG [_nick_me] :[_data]
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :[_data]
 
 _message_public
-|:[_source_hack] PRIVMSG #[_nick_place] :[_data]
+|:[_INTERNAL_source_IRC] PRIVMSG #[_nick_place] :[_data]
 
 _message_echo_private
 |## let's see how clients deal with messages to a remote target echoed back
 |## it will probably not look good, but the clients need to fix that really
-|:[_source_hack] PRIVMSG [_nick_target] :[_data]
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_target] :[_data]
 |## oh, ircII is pretty cool about this. it shows:
 |## -source:target- message
 
 _message_echo_private_NOT
 |## without this format, "You tell.. " is generated
 |## this is how BNC sends it instead:
-|:[_source_hack] PRIVMSG [_nick_me] :<- <[_nick_me]> [_data]
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :<- <[_nick_me]> [_data]
 |## which is just like _message_private with an extra that isn't tamper-proof
 
 _message_echo_public
-|:[_source_hack] PRIVMSG #[_nick_place] :[_data]
+|:[_INTERNAL_source_IRC] PRIVMSG #[_nick_place] :[_data]
 
 _message_echo_public_action
-|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix][_action].%
+|:[_INTERNAL_source_IRC] PRIVMSG #[_nick_place] :%ACTION [_prefix][_action].%
 
 _message_echo_public_ask
-|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix]{_TEXT_action_asks}: [_data]%
+|:[_INTERNAL_source_IRC] PRIVMSG #[_nick_place] :%ACTION [_prefix]{_TEXT_action_asks}: [_data]%
 
 _message_echo_public_text_action
-|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix][_action]: [_data]%
+|:[_INTERNAL_source_IRC] PRIVMSG #[_nick_place] :%ACTION [_prefix][_action]: [_data]%
 
 _message_public_action
-|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix][_action].%
+|:[_INTERNAL_source_IRC] PRIVMSG #[_nick_place] :%ACTION [_prefix][_action].%
 
 _message_public_question
-|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix]{_TEXT_action_asks}: [_data]%
+|:[_INTERNAL_source_IRC] PRIVMSG #[_nick_place] :%ACTION [_prefix]{_TEXT_action_asks}: [_data]%
 
 _message_public_ask
-|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix]{_TEXT_action_asks}: [_data]%
+|:[_INTERNAL_source_IRC] PRIVMSG #[_nick_place] :%ACTION [_prefix]{_TEXT_action_asks}: [_data]%
 
 _message_public_text_action
-|:[_source_hack] PRIVMSG #[_nick_place] :%ACTION [_prefix][_action]: [_data]%
+|:[_INTERNAL_source_IRC] PRIVMSG #[_nick_place] :%ACTION [_prefix][_action]: [_data]%
 
 _message_private_annotate
-|:[_source_hack] NOTICE [_nick_me] :[_data]
+|:[_INTERNAL_source_IRC] NOTICE [_nick_me] :[_data]
 
 _message_private_action
-|:[_source_hack] PRIVMSG [_nick_me] :%ACTION [_action].%
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :%ACTION [_action].%
 
 _message_private_question
-|:[_source_hack] PRIVMSG [_nick_me] :%ACTION {_TEXT_action_asks}: [_data]%
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :%ACTION {_TEXT_action_asks}: [_data]%
 
 _message_private_ask
-|:[_source_hack] PRIVMSG [_nick_me] :%ACTION {_TEXT_action_asks}: [_data]%
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :%ACTION {_TEXT_action_asks}: [_data]%
 
 _message_private_text_action
-|:[_source_hack] PRIVMSG [_nick_me] :%ACTION [_action]: [_data]%
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :%ACTION [_action]: [_data]%
 
 _message_private_action_action
-|:[_source_hack] PRIVMSG [_nick_me] :%ACTION [_action].%
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :%ACTION [_action].%
 
 _notice_switch_identity
 |:[_nick_me] NICK [_nick_next]
@@ -208,53 +208,53 @@ _notice_login
 |## shut up
 
 _notice_invitation
-|:[_source_hack] INVITE [_nick_me] :#[_nick_place]
+|:[_INTERNAL_source_IRC] INVITE [_nick_me] :#[_nick_place]
 
 _notice_typing_inactive
-|:[_source_hack] PRIVMSG [_nick_me] :%TYPING INACTIVE%
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :%TYPING INACTIVE%
 
 _notice_typing_paused
-|:[_source_hack] PRIVMSG [_nick_me] :%TYPING PAUSED%
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :%TYPING PAUSED%
 
 _notice_typing_composing
-|:[_source_hack] PRIVMSG [_nick_me] :%TYPING COMPOSING%
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :%TYPING COMPOSING%
 
 _notice_typing_active
-|:[_source_hack] PRIVMSG [_nick_me] :%TYPING ACTIVE%
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :%TYPING ACTIVE%
 
 _notice_typing_gone
-|:[_source_hack] PRIVMSG [_nick_me] :%TYPING GONE%
+|:[_INTERNAL_source_IRC] PRIVMSG [_nick_me] :%TYPING GONE%
 
 _notice_place_AREYOUNUTS
 |:{_VAR_server} NOTICE #[_nick_place] :[_data]
 
 _notice_place_enter
 |## es wird nur diese JOIN datei verwendet.. die anderen können alle in den müll
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _notice_place_enter_automatic
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _notice_place_enter_subscribe
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _notice_place_enter_login
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _notice_place_enter_home
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _notice_place_enter_join
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _notice_place_enter_follow
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _notice_place_enter_automatic_subscription
-|:[_source_hack] JOIN :#[_nick_place]
+|:[_INTERNAL_source_IRC] JOIN :#[_nick_place]
 
 _echo_place_leave
-|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+|:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
 
 _echo_place_leave_logout
 |## Why is this blank? Current w() code ignores this however.
@@ -262,59 +262,59 @@ _echo_place_leave_logout
 _notice_place_leave
 |## user messages embedded in state changes are bad protocol design
 |## we use the space for system text
-|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+|:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
 
 _notice_place_leave_automatic
-|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+|:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
 
 _notice_place_leave_subscribe
-|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+|:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
 
 _notice_place_leave_netburp
-|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+|:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
 
 _notice_place_leave_home
-|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+|:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
 
 _notice_place_leave_disconnect
-|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+|:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
 
 _notice_place_leave_netburp
-|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+|:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
 
 _notice_place_leave_follow
-|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+|:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
 
 _notice_place_leave_logout
-|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+|:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
 
 _notice_place_leave_automatic_subscription
-|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+|:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
 
 _notice_place_leave_invalid
-|:[_source_hack] PART #[_nick_place] :{_VAR_method}
+|:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
 
 _notice_place_topic
-|:[_source_hack] TOPIC #[_nick_place] :[_topic]
+|:[_INTERNAL_source_IRC] TOPIC #[_nick_place] :[_topic]
 
 _notice_place_topic_official
 |#332 [_nick_me] #[_nick_place] :[_topic]
 
 _echo_ping
-|:[_source_hack] NOTICE [_nick_me] :%PING [_time_ping]%
+|:[_INTERNAL_source_IRC] NOTICE [_nick_me] :%PING [_time_ping]%
 
 _failure_unsupported_ping 
 |## yes, this is a pong also...
-|:[_source_hack] NOTICE [_nick_me] :%PING [_time_ping]%
+|:[_INTERNAL_source_IRC] NOTICE [_nick_me] :%PING [_time_ping]%
 
 _info_server_version
 |:[_host_server] 351 [_nick_me] [_version].[_degree_debug] [_host_server] :[_version_server] using [_version_driver] available from [_page_server_software]
 
 _status_version
-|:[_source_hack] NOTICE [_nick_me] :%VERSION [_version_description] ([_version])%
+|:[_INTERNAL_source_IRC] NOTICE [_nick_me] :%VERSION [_version_description] ([_version])%
 
 _status_version_agent
-|:[_source_hack] NOTICE [_nick_me] :%VERSION [_version_description] ([_version])%
+|:[_INTERNAL_source_IRC] NOTICE [_nick_me] :%VERSION [_version_description] ([_version])%
 
 _list_friends_channel
 |#353 [_nick_me] = & :[_friends]

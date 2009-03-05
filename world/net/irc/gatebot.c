@@ -330,7 +330,7 @@ case "privmsg":
 //			     joe_nick +" :You're not registered yet.\n";
 			render("_error_necessary_registration",
 		  "Sorry, you cannot use this without prior registration.", ([
-				"_source_hack": IRCGATE_NICK,
+				"_INTERNAL_source_IRC": IRCGATE_NICK,
 				"_nick_me" : joe_nick,
 			   ])); 
 			return 1;
@@ -821,7 +821,7 @@ msg(source, mc, data, mapping vars, showingLog, target) {
 		}
 #else
 		// TODO: remove 'pm' logic?
-		vars["_source_hack"] = source;
+		vars["_INTERNAL_source_IRC"] = source;
 		vars["_nick_me"] = ni;
 		//send(source, psyctext(t, vars, data, source));
 		render(mca, data, vars, source);
