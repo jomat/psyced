@@ -755,7 +755,7 @@ _PAGES_help_settings
 |## <DT><P><B> /set multiplace [ on | off ] </B></p><dd>
 |## erlaubt das Betreten mehrerer Räume gleichzeitig. Für fortgeschrittene
 |## Anwender essentiell, und in vielen Zugangsformen sowieso normal.
-|##
+|## 
 |<a name="clearscreen"></a>
 |<DT><P><B> /set clearscreen [ on | off ] </B></p><dd>
 |betrifft nur den telnet-Zugang. Mit einer Leereingabe kann

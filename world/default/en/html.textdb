@@ -841,7 +841,7 @@ _PAGES_help_settings
 |## <DT><P><B> /set multiplace [ on | off ] </B></p><dd>
 |## allows you to enter more than one room at a time in some access forms.
 |## An essential feature for advanced users, yet confusing for some beginners.
-|## 
+|##
 |<DT><P><B> /set clearscreen [ on | off ] </B></p><dd>
 |only applies to the telnet access. Hitting carriage return without
 |any other input will normally clear the terminal screen.

@@ -6,6 +6,9 @@ Essentially: whenever you fix something, move that line to the end of file.
 ________________________________________________________________________
 == NEXT RELEASE ========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+? what happens if i /alias an autoalias?
+- and commands like /kill do not see the autoaliases...
+
 ? support tls multiplexing on all suitable ports
 ________________________________________________________________________
 == currently being inspected ===========================================

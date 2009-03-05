@@ -1,6 +1,12 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
 ## tradotto al 30% ... cerca /TODO/ per continuare
 
+_failure_unavailable_alias
+|niente alias per [_uniform_new]: [_nick_old] appartiene a [_uniform_old].
+
+_notice_add_alias_temporary
+|[_uniform_entity] appare come [_nick_entity].
+
 _message
 |[_nick] trasmette: [_data]
 
