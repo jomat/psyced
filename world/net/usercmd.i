@@ -1237,6 +1237,7 @@ cmd(a, args, dest, command) {
 		w("_warning_usage_notify",
 "Usage: /notify <person> [ i(mmediate),d(elayed),D(elayedMore) ]");
 		break;
+	case "sh":
 	case "show":
 //		if (sizeof(args) != 2) return listAcq(PPL_ANY);
 		if (sizeof(args) == 2) switch(args[1]) {
