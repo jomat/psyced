@@ -110,17 +110,27 @@ msg(source, mc, data, vars, showingLog, target) {
 	case "_query_users_amount":	// old, please remove
 	case "_request_user_amount":
 # ifdef _flag_disable_query_amount_users_online
-		rv["_amount_users_online"] = -1;
+		rv["_amount_users_loaded"] = -1;
 # else
-		rv["_amount_users_online"] = amount_people();
+		// this actually shows the number of loaded user entities
+		// which is higher than the actual number of users online
+		rv["_amount_users_loaded"] = amount_people();
 # endif
 		rv["_amount_users_registered"] = -1; // how to get this?
 		// <kuchn> maybe read in the user directory so you have the amount of registered users.
 		// <lynX> i think it isn't anybody's business...
 		//	  in the name of privacy we should be
 		//	  giving out random numbers instead of -1..  ;)
-		sendmsg(source, "_status_user_amount",
-		    "[_source] has [_amount_users_online] users online.", rv);
+		sendmsg(source, "_status_user_amount", 0, rv);
+    // ircds tell a lot of things in reply to /lusers:
+    //
+    // 251 x :There are 25079 listed and 22070 unlisted users on 38 servers
+    // 252 x 39 :flagged staff members
+    // 254 x 22434 :channels formed
+    // 255 x :I have 2180 clients and 0 servers
+    // 265 x :Current local  users: 2180  Max: 2714
+    // 266 x :Current global users: 47149  Max: 55541
+    // 250 x :Highest connection count: 2715 (2714 clients) (228789 since server was (re)started)
 		return 1;
 #endif // _flag_disable_query_server
 	case "_error":

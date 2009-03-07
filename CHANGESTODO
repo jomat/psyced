@@ -13,62 +13,6 @@ ________________________________________________________________________
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-- remote IRC place does not send names listing on /join
-- remote IRC /part shows no reaction at first attempt
-    +++ not limited to IRC!! thx marenz
-
-- XMPP: first reply to a stranger's remote psyc message did not show up in psi
-
-- IRC shows "*** k kindly asks for your friendship." for remote
-  friendship requests. eh! where's the uniform!?
-
-- remote /topic shows wrong nick (abolish _nick and this problem disappears)
-
-- /m freenode:symlynx hey
-    Sorry, _message_private is not supported by the IRC gateway.
-  huh? wasn't that once the point to make them? debug...
-
-- tjgillies ponders: connecting to psyced.org with psi pops up a
-  profile window everytime
-
-- tjgillies: meebo doesn't let you put * in MUC name
-  AFAIK the xmpp: uri does not forbid * from the URI RFC thus
-  meebo should be incorrect here. we'll have to talk to them..
-- google talk also makes funny errors, maybe because of the '*'
-  <message to='XXX@gmail.com' type='groupchat' from='*demo@ve.symlynx.com/lynX'><body>/me asks: you see me?</body></message>
-  <message to="*demo@ve.symlynx.com/lynX" type="error" from="XXX@gmail.com">
-  <body>/me asks: you see me?</body>
-  <error code="503" type="cancel">
-  <service-unavailable xmlns="urn:ietf:params:xml:ns:xmpp-stanzas"/>
-  </error>
-  </message>
-
-- spam by unregistered users: limit unregistered users to 1 per minute for now?
-  or force them to do web-based registration? or even.. trustee-based?
-  it's the real thing.....!
-
-? archetype.gen & other places: current privilege model sux.
-	qAide(), qOwner(), boss(source), v("topic-user")
-    .. how does this fit with confctrl, _duty and qAllowExternal?
-    .. and in some cases you just want to check for isMember
-
-- filter strangers is off by default, but we still seem to get a warning
-+ we should put _trustee into messages to strangers, so we can talk with
-  people who we have friends in common with, by default. *TRUST*
-? in gui clients this could be a menu option in a buddy list:
-  "contact a common friend" .. and of course when /surf'ing
-
-? is it a good idea to use SIGS in user:cmd, too? not sure!!
-
-- experimental rename fails sometimes:
-        Attempt to rename to existing object '~nautilutz'
-  possible fix: separate user identity from user access interface (see below)
-
-- REGISTERED_USERS_ONLY does not behave properly on IRC port
-  (see also NO_NEWBIES ... clean up and rename?)
-
-? tg reports inconsistent display of availability states in friend contextes
-  so far unable to reproduce
 ________________________________________________________________________
 == psyced 1.0 ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -134,6 +78,10 @@ AUTOALIASES & ALIASES FOR PLACES
   or we should look at presence/subscribe integration first (where the
   distinction of users and rooms becomes less relevant).
 ! whenever a _context is output, its nick will be auto-added to raliases
+problems that should disappear when we move away from _nick's:
+- IRC shows "*** k kindly asks for your friendship." for remote
+  friendship requests. eh! where's the uniform!?
+- remote /topic shows wrong nick
 
 PRESENCE STATUS
 + all _status_person need to be upgraded to _status_presence with
@@ -192,6 +140,23 @@ see also http://about.psyc.eu/subscription
 + FRIEND_ECHO ... send echo for /fr type commands from recipient
 		  not from own UNI (see #ifdef FRIEND_ECHO)
   ... or just rewrite it all into context subscription!!
+
+ARCHETYPE PLACES
+? archetype.gen & other places: current privilege model sux.
+	qAide(), qOwner(), boss(source), v("topic-user")
+    .. how does this fit with confctrl, _duty and qAllowExternal?
+    .. and in some cases you just want to check for isMember
+
+- REGISTERED_USERS_ONLY does not behave properly on IRC port
+  (see also NO_NEWBIES ... clean up and rename?)
+
+? is it a good idea to use SIGS in user:cmd, too? not sure!!
+
+- filter strangers is off by default, but we still seem to get a warning
++ we should put _trustee into messages to strangers, so we can talk with
+  people who we have friends in common with, by default. *TRUST*
+? in gui clients this could be a menu option in a buddy list:
+  "contact a common friend" .. and of course when /surf'ing
 ________________________________________________________________________
 == TOP DELEGATES for 1.0 ===============================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -348,15 +313,6 @@ ________________________________________________________________________
 + redo _flag_disable_info_session as other default of /set greeting auto
 
 ? apply more TAGGING (tagged callbacks also avoid the monster switches)
-
-  /lusers shows: There are 441 users on this server.
-  no, this is not a number from smtp spam links.
-- either we keep an extra counter for people who are _really_ online
-  or we avoid summoning people just to hand them out a _notice_presence.
-  the latter makes sense really.
-- also, offline users are never unloaded apparently, so the problem is
-  somewhere in the reset() or clean_up() procedure. we first need to
-  unload them, then we can look into not loading them in the first place
 
 CIRCUITRY
 - _request_circuit_shutdown isnt issued or doesnt arrive
@@ -538,12 +494,14 @@ JYNX möchte mit Dir Freundschaft schließen.
 - falls /set entersilent off so erhalten bleibt, dokumentieren
 
 PROGRAMMABLE USER IDENTIFICATIONS & MULTIPLE CLIENT INTERFACES
-+ fippo insists on the uni/client split..
+- experimental rename fails sometimes:
+        Attempt to rename to existing object '~nautilutz'
+  possible fix: separate user identity from user access interface
++ fippo insists on the uni/client split and saga has been asking for years..
   = separate user identity from user access interface
-  (and saga has been asking for years) .. read also 'person.gen' below
-- this would probably also solve the issue with the ~nick object name plan
+  but it is a messy piece of work (i tried to do it and stashed the branch)
 + and it allows for multiple jabber resources, of course
-  (but it means we need to actively support UNRs for UNLs)
+  (but it means we need to actively support UNRs for UNLs in entities)
 ? one day we could have a person.gen to create all sorts of user
   objects from, but it sure is confusing that each of them still needs to
   be able to call upon the various protocols..  this may either need a
@@ -745,6 +703,27 @@ remoteMUC:
 ________________________________________________________________________
 == JABBER CLIENT ISSUES (...experimental is justified...) ==============
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+? XMPP: connecting to psyced.org with psi pops up a profile window everytime
+? XMPP: first reply to a stranger's remote psyc message did not show up in psi
+? neulich wurde 'stanly' beim runterfahren von psi nicht aus dem MUC genommen.
+  als er miranda hochfuhr war er bei uns immernoch im MUC und bekam die
+  MUC meldungen. ob der fehler bei psi oder uns liegt, k.A.
+  ... is this still happening with the new fixes?
+
+ASTERISK IN XMPP: UNIFORMS
+- tjgillies: meebo doesn't let you put * in MUC name
+  AFAIK the xmpp: uri does not forbid * from the URI RFC thus
+  meebo should be incorrect here. we'll have to talk to them..
+- google talk also makes funny errors, maybe because of the '*'
+  <message to='XXX@gmail.com' type='groupchat' from='*demo@ve.symlynx.com/lynX'><body>/me asks: you see me?</body></message>
+  <message to="*demo@ve.symlynx.com/lynX" type="error" from="XXX@gmail.com">
+  <body>/me asks: you see me?</body>
+  <error code="503" type="cancel">
+  <service-unavailable xmlns="urn:ietf:params:xml:ns:xmpp-stanzas"/>
+  </error>
+  </message>
+- is psi having a problem with this, too?
+
 - accurate availability values from friends aren't stored and delivered
 
 - re-subscribe isn't properly handled (so we do friend(0) earlier instead)
@@ -868,10 +847,6 @@ ________________________________________________________________________
 
 - iChat sends /me with a newline after <body> and before the /me
   .. it doesn't get seen as /me, but it doesn't get output either!?
-
-? neulich wurde 'stanly' beim runterfahren von psi nicht aus dem MUC genommen.
-  als er miranda hochfuhr war er bei uns immernoch im MUC und bekam die
-  MUC meldungen. ob der fehler bei psi oder uns liegt, k.A.
 
 ? wenn wir psyc die eintragung von beliebigen weiteren identifications und
   locations pro user beibringen, könnte man dann diesen user via jabber
@@ -1416,6 +1391,10 @@ mapping rvars msg(source, mc, data, vars, rvars);
 ________________________________________________________________________
 * GATEBOT / IRCGATE / etc
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- /m freenode:symlynx hey
+    Sorry, _message_private is not supported by the IRC gateway.
+  huh? wasn't that once the point to make them? debug...
+
 - msg from irc to remote psyc user doesn't work:
 	ERQ could not resolve "symlynX".
 	(it tries to resolve the irc:nick)
@@ -1745,7 +1724,7 @@ SHOW STATUS?
 - psyctext() hängt sich auf wenn ein [ nicht wieder mit ] geschlossen wird
 
 SPAM / FLOOD CONTROL
-+ connect flood protection (against icaruz from pD9E3F294.dip.t-dialin.net)
++ connect flood protection (against icaruz from XX.XX.XX.XX)
     1. introduce #define MAX_CONNECTIONS_FROM_ONE_IP
     2. warn admins via monitor when MAX_CONNECTIONS_FROM_ONE_IP * 70%
 		    is reached
@@ -1755,6 +1734,9 @@ SPAM / FLOOD CONTROL
        maximum number of connections per ipmask, defaulting to 0
     6. maybe MAX_CONNECTIONS_FROM_ONE_IP can also be lowered
        interactively using "/block * 200"
+- spam by unregistered users: limit unregistered users to 1 per minute for now?
+  or force them to do web-based registration? or even.. trustee-based?
+  it's the real thing.....!
 see also: http://about.psyc.eu/SPAM
 
 == FRIENDSNETS / FRIENDSHIP DEGREES / WEB OF TRUST TODO: ===============

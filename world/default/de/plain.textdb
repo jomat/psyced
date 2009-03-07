@@ -1543,8 +1543,8 @@ _status_version_agent
 _status_version
 |Version: [_nick] verwendet "[_version_description]" ([_version]).
 
-_status_users
-|Es sind [_amount_users] Nutzer auf diesem Server angemeldet.
+_status_user_amount
+|Es sind [_amount_users_loaded] Nutzer auf Server [_source] geladen.
 
 _status_friends
 |Anwesende Freunde: [_friends].

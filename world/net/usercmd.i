@@ -266,9 +266,8 @@ cmd(a, args, dest, command) {
 		    // erzeugen sollte.. no? ausserdem sind die vars und
 		    // das fmt unterschiedlich. und fast derselbe käse steht
 		    // nochmal in net/irc/common... TODO
-		    w("_status_user_amount",
-		      "There are [_amount_users] users on this server.",
-			 ([ "_amount_users" : amount_people() ]) );
+		    w("_status_user_amount", 0,
+			 ([ "_amount_users_loaded" : amount_people() ]) );
 		}
 #else
 		if (sizeof(args) > 1 && is_formal(args[1])) t = args[1];

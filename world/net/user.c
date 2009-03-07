@@ -1338,7 +1338,7 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 #else
 # echo No LPC? Wow. Good luck!
 #endif
-#ifndef _flag_disable_circuit_proxy_multiplexing
+#ifdef _flag_enable_circuit_proxy_multiplexing
 		    // this is necessary when a single proxy is emulating
 		    // several clients for several users. to figure out
 		    // which context stuff is forwarded to which client
@@ -1349,8 +1349,8 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 		    // for them instead of accepting forwards from each UNI
 		    vars["_target_forward"] = loc;
 		    // maybe this can be avoided when no _context is set...?
-#endif
 		    P3(("%O user:w forwarding %O to %O\n", ME, mc, vars["_target_forward"]))
+#endif
 		    sendmsg(loc, mc, nudata, vars);
 //		    PT(("PSYCW: %s -> %O (%O)\n", mc, loc, vars))
 #if DEBUG > 1

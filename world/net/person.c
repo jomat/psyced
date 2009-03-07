@@ -1982,7 +1982,7 @@ case "_notice_presence_here_busy":
 	t = v("locations")[0];
 	if (t && t != source) {
 		// no psyctext rendering happening in this variant
-# ifndef _flag_disable_circuit_proxy_multiplexing
+# ifdef _flag_enable_circuit_proxy_multiplexing
 		vars["_target_forward"] = t;
 # endif
 		sendmsg(t, mc, data, vars, source);

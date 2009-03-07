@@ -366,4 +366,4 @@ _status_place_members_end_verbose
 |#315 [_INTERNAL_nick_me] #[_nick_place] :End of /WHO list.
 
 _status_user_amount
-|#251 [_INTERNAL_nick_me] :There are [_amount_users_online] users on [_source]'s server
+|#251 [_INTERNAL_nick_me] :{_status_user_amount}

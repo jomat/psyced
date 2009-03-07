@@ -102,8 +102,9 @@ int msg(string source, string mc, string data,
 				break;
 			}
 		    }
-		    return ({ $1, "_status_user_amount", 
-			    "There are [_amount_users] people online, [_amount_users_registered] accounts on this server.", 
+		    return ({ $1, "_status_user_amount", 0, 
+                        // generic formats shouldn't be hanging around in net/jabber...!?
+                        // "There are [_amount_users_loaded] people loaded, [_amount_users_registered] accounts on this server.", 
 			    $2 });
 		} else 
 		    return ({ $1, "_error_request_users_amount", 

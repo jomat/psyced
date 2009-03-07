@@ -1409,6 +1409,9 @@ _status_version_agent
 _status_version
 |Version: [_nick] is using "[_version_description]" ([_version]).
 
+_status_user_amount
+|There are [_amount_users_loaded] users loaded on server [_source].
+
 _notice_presence_here_talkative
 |Presence: [_nick] is willing to talk. [_description_presence]
 

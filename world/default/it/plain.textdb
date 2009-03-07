@@ -956,7 +956,7 @@ _notice_friendship_removed_implied
 |Automatischerweise kündigt auch [_nick] Dir die Freundschaft.
 
 _status_user_amount
-|[_amount_users_online] utenti sono connessi tramite questo server.
+|[_amount_users_loaded] utenti caricati su [_source].
 
 _status_friends
 |Anwesende Freunde: [_friends].
