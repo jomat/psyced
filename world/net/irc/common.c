@@ -55,7 +55,7 @@ ircMsg(from, cmd, args, text, all) {
 case "motd":
 		motd();
 		return 1;
-#ifndef BETA
+#ifndef GAMMA
 case "lusers":
 		lusers();
 		return 1;
@@ -137,7 +137,7 @@ motd() {
 	return 1;
 }
 
-#ifndef BETA
+#ifndef GAMMA
 lusers() {
 # ifndef _flag_disable_query_server
 	reply(RPL_LUSERCLIENT, ":There are " + amount_people()

@@ -854,7 +854,7 @@ logon() {
 	// SILENCE: ach und ich weiss nicht ob /quote silence bzw /silence den psyced befehl silence aufruft, aber imo sollte er das aus verwirrungs-vermeidungs-gruenden nicht tun. silence im irc ist serverseitiges ignore.
 
 # endif
-# ifndef BETA
+# ifndef GAMMA
 	lusers();
 # endif
 	motd();
@@ -862,7 +862,7 @@ logon() {
 	// the following things happen after logon, because the textdb isn't
 	// available earlier. if this order of things is not acceptable, then
 	// we have to run sTextPath twice (see above)
-# ifdef BETA
+# ifdef GAMMA
 #  ifndef _flag_disable_query_server
 	sendmsg("/", "_request_user_amount", 0, ([]));
 	// reply.h says RPL_LUSERME is mandatory.. huh.. FIXME?

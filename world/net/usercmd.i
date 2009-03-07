@@ -255,7 +255,7 @@ cmd(a, args, dest, command) {
 		people();
 		break;
 	case "lusers":
-#ifndef BETA
+#ifndef GAMMA
 		if (sizeof(args) > 1 && is_formal(args[1])) {
 		    sendmsg(args[1], "_request_user_amount", 
 			    "[_nick] would like to know how many users you have.",
@@ -2051,7 +2051,7 @@ friendcast(mc, data, vars, friendivity) {
         // but doesn't make much sense as long as we cannot sort out dupes
         //if (friendivity) vars["_amount_friendivity"] = friendivity;
         if (castmsg(mc || "_message_friends", data, vars))
-#ifdef BETA
+#ifdef GAMMA
 	    // to put the echo into lastlog, we need to msg it to ourselves
             msg(0, mc? "_echo"+mc : "_message_echo_friends", data, vars);
 #else

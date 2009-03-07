@@ -211,7 +211,7 @@ static varargs string psyc_render(mixed source, string mc, mixed data,
 # if 1
 	if (context = vars["_INTERNAL_context"]) {
 		P4(("retransmit: %O - deleting source\n", data))
-# ifdef ALPHA
+# ifdef BETA
 		if (source != context && !vars["_source_relay"])
 		    vars["_source_relay"] = source;
 # else
@@ -224,7 +224,7 @@ static varargs string psyc_render(mixed source, string mc, mixed data,
 	else if (context = vars["_context"]) {
 		P4(("1st transmit: %O - deleting source and target\n", data))
 		// we're not multipeering, so no sources here.
-# ifdef ALPHA
+# ifdef BETA
 		if (source != context && !vars["_source_relay"])
 		    vars["_source_relay"] = source;
 # else

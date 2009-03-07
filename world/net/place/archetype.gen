@@ -128,7 +128,7 @@
 #include <uniform.h>
 #include <driver.h>
 
-#ifdef BETA
+#ifdef GAMMA
 # define ECHOES
 #endif
 
