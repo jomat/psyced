@@ -24,7 +24,7 @@ varargs string psyctext(string s, mapping m, vastring data,
 	string r, p, q, v;
 
 #if DEBUG > 2
-	P3(("psyctext(%O, .., %O, %O, %O) %O\n", s, data, source, nick, m))
+	PT(("psyctext(%O, .., %O, %O, %O) %O\n", s, data, source, nick, m))
 #else
 	P2(("psyctext(%O, .., %O, %O, %O)\n", s, data, source, nick))
 #endif
@@ -46,12 +46,14 @@ varargs string psyctext(string s, mapping m, vastring data,
 		r += p + (data || "");
 		break;
 	case "_nick":
-#ifdef USE_THE_NICK
+#if 1 //def USE_THE_NICK
 		r += p + (nick || m["_nick"] || "?");
 #else
+// doesn't work for "wax enters psyc://ve.symlynx.com/@Wax."
 		// _nick can mean _source_relay instead of physical source
 		// and in some dirty cases we do not even provide _source_relay
 		q = m["_source_relay"] || m["_source"];
+		PT(("trying %O for _nick\n", q))
 		unless (q) {
 			// so we are forced to use the _nick from the message
 			q = m["_nick"] || nick;
@@ -62,15 +64,18 @@ varargs string psyctext(string s, mapping m, vastring data,
 			// no _nick? okay, then it has to be this one
 			q = UNIFORM(source) || "?";
 		}
+		PT(("trying %O for _nick\n", q))
 		if (previous_object())
 		    q = previous_object()->uni2nick(q, m) || q;
+		PT(("using %O for _nick\n", q))
 		r += p + q;
 #endif
 		break;
 	case "_source":
 		// should this support _source_relay? var inheritance!
 #ifdef USE_THE_NICK
-		r += p + (nick || m["_nick"] || m["_source"] || UNIFORM(source) || "?");
+		r += p + (nick || m["_nick"] || m["_source"]
+			       || UNIFORM(source) || "?");
 #else
 		q = m["_source"] || UNIFORM(source) || "?";
 		if (previous_object())

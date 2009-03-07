@@ -220,6 +220,9 @@
 # define NEW_UNLINK
 # define NEW_RENDER
 # define MUCSUC
+#else
+// the old nick code seems to introduce the remote-part bug
+# define USE_THE_NICK
 #endif
 #define GAMMA   // code that has left BETA and is in production use
 
@@ -242,7 +245,6 @@
 //# ifndef __PIKE__
 //#  define USE_LIVING
 //# endif
-# define USE_THE_NICK
 #endif
 
 #ifdef __NO_SRV__	    // since psyclpc 4.0.4

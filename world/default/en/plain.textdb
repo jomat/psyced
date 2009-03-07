@@ -757,7 +757,10 @@ _message_public_whisper
 |[_nick] whispers to [_nick_target]: [_data]
 
 _message_public_reduce
-|[_nick] {_TEXT_says} {_TEXT_something}.
+|[_nick] {_TEXT_action_says} {_TEXT_something}.
+
+_message_public_ask_reduce
+|[_nick] {_TEXT_action_asks} {_TEXT_something}.
 
 _message_public_question
 |[_nick] {_TEXT_action_asks}: [_data]
