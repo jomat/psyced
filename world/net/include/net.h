@@ -220,9 +220,6 @@
 # define NEW_UNLINK
 # define NEW_RENDER
 # define MUCSUC
-#else
-// the old nick code seems to introduce the remote-part bug
-# define USE_THE_NICK
 #endif
 #define GAMMA   // code that has left BETA and is in production use
 
@@ -241,6 +238,9 @@
 #  define HTFORWARD	    // let person entity buffer output for http usage
 # endif
 #else
+// the old nick code seems to introduce the remote-part bug
+// but if we don't use it, psyced will render [_nick] wrong in many places
+# define USE_THE_NICK
 //# define PRE_SPEC	    // things that changed during the spec process
 //# ifndef __PIKE__
 //#  define USE_LIVING

@@ -73,7 +73,7 @@ varargs string psyctext(string s, mapping m, vastring data,
 		break;
 	case "_source":
 		// should this support _source_relay? var inheritance!
-#ifdef USE_THE_NICK
+#ifdef USE_THE_NICK_TOO_MUCH
 		r += p + (nick || m["_nick"] || m["_source"]
 			       || UNIFORM(source) || "?");
 #else
@@ -84,7 +84,7 @@ varargs string psyctext(string s, mapping m, vastring data,
 #endif
 		break;
 	case "_source_relay":
-#ifdef USE_THE_NICK
+#ifdef USE_THE_NICK_TOO_MUCH
 		r += p + (nick || m["_nick"] || m["_source_relay"] || "?");
 #else
 		q = m["_source_relay"] || "?";
@@ -94,7 +94,7 @@ varargs string psyctext(string s, mapping m, vastring data,
 #endif
 		break;
 	case "_target":
-#ifdef USE_THE_NICK
+#ifdef USE_THE_NICK_TOO_MUCH
 		r += p + (m["_nick_target"] || m["_target"] || "?");
 #else
 		q = m["_target"] || "?";
@@ -104,7 +104,7 @@ varargs string psyctext(string s, mapping m, vastring data,
 #endif
 		break;
 	case "_context":
-#ifdef USE_THE_NICK
+#ifdef USE_THE_NICK_TOO_MUCH
 		r += p + (m["_nick_place"] || m["_context"] || "?");
 #else
 		q = m["_context"] || "?";

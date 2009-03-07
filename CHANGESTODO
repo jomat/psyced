@@ -13,6 +13,15 @@ ________________________________________________________________________
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- neither USE_THE_NICK or USE_AUTOALIAS work flawlessly. in the case of
+  the latter, _nick either displays without uniform for remote people,
+  or it occasionally shows a room's nick instead of the user's nick.
+  they way to solve this is to get rid of _nick in the protocol, it seems.
+  therefore we need to upgrade all servers to properly be able to display
+  _source, _target and _context in psyctext before we can start migrating
+  templates and removing _nick vars. during this tradition we keep the
+  USE_THE_NICK code running. several "invite issues" should be solved once
+  nicks are gone.
 ________________________________________________________________________
 == psyced 1.0 ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
