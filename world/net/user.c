@@ -769,9 +769,7 @@ case "_status_description_place":
 		    sscanf(vars["_tag_reply"], "%s %s", variant, t);
 		    //PT(("format %O tag %O\n", variant, t))
 		    descvars = vars;
-#ifdef GAMMA
 		    descvars["_source"] = source;
-#endif
 		    switch (variant) {
 		    default:
 			// client doesn't want HTML
@@ -929,9 +927,7 @@ case "_failure_redirect":
 				placeRequest(vars["_source_redirect"],
 					     mc, 0, 1);
 			} // else.. we'll see
-#ifdef GAMMA // enough to make the messages visible?
 			return 1;
-#endif
 		}
 		break;
 case "_echo_place_enter_INTERNAL_CHECK": // only do the check and dont write anything
@@ -1184,13 +1180,16 @@ case "_status":
 	D2( if (vars["_nick"] != nick)
 	    D(S("u:msg _nick %O is changed into %O\n", vars["_nick"], nick)); )
 
-#if 0 //ndef GAMMA
+#ifdef ALPHA
 	// DANGEROUS CHANGE! I added this line to make sure
 	// remote UNI is shown on private messages. let's see
 	// if it breaks anything --- 2003-05-09
 	//
 	// for irssi w/ no-irssi-echo-chatting a backup comes in handy.
 	// --- 2005-01-07
+	//
+	// tg has found out that this little line keeps masquerade from
+	// breaking for ircers: they would see object path otherwise
 	unless (vars["_nick_verbatim"]) vars["_nick_verbatim"] = vars["_nick"];
 #endif
 	vars["_nick"] = nick;
@@ -1208,20 +1207,6 @@ case "_status":
 	}
 	return 1;
 }
-
-#ifndef GAMMA
-// print() is for "important" output which gets lastlogged
-//
-// if no lastlog mechanism is available,
-// you may choose to use this thing here
-//
-print(fmt, a,b,c,d,e,f,g,h,i,j,k) {
-	string m = sprintf(fmt, a,b,c,d,e,f,g,h,i,j,k);
-	P1(("user:print(%O,%O,%O..)\n", fmt,a,b))
-	emit(m);
-	return m;
-}
-#endif
 
 // pr() has replaced p(), P() and print() in most cases.
 // it uses the PSYC "message code" (actually a PSYC method)
@@ -1436,20 +1421,13 @@ wAction(mc, data, vars, source, variant, nick) {
 		    w(mc+"_text_action"+variant, data, va, source);
 		else {
 		    if (va["_nick_target"])
-			w(mc+"_action"+variant,
-#ifdef GAMMA
-			    0,
-#else
-			     // bei _message gehört sich das nicht
-			     "[_nick_target]: [_nick] [_action].",
-#endif
-			     va, source);
+			w(mc+"_action"+variant, 0, va, source);
 		    else
 			w(mc+"_action"+variant,
-#ifdef GAMMA
-			  "[_nick] [_action].",
-#else
+#ifdef ALPHA
 			  0,
+#else
+			  "[_nick] [_action].",
 #endif
 			  va, source);
 		}
@@ -1550,10 +1528,6 @@ autojoin() {
 	vSet("place", DEFPLACE);
 # endif
 	P2(("autojoin with %O %O %O\n", v("place"), place, places))
-# ifndef GAMMA
-	unless (v("place"))
-	  vSet("place", T("_MISC_defplace", DEFPLACE));
-# endif
 	// see also http://about.psyc.eu/Client_coders#Room_members
 	if (sizeof(places)) {
 #if 0
@@ -1600,10 +1574,8 @@ autojoin() {
 	}
 	else {
 # ifndef _flag_disable_place_default
-#  ifdef GAMMA
 		unless (v("place"))
 		  vSet("place", T("_MISC_defplace", DEFPLACE));
-#  endif
 		// re-entering your last place is unusual by irc
 		// habits, but since we don't want people to set up
 		// autojoins they may find this quite practical until
@@ -1707,7 +1679,6 @@ disconnected(remainder) {
 	// user did not detach his client properly. we'll make a wild guess
 	// at how many messages he may have missed - enough to make the user
 	// check the lastlog if that's not enough.
-#ifdef GAMMA
 	// FIXME: problem with jabber/user running into some bug when
 	// lastlog messages are shown.. which at this point of course
 	// creates a recursion - thus, eliminating the otherwise useful
@@ -1719,7 +1690,6 @@ disconnected(remainder) {
 		P1(("unexpected disconnect in %O\n", ME))
 		vInc("new", 7);
 	}
-#endif
 	// actually - we could show all messages since last activity
 	// from user. TODO
 #ifdef AVAILABILITY_OFFLINE

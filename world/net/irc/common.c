@@ -163,9 +163,6 @@ render(string mc, string data, mapping vars, mixed source) {
 	// this goes thru ->v()
 	if (t && v("timestamp") != "off" // && abbrev("_message", mc)
 	    && stringp(data)) {
-# ifndef GAMMA
-		if (stringp(t)) t = to_int(t);	// we need types ;)
-# endif
 		if (v("timestamp") == "on") {
 			string msa = " ";
 			msa[0] = 0x01; // msa's CTCP character

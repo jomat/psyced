@@ -16,7 +16,7 @@ htget(prot, query, headers, qs) {
 	} else {
 		PT(("replacing cookie %O\n", headers["cookie"]))
 		htok3(prot, 0, "Set-Cookie: psyced=\""+ qs +"\";\n");
-#ifdef GAMMA
+#if 1
 		// login was supposed to something more than just /surf
 		// but until this is the case, why lose time?
 		return NET_PATH "http/examine"->htget(0, query, headers, qs);

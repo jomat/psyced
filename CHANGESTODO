@@ -314,6 +314,9 @@ ________________________________________________________________________
   but they should, everywhere except for irc maybe
 - tg reports: the nick shows up like net/irc/user/#foo in IRC
 
++ add a _time_sent whenever messages are queued for later delivery, like
+  when there is no circuit yet.
+
 + install.sh sollte lieber mit bereits ausgepackten tars operieren
   können damit man darin tweaken kann und install nochmal anwerfen kann
   ... geht bei psyclpc, aber nicht beim psyced

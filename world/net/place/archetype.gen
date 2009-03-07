@@ -665,7 +665,6 @@ castPresence(source, mc, data, vars, filterpresence) {
 // actually insert the new member into our data structures
 // (happens after all checks have passed)
 insert_member(source, mc, data, vars, ni, neu, again) {
-#ifdef GAMMA
 	unless (ni) {
 		P0(("insert_member w/out nick for %O in %O.\n", source, ME))
 		// try to make the ugly three trailing parameters optional
@@ -673,7 +672,6 @@ insert_member(source, mc, data, vars, ni, neu, again) {
 		neu = !MEMBER(source); // don't output the status again
 		again = 0;
 	}
-#endif
 #ifdef PLACE_MASQUERADE
 	if (vars["_nick_local"]) snames[source] = vars["_nick_local"];
 #endif

@@ -745,10 +745,6 @@ autojoin() {
     string s;
 
     if (isService) return -1;
-# ifndef GAMMA
-    unless (v("place"))
-      vSet("place", T("_MISC_defplace", DEFPLACE));
-# endif
     // subscriptions are stored in lowercase, warum auch immer
     if (sizeof(v("subscriptions"))) 
 	foreach (s in v("subscriptions")) {
@@ -762,10 +758,8 @@ autojoin() {
                          , // _automatic_subscription
 		     0, 0, ([ "_amount_history" : _limit_amount_history_place_default ]));
     } else {
-# ifdef GAMMA
 	unless (v("place"))
 	  vSet("place", T("_MISC_defplace", DEFPLACE));
-# endif
 # ifndef _flag_disable_place_default
 	// call_out(#'placeRequest, delay++, v("place"), ...
 	placeRequest(v("place"),

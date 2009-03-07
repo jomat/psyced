@@ -1087,12 +1087,6 @@ varargs int sendmsg(mixed target, string mc, mixed data, mapping vars,
 #endif
 
 	unless (source) source = previous_object();
-#ifndef GAMMA
-	// entity.c doesn't allow vars to be missing so we might
-	// just aswell enforce it in the whole psyced source that
-	// vars always need to be given as mapping. TODO
-	unless (mappingp(vars)) vars = ([]);
-#endif
 	// target = lower_case(target) ist fuer xmpp nicht
 	// gut, weil der resource-teil dort case-sensitive
 	// ist... der node@domain-Part aber nicht

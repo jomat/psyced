@@ -131,7 +131,6 @@ varargs int rootMsg(mixed source, string mc, string data,
 		}
 #endif
 		break;
-#ifdef GAMMA
 	case "_notice_authentication":
 		P0(("rootMsg got a _notice_authentication. never happens since entity.c\n"))
 		register_location(vars["_location"], source, 1);
@@ -139,7 +138,6 @@ varargs int rootMsg(mixed source, string mc, string data,
 	case "_error_invalid_authentication":
 		monitor_report(mc, psyctext("Breach: [_source] reports invalid authentication provided by [_location]", vars, data, source));
 		break;
-#endif
 #if 0
 	case "_request_session_compression":
 	case "_request_session_compress":

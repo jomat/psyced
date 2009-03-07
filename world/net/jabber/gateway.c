@@ -56,12 +56,10 @@ quit() {
 disconnected(remainder) { 
         // TODO: handle remainder
         P2(( "gateway %O disconnected\n", ME ))
-#ifdef GAMMA
 	// sometimes we get complete presence packets in the socket close
 	// remainder. probably broken xmpp implementations, let's try and
 	// do the best we can with it by forwarding stuff to feed().
 	if (remainder && strlen(remainder)) feed(remainder);
-#endif
         if (objectp(active)) active -> removeGateway(streamid);
 #ifdef _flag_log_sockets_XMPP
         log_file("RAW_XMPP", "\n%O disc\t%O", ME, ctime());

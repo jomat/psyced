@@ -1772,9 +1772,7 @@ PT(("_failure_filter_strangers to %O from %O\n", source, ME))
 		t = objectp(source)
 		   	? ((vars && vars["_nick"]) || "(?)")
 			: (source || psource);
-#ifdef GAMMA
 		if (t == v("reply")) break;
-#endif
 		vSet("reply", t);
 		// generation of "away" message in irc-speak
 #ifndef _flag_enable_unauthenticated_message_private

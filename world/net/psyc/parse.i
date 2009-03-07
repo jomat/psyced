@@ -170,15 +170,7 @@ private int conclude() {
 	unless (lastvar) return 0;
         // if (abbrev("_INTERNAL", lastvar)) not necessary because
         // the following check only allows lowercase for now
-	if (
-#ifdef GAMMA
-	    !legal_keyword(lastvar)
-#else
-	    // very relaxed strategy
-	    strlen(lastvar) < 2 || lastvar[0] != '_'   // policy may change
-	    || lastvar[1] > 'z' || lastvar[1] < 'a'
-#endif
-	) {
+	if ( !legal_keyword(lastvar) ) {
 		croak("_error_illegal_protocol_variable",
     "You are not allowed to present a variable named [_variable_name].",
 			([ "_variable_name": lastvar ]));
@@ -318,13 +310,11 @@ vamixed parse(string a) {
 		}
 		if (vname != "") {
 			conclude();
-#ifdef GAMMA
 			// intermediate hack in lack of real type support
 			// which needs to be done in net/spyc
 			if (abbrev("_time", vname)) vvalue = to_int(vvalue);
 // unused as yet:	else if (abbrev("_date", vname))
 //			    vvalue = PSYC_EPOCH + to_int(vvalue);
-#endif
 			cvars[lastvar = vname] = vvalue;
 #ifdef SYSTEM_SECRET
 			unless (vcheck) {
@@ -461,17 +451,7 @@ vamixed parse(string a) {
 #ifdef BITKOENIG_SYNTAX
 		sscanf(a, "%s %s", a, buffer);
 #endif
-#ifdef GAMMA
-		if (!legal_keyword(a))
-#else
-		// pretty inefficient strategy here
-		for (i=strlen(a)-1; i>=0; i--)
-		    unless (a[i] == '_' ||
-			(a[i] >= 'a' && a[i] <= 'z') ||
-			(a[i] >= '0' && a[i] <= '9') ||
-			(a[i] >= 'A' && a[i] <= 'Z'))
-#endif
-		{
+		if (!legal_keyword(a)) {
 			croak("_error_illegal_method",
 				"That's not a valid method name.");
 			QUIT

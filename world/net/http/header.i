@@ -22,7 +22,7 @@ varargs http_error(string prot, int code, string comment, string html) {
 
 	// apparently there isn't a single app that calls this with "html"
 	P2(("hterror(%O,%O,%O,%O) in %O\n", prot,code,comment,html, ME))
-#if defined(GAMMA) && defined(T)
+#if defined(T)
 	// use the textdb if available
 	out = psyctext( T("_PAGES_error",
 			      "<html><title id='code'>[_code]</title>\n"

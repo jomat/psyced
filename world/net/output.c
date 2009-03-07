@@ -58,25 +58,6 @@ int emit(string message) {
 // right now no purpose in classic psyc server
 printStyle(mc) { return ([]); }
 
-#ifndef GAMMA
-// p() is for "unimportant" output
-//
-// each user.c should override this method with its own variant
-// if special formatting (html, irc protocol..) is appropriate
-// otherwise this will output "unformatted" text, and should be
-// called as such
-//
-// does anything use this anymore? TODO
-string p(string fmt,	string a,string b,string c,string d,string e,string f,
-			string g,string h,string i,string j,string k) {
-	string message;
-	PT(("p(%O,%O,%O,%O..)\n", fmt, a,b,c))
-	message = sprintf(fmt, a,b,c,d,e,f,g,h,i,j,k);
-	emit(message);
-	return message;
-}
-#endif
-
 #ifdef LPC3
 // hm, this could move away TODO
 telnet_negotiation(int cmd, int option, array(int) optargs) {

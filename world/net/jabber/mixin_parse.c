@@ -298,7 +298,6 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 	    } else { 
 		// no relaying allowed, so we ignore hostname
 		o = summon_person(tu[UUser]);
-#ifdef GAMMA
 		// xep 0085 typing notices - we even split active into a separate message
 		// for now. could be sent as a flag
 		if ((node[t="/composing"] || node[t="/active"] || 
@@ -307,7 +306,6 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 		    // ...
 		    sendmsg(o, "_notice_typing_" + t[1..], 0, vars); 
 		}
-#endif
 		// there are some messages which dont have a body
 		// we dont care about those
 		unless (node["/body"]) return;
@@ -384,9 +382,6 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 	    // so there wont be circular error messages
 	    if (tu[UUser]) {
 		o = summon_person(tu[UUser]);
-#ifndef GAMMA
-		if (o && o->execute_callback(node["@id"], ({ vars["_INTERNAL_identification"], vars, node }))) return 1;
-#else
 		// the following should catch errors - in theory, requires testing
 		if (o) {
 		    int cb_ret;
@@ -401,7 +396,6 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 			return 1;
 		    }
 		}
-#endif
 	    }
 	    if (tu[UResource]) {
 		// innerxml

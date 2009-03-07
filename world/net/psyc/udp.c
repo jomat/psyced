@@ -70,7 +70,7 @@ parseUDP2(host, ip, port, msg) {
 	}
 	// else: we presume a UDP 4404 also listens on TCP
 
-#ifndef GAMMA
+#if 0
 	P1(("./psyc/udp.c: paranoid extra restart\n"))
 	restart();		// leading . does that anyway
 #endif

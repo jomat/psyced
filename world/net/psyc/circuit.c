@@ -246,7 +246,6 @@ int logon(int neverfails) {
 	}
 
 #ifdef __TLS__
-# ifdef GAMMA
 	sAuthHosts(([ ])); // reset authhosts 
 	if (tls_available() && tls_query_connection_state(ME) == 1 && mappingp(cert = tls_certificate(ME, 0))) {
 	    if (cert[0] != 0) {
@@ -268,7 +267,7 @@ int logon(int neverfails) {
 		else foreach(t : m) sAuthenticated(NAMEPREP(t));
 	    }
 //#ifdef _flag_allow_certificate_name_common	// to be switched this year
-#ifndef _flag_disallow_certificate_name_common
+# ifndef _flag_disallow_certificate_name_common
 	    // assume that CN is a host
 	    // as this is an assumption only, we may NEVER register_target it
 	    // note: CN is deprecated for good reasons.
@@ -276,7 +275,7 @@ int logon(int neverfails) {
 		P1(("%O believing CN %O\n", ME, t))
 		sAuthenticated(NAMEPREP(t));
 	    }
-#endif
+# endif
 	    if (m = tls_query_connection_info(ME)) {
 		P2(("%O is using the %O cipher.\n", ME, m[TLS_CIPHER]))
 		// shouldn't our negotiation have ensured we have PFS?
@@ -292,7 +291,6 @@ int logon(int neverfails) {
 		}
 	    }
 	}
-# endif
 #endif
 
 	cvars = ([]);

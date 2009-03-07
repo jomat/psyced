@@ -3385,7 +3385,7 @@ static placeRequest(where, mc, leave, quiet, morevars) {
                               return msg($1, $2, $3, $4); :);
                         // we use our right to leave the context ourselves
                         // after informing the place..
-# ifdef GAMMA
+# ifdef BETA
                         // <fippo> but that makes any _notice_place_leave run
 			// into the filter so i comment it out
                         leavePlace(where);

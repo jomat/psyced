@@ -115,14 +115,12 @@ userLogon() {
 	return ::userLogon();
 }
 
-#ifdef GAMMA
 authChecked(result, varargs array(mixed) args) {
 	// a point where we could be sending our jabber:iq:auth reply
 	// instead of letting _notice_login do that
 	PT(("%O got authChecked %O, %O\n", ME, result, args))
 	return ::authChecked(result, args...);
 }
-#endif
 
 jabberMsg(XMLNode node) {
 	XMLNode helper;
