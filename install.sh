@@ -974,7 +974,7 @@ _host_domain = $DOMAIN_NAME
 
 ; Would you like to bind the server to a specific IP address?
 ; If you do you MUST also provide _host_name and _host_domain
-;_host_IP = $HOST_IP
+_host_IP = $HOST_IP
 
 ; Nickname for the chatserver. Appears in login message, telnet prompt,
 ; IRC gateways and some web pages. Will use _host_name if unspecified.

@@ -8,11 +8,16 @@ ________________________________________________________________________
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ? support tls multiplexing on all suitable ports
 
+? bugs in psyced install procedure
+
 - pointless to keep gentoo files in this git, if they can't be updated
   separately
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- jabber logout isn't announced or offline avail isn't processed
+  ... apparently other side did not logout properly, as it doesn't happen always
+
 - neither USE_THE_NICK or USE_AUTOALIAS work flawlessly. in the case of
   the latter, _nick either displays without uniform for remote people,
   or it occasionally shows a room's nick instead of the user's nick.
@@ -22,6 +27,11 @@ ________________________________________________________________________
   templates and removing _nick vars. during this tradition we keep the
   USE_THE_NICK code running. several "invite issues" should be solved once
   nicks are gone.
+
+- psyced.org tells me: Ungültige Route nach psyc://psyced.org
+    im psyc://psyced.org/~lynx Context festgestellt.
+
+? who's gonna clean up the mess of having too many websites ?
 ________________________________________________________________________
 == psyced 1.0 ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -3870,4 +3880,5 @@ psyctext
 	entity nicknames (experimental). allows to remove nicks from protocol.
 spyc/* psyc/*
 +	should a _date type run on unixtime minus PSYC_EPOCH?
-
+install.sh
++	don't leave _host_IP uncommented

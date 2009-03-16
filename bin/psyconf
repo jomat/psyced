@@ -361,7 +361,7 @@ X
 
 	my $hc = 0;
 	## ldmud bug number one: you have to provide hostname AFTER hostaddr
-	if ($c{_basic_host_IP}) {
+	if ($c{_basic_host_IP} =~ /^[0-9\.]+$/) {
 		$psyced .= " --hostaddr $c{_basic_host_IP}";
 		$hc = 1;	# problem?
 	}

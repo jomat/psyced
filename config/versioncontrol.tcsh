@@ -36,3 +36,10 @@ alias	ctoc	'(cd $CVSHOME;cvs diff -bur HEAD CHANGESTODO|& difvu -'
 alias	ctodo	'(cd $PSYCEDHOME;cvs update CHANGESTODO;$EDITOR CHANGESTODO;cvs ci -m + CHANGESTODO)'
 alias	todo	'(cd $PSYCEDHOME;$EDITOR CHANGESTODO)'
 
+# edit all files that contain a certain keyword
+# uses the +/searchstring syntax supported by vi and other smart editors
+alias   gred	'$EDITOR "+/\!*" `grep -swIrl \!* .`'
+# grep -r is a bit stupid: it follows symlinks, then shows us files twice
+# so using the git full text index may be smarter and faster
+alias	ggred	'$EDITOR "+/\!*" `git grep -w -l \!*`'
+
