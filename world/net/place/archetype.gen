@@ -1521,21 +1521,13 @@ reboot(reason, restart) {
 			 // not so sure about this mc  ;)
 			 "_warning_unavailable_temporary_shutdown",
 #else
-#ifndef ECHOES
 			 "_notice_place_leave_temporary_shutdown",
-#else /* ECHOES */
-			 "_echo_place_leave_temporary_shutdown",
-#endif /* ECHOES */
 #endif
 			// used to output _source here, but when a UNI relays
 			// the message to a UNL, the UNI is shown instead of ME
 		      "Server for [_nick_place] is being restarted: [_reason]", 
 			([ "_reason": reason ]) );
-#ifndef ECHOES
 		else castmsg(ME, "_notice_place_leave_shutdown", // _permanent ?
-#else /* ECHOES */
-		else castmsg(ME, "_echo_place_leave_shutdown", // _permanent ?
-#endif /* ECHOES */
 		      "Server for [_nick_place] is shutting down: [_reason]",
 			([ "_reason": reason ]) );
 #ifndef PERSISTENT_MASTERS
@@ -1552,11 +1544,7 @@ reboot(reason, restart) {
 quit() {
 	save();
 #ifndef PERSISTENT_MASTERS
-#ifndef ECHOES
 	castmsg(ME, "_notice_place_leave_temporary",
-#else /* ECHOES */
-	castmsg(ME, "_echo_place_leave_temporary",
-#endif /* ECHOES */
 	    "[_nick_place] is temporarily being shut down for reload.",
 	     ([ "_nick_place" : MYNICK ]) );
 #endif
