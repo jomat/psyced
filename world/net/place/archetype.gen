@@ -935,6 +935,14 @@ private leaveMsg(ni, isError, source, mc, data, vars) {
 	// optimize away the echo isn't really pragmatic.. TODO.
 	// we may also simplify the context specification then, huh?
 	//
+#ifdef EXPERIMENTAL
+	// first send tagged echo to the person leaving
+	unless(isError) sendmsg(source, mc, data, vars+ ([ "_source_relay" : source ]));
+	// remove her from the context
+	remove_member(source, vars["_INTERNAL_origin"]);
+	// let everybody else know about the loss
+	unless(isError || v("_filter_presence")) castmsg(source, mc, data, vars);
+#else
 	unless(isError) {
 		if (v("_filter_presence")) {
 			// arent you a little heavy on the relays here? i dont get it
@@ -943,6 +951,7 @@ private leaveMsg(ni, isError, source, mc, data, vars) {
 		else castmsg(source, mc, data, vars);
 	}
 	remove_member(source, vars["_INTERNAL_origin"]);
+#endif
 	// it's probably safer to call this hook _after_ removing
 	// the candidate to avoid risking loops
 	leave(source, mc, data, vars);  // hook here.. hardly ever used
