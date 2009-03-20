@@ -896,19 +896,27 @@ case "_status_presence":
 case "_notice_person_absent_netburp":
 		if (vars["_context"] != place) return 1;
 		break;
-#if 1
 case "_failure_unsuccessful_delivery":
 case "_failure_network_connect_invalid_port":
 // is this the right place to do this? i have seen a recursion where
 // person.c was never asked for opinion, so i'm putting this into user.c
+#ifdef ALPHA
+		string loc;
+		foreach (t, loc : v("locations"))
+		    if (vars["_source_relay"] == loc) {
+			P1(("%O in %O talking to its %O location at %O.",
+			    mc, ME, t, loc))
+			sLocation(t, 0);
+		}
+#else
 		// TODO: walk thru entire locations mapping!
 		if (vars["_source_relay"] == v("locations")[0]) {
-		    P0(("%O got %O, deleting 0 from %O\n", ME,
-			mc, v("locations")))
-		    m_delete(v("locations"), 0);
+			P0(("%O got %O, deleting 0 from %O\n", ME,
+			    mc, v("locations")))
+			m_delete(v("locations"), 0);
                 }
-		// fall thru - not strictly necessary but adds a feature
 #endif
+		// fall thru - not strictly necessary but adds a feature
 case "_failure_redirect_permanent":
 		// we currently have no implementation for permanent changes
 case "_failure_redirect_temporary":
@@ -1271,7 +1279,8 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 		if (!loc) {
 			// oh.. happens on beta?
 			P1(("%O late deletion of a %O zero location - should never happen\n", ME, type))
-			m_delete(v("locations"), type);
+			//m_delete(v("locations"), type);
+			sLocation(type, 0);
 			continue;
 		}
 #endif

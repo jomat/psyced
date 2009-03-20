@@ -1779,6 +1779,10 @@ see also: http://about.psyc.eu/SPAM
    evtl nicht alle im richtigen channel, um den enter zu sehen..)
 
 == IRC ISSUES 1.0 ======================================================
+- according to rfc and ircd source IRC parser should accept when the last
+  argument is just a word instead of a phrase prefixed by :
+  this is unusual, but legal:  "PRIVMSG #blah hello"
+
 + some irc clients do not implement their own pinging, and some NATs really
   kill your irc session if it is too quiet too long. we need optional server
   side pings
