@@ -10,7 +10,7 @@ qHasCurrentPlace() { return 0; }
 
 logon() {
 #ifdef NO_EXTERNAL_LOGINS
-       return destruct(ME);
+	return destruct(ME);
 #endif
 	// psyc users dont have their own socket, so the driver 
 	// does not call disconnected() for them - this enables the

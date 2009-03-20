@@ -476,10 +476,15 @@ qLocation(string service) {
 	return v("locations")[service];
 }
 
-// returns 0 if that was just an update
-// 1 on success
+// returns 0 if that was just an update. 1 on success.
+// this was originally used by sip/udp only, then slowly
+// integrated into existing code
 sLocation(string service, mixed data) {
 	ASSERT("sLocation", v("locations"), v("locations"))
+	// should this function also call register_location ?
+	// yes because a delivery error should remove clients
+	// from the location table, too.. not just proper
+	// unlink requests  FIXME
 	if (v("locations")[service] == data) return 0;
 	unless (data) {
 		string retval = v("locations")[service];
@@ -526,7 +531,8 @@ static linkSet(service, location, source) {
 }
 #endif
 #ifdef NEW_UNLINK
-static linkDel(service, source) {
+static linkDel(service, source, variant) {
+	string mc = "_notice_unlink";
 	string candidate = v("locations")[service];
 	unless (candidate) {
 		P3(("linkDel(%O, %O) called in %O: no such candidate!\n",
@@ -536,18 +542,41 @@ static linkDel(service, source) {
 	P1(("linkDel(%O, %O) called in %O: unlinking %O.\n",
 	    service, source, ME, candidate));
 	unless (source) source = candidate;
+	// sLocation?
 	register_location(candidate, 0);
+	// maybe actual deletion would need to be delayed after
+	// letting locations know. they might still be sending
+	// stuff to us, right?
 	m_delete(v("locations"), service || 0);
-	if (service) sendmsg(source, "_notice_unlink_service", 0,
+	if (variant) mc += variant;
+	if (service) sendmsg(source, mc, 0,
 				    ([ "_service" : service,
 			      "_location_service" : candidate,
 				"_identification" : v("_source") ]));
-	else sendmsg(source, "_notice_unlink", 0,
+	else sendmsg(source, mc, 0,
 				   ([ "_location" : candidate,
 				"_identification" : v("_source") ]));
 	return candidate;
 }
 #endif
+
+static linkCleanUp(variant) {
+	mixed type, loc;
+
+	foreach (type, loc : v("locations")) {
+		P2(("linkCleanUp(%O) to %O's ex-%O-client %O\n",
+		    variant, ME, type, loc))
+#ifdef NEW_UNLINK
+		linkDel(type, 0, variant);
+#else
+		// no clue if the UNL is still out there..
+		// lets send a ping so it can reconnect
+		// but first we have to delete it from our structures!
+		m_delete(v("locations"), 0);
+		sendmsg(loc, "_status_unlinked", 0, ([]));
+#endif
+	}
+}
 
 // extend sName() from name.c
 sName2(a) {
@@ -615,7 +644,9 @@ sName2(a) {
 	availability = v("availability");
 #endif // _flag_disable_module_presence
 
-	unless (v("locations")) vSet("locations", ([ ]));
+	if (v("locations")) linkCleanUp("_crash");
+	else vSet("locations", ([ ]));
+
 	// protection against file read errors
 	if (IS_NEWBIE) {
 		if (boss(a)) {
@@ -630,7 +661,7 @@ sName2(a) {
 			destruct(ME);
 			return 0;
 		}
-#ifndef RELAY
+#ifdef _flag_enable_administrator_by_nick
 		else if (strstr(lower_case(a), "admin") != -1) {
 			this_player()->w("_failure_object_create_admin",
 "This nickname is available to administrators only.");
@@ -647,20 +678,6 @@ sName2(a) {
 
 	// maybe use v("identification") here?
 	vSet("_source", psyc_name(ME));
-
-	// TODO: needs to be foreached for all types of locations?
-	if (e = v("locations")[0]) {
-#ifdef NEW_UNLINK
-		linkDel(0);
-#else
-		P2(("sending _status_unlinked to ex-client %O\n", e))
-		// no clue if the UNL is still out there..
-		// lets send a ping so it can reconnect
-		// but first we have to delete it from our structures!
-		m_delete(v("locations"), 0);
-		sendmsg(e, "_status_unlinked", 0, ([]));
-#endif
-	}
 	return MYNICK; // means new name accepted
 }
 
@@ -2640,9 +2657,12 @@ quit(immediate, variant) {
 	int rc;
 
 	P3(("person:QUIT(%O,%O) in %O\n", immediate,variant, ME))
-#ifdef NEW_UNLINK
-	linkDel(0);
-#endif
+	// keeping services running while logging out should be possible.. but
+	//linkDel(0);
+	if (v("locations")) {
+		linkCleanUp();
+		vDel("locations");
+	}
 	if (immediate == 1 || (immediate && find_call_out(#'quit) != -1)) {
 		rc = save();
 		if (sizeof(places)) {
