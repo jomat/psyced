@@ -2658,8 +2658,13 @@ quit(immediate, variant) {
 		P1(("intercepted recursive QUIT %O\n", ME || MYNICK ))
 		return 0;
 	}
+	P1(("** QUITTING %O: av %O, sc %O\n", ME, availability, v("scheme")))
 #ifndef	_flag_disable_module_presence
 	switch(v("scheme")) {
+	case 0:
+		// scheme is 0 when a user entity has never been logged
+		// in, like friends in a roster that get incarnated
+		break;
 	// jabber/user:quit() is called on @type 'unavailable'
 	// so it relies on quit() to announce offline status
 	//case "jabber":
@@ -2683,15 +2688,20 @@ quit(immediate, variant) {
 		// fall thru in case of _disconnect
 		// which indicates, we died an irregular death
 	default:
-# ifdef CACHE_PRESENCE
-		//announce(AVAILABILITY_OFFLINE, 0, ask4upd8s == 0);
+# ifdef ALPHA
+		if (availability > AVAILABILITY_OFFLINE) {
+#  if 0 //def CACHE_PRESENCE
+			announce(AVAILABILITY_OFFLINE, 0, ask4upd8s == 0);
+#  else
+			announce(AVAILABILITY_OFFLINE);
+#  endif
+		}
 # else
-		//announce(AVAILABILITY_OFFLINE);
-# endif
 		if (availability) {
 			announce(AVAILABILITY_OFFLINE);
 			availability = 0;
 		}
+# endif
 	}
 #endif // _flag_disable_module_presence
 	// TODO: here we need to leave all our friends cslaves
@@ -2792,8 +2802,21 @@ announce(level, manual, verbose, text) {
 		text = text ? (MYNICK +" "+ text +".") : "";
 		    // fun: "Reclaim your chat. Use PSYC. PSYC delivers.";
 	}
-	// can this "optimization" cause async presence effects..?
-	if (!changed && availability == level) return 0;
+	if (!changed && availability == level) {
+		// this check ensures that we do not send "fake" announces
+		// for user entities which are being deallocated but
+		// were never actually logged in (absent friends of users)
+		// ... maybe this stops now that i added 'case 0:'
+		//
+		// we also get here when user objects are force quitted
+		// by keepUserObject() even if they were created just now
+		// ... see irc/server.. it's a FIXME
+		//
+		// unfortunately it seems to also affect other scenarios
+		P3(("**SKIP %O announce %O(%O,%O) %O changed: %d, av: %O\n",
+		    ME, level, manual, verbose, text, changed, availability))
+		return 0;
+	}
 	if (level) vSet("availability", availability = level);
 	else level = availability;	// sending EXPIRED not permitted here
 	P2(("%O announce %O(%O,%O) %O changed: %d, mood: %O\n", ME,
