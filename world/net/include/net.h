@@ -230,7 +230,7 @@
 	// fippo's brilliant single-user channel emulation for jabber MUCs
 	// unfortunately it provides no advantages over the old method, yet.
 	// would be cool to cache a member list at least!  TODO
-# define PERSISTENT_SLAVES
+// efine PERSISTENT_SLAVES  // postponed
 // efine IRC_FRIENDCHANNEL  // hopelessly needs more work
 # ifdef HTTP_PATH
 #  define HTFORWARD	    // let person entity buffer output for http usage

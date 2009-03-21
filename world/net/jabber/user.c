@@ -732,7 +732,14 @@ iq(XMLNode node) {
 	    break;
 	case "set":
 	    helper = helper["/item"];
-	    if (helper && helper["@subscription"] == "remove") {
+	    if (!mappingp(helper)) {
+		P1(("no item in iq set %O from %O in %O\n",
+		    node, previous_object(), ME))
+		// FIXME: what is the correct behaviour
+		// in this case?
+		return;
+	    }
+	    if (helper["@subscription"] == "remove") {
 		string buddy = jid2ppl(helper["@jid"]);
 #ifndef _flag_disable_module_friendship
 		P2(("remove %O from roster\n", helper["@jid"]))

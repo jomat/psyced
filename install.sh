@@ -39,24 +39,32 @@ lo="[m"
 
 if test -d "/etc/portage"
 then
-	cat <<EOT
-${hi}!!INFO FOR GENTOO USERS!!${lo}
-If you are running gentoo/portage, you should try out our beautiful ebuilds
-at http://www.psyced.org/files/gentoo.tar.bz2 --- They are also in the
-data.tar. Unpack it, then go into the config/gentoo directory and run make. 
+	cat <<X
 
-EOT
+!!${hi} HEY YOU, PORTAGE USER ${lo}!!
+If you are running gentoo/portage you should try out our beautiful ebuilds
+at http://www.psyced.org/files/gentoo.tar.bz2 instead of this installation
+script. Stop it now.
+
+${hi}Warning: OLD-SCHOOL install.sh STARTING${lo} ...
+
+X
 	sleep 2
 fi
 
 if test -e .config
 then
-	echo "You have been installing this before. I will use the previous"
-	echo "install settings as defaults for this run."
+	cat <<X
+You have been installing this before. I will use the previous install .config
+as defaults for this run.
+
+X
 else
-	echo "Should you want to use the install settings from the last time"
-	echo "you installed psyced, please copy the .config file into here"
-	echo "and restart this script."
+	cat <<X
+Should you want to use the install settings from the last time you installed
+psyced, please copy the .config file into here and restart this script.
+
+X
 fi
 
 if touch .config 2> /dev/null
@@ -164,10 +172,12 @@ echo "${hi}PSYCED INSTALLATION WIZARD${lo}"
 
 if ! test -e data.tar
 then
-    echo "This installation script is designed to work with an image of the"
-    echo "current development tree in a file called data.tar. Obtain a"
-    echo "psyced release tar from http://www.psyced.org, which contains"
-    echo "both this script and its data.tar"
+    cat <<X
+This installation script is designed to work with an image of the current
+development tree in a file called data.tar. Obtain a psyced release tar from
+http://www.psyced.org, which contains both this script and its data.tar.
+
+X
     $exit
 fi
 
@@ -399,17 +409,18 @@ ask "Set PSYC hostname to" SERVER_HOST
 get CHATNAME $HOST_NAME
 #ask "Name of your chat service" CHATNAME
 
-echo ""
-echo "Now comes the best part. You get to decide which of the many"
-echo "protocols and services that psyced provides you want to"
-echo "activate. Since ${driver} doesn't have the ability to run safely"
-echo "as root all protocols use non-privileged port numbers."
-echo "We also mention the official privileged port numbers in case"
-echo "you want to set up a firewall based port mapping."
-#cho ""
-#cho "If you need to change the port numbers you can do so later on"
-#cho "by editing the psyced script. You must remain however"
-#cho "within certain numeric ranges for each protocol."
+cat <<X
+
+Now comes the best part. You get to decide which of the many protocols and
+services that psyced provides you want to activate. Since ${driver} doesn't
+have the ability to run safely as root, all protocols use non-privileged
+port numbers. We also mention the official privileged port numbers in case
+you want to set up a firewall based port mapping.
+
+If you need to change the port numbers later on, you can do so by editing
+the psyconf.ini configuration file.
+X
+# FIXME: in fact we should probably not ask about port numbers here
 
 get PSYC_YN "y"
 ask "Enable PSYC (you better say yes here)" PSYC_YN
@@ -464,7 +475,7 @@ else
 fi
 
 get JABBER_YN "y"
-ask "Enable access for Jabber/XMPP clients (experimental)" JABBER_YN
+ask "Enable access for Jabber/XMPP clients" JABBER_YN
 
 if test "$JABBER_YN" = "n"
 then
