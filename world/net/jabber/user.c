@@ -571,17 +571,14 @@ iq(XMLNode node) {
 
     P3(("%O IQ node %O\n", ME, node))
     firstchild = getfirstchild(node);
-    unless(firstchild) {
-	switch(node["@type"]) {
+    unless(firstchild) switch(node["@type"]) {
 	case "get":
-	    break;
 	case "set":
-	    break;
 	case "result":
-	    break;
 	case "error":
 	    break;
-	}
+    default:
+	    P1(("%O got invalid iq %O\n", ME, node))
 	return;
     }
     helper = firstchild;
@@ -1016,6 +1013,7 @@ iq(XMLNode node) {
 	break;
 #endif
     default:
+	P1(("%O got IQ with unknown namespace: %O\n", ME, node))
 	switch(node["@type"]) {
 	case "get":
 	    if (node["@to"]) {

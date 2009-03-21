@@ -598,6 +598,7 @@ msg(source, mc, data, mapping vars, showingLog) {
 		P3(("%O time %O data %O from %O\n", ME, t, data, vars))
 	}
 	PSYC_TRY(mc) {
+#ifndef ALPHA
 case "_jabber_iq_error": // DONT reply
 		P2(("%O got %O", ME, mc))
 		break;
@@ -610,6 +611,7 @@ case "_jabber_iq_set":
 		sendmsg(source, "_error_unsupported_method", 0,
 			([ "_tag_reply" : vars["_tag"] ]));
 		break;
+#endif
 case "_jabber":
 		P1(("%O got %O", ME, mc))
 		break;
