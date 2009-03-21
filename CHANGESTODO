@@ -1488,7 +1488,7 @@ ________________________________________________________________________
   is not accepted by the UNI and thus does not make it into _list_places
 - _do_leave does not forward the echo from remote places back to the client
 
-- NEW_UNLINK: place and v("place") aren't in sync (new changes for psyc clients)
+- place and v("place") aren't in sync (new changes for psyc clients)
 
 + if newbie: directly show register dialog
   (lynx should add _status_unregistered or so)

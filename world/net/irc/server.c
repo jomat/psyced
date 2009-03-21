@@ -19,7 +19,9 @@ volatile string pass;
 
 // for now it's a bit complicated to re-issue all joins and i'm not
 // even sure if it would be enough for the irc clients.. so better
-// just quit the old object and start anew.
+// just quit the old object and start anew. a bit silly when user
+// objects have just been incarnated and never actually logged in -
+// for each ircer we thus incarnate twice. FIXME
 keepUserObject(user) { return 0; }
 
 qScheme() { return "irc"; }

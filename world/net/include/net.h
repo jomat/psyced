@@ -216,8 +216,6 @@
 # define WANT_S2S_SASL
 # define ENTER_MEMBERS
 # define PERSISTENT_MASTERS
-# define NEW_LINK
-# define NEW_UNLINK
 # define NEW_RENDER
 # define MUCSUC
 #endif
