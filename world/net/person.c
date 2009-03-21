@@ -2661,6 +2661,7 @@ quit(immediate, variant) {
 	//linkDel(0);
 	if (v("locations")) {
 		linkCleanUp();
+		// so the if should only trigger at first pass
 		vDel("locations");
 	}
 	if (immediate == 1 || (immediate && find_call_out(#'quit) != -1)) {
@@ -2704,7 +2705,11 @@ quit(immediate, variant) {
 	// value would be nice. and we should have a delayed unavailability
 	// automation feature here to avoid frequent relogin announcements.
 	case "psyc":
-		if (variant != "_disconnect") break;
+		if (variant != "_disconnect") {
+			P3(("++SKIP psyc client %O %O. announce yourself!\n",
+			    variant, ME))
+			break;
+		}
 		// fall thru in case of _disconnect
 		// which indicates, we died an irregular death
 	default:
@@ -2833,7 +2838,7 @@ announce(level, manual, verbose, text) {
 		// ... see irc/server.. it's a FIXME
 		//
 		// unfortunately it seems to also affect other scenarios
-		P3(("**SKIP %O announce %O(%O,%O) %O changed: %d, av: %O\n",
+		P3(("++SKIP %O announce %O(%O,%O) %O changed: %d, av: %O\n",
 		    ME, level, manual, verbose, text, changed, availability))
 		return 0;
 	}
