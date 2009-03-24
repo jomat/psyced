@@ -2550,11 +2550,19 @@ quit(immediate, variant) {
 
 	P3(("person:QUIT(%O,%O) in %O\n", immediate,variant, ME))
 	// keeping services running while logging out should be possible.. but
+	// we currently don't do that
 	//linkDel(0);
-	if (v("locations")) {
+	if (sizeof(v("locations"))) { // this should only trigger at first pass
 		linkCleanUp();
-		// so the if should only trigger at first pass
-		vDel("locations");
+#if 1 //def PARANOID
+		if (sizeof(v("locations"))) {
+			P1(("%O * Hey, linkCleanUp left us with %O\n",
+			    ME, v("locations")))
+			// we cannot vDel("locations") because the ONLINE macro
+			// breaks when we do
+			vSet("locations", ([]));
+		}
+#endif
 	}
 	if (immediate == 1 || (immediate && find_call_out(#'quit) != -1)) {
 		rc = save();
