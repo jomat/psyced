@@ -1771,6 +1771,9 @@ case "_unlink":
                 unlink(vars["_service"]);
                 return 1;
 case "_exit":
+		// so this is some kind of ugly hack not to be used.. huh?
+		announce(AVAILABILITY_OFFLINE);
+		// fall thru
 case "_quit":
                 // bye(vars["_reason"]);
                 quit();
