@@ -12,6 +12,9 @@ ________________________________________________________________________
 
 - pointless to keep gentoo files in this git, if they can't be updated
   separately
+
++ teach net/smtp to trust localhost etc.
++ teach net/smtp to ask recipient object if spam rules are to be applied
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -1377,6 +1380,11 @@ ________________________________________________________________________
 ! When the /topic command makes funny errors, then your room has a custom
   cmd() and doesn't pass vars over. It should use ON_COMMAND instead!
 
+________________________________________________________________________
+* PSYC FUTURES		    see also http://about.psyc.eu/Category:Vapor
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
++ http://about.psyc.eu/Hashtags
++ http://about.psyc.eu/Follower
 ________________________________________________________________________
 * TOYS IN THE ATTIC
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -3886,3 +3894,4 @@ spyc/* psyc/*
 +	should a _date type run on unixtime minus PSYC_EPOCH?
 install.sh
 +	don't leave _host_IP uncommented
++	mkdir data/* log/*

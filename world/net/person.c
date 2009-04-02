@@ -2515,6 +2515,10 @@ reboot(reason, restart, pass) {
 	//unless (clonep(ME)) return;
 	if (blueprint(ME) == ME) return;
 	P2(("%O shutting down\n", ME))
+
+	// temporary, please remove after 2009-04
+	if (!v("locations")) vSet("locations", ([]));
+
 #if !defined(SLAVE) && !defined(_flag_disable_info_session)
 	if (ONLINE) {
 	    // same in net/psyc/circuit.c

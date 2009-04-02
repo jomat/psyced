@@ -1,6 +1,12 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
 ## Check utf-8: Praise Atatürk!
 
+_notice_add_alias_temporary
+|## shouldn't be sent to jabber clients
+
+_failure_unavailable_alias
+|## shouldn't be sent to jabber clients
+
 _MISC_character_command
 |## since several clients started catching / commands..
 |+
