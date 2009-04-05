@@ -2555,10 +2555,9 @@ quit(immediate, variant) {
 	P3(("person:QUIT(%O,%O) in %O\n", immediate,variant, ME))
 	// keeping services running while logging out should be possible.. but
 	//linkDel(0);
-	if (v("locations")) {
+	if (sizeof(v("locations"))) {
+		// the if should only trigger at first pass
 		linkCleanUp();
-		// so the if should only trigger at first pass
-		vDel("locations");
 	}
 	if (immediate == 1 || (immediate && find_call_out(#'quit) != -1)) {
 		rc = save();
