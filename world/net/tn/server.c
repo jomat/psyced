@@ -94,3 +94,11 @@ hello(ni) {
 #endif
 	return ::hello(ni);
 }
+
+#ifdef BRAIN
+morph() {
+	if (user->isNewbie())
+	    emit("\nSorry, no unregistered users currently.\n\n");
+	else return ::morph();
+}
+#endif
