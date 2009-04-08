@@ -476,10 +476,15 @@ qLocation(string service) {
 	return v("locations")[service];
 }
 
-// returns 0 if that was just an update
-// 1 on success
+// returns 0 if that was just an update. 1 on success.
+// this was originally used by sip/udp only, then slowly
+// integrated into existing code
 sLocation(string service, mixed data) {
 	ASSERT("sLocation", v("locations"), v("locations"))
+	// should this function also call register_location ?
+	// yes because a delivery error should remove clients
+	// from the location table, too.. not just proper
+	// unlink requests  FIXME
 	if (v("locations")[service] == data) return 0;
 	unless (data) {
 		string retval = v("locations")[service];
@@ -489,7 +494,6 @@ sLocation(string service, mixed data) {
 	return v("locations")[service] = data;
 }
 
-#ifdef NEW_LINK
 static linkSet(service, location, source) {
 	P1(("linkSet(%O, %O, %O) called in %O: linking.\n",
 	    service, location, source, ME));
@@ -524,9 +528,8 @@ static linkSet(service, location, source) {
 		// for simple clients on link when a place is set
 	}
 }
-#endif
-#ifdef NEW_UNLINK
-static linkDel(service, source) {
+static linkDel(service, source, variant) {
+	string mc = "_notice_unlink";
 	string candidate = v("locations")[service];
 	unless (candidate) {
 		P3(("linkDel(%O, %O) called in %O: no such candidate!\n",
@@ -536,18 +539,31 @@ static linkDel(service, source) {
 	P1(("linkDel(%O, %O) called in %O: unlinking %O.\n",
 	    service, source, ME, candidate));
 	unless (source) source = candidate;
+	// sLocation?
 	register_location(candidate, 0);
+	// maybe actual deletion would need to be delayed after
+	// letting locations know. they might still be sending
+	// stuff to us, right?
 	m_delete(v("locations"), service || 0);
-	if (service) sendmsg(source, "_notice_unlink_service", 0,
+	if (variant) mc += variant;
+	if (service) sendmsg(source, mc, 0,
 				    ([ "_service" : service,
 			      "_location_service" : candidate,
 				"_identification" : v("_source") ]));
-	else sendmsg(source, "_notice_unlink", 0,
+	else sendmsg(source, mc, 0,
 				   ([ "_location" : candidate,
 				"_identification" : v("_source") ]));
 	return candidate;
 }
-#endif
+static linkCleanUp(variant) {
+	mixed type, loc;
+
+	foreach (type, loc : v("locations")) {
+		P2(("linkCleanUp(%O) to %O's ex-%O-client %O\n",
+		    variant, ME, type, loc))
+		linkDel(type, 0, variant);
+	}
+}
 
 // extend sName() from name.c
 sName2(a) {
@@ -615,7 +631,9 @@ sName2(a) {
 	availability = v("availability");
 #endif // _flag_disable_module_presence
 
-	unless (v("locations")) vSet("locations", ([ ]));
+	if (v("locations")) linkCleanUp("_crash");
+	else vSet("locations", ([ ]));
+
 	// protection against file read errors
 	if (IS_NEWBIE) {
 		if (boss(a)) {
@@ -630,7 +648,7 @@ sName2(a) {
 			destruct(ME);
 			return 0;
 		}
-#ifndef RELAY
+#ifdef _flag_enable_administrator_by_nick
 		else if (strstr(lower_case(a), "admin") != -1) {
 			this_player()->w("_failure_object_create_admin",
 "This nickname is available to administrators only.");
@@ -647,20 +665,6 @@ sName2(a) {
 
 	// maybe use v("identification") here?
 	vSet("_source", psyc_name(ME));
-
-	// TODO: needs to be foreached for all types of locations?
-	if (e = v("locations")[0]) {
-#ifdef NEW_UNLINK
-		linkDel(0);
-#else
-		P2(("sending _status_unlinked to ex-client %O\n", e))
-		// no clue if the UNL is still out there..
-		// lets send a ping so it can reconnect
-		// but first we have to delete it from our structures!
-		m_delete(v("locations"), 0);
-		sendmsg(e, "_status_unlinked", 0, ([]));
-#endif
-	}
 	return MYNICK; // means new name accepted
 }
 
@@ -874,41 +878,6 @@ msg(mixed source, mc, data, mapping vars, showingLog) {
 	if (showingLog) return display;	// logView() in action
 	// btw, when reviewing log, all users are displayed equal size
 
-#if 0
-	// hack that permits us to use same mapping across
-	// all user objects in a room. really should be using
-	// copies of the mapping for each user - or forbid to
-	// write into the mapping. this statement in particular
-	// also protects us from "intruder" _display settings,
-	// so it's useful anyway.
-	//
-	m_delete(vars, "_display");
-#endif
-#if 0 //ndef NEW_UNLINK
-	if (abbrev("_request_link_", mc)) {
-	    vars["_service"] = mc[14..];
-	    mc = "_set_password"; 
-	} else if (abbrev("_request_unlink_", mc)) {
-	    vars["_service"] = mc[16..];
-	    mc = "_request_unlink";
-	} else if (abbrev("_request_location_", mc)) {
-	    vars["_service"] = mc[18..];
-	    mc = "_request_location";
-	// diese kette an abbrevs ist schrecklich ineffizient und zudem
-	// nicht für jede nachricht nötig.. unlink und diese failure können
-	// doch nur von eigenen locations kommen, also tiefergelegt werden
-	// in einen if (itsme) block hinein..!? im switch ist es nicht so
-	// tragisch, wenn methoden für bestimmte fälle gar nicht eintreten
-	// können, aber abbrevs die jedes mal durchgelaufen werden müssen,
-	// die geben mir zu denken ob das überhaupt eine gute idee war
-	// zusatzinformation hinten an die methode dranzuhängen. vielleicht
-	// ist das ja der eigentliche fehler und man sollte _method und
-	// _service lieber gutheissen und pflegen.. whatchathink? TODO
-//	} else if (abbrev("_failure_unsuccessful_delivery_", mc)) {
-//	    vars["_method"] = mc[31..];
-//	    mc = "_failure_unsuccessful_delivery";
-	}
-#endif
 #ifdef RELAY
 	remotesource = 0;
 #endif
@@ -1045,21 +1014,8 @@ case "_set_password":
 				    // oh. we let it suggest a *different* location?
 				    // interesting. why don't we also do this for clients?
 				    // and who is using this code anyway?
-#ifdef NEW_UNLINK
 				    linkDel(vars["_service"]);
-#endif
-#ifdef NEW_LINK
 				    linkSet(vars["_service"], vars["_location"], source);
-#else
-				    if (vars["_location"]) {
-					v("locations")[vars["_service"]] = vars["_location"];
-				    } else v("locations")[vars["_service"]] = source;
-				    sendmsg(source, "_notice_link_"+ vars["_service"], 
-					"You have been linked to [_service].", ([
-					     "_service" : vars["_service"],
-				    ]));
-				    register_location(source, ME);
-#endif
 				    return 0;
 				}
 #if 0
@@ -1098,11 +1054,7 @@ case "_set_password":
 					}
 					// we are a legitimate new client.
 					// lets inform the old one
-#ifdef NEW_UNLINK
 					linkDel(0, t);
-#else
-					sendmsg(t, "_notice_unlink");
-#endif
 					// now we leave the old client circuit
 					// to die off.. let's hope that's safe
 				}
@@ -1143,11 +1095,7 @@ case "_set_password":
 				    object o;
 				    save();
 				    if (interactive(ME)) {
-#ifdef NEW_UNLINK
 					    linkDel();
-#else
-					    ME->w("_notice_unlink");
-#endif
 					    remove_interactive(ME);
 				    }
 				    o = named_clone(PSYC_PATH "user", MYNICK);
@@ -1159,10 +1107,6 @@ case "_set_password":
 				    o->msg(source, mc, data, vars);
 				    return destruct(ME); 
 				}
-#endif
-#ifndef NEW_LINK
-				v("locations")[0] = source;
-				register_location(source, ME);
 #endif
 				// used by _request_authentication
 				if (u = parse_uniform(source)) vSet("ip", u[UHost]);
@@ -1213,22 +1157,7 @@ case "_set_password":
 #endif
 				// yeah right..
 				//unless (interactive()) vSet("host", source);
-#ifdef NEW_LINK
 				linkSet(0, vars["_location"], source);
-#else
-				sendmsg(source, "_notice_link", 0, ([
-				     "_tag_reply": vars["_tag"],
-				     "_nick" : MYNICK ]));
-				// PSYCion users dont have queries.
-				// until there are more clients this will 
-				// be enough TODO
-				vDel("query");
-				// <lynX> clients either use _request_input
-				// and thus support current place and query,
-				// or otherwise _message to places and people
-				// and never use _request_input, therefore
-				// not get into trouble with query & place....?
-#endif
 				// moved logon after _notice_linked
 				// which is more appropriate for most clients
 				// lets see if theres any problem with that
@@ -1300,16 +1229,11 @@ case "_set_password":
 			:)); // dont display, dont log, it is handled async
 #endif
 			return 0;
+// _request_do_exit currently logs out clients anyway
+// don't use this:
 case "_request_exit":
 			if (itsme && source == v("locations")[0]) {
-#ifdef NEW_UNLINK
 				linkDel(0, source);
-#else
-				sendmsg(source, "_notice_unlink_exit",
-					0, ([]));
-				register_location(source);
-				m_delete(v("locations"), 0);
-#endif
 				quit();
 				return 0;
 			} else {
@@ -1324,15 +1248,7 @@ case "_request_unlink":
 			    member(v("locations"), vars["_service"])) {
 				if (source == v("locations")[vars["_service"]]
 				    || checkPassword(vars["_password"])) {
-#ifdef NEW_UNLINK
 					linkDel(vars["_service"]);
-#else
-					m_delete(v("locations"), vars["_service"]);
-					sendmsg(source, "_notice_unlink_"+
-					    vars["_service"],
-					    "You have been unlinked from [_service].",
-					     ([ "_service" : vars["_service"] ]));
-#endif
 					return 0;
 				} else {
 					// report?
@@ -1341,14 +1257,7 @@ case "_request_unlink":
 				}
 			} else if (member(v("locations"), 0)
 				    && source == v("locations")[0]) {
-#ifdef NEW_UNLINK
 				linkDel(0);
-#else
-				m_delete(v("locations"), 0);
-				register_location(source, 0);
-				sendmsg(source, "_notice_unlink",
-					0, ([]));
-#endif
 				if (mc == "_request_unlink_disconnect" && !ONLINE) {
 					// manually calling disconnected() .. hmmm
 					disconnected();
@@ -1729,8 +1638,12 @@ case "_notice_invitation":
 case "_message_private_question":
 case "_message_private":
 		// same filtering code as couple lines above
-		if (( IS_NEWBIE || !itsme && FILTERED(source)) &&
-		    (!profile || profile[PPL_NOTIFY] <= PPL_NOTIFY_PENDING)) {
+		if ((
+#ifndef _flag_enable_unauthenticated_message_private
+		      IS_NEWBIE ||
+#endif
+		      (!itsme && FILTERED(source)) &&
+		    (!profile || profile[PPL_NOTIFY] <= PPL_NOTIFY_PENDING))) {
 PT(("_failure_filter_strangers to %O from %O\n", source, ME))
 			sendmsg(source, "_failure_filter_strangers", 0,
 				([ "_nick" : MYNICK ]) );
@@ -2606,6 +2519,10 @@ reboot(reason, restart, pass) {
 	//unless (clonep(ME)) return;
 	if (blueprint(ME) == ME) return;
 	P2(("%O shutting down\n", ME))
+
+	// temporary, please remove after 2009-04
+	if (!v("locations")) vSet("locations", ([]));
+
 #if !defined(SLAVE) && !defined(_flag_disable_info_session)
 	if (ONLINE) {
 	    // same in net/psyc/circuit.c
@@ -2640,9 +2557,12 @@ quit(immediate, variant) {
 	int rc;
 
 	P3(("person:QUIT(%O,%O) in %O\n", immediate,variant, ME))
-#ifdef NEW_UNLINK
-	linkDel(0);
-#endif
+	// keeping services running while logging out should be possible.. but
+	//linkDel(0);
+	if (sizeof(v("locations"))) {
+		// the if should only trigger at first pass
+		linkCleanUp();
+	}
 	if (immediate == 1 || (immediate && find_call_out(#'quit) != -1)) {
 		rc = save();
 		if (sizeof(places)) {
@@ -2658,8 +2578,13 @@ quit(immediate, variant) {
 		P1(("intercepted recursive QUIT %O\n", ME || MYNICK ))
 		return 0;
 	}
+	P4(("** QUITTING %O: av %O, sc %O\n", ME, availability, v("scheme")))
 #ifndef	_flag_disable_module_presence
 	switch(v("scheme")) {
+	case 0:
+		// scheme is 0 when a user entity has never been logged
+		// in, like friends in a roster that get incarnated
+		break;
 	// jabber/user:quit() is called on @type 'unavailable'
 	// so it relies on quit() to announce offline status
 	//case "jabber":
@@ -2679,19 +2604,28 @@ quit(immediate, variant) {
 	// value would be nice. and we should have a delayed unavailability
 	// automation feature here to avoid frequent relogin announcements.
 	case "psyc":
-		if (variant != "_disconnect") break;
+		if (variant != "_disconnect") {
+			P3(("++SKIP psyc client %O %O. announce yourself!\n",
+			    variant, ME))
+			break;
+		}
 		// fall thru in case of _disconnect
 		// which indicates, we died an irregular death
 	default:
-# ifdef CACHE_PRESENCE
-		//announce(AVAILABILITY_OFFLINE, 0, ask4upd8s == 0);
+# ifdef ALPHA
+		if (availability > AVAILABILITY_OFFLINE) {
+#  if 0 //def CACHE_PRESENCE
+			announce(AVAILABILITY_OFFLINE, 0, ask4upd8s == 0);
+#  else
+			announce(AVAILABILITY_OFFLINE);
+#  endif
+		}
 # else
-		//announce(AVAILABILITY_OFFLINE);
-# endif
 		if (availability) {
 			announce(AVAILABILITY_OFFLINE);
 			availability = 0;
 		}
+# endif
 	}
 #endif // _flag_disable_module_presence
 	// TODO: here we need to leave all our friends cslaves
@@ -2792,8 +2726,21 @@ announce(level, manual, verbose, text) {
 		text = text ? (MYNICK +" "+ text +".") : "";
 		    // fun: "Reclaim your chat. Use PSYC. PSYC delivers.";
 	}
-	// can this "optimization" cause async presence effects..?
-	if (!changed && availability == level) return 0;
+	if (!changed && availability == level) {
+		// this check ensures that we do not send "fake" announces
+		// for user entities which are being deallocated but
+		// were never actually logged in (absent friends of users)
+		// ... maybe this stops now that i added 'case 0:'
+		//
+		// we also get here when user objects are force quitted
+		// by keepUserObject() even if they were created just now
+		// ... see irc/server.. it's a FIXME
+		//
+		// unfortunately it seems to also affect other scenarios
+		P3(("++SKIP %O announce %O(%O,%O) %O changed: %d, av: %O\n",
+		    ME, level, manual, verbose, text, changed, availability))
+		return 0;
+	}
 	if (level) vSet("availability", availability = level);
 	else level = availability;	// sending EXPIRED not permitted here
 	P2(("%O announce %O(%O,%O) %O changed: %d, mood: %O\n", ME,

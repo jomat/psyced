@@ -8,11 +8,19 @@ ________________________________________________________________________
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ? support tls multiplexing on all suitable ports
 
+? bugs in psyced install procedure
+
 - pointless to keep gentoo files in this git, if they can't be updated
   separately
+
++ teach net/smtp to trust localhost etc.
++ teach net/smtp to ask recipient object if spam rules are to be applied
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- jabber logout isn't announced or offline avail isn't processed
+  ... apparently other side did not logout properly, as it doesn't happen always
+
 - neither USE_THE_NICK or USE_AUTOALIAS work flawlessly. in the case of
   the latter, _nick either displays without uniform for remote people,
   or it occasionally shows a room's nick instead of the user's nick.
@@ -22,6 +30,11 @@ ________________________________________________________________________
   templates and removing _nick vars. during this tradition we keep the
   USE_THE_NICK code running. several "invite issues" should be solved once
   nicks are gone.
+
+- psyced.org tells me: Ungültige Route nach psyc://psyced.org
+    im psyc://psyced.org/~lynx Context festgestellt.
+
+? who's gonna clean up the mess of having too many websites ?
 ________________________________________________________________________
 == psyced 1.0 ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -1368,6 +1381,11 @@ ________________________________________________________________________
   cmd() and doesn't pass vars over. It should use ON_COMMAND instead!
 
 ________________________________________________________________________
+* PSYC FUTURES		    see also http://about.psyc.eu/Category:Vapor
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
++ http://about.psyc.eu/Hashtags
++ http://about.psyc.eu/Follower
+________________________________________________________________________
 * TOYS IN THE ATTIC
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 - In welcome spricht Igramul: hmm... the "+list" command made xchat crash
@@ -1478,7 +1496,7 @@ ________________________________________________________________________
   is not accepted by the UNI and thus does not make it into _list_places
 - _do_leave does not forward the echo from remote places back to the client
 
-- NEW_UNLINK: place and v("place") aren't in sync (new changes for psyc clients)
+- place and v("place") aren't in sync (new changes for psyc clients)
 
 + if newbie: directly show register dialog
   (lynx should add _status_unregistered or so)
@@ -1769,6 +1787,10 @@ see also: http://about.psyc.eu/SPAM
    evtl nicht alle im richtigen channel, um den enter zu sehen..)
 
 == IRC ISSUES 1.0 ======================================================
+- according to rfc and ircd source IRC parser should accept when the last
+  argument is just a word instead of a phrase prefixed by :
+  this is unusual, but legal:  "PRIVMSG #blah hello"
+
 + some irc clients do not implement their own pinging, and some NATs really
   kill your irc session if it is too quiet too long. we need optional server
   side pings
@@ -3870,4 +3892,6 @@ psyctext
 	entity nicknames (experimental). allows to remove nicks from protocol.
 spyc/* psyc/*
 +	should a _date type run on unixtime minus PSYC_EPOCH?
-
+install.sh
++	don't leave _host_IP uncommented
++	mkdir data/* log/*

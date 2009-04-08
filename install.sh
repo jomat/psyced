@@ -1,17 +1,19 @@
 #!/bin/sh
+#
 # new age sh (SUSv2 etc) are supposed to handle our syntax
 # but if that's not true, try a bash or ksh here.
-#
-# psyced installation script
-# $Id: install.sh,v 1.165 2008/10/16 13:07:13 lynx Exp $
-#
-# original version by oswald!osw@ld.pages.de on IRCnet, 22aug00
-# heavy improvements by heldensaga and psyc://psyced.org/~lynX
-# switched from function foo to foo() syntax as suggested by cebewee
 #
 # we could also use a strategy for finding the best bash or ksh
 # on this system and re-execing ourselves because an old bourne
 # shell will not be able to deal with this script completely
+
+####### psyced installation script #######
+#
+# original version 2000-08-22 by Kai 'Oswald' Seidler (oswaldism.de)
+# heavy improvements by heldensaga and psyc://psyced.org/~lynX
+# switched from function foo to foo() syntax as suggested by cebewee
+#
+#######
 
 # Use 'ldmud' here if you want to use an ldmud rather than a psyclpc'
 #driver="ldmud"
@@ -39,24 +41,32 @@ lo="[m"
 
 if test -d "/etc/portage"
 then
-	cat <<EOT
-${hi}!!INFO FOR GENTOO USERS!!${lo}
-If you are running gentoo/portage, you should try out our beautiful ebuilds
-at http://www.psyced.org/files/gentoo.tar.bz2 --- They are also in the
-data.tar. Unpack it, then go into the config/gentoo directory and run make. 
+	cat <<X
 
-EOT
+!!${hi} HEY YOU, PORTAGE USER ${lo}!!
+If you are running gentoo/portage you should try out our beautiful ebuilds
+at http://www.psyced.org/files/gentoo.tar.bz2 instead of this installation
+script. Stop it now.
+
+${hi}Warning: OLD-SCHOOL install.sh STARTING${lo} ...
+
+X
 	sleep 2
 fi
 
 if test -e .config
 then
-	echo "You have been installing this before. I will use the previous"
-	echo "install settings as defaults for this run."
+	cat <<X
+You have been installing this before. I will use the previous install .config
+as defaults for this run.
+
+X
 else
-	echo "Should you want to use the install settings from the last time"
-	echo "you installed psyced, please copy the .config file into here"
-	echo "and restart this script."
+	cat <<X
+Should you want to use the install settings from the last time you installed
+psyced, please copy the .config file into here and restart this script.
+
+X
 fi
 
 if touch .config 2> /dev/null
@@ -164,10 +174,12 @@ echo "${hi}PSYCED INSTALLATION WIZARD${lo}"
 
 if ! test -e data.tar
 then
-    echo "This installation script is designed to work with an image of the"
-    echo "current development tree in a file called data.tar. Obtain a"
-    echo "psyced release tar from http://www.psyced.org, which contains"
-    echo "both this script and its data.tar"
+    cat <<X
+This installation script is designed to work with an image of the current
+development tree in a file called data.tar. Obtain a psyced release tar from
+http://www.psyced.org, which contains both this script and its data.tar.
+
+X
     $exit
 fi
 
@@ -399,17 +411,18 @@ ask "Set PSYC hostname to" SERVER_HOST
 get CHATNAME $HOST_NAME
 #ask "Name of your chat service" CHATNAME
 
-echo ""
-echo "Now comes the best part. You get to decide which of the many"
-echo "protocols and services that psyced provides you want to"
-echo "activate. Since ${driver} doesn't have the ability to run safely"
-echo "as root all protocols use non-privileged port numbers."
-echo "We also mention the official privileged port numbers in case"
-echo "you want to set up a firewall based port mapping."
-#cho ""
-#cho "If you need to change the port numbers you can do so later on"
-#cho "by editing the psyced script. You must remain however"
-#cho "within certain numeric ranges for each protocol."
+cat <<X
+
+Now comes the best part. You get to decide which of the many protocols and
+services that psyced provides you want to activate. Since ${driver} doesn't
+have the ability to run safely as root, all protocols use non-privileged
+port numbers. We also mention the official privileged port numbers in case
+you want to set up a firewall based port mapping.
+
+If you need to change the port numbers later on, you can do so by editing
+the psyconf.ini configuration file.
+X
+# FIXME: in fact we should probably not ask about port numbers here
 
 get PSYC_YN "y"
 ask "Enable PSYC (you better say yes here)" PSYC_YN
@@ -464,7 +477,7 @@ else
 fi
 
 get JABBER_YN "y"
-ask "Enable access for Jabber/XMPP clients (experimental)" JABBER_YN
+ask "Enable access for Jabber/XMPP clients" JABBER_YN
 
 if test "$JABBER_YN" = "n"
 then
@@ -974,7 +987,7 @@ _host_domain = $DOMAIN_NAME
 
 ; Would you like to bind the server to a specific IP address?
 ; If you do you MUST also provide _host_name and _host_domain
-;_host_IP = $HOST_IP
+_host_IP = $HOST_IP
 
 ; Nickname for the chatserver. Appears in login message, telnet prompt,
 ; IRC gateways and some web pages. Will use _host_name if unspecified.
@@ -1066,7 +1079,7 @@ then
 	echo "Creating $BASE_DIR..."
 	if mkdir -m $BASE_PERM -p $BASE_DIR 2> /dev/null
 	then
-		:
+		;
 	else
 		if test "x$userid" = "xroot"
 		then
@@ -1107,7 +1120,16 @@ else
     $exit
 fi
 
+# we need to be completely sure these directories exist,
+# so we just go ahead with brute force  :)
+#
+mkdir -m $BASE_PERM -p $LOG_DIR 2> /dev/null
+mkdir -m $BASE_PERM -p $LOG_DIR/place 2> /dev/null
+mkdir -m $BASE_PERM -p $DATA_DIR 2> /dev/null
+mkdir -m $BASE_PERM -p $DATA_DIR/person 2> /dev/null
+mkdir -m $BASE_PERM -p $DATA_DIR/place 2> /dev/null
 mkdir -p $ARCH_DIR 2>/dev/null
+
 if test -d $ARCH_DIR 
 then
 	if test ! -w $ARCH_DIR
@@ -1193,11 +1215,10 @@ EOF
 #	    # TODO: don't say this if either $driver or erq failed to compile!
 #	    echo "${hi}COMPILATION DONE${lo}"
 	    echo ""
-	fi
 
-	# i have a feeling i should be using ARCH_DIR here
-	if test -d bin-$arch 
-	then
+	    # i have a feeling i should be using ARCH_DIR here
+	    if test -d bin-$arch 
+	    then
 		cd bin-$arch
 		for i in *
 		do
@@ -1209,9 +1230,10 @@ EOF
 		done
 		cd ..
 
-	else
+	    else
 		echo "${hi}WARNING:${lo} Couldn't install architecture dependent binaries because I can't find them!"
 		echo ""
+	    fi
 	fi
 else
 	echo "Hmm.. couldn't create $ARCH_DIR! Aborting."

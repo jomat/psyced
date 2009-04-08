@@ -146,7 +146,7 @@ inherit NET_PATH "place/mailcast";
 #           ifdef PUBLIC
 inherit NET_PATH "place/public";
 #           else
-	     // special case in the archetype options logic, see also the .pl
+	     // special case in the archetype options logic, see also psyconf
 #	     ifndef PLACE_HISTORY
 #	      ifdef PLACE_HISTORY_EXPORT
 #	       define PLACE_HISTORY

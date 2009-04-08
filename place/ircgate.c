@@ -6,7 +6,8 @@
 //
 // to make this work you need to add the following to local.h:
 //
-//	#define RELAY "ircgate"
+//	#define RELAY		"ircgate"	    // name of ircnet (?)
+//	#define RELAY_OBJECT	"place/ircgate"	    // this class
 //
 // do not use in existing psyced communities in the current set up
 // as currently all incoming traffic is presumed to be meant for the
@@ -39,13 +40,13 @@
 #define IRCGATE_LOCAL	"pw"
 
 #define	NAME		"IRCgate"
-#define ON_CONNECT	login();
+#define ON_CONNECT	onConnect();
 #define	CONNECT_IRC	"localhost", 7000
 #define EMULATE_SERVER	// don't be a bot
 
 #include <place.gen>
 
-login() {
+onConnect() {
 	PT(("ircgate serving into "+query_ip_number()+"\n"))
 	// login procedure may vary with different flavors of ircd,
 	// that's why we keep it entirely here

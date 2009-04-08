@@ -216,8 +216,6 @@
 # define WANT_S2S_SASL
 # define ENTER_MEMBERS
 # define PERSISTENT_MASTERS
-# define NEW_LINK
-# define NEW_UNLINK
 # define NEW_RENDER
 # define MUCSUC
 #endif
@@ -232,7 +230,7 @@
 	// fippo's brilliant single-user channel emulation for jabber MUCs
 	// unfortunately it provides no advantages over the old method, yet.
 	// would be cool to cache a member list at least!  TODO
-# define PERSISTENT_SLAVES
+// efine PERSISTENT_SLAVES  // postponed
 // efine IRC_FRIENDCHANNEL  // hopelessly needs more work
 # ifdef HTTP_PATH
 #  define HTFORWARD	    // let person entity buffer output for http usage

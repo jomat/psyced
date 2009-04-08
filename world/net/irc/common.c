@@ -44,6 +44,11 @@ parse(a) {
 	if (a == "") return;		// don't let " \n" execute "/s"
 	unless (sscanf(a, ":%s %s", from, t)) t = a;
 	sscanf(t, "%s :%s", t, text);
+	// when 'text' is not present, the last argument could be a single
+	// word text according to rfc. this has never seemed to hurt, but
+	// we are not exactly compliant in that sense. we could copy the
+	// last arg over into text, but that requires to change the api
+	// into explode()-based. WONTFIX
 	unless (sscanf(t, "%s %s", cmd, args)) cmd = t;
 	if (cmd) ircMsg(from, lower_case(cmd), args, text, a);
 	return 1;
