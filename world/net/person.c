@@ -1627,8 +1627,12 @@ case "_notice_invitation":
 				vars["_nick_place"] : vars["_place"]);
 
 		// same filtering code as couple lines further below
-		if (( IS_NEWBIE || !itsme && FILTERED(source)) &&
-		    (!profile || profile[PPL_NOTIFY] <= PPL_NOTIFY_PENDING)) {
+		if ((
+#ifndef _flag_enable_unauthenticated_message_private
+		      IS_NEWBIE ||
+#endif
+		     (!itsme && FILTERED(source)) &&
+		    (!profile || profile[PPL_NOTIFY] <= PPL_NOTIFY_PENDING))) {
 			sendmsg(source, "_failure_filter_strangers", 0,
 				([ "_nick" : MYNICK ]) );
 			unless (boss(source))
