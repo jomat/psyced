@@ -1,17 +1,19 @@
 #!/bin/sh
+#
 # new age sh (SUSv2 etc) are supposed to handle our syntax
 # but if that's not true, try a bash or ksh here.
-#
-# psyced installation script
-# $Id: install.sh,v 1.165 2008/10/16 13:07:13 lynx Exp $
-#
-# original version by oswald!osw@ld.pages.de on IRCnet, 22aug00
-# heavy improvements by heldensaga and psyc://psyced.org/~lynX
-# switched from function foo to foo() syntax as suggested by cebewee
 #
 # we could also use a strategy for finding the best bash or ksh
 # on this system and re-execing ourselves because an old bourne
 # shell will not be able to deal with this script completely
+
+####### psyced installation script #######
+#
+# original version 2000-08-22 by Kai 'Oswald' Seidler (oswaldism.de)
+# heavy improvements by heldensaga and psyc://psyced.org/~lynX
+# switched from function foo to foo() syntax as suggested by cebewee
+#
+#######
 
 # Use 'ldmud' here if you want to use an ldmud rather than a psyclpc'
 #driver="ldmud"
@@ -1077,11 +1079,7 @@ then
 	echo "Creating $BASE_DIR..."
 	if mkdir -m $BASE_PERM -p $BASE_DIR 2> /dev/null
 	then
-		mkdir -m $BASE_PERM -p $LOG_DIR 2> /dev/null
-		mkdir -m $BASE_PERM -p $LOG_DIR/place 2> /dev/null
-		mkdir -m $BASE_PERM -p $DATA_DIR 2> /dev/null
-		mkdir -m $BASE_PERM -p $DATA_DIR/person 2> /dev/null
-		mkdir -m $BASE_PERM -p $DATA_DIR/place 2> /dev/null
+		;
 	else
 		if test "x$userid" = "xroot"
 		then
@@ -1122,7 +1120,16 @@ else
     $exit
 fi
 
+# we need to be completely sure these directories exist,
+# so we just go ahead with brute force  :)
+#
+mkdir -m $BASE_PERM -p $LOG_DIR 2> /dev/null
+mkdir -m $BASE_PERM -p $LOG_DIR/place 2> /dev/null
+mkdir -m $BASE_PERM -p $DATA_DIR 2> /dev/null
+mkdir -m $BASE_PERM -p $DATA_DIR/person 2> /dev/null
+mkdir -m $BASE_PERM -p $DATA_DIR/place 2> /dev/null
 mkdir -p $ARCH_DIR 2>/dev/null
+
 if test -d $ARCH_DIR 
 then
 	if test ! -w $ARCH_DIR
@@ -1208,11 +1215,10 @@ EOF
 #	    # TODO: don't say this if either $driver or erq failed to compile!
 #	    echo "${hi}COMPILATION DONE${lo}"
 	    echo ""
-	fi
 
-	# i have a feeling i should be using ARCH_DIR here
-	if test -d bin-$arch 
-	then
+	    # i have a feeling i should be using ARCH_DIR here
+	    if test -d bin-$arch 
+	    then
 		cd bin-$arch
 		for i in *
 		do
@@ -1224,9 +1230,10 @@ EOF
 		done
 		cd ..
 
-	else
+	    else
 		echo "${hi}WARNING:${lo} Couldn't install architecture dependent binaries because I can't find them!"
 		echo ""
+	    fi
 	fi
 else
 	echo "Hmm.. couldn't create $ARCH_DIR! Aborting."

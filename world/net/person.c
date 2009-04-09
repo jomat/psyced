@@ -1638,8 +1638,12 @@ case "_notice_invitation":
 case "_message_private_question":
 case "_message_private":
 		// same filtering code as couple lines above
-		if (( IS_NEWBIE || !itsme && FILTERED(source)) &&
-		    (!profile || profile[PPL_NOTIFY] <= PPL_NOTIFY_PENDING)) {
+		if ((
+#ifndef _flag_enable_unauthenticated_message_private
+		      IS_NEWBIE ||
+#endif
+		      (!itsme && FILTERED(source)) &&
+		    (!profile || profile[PPL_NOTIFY] <= PPL_NOTIFY_PENDING))) {
 PT(("_failure_filter_strangers to %O from %O\n", source, ME))
 			sendmsg(source, "_failure_filter_strangers", 0,
 				([ "_nick" : MYNICK ]) );
