@@ -495,7 +495,7 @@ sLocation(string service, mixed data) {
 }
 
 static linkSet(service, location, source) {
-	P1(("linkSet(%O, %O, %O) called in %O: linking.\n",
+	P2(("linkSet(%O, %O, %O) called in %O: linking.\n",
 	    service, location, source, ME));
 	// sLocation?
 	unless (location) location = source;
@@ -536,7 +536,7 @@ static linkDel(service, source, variant) {
 		    service, source, ME));
 		return 0;
 	}
-	P1(("linkDel(%O, %O) called in %O: unlinking %O.\n",
+	P2(("linkDel(%O, %O) called in %O: unlinking %O.\n",
 	    service, source, ME, candidate));
 	unless (source) source = candidate;
 	// sLocation?

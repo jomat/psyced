@@ -1069,7 +1069,7 @@ msg(source, mc, data, mapping vars) {
 	}
 	// uni and unl differ
 	if (t != source) {
-P1(("ident: %O is really %O\n", t, source))
+		P2(("@%s knows: %O is really %O\n", MYNICK, t, source))
 		//source = t;
 		// if (!member(vars, "_nick"))   -- dont trust the UNL
 		if (objectp(source)) {
