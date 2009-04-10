@@ -1777,6 +1777,10 @@ case "_exit":
 case "_quit":
                 // bye(vars["_reason"]);
                 quit();
+		//
+		// this shouldn't be necessary!!
+		//call_out( (: destruct(ME) :) , 30);
+		// i hope it isnt..
                 return 1;
 case "_show_log": // _list_log ?
 case "_log":

@@ -569,7 +569,7 @@ iq(XMLNode node) {
     target = jid2ppl(node["@to"]);
     isplacemsg = stringp(target) && strlen(target) && ISPLACEMSG(target);
 
-    P3(("%O IQ node %O\n", ME, node))
+    P0(("+++ %O IQ node %O\n", ME, node))
     firstchild = getfirstchild(node);
     unless(firstchild) switch(node["@type"]) {
 	case "get":
