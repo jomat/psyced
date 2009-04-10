@@ -1414,8 +1414,8 @@ msg(source, mc, data, mapping vars) {
 			return 0;
 		}
 		// ist das die nette antwort auf /m channel ?
-		// vorsicht aber mit _message_public_question
-		if (!abbrev("_message_public", mc)) mc = "_message_public";
+		if (mc == "_message_private") mc = "_message_public";
+		// vorsicht mit _message_public_question und _message_video
 	}
 	/* if the source is not a member of the room and was allowed 
 	 * because of qAllowExternal* we probably should use the rooms

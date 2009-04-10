@@ -1318,6 +1318,11 @@ case "_message_echo":
 case "_message_public":
 			// avoid treating this as _message here
 			break;
+case "_message_video":
+case "_message_audio":
+			// not being displayed to users other than psyc clients
+			data = 0;
+			break;
 case "_message":
 			// this is only visible in person.c, not user.c
 			// therefore probably useless
