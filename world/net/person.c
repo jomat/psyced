@@ -1367,6 +1367,7 @@ case "_request_execute":
 					// our places
 					if (places[t]) {
 					    vSet("place", place = t);
+					    PT(("REQ-EX place %O\n", t))
 					} else {
 					    // see if it is a local object
 					    object o = psyc_object(t);
@@ -1375,15 +1376,20 @@ case "_request_execute":
 					    if (o && places[o]) {
 						place = o;
 						vSet("place", o->qName());
+						PT(("REQ-EX object %O\n", o))
 					    } else unless (t2) {
 						    // must be a person then
 //						ME->parsecmd(data, t);
+						PT(("REQ-EX person %O\n", t))
 						parsecmd(data, t);
 						// should be able to put o||t
 						// here.. TODO
 						return 0;
 					    }
 					}
+				}
+				else {
+					PT(("REQ-EX non-string %O\n", t))
 				}
 //				ME->parsecmd(data);
 				if (t2) {
