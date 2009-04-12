@@ -75,7 +75,7 @@ promptForPassword(user) {
 		  ([ "_tag_reply" : authtag || "", "_nick" : nick, 
 		   "_resource" : resource ]) );
 		emitraw("</stream:stream>");
-		QUIT
+		QUIT // should we really close the stream here?
 		return; // ?
 	}
 	P2(("nick %O, pass %O\n", nick, pass))
@@ -213,7 +213,7 @@ jabberMsg(XMLNode node) {
 			// internal server error
 			STREAM_ERROR("internal-server-error", 
 				     "Oh dear! Internal server error")
-			QUIT	// too hard?
+			// QUIT
 		    }
 		    unless (user -> isNewbie()) {
 			// already registered to someone else
@@ -221,7 +221,9 @@ jabberMsg(XMLNode node) {
 				"<conflict xmlns='" NS_XMPP "xmpp-stanzas'/>"
 				"</error></iq>";
 			emit(packet);
-			QUIT
+			// elmex says, disconnect is wrong here:
+			// QUIT
+			// it should at least close the stream
 		    } else unless ((t = helper["/username"]) &&
 				   t[Cdata] &&
 				   (t = helper["/password"]) &&
@@ -230,7 +232,7 @@ jabberMsg(XMLNode node) {
 				"<not-acceptable xmlns='" NS_XMPP "xmpp-stanzas'/>"
 				"</error></iq>";
 			emit(packet);
-			QUIT
+			// QUIT
 		    } else {
 #if defined(REGISTERED_USERS_ONLY) || defined(_flag_disable_registration_XMPP)
 			// TODO: generate some error as above

@@ -225,6 +225,10 @@
 # define _flag_log_hosts
 #endif
 
+#ifdef DEVELOPMENT
+# define PARANOID
+#endif
+
 #ifdef EXPERIMENTAL
 # define USE_AUTOALIAS
 	// fippo's brilliant single-user channel emulation for jabber MUCs
