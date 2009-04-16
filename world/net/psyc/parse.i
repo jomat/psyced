@@ -414,7 +414,8 @@ vamixed parse(string a) {
 #ifndef __PIKE__
 		    if (peerip && pongtime + 120 < time()) {
 			if (same_host(SERVER_HOST, peerip)) {
-			    P1(("why am i talking psyc to myself?\n"))
+			    P1(("Another PSYC node on my IP? Or am I talking to myself? %O\n", ME))
+			    // not ponging to ping then...
 			} else {
 #ifdef PSYC_TCP
 			    P2(("%O sending TCP PONG to %O=%O\n",
