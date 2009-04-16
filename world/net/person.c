@@ -1383,7 +1383,7 @@ case "_request_execute":
 						    vSet("place", o->qName());
 						    PT(("REQ-EX o'place %O\n", o))
 						} else {
-						    PT(("REQ-EX object %O\n", o))
+						    PT(("REQ-EX object %O not found in %s's places %O\n", o, MYNICK, places))
 						}
 					    } else unless (t2) {
 						    // must be a person then
