@@ -372,6 +372,8 @@ object compile_object(string file) {
         // match both http:/ and https:/ objects  ;D
 	if (abbrev("http", file)) {
 		rob = clone_object(HTTP_PATH "fetch");
+		// driver has the habit of removing double slash in object name
+		file = replace(file, ":/", "://");
 		if (rob) rob->fetch(file[..<3]);
 		return rob;
 	}

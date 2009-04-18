@@ -1354,6 +1354,7 @@ msg(source, mc, data, mapping vars) {
 	else unless (!source
 		     || qAllowExternal(&source, mc, vars)   // mayExternal hook
 		     || MEMBER(source)
+		     || source == "/"	    // allow root to send everywhere
 		     || isValidRelay(source)
 		     || isValidRelay(vars["_source_relay"])
 		     || isValidRelay(vars["_context"])) {

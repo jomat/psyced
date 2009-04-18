@@ -696,6 +696,9 @@ _message_public
 _message_friends
 |[_nick] {_TEXT_action_shouts}: [_data]
 
+_message_twitter
+|[_nick] ... [_data]
+
 _message_echo_private
 |You tell [_nick_target]: [_data]
 

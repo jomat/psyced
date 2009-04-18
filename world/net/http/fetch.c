@@ -2,8 +2,8 @@
 //
 // generic HTTP GET client, mostly used for RSS -
 // but we could fetch any page or data with it, really
-// tobij even made the object have the URL as its object name. fancy!  ;)
-//
+// tobij even allowed the object to have the URL as its object name. fancy!  ;)
+
 #include <ht/http.h>
 #include <net.h>
 #include <uniform.h>
@@ -24,7 +24,7 @@ volatile string modificationtime, etag, http_message;
 volatile string useragent = SERVER_VERSION;
 volatile int http_status, port, fetching, ssl;
 volatile string buffer, thehost, url, fetched, host, resource;
-volatile string basicauth;
+volatile string basicauth = "";
 
 int parse_status(string all);
 int parse_header(string all);
@@ -33,22 +33,23 @@ int buffer_content(string all);
 string qHost() { return thehost; }
 
 void fetch(string murl) {
-    if (url) return;
-    url = replace(murl, ":/", "://");
-    P3(("%O: fetch(%O)\n", ME, url))
-    connect();
+	if (url) return;
+	// accept.c does this for us:
+	//url = replace(murl, ":/", "://");
+	// so we can use this method also in a normal way
+	url = murl;
+	P3(("%O: fetch(%O)\n", ME, url))
+	connect();
 }
 
 object load() { return ME; }
 
-void setHTTPBasicAuth(string user, string password) {
-    basicauth = "Authorization: Basic " + encode_base64(user + ":" + password) + "\r\n";
+void sAuth(string user, string password) {
+	basicauth = "Authorization: Basic "+
+	    encode_base64(user +":"+ password) +"\r\n";
 }
 
-string sAgent(string a) {
-	PT(("sAgent(%O) in %O\n", a, ME))
-	return useragent = a;
-}
+string sAgent(string a) { return useragent = a; }
 
 // net/place/news code follows.
 
@@ -65,7 +66,7 @@ void connect() {
 		thehost = lower_case(thehost);
 		ssl = t == "s";
 	}
-	P3(("URL, THEHOST: %O, %O\n", url, thehost))
+	PT(("URL, THEHOST: %O, %O\n", url, thehost))
 	unless (port) 
 	    unless (sscanf(thehost, "%s:%d", thehost, port) == 2)
 		port = ssl? HTTPS_SERVICE: HTTP_SERVICE;
@@ -84,7 +85,7 @@ varargs int real_logon(int arg) {
 	unless (url) return -3;
 	unless (resource) sscanf(url, "%s://%s/%s", scheme, host, resource); 
 
-	buffer = "";
+	buffer = basicauth;
 	if (modificationtime)
 	    buffer += "If-Modified-Since: "+ modificationtime + "\r\n";
 	if (useragent) buffer += "User-Agent: "+ useragent +"\r\n";
@@ -93,7 +94,7 @@ varargs int real_logon(int arg) {
 	// we won't need connection: close w/ http/1.0
 	//emit("Connection: close\r\n\r\n");		
 	PT(("%O using %O\n", ME, buffer))
-	emit("GET /"+ resource +" HTTP/1.0\r\n"
+	emit("GET /"+ resource +" HTTP/1.1\r\n"
 		 "Host: "+ host +"\r\n"
 		 + buffer +
 		 "\r\n");

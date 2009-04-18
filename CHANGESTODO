@@ -35,6 +35,23 @@ ________________________________________________________________________
     im psyc://psyced.org/~lynx Context festgestellt.
 
 ? who's gonna clean up the mess of having too many websites ?
+
+- when provided with a _focus pointing to yourself, _request_execute will
+  still try to forward a command to the "current place" - a uniform or
+  object is passed to parsecmd(data, dest) but dest is ignored later in cmd()
+
+- _source_relay should point to tg, not foo (only happens with local users)
+	.
+	:_source.psyc://x-net.hu/~foo
+	:_target.psyc://3e44aa49.XXX:-52801/
+	:_source_relay.psyc://x-net.hu/~foo
+
+	:_nick.tg
+	:_time_INTERNAL.1239787956
+	:_nick_target.psyc://x-net.hu/~foo
+	_message_private
+	halo
+	.
 ________________________________________________________________________
 == psyced 1.0 ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯

@@ -95,6 +95,7 @@
 // nosave? static? volatile. only for variables, not methods!
 // another nice word for the opposite of persistent would be "shed"
 #define	volatile	nosave
+#define	persistent
 
 // every lpc dialect has its own foreach syntax. aint that cute?
 #define each(ITERATOR, LIST)		foreach(ITERATOR : LIST)

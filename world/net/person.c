@@ -1315,6 +1315,7 @@ case "_message_echo_private":
 			// fall thru
 case "_message_echo_public":
 case "_message_echo":
+case "_message_twitter":
 case "_message_public":
 			// avoid treating this as _message here
 			break;
@@ -1323,6 +1324,9 @@ case "_message_audio":
 			// not being displayed to users other than psyc clients
 			data = 0;
 			break;
+// we should judge our messages by their routing method, not by their
+// name! thus, the _public and _private distinction has to exist only
+// for display. FIXME
 case "_message":
 			// this is only visible in person.c, not user.c
 			// therefore probably useless

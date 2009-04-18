@@ -753,6 +753,7 @@ case "_message_announcement":
 case "_message_behaviour_warning":
 case "_message_behaviour_punishment":
 case "_message_behaviour":
+case "_message_twitter":
 		unless (stringp(data)) variant = "_default";
 		else variant = "";
 #ifdef USE_THE_NICK

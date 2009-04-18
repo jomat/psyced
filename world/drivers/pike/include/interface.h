@@ -83,6 +83,7 @@
 
 // nosave? static? volatile. no idea if pike has something like this
 #define	volatile	static
+#define	persistent
 
 // every lpc dialect has its own foreach syntax. aint that cute?
 #define	each(ITEM, LIST)		foreach(LIST; ; ITEM)
