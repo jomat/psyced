@@ -94,7 +94,7 @@ varargs int real_logon(int arg) {
 	// we won't need connection: close w/ http/1.0
 	//emit("Connection: close\r\n\r\n");		
 	PT(("%O using %O\n", ME, buffer))
-	emit("GET /"+ resource +" HTTP/1.1\r\n"
+	emit("GET /"+ resource +" HTTP/1.0\r\n"
 		 "Host: "+ host +"\r\n"
 		 + buffer +
 		 "\r\n");
