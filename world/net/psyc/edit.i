@@ -177,8 +177,8 @@ static varargs string psyc_render(mixed source, string mc, mixed data,
 		data = data? to_string(data): "";
 #endif
 	}
-	else if (data == S_GLYPH_PACKET_DELIMITER ||
-		  (data[0] == C_GLYPH_PACKET_DELIMITER && data[1] == '\n')
+	else if (data == S_GLYPH_PACKET_DELIMITER || (strlen(data) > 1 &&
+		  data[0] == C_GLYPH_PACKET_DELIMITER && data[1] == '\n')
 		    || strstr(data, "\n" S_GLYPH_PACKET_DELIMITER "\n") != -1) {
 		// this check shouldn't be necessary here: we should check what
 		// people are typing in usercmd

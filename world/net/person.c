@@ -1380,19 +1380,22 @@ case "_request_execute":
 					} else {
 					    // see if it is a local object
 					    object o = psyc_object(t);
-
-					    // object one of our places?
-					    if (o && places[o]) {
-						place = o;
-						vSet("place", o->qName());
-						PT(("REQ-EX object %O\n", o))
+					    if (o) {
+						// object one of our places?
+						if (places[o]) {
+						    place = o;
+						    vSet("place", o->qName());
+						    PT(("REQ-EX o'place %O\n", o))
+						} else {
+						    PT(("REQ-EX object %O not found in %s's places %O\n", o, MYNICK, places))
+						}
 					    } else unless (t2) {
 						    // must be a person then
 //						ME->parsecmd(data, t);
-						PT(("REQ-EX person %O\n", t))
-						parsecmd(data, t);
+						PT(("REQ-EX person %O vs %O\n", t, o))
 						// should be able to put o||t
 						// here.. TODO
+						parsecmd(data, t);
 						return 0;
 					    }
 					}
