@@ -38,7 +38,8 @@ int buffer_content(string all);
 string qHost() { return thehost; }
 
 void fetch(string murl) {
-	if (url) return;
+	// why just once? this breaks twitter/*
+	//if (url) return;
 	// accept.c does this for us:
 	//url = replace(murl, ":/", "://");
 	// so we can use this method also in a normal way
