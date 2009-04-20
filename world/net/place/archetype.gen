@@ -1790,6 +1790,7 @@ cmd(a, args, b, source, vars) {
 		return 1;
 # endif
 	case "hc":
+	case "histclean": // in case you don't remember exactly.. it's ok
 	case "histclear": // wieso um alles in der welt soll das jeder dürfen?
 //			    liest denn keiner die cvs kommentare? da stands
 //			    drin.. ok wir sind realistisch und schreiben es

@@ -1423,6 +1423,24 @@ _HTML_examine_friend_new
 _HTML_examine_button_call
 |&nbsp; &nbsp; <a id="Pebf" href="javascript:cmd('CALL [_nick]')">{_TEXT_button_call}</a>
 
+_HTML_listing_head_twitter
+|<title>twitter polly listing of available feeds</title>
+|<link href="/static/twitter/listing.css" rel="stylesheet" type="text/css" />
+|<body><div id="content">
+|<ol class="listing" id="twitterlist">
+
+_HTML_listing_tail_twitter
+|</ol></div></body>
+
+_HTML_listing_item_twitter
+|<li>
+|<span class="_photo"><a href="http://twitter.com/[_nick]" rel="nofollow"><img src="[_uniform_photo]" /></a></span>
+|## <span class="_nick"><a href="http://twitter.com/[_nick]" rel="nofollow">[_nick]</a></span>
+|<span class="_name"><a href="[_page]" rel="nofollow">[_name]</a></span><br/>
+|<span class="_description">[_description]</span><br/>
+|<span class="_uniform"><a href="[_uniform_context]">[_uniform_context]</a></span><br/>
+|</li>
+
 _HTML_call
 |<object width="[_amount_width_object]" height="[_amount_height_object]">
 |<param name="movie" value="[_path_object_local]"></param>

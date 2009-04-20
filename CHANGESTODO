@@ -52,6 +52,10 @@ ________________________________________________________________________
 	_message_private
 	halo
 	.
+
+- the linking blues...
+	tgX sagt: on reconnect i didn't get any _echo_place_enter_login's from this room, then no response for _request_do_enter, and after a _request_do_leave i get replies for enter/leave but instead of _echo_place_enter/leave i get _notice_place_enter/leave
+
 ________________________________________________________________________
 == psyced 1.0 ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
