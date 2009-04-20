@@ -9,16 +9,17 @@ persistent int lastid;
 
 volatile object feed;
 
-parse(string body) {
+parse(string body, mapping headers) {
 	mixed wurst;
 	string nick;
 	object o;
 	mapping d, p;
 	int i;
 
-       	//body = read_file("/net/twitter/many.json");
 	if (!body || body == "") {
-		P1(("%O failed to get its timeline.\n", ME))
+		P1(("%O failed to get its timeline from %O.\n", ME,
+		    previous_object()))
+		PT(("Got headers: %O", headers))
 		return;
 	}
 //#if DEBUG > 0
@@ -60,16 +61,20 @@ parse(string body) {
 					// should i send text as _action?
 		    "_nick": nick,
 		    // _count seems to be the better word for this
+		    "_amount_updates": p["statuses_count"],
 		    "_amount_followers": p["followers_count"],
-		    "_color": "#"+ p["profile_text_color"],
-		    "_description": p["description"],
-		    "_uniform_photo": p["profile_image_url"],
-		    "_page": p["url"],
-		    "_name": p["name"],
+		    "_amount_sources": p["friends_count"],
+		    "_color": "#"+ p["profile_sidebar_fill_color"],
+		    "_description": p["description"] || "",
+		    "_page": p["url"] || "",
+		    "_name": p["name"] || "",
 		    // "_contact_twitter": p["id"],
 		    "_description_agent_HTML": d["source"],
 		    "_reference_reply": d["in_reply_to_screen_name"],
 		    // "_twit": d["id"],
+		    "_uniform_photo": p["profile_image_url"] || "",
+		    "_uniform_photo_background":
+			p["profile_background_image_url"] || ""
 		]), "/");				// send as root
 
 		// der spiegel u.a. twittern übrigens in latin-1
@@ -81,8 +86,8 @@ parse(string body) {
 fetch() {
 	feed -> content( #'parse, 0, 1 );
 	feed -> fetch("http://twitter.com/statuses/friends_timeline.json"
-		      "?since_id="+ lastid +"&count=123");
-	call_out( #'fetch, 9 * 60 );
+		      "?count="+( lastid? ("44&since_id="+ lastid) : "44"));
+	call_out( #'fetch, 6 * 59 );	// odd is better
 }
 
 create() {
@@ -91,14 +96,14 @@ create() {
 
 	if (o) config = o->qConfig();
 	if (!config) {
-		P1(("No configuration for twitter gateway found.\n");
-		destruct(ME);
+		P1(("\nNo configuration for twitter gateway found.\n"))
+		//destruct(ME);
 		return;
 	}
 	restore_object(DATA_PATH "twitter");
 
 	// we could even choose to inherit this instead...
-	feed = clone_object(HTTP_PATH "fetch");
+	feed = clone_object(NET_PATH "http/fetch");
 	//feed -> sAgent(SERVER_VERSION " builtin Twitter to PSYC gateway");
 	feed -> sAuth(config["nickname"], config["password"]);
 	call_out( #'fetch, 14 );

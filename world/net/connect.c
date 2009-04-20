@@ -23,6 +23,7 @@ protected int block() { destruct(ME); return 0; }
 
 protected connect_failure(mc, text) {
 	is_connecting = 0;
+	P1(("connect failure %O in %O, %O.\n", mc, ME, text))
 	monitor_report("_failure_network_connect"+ mc,
 	    object_name(ME) +" · "+ text);
 }
@@ -42,7 +43,7 @@ protected int logon(int failure) {
 	}
 	is_connecting = 0;
 	if (failure == -1 || !interactive(ME)) {
-		PT(("Warning: Failed connect attempt in %O\n", ME))
+		P3(("Warning: Failed connect attempt in %O\n", ME))
 #if __EFUN_DEFINED__(errno)
 		connect_failure("_attempt", sprintf("connect failed: errno %s",
 						    errno()));

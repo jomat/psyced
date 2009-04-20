@@ -4,6 +4,11 @@
 // but we could fetch any page or data with it, really
 // tobij even allowed the object to have the URL as its object name. fancy!  ;)
 
+#ifdef Dfetch
+# undef DEBUG
+# define DEBUG Dfetch
+#endif
+
 #include <ht/http.h>
 #include <net.h>
 #include <uniform.h>
@@ -66,7 +71,7 @@ void connect() {
 		thehost = lower_case(thehost);
 		ssl = t == "s";
 	}
-	PT(("URL, THEHOST: %O, %O\n", url, thehost))
+	P4(("URL, THEHOST: %O, %O\n", url, thehost))
 	unless (port) 
 	    unless (sscanf(thehost, "%s:%d", thehost, port) == 2)
 		port = ssl? HTTPS_SERVICE: HTTP_SERVICE;
@@ -74,14 +79,14 @@ void connect() {
 	::connect(thehost, port);
 }
 
-varargs int real_logon(int arg) {
+varargs int real_logon(int failure) {
 	string scheme;
 
 	headers = ([ ]);
 	http_status = 500;
 	http_message = "(failure)";	// used by debug only
 
-	unless(::logon(arg)) return -1;
+	unless(::logon(failure)) return -1;
 	unless (url) return -3;
 	unless (resource) sscanf(url, "%s://%s/%s", scheme, host, resource); 
 
@@ -93,7 +98,7 @@ varargs int real_logon(int arg) {
 	//	emit("If-None-Match: " + etag + "\r\n");
 	// we won't need connection: close w/ http/1.0
 	//emit("Connection: close\r\n\r\n");		
-	PT(("%O using %O\n", ME, buffer))
+	P4(("%O using %O\n", ME, buffer))
 	emit("GET /"+ resource +" HTTP/1.0\r\n"
 		 "Host: "+ host +"\r\n"
 		 + buffer +
@@ -104,7 +109,7 @@ varargs int real_logon(int arg) {
 	return 0; // duh.
 }
 
-varargs int logon(int arg, int sub) {
+varargs int logon(int failure, int sub) {
 // net/connect disables telnet for all robots and circuits
 #if 0 //__EFUN_DEFINED__(enable_telnet)
 	// when fetching the spiegel rss feed, telnet_neg() occasionally
@@ -113,9 +118,9 @@ varargs int logon(int arg, int sub) {
 	enable_telnet(0);
 #endif
 	// when called from xmlrpc.c we can't do TLS anyway
-	if (sub) return ::logon(arg);
+	if (sub) return ::logon(failure);
 	if (ssl) tls_init_connection(ME, #'real_logon);
-	else real_logon(arg);
+	else real_logon(failure);
 	return 0; // duh.
 }
 
@@ -125,8 +130,9 @@ int parse_status(string all) {
 
 	sscanf(all, "%s%t%s", prot, state);
 	sscanf(state, "%d%t%s", http_status, http_message);
-	P3(("%O got %O %O from %O\n", ME, http_status, http_message, host));
 	if (http_status != R_OK) {
+		P1(("%O got %O %O from %O\n", ME,
+		    http_status, http_message, host));
 		monitor_report("_failure_unsupported_code_HTTP",
 		    S("http/fetch'ing %O returned %O %O", url || ME,
 		       http_status, http_message));
@@ -137,9 +143,9 @@ int parse_status(string all) {
 
 int parse_header(string all) { 
 	string key, val;
-	D2(D("htroom::parse is: " + all + "\n");)
 	// TODO: parse status code
 	if (all != "") {
+		P2(("http/fetch::parse_header %O\n",  all))
 		if (sscanf(all, "%s:%1.0t%s", key, val) == 2) {
 			headers[lower_case(key)] = val;
 			// P2(("ht head: %O = %O\n", key, val))
@@ -148,6 +154,7 @@ int parse_header(string all) {
 		return 1;
 	} else {
 		// das wollen wir nur bei status 200
+		P2(("%O now waiting for http body\n", ME))
 		next_input_to(#'buffer_content);
 		return 1;
 	}
@@ -155,70 +162,72 @@ int parse_header(string all) {
 }
 
 int buffer_content(string all) {
+	P2(("%O body %O\n", ME, all))
 	buffer += all + "\n"; 
 	next_input_to(#'buffer_content);
 	return 1;
 }
 
 disconnected(remainder) {
-    headers["_fetchtime"] = isotime(ctime(time()), 1);
-    if (headers["last-modified"])
+	P2(("%O got disconnected.. %O\n", ME, remainder))
+	headers["_fetchtime"] = isotime(ctime(time()), 1);
+	if (headers["last-modified"])
 	    modificationtime = headers["last-modified"];
-    if (headers["etag"]) 
+	if (headers["etag"]) 
 	    etag = headers["etag"]; // heise does not work with etag
 
-    fetched = buffer;
-    if (remainder) fetched += remainder;
-    fheaders = headers;
-    buffer = headers = 0;
-    switch (http_status) {
-    case R_OK:
-	mixed *waiter;
-	while (qSize(ME)) {
-	    waiter = shift(ME);
-	    funcall(waiter[0], fetched, waiter[1] ? fheaders : copy(fheaders));
+	fetched = buffer;
+	if (remainder) fetched += remainder;
+	fheaders = headers;
+	buffer = headers = 0;
+	switch (http_status) {
+	case R_OK:
+		mixed *waiter;
+		while (qSize(ME)) {
+			waiter = shift(ME);
+			P2(("%O calls back.. body is %O\n", ME, fetched))
+			funcall(waiter[0], fetched, waiter[1] ? fheaders : copy(fheaders));
+		}
+		break;
+	default:
+		// doesn't seem to get here when HTTP returns 301 or 302. strange.
+		// fall thru
+	case R_NOTMODIFIED:
+		qDel(ME);
+		qInit(ME, 150, 5);
 	}
-	break;
-    default:
-	// doesn't seem to get here when HTTP returns 301 or 302. strange.
-	// fall thru
-    case R_NOTMODIFIED:
-	qDel(ME);
-	qInit(ME, 150, 5);
-    }
-
-    fetching = 0;
-    return 1;       // presume this disc was expected
+	fetching = 0;
+	return 1;       // presume this disc was expected
 }
 
 varargs string content(closure cb, int force, int willbehave) {
-    if (cb) {
-	if (fetched) {
-	    if (force) {
-		funcall(cb, fetched, willbehave ? fheaders : copy(fheaders));
+	if (cb) {
+	    if (fetched) {
+		if (force) {
+		    funcall(cb, fetched, willbehave ? fheaders : copy(fheaders));
+		}
+	    } else {
+		enqueue(ME, ({ cb, willbehave }));
 	    }
-	} else {
-	    enqueue(ME, ({ cb, willbehave }));
 	}
-    }
-    return fetched;
+	return fetched;
 }
 
 varargs mapping headers(int willbehave) {
-    return willbehave ? fheaders : copy(fheaders);
+	return willbehave ? fheaders : copy(fheaders);
 }
 
 string qHeader(mixed key) {
-    if (mappingp(fheaders)) return fheaders[key];
-    return 0;
+	if (mappingp(fheaders)) return fheaders[key];
+	return 0;
 }
 
 varargs void refetch(closure cb, int willbehave) {
-    enqueue(ME, ({ cb, willbehave }));
-    unless (fetching) connect();
+	enqueue(ME, ({ cb, willbehave }));
+	unless (fetching) connect();
 }
 
 protected create() {
-    qCreate();
-    qInit(ME, 150, 5);
+	qCreate();
+	qInit(ME, 150, 5);
 }
