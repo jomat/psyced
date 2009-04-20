@@ -1,0 +1,31 @@
+* {
+	margin:0;padding:0;border-width:0;border-color:transparent;
+}
+a {
+	text-decoration:none;
+	color:#06a;
+}
+a:hover {
+	text-decoration:overline;
+}
+body{
+	font-family: 'Lucida Grande',helvetica,sans-serif;
+	color:#333;
+	background-color:#cc6;
+	margin:44px;
+}
+.listing {
+	background-color:#ddd;
+	border-left: 2px solid black;
+	border-right: 2px solid black;
+}
+
+.listing li:first-child{ border-top:1px dashed black; }
+.listing li{position:relative;padding:7;border-bottom:1px dashed black;line-height:1.1em;}
+.listing li:hover,ol.listing li.hover{background-color:white;}
+
+._photo{display:block;width:50px;height:50px;position:absolute;right:7;margin:0 0 0 0;}
+._photo img{width:48px;height:48px;}
+._description{font-size:70%;}
+._uniform{font-size:80%;}
+._uniform a{color:#c30}

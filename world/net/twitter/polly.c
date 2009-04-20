@@ -86,7 +86,7 @@ parse(string body, mapping headers) {
 fetch() {
 	feed -> content( #'parse, 0, 1 );
 	feed -> fetch("http://twitter.com/statuses/friends_timeline.json"
-		      "?count="+( lastid? ("44&since_id="+ lastid) : "44"));
+		      "?count="+( lastid? ("11&since_id="+ lastid) : "11"));
 	call_out( #'fetch, 6 * 59 );	// odd is better
 }
 
