@@ -38,14 +38,18 @@ int buffer_content(string all);
 string qHost() { return thehost; }
 
 void fetch(string murl) {
-	// why just once? this breaks twitter/*
-	//if (url) return;
-	// accept.c does this for us:
-	//url = replace(murl, ":/", "://");
-	// so we can use this method also in a normal way
-	url = murl;
+	if (url != murl) {
+		// accept.c does this for us:
+		//url = replace(murl, ":/", "://");
+		// so we can use this method also in a normal way
+		url = murl;
+		// resource may need to be re-parsed (other params)
+		resource = 0;
+		// re-parse the hostname?
+	       	//thehost = port = 0;
+	}
 	P3(("%O: fetch(%O)\n", ME, url))
-	connect();
+	unless (fetching) connect();
 }
 
 object load() { return ME; }
@@ -99,6 +103,7 @@ varargs int real_logon(int failure) {
 	//	emit("If-None-Match: " + etag + "\r\n");
 	// we won't need connection: close w/ http/1.0
 	//emit("Connection: close\r\n\r\n");		
+	P1(("%O fetching /%s from %O\n", ME, resource, host))
 	P4(("%O using %O\n", ME, buffer))
 	emit("GET /"+ resource +" HTTP/1.0\r\n"
 		 "Host: "+ host +"\r\n"
