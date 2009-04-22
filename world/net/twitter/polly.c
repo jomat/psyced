@@ -19,7 +19,7 @@ parse(string body, mapping headers) {
 	if (!body || body == "") {
 		P1(("%O failed to get its timeline from %O.\n", ME,
 		    previous_object()))
-		PT(("Got headers: %O", headers))
+		PT(("Got headers: %O\n", headers))
 		return;
 	}
 //#if DEBUG > 0
@@ -31,14 +31,13 @@ parse(string body, mapping headers) {
 		P1(("%O failed to parse its timeline.\n", ME))
 		return;
 	}
-	i=sizeof(wurst)-1;
-	if (wurst[i]["id"] <= lastid) {
-		P1(("%O received old stuff.\n", ME))
+	if (wurst[0]["id"] <= lastid) {
+		P1(("%O received %d old updates.\n", ME, sizeof(wurst)))
 		return;
 	}
-	lastid = wurst[i]["id"];
+	lastid = wurst[0]["id"];
 	save_object(DATA_PATH "twitter");
-	for (; i>=0; i--) {
+	for (i=sizeof(wurst)-1; i>=0; i--) {
 		d = wurst[i];
 		unless (mappingp(d)) {
 			P1(("%O got a broken tweet: %O.\n", ME, d))
@@ -53,7 +52,7 @@ parse(string body, mapping headers) {
 			P1(("%O got a nickless tweeter.\n", ME))
 			continue;
 		}
-		PT((" %O", nick))
+		P4((" %O", nick))
 		o = find_place(nick);
 
 		// _notice_update_twitter ?
@@ -84,11 +83,13 @@ parse(string body, mapping headers) {
 }
 
 fetch() {
-	P3(("%O ready to fetch from %O\n", ME, feed))
-	call_out( #'fetch, 3 * 59 );	// odd is better
-	feed -> content( #'parse, 0, 1 );
-	feed -> fetch("http://twitter.com/statuses/friends_timeline.json"
-		      "?count="+( lastid? ("23&since_id="+ lastid) : "23"));
+	P1(("%O going to fetch from %O since %O\n", ME, feed, lastid))
+	call_out( #'fetch, 4 * 59 );	// odd is better
+	feed -> content( #'parse, 1, 1 );
+	// twitter ignores since_id if count is present. stupid.
+	feed -> fetch("http://twitter.com/statuses/friends_timeline.json?"
+		 // +( lastid? ("since_id="+ lastid) : "count=23"));
+		  "count="+( lastid? ("23&since_id="+ lastid) : "23"));
 }
 
 create() {
