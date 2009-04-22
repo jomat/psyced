@@ -84,10 +84,11 @@ parse(string body, mapping headers) {
 }
 
 fetch() {
+	P3(("%O ready to fetch from %O\n", ME, feed))
+	call_out( #'fetch, 3 * 59 );	// odd is better
 	feed -> content( #'parse, 0, 1 );
 	feed -> fetch("http://twitter.com/statuses/friends_timeline.json"
-		      "?count="+( lastid? ("11&since_id="+ lastid) : "11"));
-	call_out( #'fetch, 6 * 59 );	// odd is better
+		      "?count="+( lastid? ("23&since_id="+ lastid) : "23"));
 }
 
 create() {
