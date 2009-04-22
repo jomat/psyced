@@ -31,6 +31,10 @@ parse(string body, mapping headers) {
 		P1(("%O failed to parse its timeline.\n", ME))
 		return;
 	}
+	unless (sizeof(wurst)) {
+		P1(("%O received an empty structure.\n", ME))
+		return;
+	}
 	if (wurst[0]["id"] <= lastid) {
 		P1(("%O received %d old updates.\n", ME, sizeof(wurst)))
 		return;
