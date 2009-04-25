@@ -414,12 +414,20 @@ w(string mc, string data, mapping vars, mixed source) {
 # ifdef ALIASES
 	    if (raliases[source]) {
 		nick2 = raliases[source];
+#  if 0
 		vars["_INTERNAL_source_IRC"] = nick2 +"!"+
 		    u[UNick]? u[UNick] +"@"+ u[UHost]
 			    : (vars["_nick_long"]
 				 || vars["_INTERNAL_nick_plain"]
 				 || vars["_nick"])
 		      +"@alias.undefined";
+#  else
+		vars["_INTERNAL_source_IRC"] = nick2 +"!"+
+		    (u[UNick]? u[UNick] +"@"+ u[UHost]
+			    : (vars["_nick_long"]
+				 || vars["_INTERNAL_nick_plain"]
+				 || vars["_nick"]));
+#  endif
 	    }
 
 	    unless (nick2) {

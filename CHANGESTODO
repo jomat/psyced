@@ -3927,4 +3927,5 @@ net/twitter
 +	listing: provide a listing of subscribed feeds
 http/fetch
 -	minor api cleanups to serve a more generic job
-
+library/dns
++	honor #define _flag_disable_trust_localhost
