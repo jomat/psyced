@@ -414,7 +414,7 @@ w(string mc, string data, mapping vars, mixed source) {
 # ifdef ALIASES
 	    if (raliases[source]) {
 		nick2 = raliases[source];
-#  if 0
+#  if 0			// no longer works for fippo, silvy etc.
 		vars["_INTERNAL_source_IRC"] = nick2 +"!"+
 		    u[UNick]? u[UNick] +"@"+ u[UHost]
 			    : (vars["_nick_long"]
