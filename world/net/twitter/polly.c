@@ -23,8 +23,8 @@ parse(string body, mapping headers) {
 		return;
 	}
 //#if DEBUG > 0
-	rm(DATA_PATH "timeline.json");
-	write_file(DATA_PATH "timeline.json", body);
+	rm(DATA_PATH "twitter/timeline.json");
+	write_file(DATA_PATH "twitter/timeline.json", body);
 	P4((body))
 //#endif
 	unless (pointerp(wurst = parse_json(body))) {
@@ -59,9 +59,21 @@ parse(string body, mapping headers) {
 		P4((" %O", nick))
 		o = find_place(nick);
 
-		// _notice_update_twitter ?
-		sendmsg(o, "_message_twitter", d["text"], ([
-					// should i send text as _action?
+		// _message_twitter ? not so convincing.. a lot of the
+		// things are converted rss newsfeeds, and when private
+		// people are "chatting" over twitter, they are still
+		// "broadcasting" each message to a random conjunction
+		// of friends and strangers (we don't follow private
+		// twitters with this gateway!) ... thus it is quite
+		// appropriate that twitters are not given the same
+		// relevance as a _message. still you can /highlight
+		// particular senders in your client...
+		//
+		sendmsg(o,
+		//  "_notice_headline_twitter", "([_nick]) [_headline]",
+		    "_message_twitter", d["text"],
+		  ([
+		    "_headline": d["text"], // should i send text as _action?
 		    "_nick": nick,
 		    // _count seems to be the better word for this
 		    "_amount_updates": p["statuses_count"],
