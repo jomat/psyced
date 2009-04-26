@@ -1315,6 +1315,7 @@ case "_message_echo_private":
 			// fall thru
 case "_message_echo_public":
 case "_message_echo":
+case "_message_twitter":
 case "_message_public":
 			// avoid treating this as _message here
 			break;
@@ -1323,6 +1324,9 @@ case "_message_audio":
 			// not being displayed to users other than psyc clients
 			data = 0;
 			break;
+// we should judge our messages by their routing method, not by their
+// name! thus, the _public and _private distinction has to exist only
+// for display. FIXME
 case "_message":
 			// this is only visible in person.c, not user.c
 			// therefore probably useless
@@ -1372,23 +1376,32 @@ case "_request_execute":
 					// our places
 					if (places[t]) {
 					    vSet("place", place = t);
+					    PT(("REQ-EX place %O\n", t))
 					} else {
 					    // see if it is a local object
 					    object o = psyc_object(t);
-
-					    // object one of our places?
-					    if (o && places[o]) {
-						place = o;
-						vSet("place", o->qName());
+					    if (o) {
+						// object one of our places?
+						if (places[o]) {
+						    place = o;
+						    vSet("place", o->qName());
+						    PT(("REQ-EX o'place %O\n", o))
+						} else {
+						    PT(("REQ-EX object %O not found in %s's places %O\n", o, MYNICK, places))
+						}
 					    } else unless (t2) {
 						    // must be a person then
 //						ME->parsecmd(data, t);
-						parsecmd(data, t);
+						PT(("REQ-EX person %O vs %O\n", t, o))
 						// should be able to put o||t
 						// here.. TODO
+						parsecmd(data, t);
 						return 0;
 					    }
 					}
+				}
+				else {
+					PT(("REQ-EX non-string %O\n", t))
 				}
 //				ME->parsecmd(data);
 				if (t2) {
@@ -1632,8 +1645,12 @@ case "_notice_invitation":
 				vars["_nick_place"] : vars["_place"]);
 
 		// same filtering code as couple lines further below
-		if (( IS_NEWBIE || !itsme && FILTERED(source)) &&
-		    (!profile || profile[PPL_NOTIFY] <= PPL_NOTIFY_PENDING)) {
+		if ((
+#ifndef _flag_enable_unauthenticated_message_private
+		      IS_NEWBIE ||
+#endif
+		     (!itsme && FILTERED(source)) &&
+		    (!profile || profile[PPL_NOTIFY] <= PPL_NOTIFY_PENDING))) {
 			sendmsg(source, "_failure_filter_strangers", 0,
 				([ "_nick" : MYNICK ]) );
 			unless (boss(source))

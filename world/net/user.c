@@ -615,6 +615,9 @@ case "_jabber_iq_set":
 case "_jabber":
 		P1(("%O got %O", ME, mc))
 		break;
+case "_notice_composing_media":
+		if (v("scheme") != "psyc") return 1;
+		break;
 case "_message_video":
 case "_message_audio":  
 		// not being displayed to users other than psyc clients
@@ -753,6 +756,7 @@ case "_message_announcement":
 case "_message_behaviour_warning":
 case "_message_behaviour_punishment":
 case "_message_behaviour":
+case "_message_twitter":
 		unless (stringp(data)) variant = "_default";
 		else variant = "";
 #ifdef USE_THE_NICK

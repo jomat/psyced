@@ -6,6 +6,9 @@ Essentially: whenever you fix something, move that line to the end of file.
 ________________________________________________________________________
 == NEXT RELEASE ========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- autorefetch twitter isnt working
+  http/fetch is too complicated. throw out the queue and callback logic. kiss!
+
 ? support tls multiplexing on all suitable ports
 
 ? bugs in psyced install procedure
@@ -35,6 +38,28 @@ ________________________________________________________________________
     im psyc://psyced.org/~lynx Context festgestellt.
 
 ? who's gonna clean up the mess of having too many websites ?
+
+- when provided with a _focus pointing to yourself, _request_execute will
+  still try to forward a command to the "current place" - a uniform or
+  object is passed to parsecmd(data, dest) but dest is ignored later in cmd()
+
+- _source_relay should point to tg, not foo (only happens with local users)
+	.
+	:_source.psyc://x-net.hu/~foo
+	:_target.psyc://3e44aa49.XXX:-52801/
+	:_source_relay.psyc://x-net.hu/~foo
+
+	:_nick.tg
+	:_time_INTERNAL.1239787956
+	:_nick_target.psyc://x-net.hu/~foo
+	_message_private
+	halo
+	.
+
+- the linking blues...
+	tgX sagt: on reconnect i didn't get any _echo_place_enter_login's from this room, then no response for _request_do_enter, and after a _request_do_leave i get replies for enter/leave but instead of _echo_place_enter/leave i get _notice_place_enter/leave
+
+? should /load inform that errors go to the console?
 ________________________________________________________________________
 == psyced 1.0 ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -3895,3 +3920,12 @@ spyc/* psyc/*
 install.sh
 +	don't leave _host_IP uncommented
 +	mkdir data/* log/*
+=== 200904 ============================================================
+net/twitter
++	polly: periodically fetch updates from a twitter account and distribute to
+	hundreds of newsfeed contexts
++	listing: provide a listing of subscribed feeds
+http/fetch
+-	minor api cleanups to serve a more generic job
+library/dns
++	honor #define _flag_disable_trust_localhost

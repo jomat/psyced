@@ -489,6 +489,10 @@ fi
 
 if test "\$1" = "-m"
 then
+    # git is seriously unsuited for this job. we need to "check in" the changes
+    # to file permissions etc or otherwise we can't update things at all...
+    (cd $base && git commit -a -m 'automatic by psyced -m')
+    # merging will of course fail.. sigh
     (cd $base && git merge -s resolve origin)
     exit
 fi

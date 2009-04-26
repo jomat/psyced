@@ -107,7 +107,7 @@ int legal_host(string ip, int port, string scheme, int udpflag) { // proto.h!
 	// we sincerely hope our kernel will drop udp packets that
 	// spoof they are coming from localhost.. would be ridiculous if not
 //	if (ip == "127.0.0.1" || ip == "127.1" || ip == "0") return 9;
-#ifndef DONT_TRUST_LOCALHOST
+#ifndef _flag_disable_trust_localhost
 	if (localhosts[ip]) return 9;
 	if (ip == myIP || !ip) return 8;
 #endif
@@ -123,7 +123,7 @@ int legal_domain(string host, int port, string scheme, int udpflag) {
 	// spoof they are coming from localhost.. would be ridiculous if not
 	//
 	// TODO: use is_localhost here?
-#ifndef DONT_TRUST_LOCALHOST
+#ifndef _flag_disable_trust_localhost
 	if (host == "localhost" || host == SERVER_HOST) return 9;
 #endif
 //	if (host == myLowerCaseHost) return 8;

@@ -189,6 +189,7 @@ mixed unMarshal(XMLNode parsed) {
     }
 }
 
+// why is this almost the same code as in http/fetch?
 int disconnected(string remainder) {
     mixed *args;
 

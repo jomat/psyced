@@ -367,6 +367,7 @@ mapping jsonObject()
 		}
 
 		if (nextClean() != ':') {
+			PT(("jsonFAIL: '%c' at %O\n", nextClean(), myIndex))
 			THROW("Expected a ':' after a key.\n");
 		}
 
