@@ -10,21 +10,22 @@ volatile object fetcha;
 volatile mixed wurst;
 
 parse(string body) {
+#ifndef _flag_disable_fetch_twitter_friends
 	if (!body || body == "") {
 		P1(("%O failed to get its listing.\n", ME))
 		return;
 	}
-//#if DEBUG > 0
 	rm(DATA_PATH "twitter/friends.json");
 	write_file(DATA_PATH "twitter/friends.json", body);
 	P4((body))
-//#endif
+#endif
 	unless (pointerp(wurst = parse_json(body))) {
 		P1(("%O failed to parse its listing.\n", ME))
 		return;
 	}
 #ifdef DEVELOPMENT
-	write_file(DATA_PATH "twitter/friends.parsed", sprintf("%O\n", wurst));
+	// haha.. (s)printf(): BUFF_SIZE overflowed...
+	//ite_file(DATA_PATH "twitter/friends.parsed", sprintf("%O\n", wurst));
 #endif
 	P1(("%O sorting %O subscription names ", ME, sizeof(wurst)))
 	wurst = sort_array(wurst, (:
@@ -47,7 +48,7 @@ htget(prot, query, headers, qs, data, noprocess) {
 	localize(query["lang"], "html");
 
 	unless (pointerp(wurst)) {
-		hterror(R_TEMPOVERL,
+		hterror(prot, R_TEMPOVERL,
 			"Haven't successfully retrieved data yet.");
 		return;
 	}
@@ -98,12 +99,20 @@ htget(prot, query, headers, qs, data, noprocess) {
 	return 1;
 }
 
+#ifndef _flag_disable_fetch_twitter_friends
 fetch() {
 	fetcha -> content( #'parse, 0, 1 );
 	fetcha -> fetch("http://twitter.com/statuses/friends.json?count=200");
 }
+#endif
 
 create() {
+#ifdef _flag_disable_fetch_twitter_friends
+       	string body = read_file(DATA_PATH "twitter/friends.json");
+       	if (body) return parse(body);
+	P1(("\nNo twitter/friends.json found. %O disabled.\n", ME))
+	destruct(ME);
+#else
 	mapping config;
 	object o = find_object(CONFIG_PATH "config");
 
@@ -113,14 +122,11 @@ create() {
 		//destruct(ME);
 		return 1;
 	}
-
-       	string body = read_file(DATA_PATH "twitter/friends.json");
-       	if (body) return parse(body);
-
 	// we could even choose to inherit this instead...
 	fetcha = clone_object(NET_PATH "http/fetch");
 	//fetcha -> sAgent(SERVER_VERSION " builtin Twitter to PSYC gateway");
 	fetcha -> sAuth(config["nickname"], config["password"]);
 	call_out( #'fetch, 14 );
+#endif
 }
 
