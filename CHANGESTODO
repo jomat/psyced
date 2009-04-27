@@ -3929,3 +3929,7 @@ http/fetch
 -	minor api cleanups to serve a more generic job
 library/dns
 +	honor #define _flag_disable_trust_localhost
+net/irc
+-	bugfix from fippo concerning alias interpretation
+include/net.h
+-	the efun has changed from stringprep() to idna_stringprep()

@@ -53,17 +53,18 @@
 # define DEFAULT_CONTENT_TYPE	"text/html; charset=" SYSTEM_CHARSET
 #endif
 
-#if __EFUN_DEFINED__(stringprep)
+#if __EFUN_DEFINED__(idna_stringprep) && defined(DRIVER_PATH)
 // stringprep needs utf8 arguments
 // this results in lots of conversions some of which look like
 // system->utf­>system->utf. luckily UTF8 is our system charset.
 // so FROM_UTF8 and TO_UTF8 are normally nullmacros (see above)
-# include <idn.h>
+# include DRIVER_PATH "sys/idn.h"
 // beware, these macros dont have error handling...
-# define NODEPREP(s) FROM_UTF8(stringprep(TO_UTF8(s), STRINGPREP_XMPP_NODEPREP))
-# define NAMEPREP(s) FROM_UTF8(stringprep(TO_UTF8(s), STRINGPREP_NAMEPREP))
-# define RESOURCEPREP(s) FROM_UTF8(stringprep(TO_UTF8(s), STRINGPREP_XMPP_RESOURCEPREP))
+# define NODEPREP(s) FROM_UTF8(idna_stringprep(TO_UTF8(s), STRINGPREP_XMPP_NODEPREP))
+# define NAMEPREP(s) FROM_UTF8(idna_stringprep(TO_UTF8(s), STRINGPREP_NAMEPREP))
+# define RESOURCEPREP(s) FROM_UTF8(idna_stringprep(TO_UTF8(s), STRINGPREP_XMPP_RESOURCEPREP))
 #else
+# echo Warning: using lower_case instead of idna_stringprep!
 # define NODEPREP(s) lower_case(s)
 # define NAMEPREP(s) lower_case(s)
 # define RESOURCEPREP(s) (s)
