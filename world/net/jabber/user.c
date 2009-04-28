@@ -558,7 +558,7 @@ iq(XMLNode node) {
     string target;
     string friend;
     XMLNode helper;
-    XMLNode firstchild;
+    XMLNode iqchild;
     string t;
     string packet;
     string template;
@@ -570,8 +570,8 @@ iq(XMLNode node) {
     isplacemsg = stringp(target) && strlen(target) && ISPLACEMSG(target);
 
     P0(("+++ %O IQ node %O\n", ME, node))
-    firstchild = getfirstchild(node);
-    unless(firstchild) switch(node["@type"]) {
+    iqchild = getiqchild(node);
+    unless(iqchild) switch(node["@type"]) {
 	case "get":
 	case "set":
 	case "result":
@@ -581,9 +581,9 @@ iq(XMLNode node) {
 	    P1(("%O got invalid iq %O\n", ME, node))
 	return;
     }
-    helper = firstchild;
+    helper = iqchild;
 
-    switch(firstchild["@xmlns"]) {
+    switch(iqchild["@xmlns"]) {
     case "jabber:iq:version": 
 	switch(node["@type"]) {
 	case "get":
@@ -978,16 +978,16 @@ iq(XMLNode node) {
 	    packet += "</blocklist></iq>";
 	    break;
 	case "set":
-	    if (firstchild["/item"] && !nodelistp(firstchild["/item"])) 
-		firstchild["/item"] = ({ firstchild["/item"] });
-	    unless(firstchild["/item"]) { /* clear the blocklist */
+	    if (iqchild["/item"] && !nodelistp(iqchild["/item"])) 
+		iqchild["/item"] = ({ iqchild["/item"] });
+	    unless(iqchild["/item"]) { /* clear the blocklist */
 		foreach(mixed p, mixed val : ppl) {
 		    if (val[PPL_DISPLAY] == PPL_DISPLAY_NONE)
 			sPerson(p, PPL_DISPLAY, PPL_DISPLAY_DEFAULT);
 		}
 	    } else {
-		int block = firstchild[Tag] == "block";
-		foreach (helper : firstchild["/item"]) {
+		int block = iqchild[Tag] == "block";
+		foreach (helper : iqchild["/item"]) {
 		    /* add/remove each item to/from the blocklist */
 		    if (block) {
 			/* TODO: 

@@ -448,10 +448,11 @@ certificate_check_jabbername(name, cert) {
 }
 #endif
 
-/* get first child of a node
- * used for <iq/>
+/* get first child of a node used for <iq/>
+ * "first" is actually inaccurate, since there is no defined order in mappings,
+ * so we select the child, that is not an error
  */
-getfirstchild(node) {
+getiqchild(node) {
     mixed res;
     foreach(mixed key, mixed val : node) {
 	unless(stringp(key) && key[0] == '/') continue;
