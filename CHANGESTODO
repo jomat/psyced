@@ -340,6 +340,12 @@ WINDOWS DISTRIBUTION
 ? how can we compile SRV into erq.exe? do we care?
 ? which open source installer for win to use?
 ? what to do about psyconf.. include perl or re-implement psyconf for win?
+
+TWITTER
++ resolve redirect-urls before forwarding to subscriptions, that means,
+  calling http/fetch on http://tr.im/whatever urls until it no longer
+  returns a 30x redirection code. [improves privacy btw, since all those
+  redirect services log your access for the one who installs them]
 ________________________________________________________________________
 == OTHER MAJOR TODOS ===================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯

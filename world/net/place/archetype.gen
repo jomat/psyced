@@ -1312,7 +1312,7 @@ msg(source, mc, data, mapping vars) {
 		if (isValidRelay(source)
 		    || isValidRelay(vars["_source_relay"])
 		    || isValidRelay(vars["_context"])) {
-			P1(("yes. cast & out.\n"))
+			P1(("yes. cast & out: %O in %O\n", source, ME))
 			return castPresence(source, mc, data, vars,
 			    // don't broadcast the user's presence
 			    !neu || v("_filter_presence"));
