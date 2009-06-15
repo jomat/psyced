@@ -527,7 +527,9 @@ PROTECTED mixed nextObject() {
 	if ((b >= '0' && b <= '9') || b == '.' || b == '-' || b == '+') {
 	   int a; float b_; string c_;
 	    sscanf(s, "%d%s", a, c_);
-	   if(c_ && sizeof(c_)) {
+			// some values of json ints exceed the limits of MAX_INT, in that case we need to use float	-lynX
+			// maybe it is more efficient, if we used float in all cases then
+	   if ((c_ && sizeof(c_)) || (a && s != to_string(a))) {
 #ifdef __PIKE__
 	     sscanf(s, "%f", b_);
 #else

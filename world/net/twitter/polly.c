@@ -5,7 +5,7 @@
 
 #include <net.h>
 
-persistent int lastid;
+persistent float lastid;
 
 volatile object feed;
 
@@ -28,15 +28,21 @@ parse(string body, mapping headers) {
 	P4((body))
 //#endif
 	unless (pointerp(wurst = parse_json(body))) {
-		P1(("%O failed to parse its timeline.\n", ME))
+		monitor_report("_failure_network_fetch_twitter_empty",
+		    "[_source] failed to parse its timeline");
 		return;
 	}
 	unless (sizeof(wurst)) {
-		P1(("%O received an empty structure.\n", ME))
+		monitor_report("_failure_network_fetch_twitter_empty",
+		    "[_source] received an empty structure.");
 		return;
 	}
+	// this used to fail on MAX_INT turning the ints to negative.. interestingly
+	// it works out of the box now that i convert this to float. funny to run into
+	// such a weird problem only after months of usage, but if twitter never resets
+	// its packet ids, that's where you end up.. bignums!
 	if (wurst[0]["id"] <= lastid) {
-		P1(("%O received %d old updates.\n", ME, sizeof(wurst)))
+		P1(("%O received %d old updates (id0 %O <= lastid %O).\n", ME, sizeof(wurst), wurst[0]["id"], lastid))
 		return;
 	}
 	lastid = wurst[0]["id"];
