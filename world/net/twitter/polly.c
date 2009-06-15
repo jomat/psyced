@@ -110,8 +110,9 @@ fetch() {
 	feed -> content( #'parse, 1, 1 );
 	// twitter ignores since_id if count is present. stupid.
 	feed -> fetch("http://twitter.com/statuses/friends_timeline.json?"
-		 // +( lastid? ("since_id="+ lastid) : "count=23"));
-		  "count="+( lastid? ("23&since_id="+ lastid) : "23"));
+	     // +( lastid? ("since_id="+ lastid) : "count=23"));
+	      "count="+( lastid? ("23&since_id="+
+				  sprintf("%F", lastid)) : "23"));
 }
 
 create() {
