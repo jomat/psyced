@@ -5,7 +5,7 @@
 
 #include <net.h>
 
-persistent float lastid;
+persistent mixed lastid;
 
 volatile object feed;
 
@@ -37,15 +37,20 @@ parse(string body, mapping headers) {
 		    "[_source] received an empty structure.");
 		return;
 	}
-	// this used to fail on MAX_INT turning the ints to negative.. interestingly
-	// it works out of the box now that i convert this to float. funny to run into
-	// such a weird problem only after months of usage, but if twitter never resets
-	// its packet ids, that's where you end up.. bignums!
-	if (wurst[0]["id"] <= lastid) {
-		P1(("%O received %d old updates (id0 %O <= lastid %O).\n", ME, sizeof(wurst), wurst[0]["id"], lastid))
+	// this used to fail on MAX_INT turning the ints to negative.. it would work for
+	// a while longer using floats, but since floating point mantissa in lpc is only
+	// 32 bits wide, it's just a question of time until we hit that roof again (when
+	// status_id reaches 4294967296). so let's try strings instead. funny to run into
+	// such a weird problem only after years that twitter has been in existence.
+	// twitterific may have run into the same problem, as the timing of its breakdown
+	// matches ours.
+	if (lastid && wurst[0]["id"] <= lastid) {
+		P1(("%O received %d old updates (id0 %O <= lastid %O).\n",
+		    ME, sizeof(wurst), wurst[0]["id"], lastid))
 		return;
 	}
 	lastid = wurst[0]["id"];
+	P1(("%O -- new lastid %O\n", ME, lastid))
 	save_object(DATA_PATH "twitter");
 	for (i=sizeof(wurst)-1; i>=0; i--) {
 		d = wurst[i];
@@ -110,9 +115,8 @@ fetch() {
 	feed -> content( #'parse, 1, 1 );
 	// twitter ignores since_id if count is present. stupid.
 	feed -> fetch("http://twitter.com/statuses/friends_timeline.json?"
-	     // +( lastid? ("since_id="+ lastid) : "count=23"));
-	      "count="+( lastid? ("23&since_id="+
-				  sprintf("%F", lastid)) : "23"));
+		 // +( lastid? ("since_id="+ lastid) : "count=23"));
+		  "count="+( lastid? ("23&since_id="+ lastid) : "23"));
 }
 
 create() {
