@@ -21,6 +21,14 @@ ________________________________________________________________________
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+? /ve/TODO/leave-from-user
+
+- newbies are allowed to open new owned rooms
+  fippo sagt: ergo brauchst du nen exit-hook der owner löscht wenn der n00b-owner aus dem raum geht
+
+- double _link does produce an _unlink to the old client, but not the proper
+  place enter events..?
+
 - jabber logout isn't announced or offline avail isn't processed
   ... apparently other side did not logout properly, as it doesn't happen always
 

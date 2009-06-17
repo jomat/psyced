@@ -34,7 +34,10 @@ exit
 enable_use_json=yes
 
 # compile expat xml & xmpp parser in, if available
-enable_use_expat=yes
+enable_use_expat=no
+
+# compile iksemel parser in, if available
+enable_use_iksemel=no
 
 # enable this if you want use http://about.psyc.eu/psyclpc#Authlocal
 enable_use_authlocal=yes

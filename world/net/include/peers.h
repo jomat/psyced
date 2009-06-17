@@ -23,6 +23,27 @@
 
 #define PPL_NOTIFY	1
 
+// this model does not handle the "None + Pending Out/In" state in
+// http://xmpp.org/rfcs/rfc3921.html#substates - in psyc, if two
+// people intend to subscribe to each other, they are either upgraded
+// to friendship aka "Both," or rather - the actual subscription state
+// on the other side is not stored here, except for the special case
+// of PPL_NOTIFY_OFFERED.
+//
+// if a full implementation of XMPP requires local storage of whether the
+// other side intends to send us presence (even though she can actually do
+// whatever she wants, so the information doesn't seem very useful and is
+// in fact very likely to go out of sync), we'd have to add a new flag class.
+// something like PPL_SUBSCRIBED or PPL_FOLLOW.
+//
+// this all clashes with the PSYC model of context subscriptions - we should
+// throw away all of these PPL_ subscription flags, and model all xmpp
+// friendship states with generic context subscriptions - no matter if we
+// are dealing with people, places or other pubsub apps. seen from this
+// perspective, "None + Pending Out/In" is equivalent to a pair of
+// _request_context_subscribe's which haven't been answered yet. we need
+// a generic per-entity way to store these states, below user level.
+//
 #define PPL_NOTIFY_IMMEDIATE	'8'
 #define PPL_NOTIFY_DEFAULT	PPL_NOTIFY_IMMEDIATE
 #define PPL_NOTIFY_DELAYED	'6'

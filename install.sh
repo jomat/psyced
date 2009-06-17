@@ -1079,7 +1079,7 @@ then
 	echo "Creating $BASE_DIR..."
 	if mkdir -m $BASE_PERM -p $BASE_DIR 2> /dev/null
 	then
-		;
+		echo "";    # nop?
 	else
 		if test "x$userid" = "xroot"
 		then
