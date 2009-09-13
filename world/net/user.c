@@ -435,8 +435,10 @@ msg(source, mc, data, mapping vars, showingLog) {
 		 && abbrev(SERVER_UNIFORM +"~", source))
 #endif
 	  ) {
+#ifdef PRO_PATH
 		if (data && index(data, '\n') != -1)
 			data = replace(data, "\n", " ");
+#endif
 #ifdef USE_THE_NICK
 		if (t != source) {
 		    if (objectp(source)) {

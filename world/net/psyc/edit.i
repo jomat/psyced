@@ -177,19 +177,28 @@ static varargs string psyc_render(mixed source, string mc, mixed data,
 		data = data? to_string(data): "";
 #endif
 	}
-	else if (data == S_GLYPH_PACKET_DELIMITER || (strlen(data) > 1 &&
+	else if (data == S_GLYPH_PACKET_DELIMITER ||
+# ifdef SPYC
+		 // just some random limit that makes us prefer _length
+		 // over scanning data for illegal characters
+		  strlen(data) > 444 ||
+# endif         
+		 (strlen(data) > 1 &&
 		  data[0] == C_GLYPH_PACKET_DELIMITER && data[1] == '\n')
 		    || strstr(data, "\n" S_GLYPH_PACKET_DELIMITER "\n") != -1) {
-		// this check shouldn't be necessary here: we should check what
-		// people are typing in usercmd
+		// we could check what people are typing in usercmd.. then
+		// again, "illegal" data may also come in from XMPP, and
+		// anything should be legal in PSYC.. so let's handle it here.
 # ifdef SPYC
 		needLen++;
 # else
+		// old psyc syntax has no clean solution to this problem,
+		// so we just censor the message. use the new syntax!
 		P1(("%O: %O tried to send %O via psyc. censored.\n",
 		    previous_object() || ME, vars["_nick"] || vars, data))
 		data = "*** censored message ***";
 		return 0;
-# endif         
+# endif
 # ifndef NEW_LINE
 	} else
 #  ifdef SPYC

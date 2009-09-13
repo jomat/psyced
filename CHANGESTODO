@@ -68,6 +68,29 @@ ________________________________________________________________________
 	tgX sagt: on reconnect i didn't get any _echo_place_enter_login's from this room, then no response for _request_do_enter, and after a _request_do_leave i get replies for enter/leave but instead of _echo_place_enter/leave i get _notice_place_enter/leave
 
 ? should /load inform that errors go to the console?
+
+________________________________________________________________________
+:_group psyc://psyced.org/@welcome
+:_source_identification psyc://xxx.no-ip.org/~xxx
+
+:_tag msg_406
+_request_do_message
+bug!
+.
+
+:_source_relay psyc://xxx.no-ip.org/~0
+:_context psyc://psyced.org/@welcome
+
+:_nick_place psyc://psyced.org/@welcome
+:_nick xxx
+:_time_INTERNAL 1245932297
+_message_echo_public
+bug!
+.
+
+In welcome spricht «psyc://xxx.no-ip.org/~0» xxx: the bug in the scratchpad. why psyced echoes packets to "~0" instead of my real account? the same thing is for echo_private
+In welcome spricht «psyc://xxx.no-ip.org/~0» xxx: it should either ignore first packet (if psyced is sure that i'm not authorized with password) or return echo to that account instead of misterious "0"
+
 ________________________________________________________________________
 == psyced 1.0 ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -1536,6 +1559,10 @@ ________________________________________________________________________
 - _do_leave does not forward the echo from remote places back to the client
 
 - place and v("place") aren't in sync (new changes for psyc clients)
+
+- when forwarding _message_echo_private from a remote server to a local
+  client, newlines get replaced by mere spaces. where does that happen
+  and how can it be avoided?
 
 + if newbie: directly show register dialog
   (lynx should add _status_unregistered or so)
