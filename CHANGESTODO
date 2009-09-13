@@ -1560,10 +1560,6 @@ ________________________________________________________________________
 
 - place and v("place") aren't in sync (new changes for psyc clients)
 
-- when forwarding _message_echo_private from a remote server to a local
-  client, newlines get replaced by mere spaces. where does that happen
-  and how can it be avoided?
-
 + if newbie: directly show register dialog
   (lynx should add _status_unregistered or so)
 
