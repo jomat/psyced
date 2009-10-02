@@ -323,7 +323,9 @@ ________________________________________________________________________
 - move templates from source code into default/en/plain.textdb
   .. maybe write an automation to do it? they're just too many!
 
-  run more mailcast gateways!! on psyced.org? or elsewhere?
++ run more mailcast gateways!! on psyced.org? or elsewhere?
+  like.. gateway for email alerts from http://www.dernewsticker.de/
+  and google alerts obviously
 
 - /log 9999999999 produces
         Numeric overflow: 1410065407 *= 4

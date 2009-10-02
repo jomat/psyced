@@ -843,7 +843,7 @@ logon() {
 	// but i guess it is indeed appropriate to make it clear how very much
 	// different we are from a regular irc server.
 	//
-	reply(RPL_ISUPPORT, "PSYC=.99 ALIAS AVAILABILITY FRIEND HISTORY MOOD SHOUT SSET STATUS SUBSCRIBE THREAD TRUST PREFIX= CHANTYPES=# CHANMODES= NICKLEN="+ (string)MAX_UNIFORM_LEN +" CHANNELLEN="+ (string)MAX_UNIFORM_LEN +" CASEMAPPING=ascii TOPICLEN=4404 KICKLEN=4404 AWAYLEN=4404 MAXTARGETS=1 CHARSET="+ (v("charset")||SYSTEM_CHARSET) +" NETWORK=PSYC CTCP=PRESENCE,TS UNIFORMS=psyc,xmpp :are supported by this server");
+	reply(RPL_ISUPPORT, "PSYC=.99 ALIAS AVAILABILITY FRIEND HISTORY MOOD SHOUT SSET STATUS SUBSCRIBE THREAD TRUST PREFIX= CHANTYPES=# CHANMODES= NICKLEN="+ (string)MAX_UNIFORM_LEN +" CHANNELLEN="+ (string)MAX_UNIFORM_LEN +" CASEMAPPING=ascii TOPICLEN=4404 KICKLEN=4404 AWAYLEN=4404 MAXTARGETS=1 CHARSET="+ (v("charset")||SYSTEM_CHARSET) +" NETWORK=" SERVER_HOST " CTCP=PRESENCE,TS UNIFORMS=psyc,xmpp :are supported by this server");
 	//
 	// MAXCHANNELS vs CHANLIMIT - we currently only have a limit on subs
 	// STD? what the hell is STD?
@@ -853,12 +853,15 @@ logon() {
 	// MAXNICKLEN?
 	// neue befehle: IGNORE vs SILENCE? SHOW? MASQUERADE?
 	//
-	// PSYC as network name is not a #define, since any psyc server is
-	// a gateway to the complete PSYC. introducing network names here is
-	// misleading and not useful thing to do. that's why it is statically
-	// PSYC, nothing more or less.
+	// NETWORK:=
+	// We used to have PSYC as the network name, as no matter which
+	// PSYC server you use, you are always connected to the entire
+	// PSYCspace. But now we use the hostname as the network name,
+	// because you may want your IRC client to connect multiple
+	// identities on multiple hosts and not get confused.
+	// Maybe we should even use something like user@host at this point.
 	//
-	// nei suggests: ALIAS SUBSCRIBE FRIEND SET SSET SILENCE CHANTYPES=# PREFIX= CHANMODES= CMDCHAR=+ ACTIONCHAR=: EINOTIFY=notify LANGUAGE=en CHARSET_PAYLOAD=utf-8 CHARSET=utf-8 NETWORK=psyc UNIFORM_NICK UNIFORM_CHAN
+	// nei suggests: ALIAS SUBSCRIBE FRIEND SET SSET SILENCE CHANTYPES=# PREFIX= CHANMODES= CMDCHAR=+ ACTIONCHAR=: EINOTIFY=notify LANGUAGE=en CHARSET_PAYLOAD=utf-8 CHARSET=utf-8 NETWORK=... UNIFORM_NICK UNIFORM_CHAN
 	// SILENCE: ach und ich weiss nicht ob /quote silence bzw /silence den psyced befehl silence aufruft, aber imo sollte er das aus verwirrungs-vermeidungs-gruenden nicht tun. silence im irc ist serverseitiges ignore.
 
 # endif
