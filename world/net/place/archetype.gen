@@ -572,7 +572,13 @@ htget(prot, query, headers, qs, data, noprocess) {
 		write("\ndocument."+ (query["name"] || MYLOWERNICK)
 		    + " = new Array(\n");
 		logView(a, "ecmascript", 15);
-		write("  \""+ implode(names(), ", ")+"\")\n\n");
+		write("  \""+ implode(names(), ", ")+"\""
+#if defined(ALPHA) && defined(PLACE_TOPIC)
+			// this adds current topic to data structure
+			// but probably breaks all psyclog.js code
+			",\n\t\""+ v("topic") +"\""
+#endif
+		      ")\n\n");
 		break;
 #if 0
 	    case "json":
