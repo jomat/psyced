@@ -154,13 +154,13 @@ _PAGES_help_display
 |<b> /trust </b> Befehl gesondert den Vertrauenswert für diese Person.
 |
 |<a name="trust" />
-|<DT><P><B> /trust &lt;Name&gt; &lt;Ziffer&gt;|- </B></p></dd>
+|<DT><P><B> /trust &lt;Name&gt; &lt;Ziffer&gt;|- </B></p><dd>
 |Gesonderten Vertrauenswert für eine Person einstellen, unabhängig
 |vom Freundschaftszustand. Der Wert darf eine Ziffer von 0 bis 9 annehmen
 |oder ein Minuszeichen, um den Normalzustand wieder herzustellen.
 |
 |<a name="expose" />
-|<DT><P><B> /expose &lt;Name&gt; &lt;Ziffer&gt;|- </B></p></dd>
+|<DT><P><B> /expose &lt;Name&gt; &lt;Ziffer&gt;|- </B></p><dd>
 |Expositionswert für eine Person einstellen. Dieser Faktor bestimmt wie
 |hoch ein Vertrauenswert eines Bekannten sein muss, damit er diesen
 |Freund beim betrachten des Profils zu sehen bekommt. Mittels
@@ -515,7 +515,7 @@ _PAGES_help_room
 |die anderen Anwesenden über die Tat des Einladens informieren.
 |
 |<a name="follow"></a>
-|<p><b> /f(ollow) </b></p><dd>
+|<dt><p><b> /f(ollow) </b></p><dd>
 |Der Empfänger einer Einladung braucht einfach nur <b>/f</b> wie
 |<b>/follow</b> einzugeben, um jenen Raum zu betreten. Sollte keine
 |Einladung vorliegen, wird in den zuletzt aktiven Raum gewechselt.
