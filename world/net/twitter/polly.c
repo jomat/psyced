@@ -50,7 +50,7 @@ parse(string body, mapping headers) {
 		return;
 	}
 	lastid = wurst[0]["id"];
-	P1(("%O -- new lastid %O\n", ME, lastid))
+	P2(("%O -- new lastid %O\n", ME, lastid))
 	save_object(DATA_PATH "twitter");
 	for (i=sizeof(wurst)-1; i>=0; i--) {
 		d = wurst[i];
@@ -110,7 +110,7 @@ parse(string body, mapping headers) {
 }
 
 fetch() {
-	P1(("%O going to fetch from %O since %O\n", ME, feed, lastid))
+	P2(("%O going to fetch from %O since %O\n", ME, feed, lastid))
 	call_out( #'fetch, 4 * 59 );	// odd is better
 	feed -> content( #'parse, 1, 1 );
 	// twitter ignores since_id if count is present. stupid.

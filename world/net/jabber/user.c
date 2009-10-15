@@ -250,11 +250,12 @@ showFriends() {
 	      "_INTERNAL_target_jabber" : myjid, 
 	      "_INTERNAL_source_jabber" : mkjid(person),
 	      "_description_presence" : "",  // TODO: get these from state
+	      "_XML_description_presence" : "",
 	      "_INTERNAL_mood_jabber" : "neutral"
 	]));
     }
     if (strlen(packet)) emit(packet);
-    PT(("%O jabberish showFriends: %O outputs as %O\n", ME, friends, packet))
+    P2(("%O jabberish showFriends: %O outputs as %O\n", ME, friends, packet))
 }
 
 logon() {
@@ -1212,6 +1213,7 @@ varargs string mkjid(mixed who, mixed vars, mixed ignore_nick, mixed ignore_cont
 // message rendering a la jabber
 w(string mc, string data, mapping vars, mixed source) {
     mixed t;
+
     unless (mappingp(vars)) vars = ([]);
     else if (vars["_nick_verbatim"]) vars["_nick"] = vars["_nick_verbatim"];
     // ^^ this is a temporary workaround until we fix the real problem!
@@ -1284,7 +1286,11 @@ w(string mc, string data, mapping vars, mixed source) {
     unless (vars["_tag_reply"]) vars["_tag_reply"] = tag;
     if (vars["_list_groups"])
 	vars["_list_groups"] = IMPLODE_XML(vars["_list_groups"], "<group>");
-
+#if 0
+    if (stringp(data) && strstr(data, "r00t") >= 0) {
+	    P0(("user:w(%O, %O, %O, %O)\n", mc, data, vars, source))
+    }
+#endif
     unless (interactive(ME)) {
 	P1(("%O not interactive. w(%O) from %O.\n", ME, mc, source))
 	return;

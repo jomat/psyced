@@ -395,6 +395,9 @@ w(string mc, string data, mapping vars, mixed source) {
 	} else if (abbrev("_echo_place_enter", mc)) {
 	    vars["_INTERNAL_source_IRC"] = MYNICK + "!" + MYNICK + "@" SERVER_HOST;
 #endif
+	} else if (source == "/") { // new style server root message
+	    vars["_INTERNAL_source_IRC"] = SERVER_HOST;
+	    nick2 = source = SERVER_UNIFORM;
 	} else {
 #ifdef GHOST //{{{
 	    // in S2S mode we are not supposed to deliver nick!user@host

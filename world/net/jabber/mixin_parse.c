@@ -550,6 +550,8 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 		vars["_description_presence"] =
 		    (node["/status"] && node["/status"][Cdata]) ?
 		    node["/status"][Cdata] : ""; // "Get psyced!";
+		vars["_XML_description_presence"] =
+		    xmlquote(vars["_description_presence"]);
 		vars["_INTERNAL_mood_jabber"] = "neutral";
 		sendmsg(o, "_notice_presence_absent", 0,
 			vars, origin);
@@ -693,6 +695,8 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 		vars["_description_presence"] =
 		    (node["/status"] && node["/status"][Cdata]) ?
 		    node["/status"][Cdata] : ""; // "Get psyced!";
+		vars["_XML_description_presence"] =
+		    xmlquote(vars["_description_presence"]);
 		vars["_degree_availability"] = jabber2avail[node["/show"]
 						&& node["/show"][Cdata]];
 		// this message is too verbose, let's put in into
