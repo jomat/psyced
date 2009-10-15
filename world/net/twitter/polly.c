@@ -5,7 +5,7 @@
 
 #include <net.h>
 
-persistent int lastid;
+persistent mixed lastid;
 
 volatile object feed;
 
@@ -28,18 +28,29 @@ parse(string body, mapping headers) {
 	P4((body))
 //#endif
 	unless (pointerp(wurst = parse_json(body))) {
-		P1(("%O failed to parse its timeline.\n", ME))
+		monitor_report("_failure_network_fetch_twitter_empty",
+		    "[_source] failed to parse its timeline");
 		return;
 	}
 	unless (sizeof(wurst)) {
-		P1(("%O received an empty structure.\n", ME))
+		monitor_report("_failure_network_fetch_twitter_empty",
+		    "[_source] received an empty structure.");
 		return;
 	}
-	if (wurst[0]["id"] <= lastid) {
-		P1(("%O received %d old updates.\n", ME, sizeof(wurst)))
+	// this used to fail on MAX_INT turning the ints to negative.. it would work for
+	// a while longer using floats, but since floating point mantissa in lpc is only
+	// 32 bits wide, it's just a question of time until we hit that roof again (when
+	// status_id reaches 4294967296). so let's try strings instead. funny to run into
+	// such a weird problem only after years that twitter has been in existence.
+	// twitterific may have run into the same problem, as the timing of its breakdown
+	// matches ours.
+	if (lastid && wurst[0]["id"] <= lastid) {
+		P1(("%O received %d old updates (id0 %O <= lastid %O).\n",
+		    ME, sizeof(wurst), wurst[0]["id"], lastid))
 		return;
 	}
 	lastid = wurst[0]["id"];
+	P2(("%O -- new lastid %O\n", ME, lastid))
 	save_object(DATA_PATH "twitter");
 	for (i=sizeof(wurst)-1; i>=0; i--) {
 		d = wurst[i];
@@ -99,7 +110,7 @@ parse(string body, mapping headers) {
 }
 
 fetch() {
-	P1(("%O going to fetch from %O since %O\n", ME, feed, lastid))
+	P2(("%O going to fetch from %O since %O\n", ME, feed, lastid))
 	call_out( #'fetch, 4 * 59 );	// odd is better
 	feed -> content( #'parse, 1, 1 );
 	// twitter ignores since_id if count is present. stupid.

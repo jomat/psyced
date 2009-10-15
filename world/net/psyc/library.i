@@ -187,7 +187,7 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 		 int showingLog, mixed source, array(mixed) u) {
 	string sname, host, buf, room;
 	int port, usesrv = 1;
-	object o;
+	object ob;
 	mixed t;
 
 	unless (u[UHost]) {
@@ -246,15 +246,15 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 	if (query_udp_port() == port && is_localhost(host)) {
 	    // this happens when a psyc client sends to a local
 	    // target that hasn't been incarnated yet...
-	    o = find_psyc_object(u);
+	    ob = find_psyc_object(u);
 	    // cache the resulting object for the url
-	    if (o) {
+	    if (ob) {
 	P2(("psyc_sendmsg registering %O for %O found by parsing uniform\n",
-                        target, o))
-                    register_target(target, o);
+                        target, ob))
+                    register_target(target, ob);
             }
 #ifndef __PIKE__ // TPD
-	    return sendmsg(o, mc, data, vars, source);
+	    return sendmsg(ob, mc, data, vars, source);
 #endif
 	    // or deliver directly?
 	}

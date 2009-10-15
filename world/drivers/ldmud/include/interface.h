@@ -153,7 +153,7 @@
 #endif
 
 // some ldmud versions previous to 610 have a problem with digest-md5
-#if __VERSION_MAJOR__ < 4 && __VERSION_MICRO__ < 611
-# echo Warning: Your driver is so old, it cannot do DIGEST-MD5
-# define _flag_disable_authentication_digest_MD5
-#endif
+//#if __VERSION_MAJOR__ < 4 && __VERSION_MICRO__ < 611
+//# echo Warning: Your driver is so old, it cannot do DIGEST-MD5
+//# define _flag_disable_authentication_digest_MD5
+//#endif

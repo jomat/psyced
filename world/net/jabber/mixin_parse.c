@@ -550,6 +550,8 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 		vars["_description_presence"] =
 		    (node["/status"] && node["/status"][Cdata]) ?
 		    node["/status"][Cdata] : ""; // "Get psyced!";
+		vars["_XML_description_presence"] =
+		    xmlquote(vars["_description_presence"]);
 		vars["_INTERNAL_mood_jabber"] = "neutral";
 		sendmsg(o, "_notice_presence_absent", 0,
 			vars, origin);
@@ -693,6 +695,8 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 		vars["_description_presence"] =
 		    (node["/status"] && node["/status"][Cdata]) ?
 		    node["/status"][Cdata] : ""; // "Get psyced!";
+		vars["_XML_description_presence"] =
+		    xmlquote(vars["_description_presence"]);
 		vars["_degree_availability"] = jabber2avail[node["/show"]
 						&& node["/show"][Cdata]];
 		// this message is too verbose, let's put in into
@@ -716,8 +720,8 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 	break;
     case "iq":
     {
-	mixed firstchild = getfirstchild(node);
-	string xmlns = firstchild ? firstchild["@xmlns"] : 0;
+	mixed iqchild = getiqchild(node);
+	string xmlns = iqchild ? iqchild["@xmlns"] : 0;
 	// TODO: maybe this should be handled by several functions
 	// iq_get, iq_set, iq_result, iq_error
 	t = node["@type"];
@@ -790,8 +794,8 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 	    break;
 	}
 	case "http://jabber.org/protocol/disco#info":
-	    if (firstchild["@node"])
-		vars["_target_fragment"] = firstchild["@node"];
+	    if (iqchild["@node"])
+		vars["_target_fragment"] = iqchild["@node"];
 	    if (tu[UUser])
 		o = FIND_OBJECT(tu[UUser]);
 	    else
@@ -807,8 +811,8 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 	    }
 	    break;
 	case "http://jabber.org/protocol/disco#items":
-	    if (firstchild["@node"])
-		vars["_target_fragment"] = firstchild["@node"];
+	    if (iqchild["@node"])
+		vars["_target_fragment"] = iqchild["@node"];
 	    if (tu[UUser]) 
 		o = FIND_OBJECT(tu[UUser]);
 	    else

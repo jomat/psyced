@@ -21,6 +21,14 @@ ________________________________________________________________________
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+? /ve/TODO/leave-from-user
+
+- newbies are allowed to open new owned rooms
+  fippo sagt: ergo brauchst du nen exit-hook der owner löscht wenn der n00b-owner aus dem raum geht
+
+- double _link does produce an _unlink to the old client, but not the proper
+  place enter events..?
+
 - jabber logout isn't announced or offline avail isn't processed
   ... apparently other side did not logout properly, as it doesn't happen always
 
@@ -60,6 +68,29 @@ ________________________________________________________________________
 	tgX sagt: on reconnect i didn't get any _echo_place_enter_login's from this room, then no response for _request_do_enter, and after a _request_do_leave i get replies for enter/leave but instead of _echo_place_enter/leave i get _notice_place_enter/leave
 
 ? should /load inform that errors go to the console?
+
+________________________________________________________________________
+:_group psyc://psyced.org/@welcome
+:_source_identification psyc://xxx.no-ip.org/~xxx
+
+:_tag msg_406
+_request_do_message
+bug!
+.
+
+:_source_relay psyc://xxx.no-ip.org/~0
+:_context psyc://psyced.org/@welcome
+
+:_nick_place psyc://psyced.org/@welcome
+:_nick xxx
+:_time_INTERNAL 1245932297
+_message_echo_public
+bug!
+.
+
+In welcome spricht «psyc://xxx.no-ip.org/~0» xxx: the bug in the scratchpad. why psyced echoes packets to "~0" instead of my real account? the same thing is for echo_private
+In welcome spricht «psyc://xxx.no-ip.org/~0» xxx: it should either ignore first packet (if psyced is sure that i'm not authorized with password) or return echo to that account instead of misterious "0"
+
 ________________________________________________________________________
 == psyced 1.0 ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -292,7 +323,9 @@ ________________________________________________________________________
 - move templates from source code into default/en/plain.textdb
   .. maybe write an automation to do it? they're just too many!
 
-  run more mailcast gateways!! on psyced.org? or elsewhere?
++ run more mailcast gateways!! on psyced.org? or elsewhere?
+  like.. gateway for email alerts from http://www.dernewsticker.de/
+  and google alerts obviously
 
 - /log 9999999999 produces
         Numeric overflow: 1410065407 *= 4
@@ -340,6 +373,12 @@ WINDOWS DISTRIBUTION
 ? how can we compile SRV into erq.exe? do we care?
 ? which open source installer for win to use?
 ? what to do about psyconf.. include perl or re-implement psyconf for win?
+
+TWITTER
++ resolve redirect-urls before forwarding to subscriptions, that means,
+  calling http/fetch on http://tr.im/whatever urls until it no longer
+  returns a 30x redirection code. [improves privacy btw, since all those
+  redirect services log your access for the one who installs them]
 ________________________________________________________________________
 == OTHER MAJOR TODOS ===================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -3929,3 +3968,7 @@ http/fetch
 -	minor api cleanups to serve a more generic job
 library/dns
 +	honor #define _flag_disable_trust_localhost
+net/irc
+-	bugfix from fippo concerning alias interpretation
+include/net.h
+-	the efun has changed from stringprep() to idna_stringprep()

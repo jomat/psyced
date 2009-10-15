@@ -250,11 +250,12 @@ showFriends() {
 	      "_INTERNAL_target_jabber" : myjid, 
 	      "_INTERNAL_source_jabber" : mkjid(person),
 	      "_description_presence" : "",  // TODO: get these from state
+	      "_XML_description_presence" : "",
 	      "_INTERNAL_mood_jabber" : "neutral"
 	]));
     }
     if (strlen(packet)) emit(packet);
-    PT(("%O jabberish showFriends: %O outputs as %O\n", ME, friends, packet))
+    P2(("%O jabberish showFriends: %O outputs as %O\n", ME, friends, packet))
 }
 
 logon() {
@@ -558,7 +559,7 @@ iq(XMLNode node) {
     string target;
     string friend;
     XMLNode helper;
-    XMLNode firstchild;
+    XMLNode iqchild;
     string t;
     string packet;
     string template;
@@ -569,9 +570,9 @@ iq(XMLNode node) {
     target = jid2ppl(node["@to"]);
     isplacemsg = stringp(target) && strlen(target) && ISPLACEMSG(target);
 
-    P0(("+++ %O IQ node %O\n", ME, node))
-    firstchild = getfirstchild(node);
-    unless(firstchild) switch(node["@type"]) {
+    P3(("+++ %O IQ node %O\n", ME, node))
+    iqchild = getiqchild(node);
+    unless(iqchild) switch(node["@type"]) {
 	case "get":
 	case "set":
 	case "result":
@@ -581,9 +582,9 @@ iq(XMLNode node) {
 	    P1(("%O got invalid iq %O\n", ME, node))
 	return;
     }
-    helper = firstchild;
+    helper = iqchild;
 
-    switch(firstchild["@xmlns"]) {
+    switch(iqchild["@xmlns"]) {
     case "jabber:iq:version": 
 	switch(node["@type"]) {
 	case "get":
@@ -978,16 +979,16 @@ iq(XMLNode node) {
 	    packet += "</blocklist></iq>";
 	    break;
 	case "set":
-	    if (firstchild["/item"] && !nodelistp(firstchild["/item"])) 
-		firstchild["/item"] = ({ firstchild["/item"] });
-	    unless(firstchild["/item"]) { /* clear the blocklist */
+	    if (iqchild["/item"] && !nodelistp(iqchild["/item"])) 
+		iqchild["/item"] = ({ iqchild["/item"] });
+	    unless(iqchild["/item"]) { /* clear the blocklist */
 		foreach(mixed p, mixed val : ppl) {
 		    if (val[PPL_DISPLAY] == PPL_DISPLAY_NONE)
 			sPerson(p, PPL_DISPLAY, PPL_DISPLAY_DEFAULT);
 		}
 	    } else {
-		int block = firstchild[Tag] == "block";
-		foreach (helper : firstchild["/item"]) {
+		int block = iqchild[Tag] == "block";
+		foreach (helper : iqchild["/item"]) {
 		    /* add/remove each item to/from the blocklist */
 		    if (block) {
 			/* TODO: 
@@ -1212,6 +1213,7 @@ varargs string mkjid(mixed who, mixed vars, mixed ignore_nick, mixed ignore_cont
 // message rendering a la jabber
 w(string mc, string data, mapping vars, mixed source) {
     mixed t;
+
     unless (mappingp(vars)) vars = ([]);
     else if (vars["_nick_verbatim"]) vars["_nick"] = vars["_nick_verbatim"];
     // ^^ this is a temporary workaround until we fix the real problem!
@@ -1284,7 +1286,11 @@ w(string mc, string data, mapping vars, mixed source) {
     unless (vars["_tag_reply"]) vars["_tag_reply"] = tag;
     if (vars["_list_groups"])
 	vars["_list_groups"] = IMPLODE_XML(vars["_list_groups"], "<group>");
-
+#if 0
+    if (stringp(data) && strstr(data, "r00t") >= 0) {
+	    P0(("user:w(%O, %O, %O, %O)\n", mc, data, vars, source))
+    }
+#endif
     unless (interactive(ME)) {
 	P1(("%O not interactive. w(%O) from %O.\n", ME, mc, source))
 	return;

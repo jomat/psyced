@@ -873,6 +873,9 @@ _notice_invitation
 _notice_received_email_UNUSED
 |([_nick_alias]) [_origin]: [_subject]
 
+_notice_headline_twitter
+|([_nick_place]) [_headline]
+
 _notice_headline_news
 |([_nick_place]News) [_headline] [_page_news]
 

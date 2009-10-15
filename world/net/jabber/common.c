@@ -296,12 +296,24 @@ render(string mc, string data, mapping vars, mixed source) {
 		log_file("XMPP_TODO", "%O %s %s\n", ME, mc, output);
 #endif
 	} else {
+		// hack for a special case where status update contains <, >
+		// if this kind of problem recurrs, we should quote every
+		// single damn variable
+		if (vars["_description_presence"])
+		    vars["_XML_description_presence"] =
+		      xmlquote(vars["_description_presence"]);
 		if (stringp(data)) data = xmlquote(data);
 		else if (vars["_action"])
 		    data = "/me " + xmlquote(vars["_action"]);
 		output = psyctext(template, vars, data, source);
 		if (!stringp(output) || output=="")
 		    return P2(("jabber:w() no output\n"));
+#if 0
+		if (strstr(output, "r00t") >= 0) {
+			P0(("common:render(%O, %O, %O, %O) -> %O\n", mc,
+			     data, vars, source, output))
+		}
+#endif
 	}
 #if __EFUN_DEFINED__(convert_charset) && SYSTEM_CHARSET != "UTF-8"
 	if (catch(output = convert_charset(output,
@@ -448,10 +460,11 @@ certificate_check_jabbername(name, cert) {
 }
 #endif
 
-/* get first child of a node
- * used for <iq/>
+/* get first child of a node used for <iq/>
+ * "first" is actually inaccurate, since there is no defined order in mappings,
+ * so we select the child, that is not an error
  */
-getfirstchild(node) {
+getiqchild(node) {
     mixed res;
     foreach(mixed key, mixed val : node) {
 	unless(stringp(key) && key[0] == '/') continue;

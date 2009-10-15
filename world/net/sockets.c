@@ -108,11 +108,12 @@ list_sockets(guy, flags) {
 #endif
 #if __EFUN_DEFINED__(tls_query_connection_info)
 			    tls ? intp(tls[TLS_PROT]) ?
-				 TLS_PROT_NAME(tls[TLS_PROT]) :
-			         tls[TLS_PROT] : "",
+				 TLS_PROT_NAME(tls[TLS_PROT]) ||
+				 to_string(tls[TLS_PROT]) : tls[TLS_PROT] : "",
 			    tls ? intp(tls[TLS_CIPHER]) ?
-				 TLS_CIPHER_NAME(tls[TLS_CIPHER]) :
-			         tls[TLS_CIPHER] : ""
+				 TLS_CIPHER_NAME(tls[TLS_CIPHER])
+				 || to_string(tls[TLS_CIPHER])
+				 : tls[TLS_CIPHER] : ""
 #else
 			    "", ""
 #endif

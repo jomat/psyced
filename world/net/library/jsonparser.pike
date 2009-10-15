@@ -527,13 +527,25 @@ PROTECTED mixed nextObject() {
 	if ((b >= '0' && b <= '9') || b == '.' || b == '-' || b == '+') {
 	   int a; float b_; string c_;
 	    sscanf(s, "%d%s", a, c_);
-	   if(c_ && sizeof(c_)) {
+	   if ((c_ && sizeof(c_))) {
 #ifdef __PIKE__
 	     sscanf(s, "%f", b_);
 #else
 	     b_ = to_float(s);
 #endif
 	     return b_;
+	   }
+	   if (!a || s != to_string(a)) {
+		// some values of json ints exceed the limits of MAX_INT.
+		// in that case we tried to use float, but rendering floats
+		// will produce something like 2.17734e+09 instead of just
+		// a long integer. we have to return a string here, and risk
+		// to run into runtime errors. we should probably stop trying
+		// to convert json integers into ints in the first place.
+		// javascript and lpc just aren't compatible. do we have a
+		// bignum package for ldmud?
+		P3(("Warning: JSON integer too big. Returning %O as string.\n", s))
+		return s;
 	   }
 	   else return a;
 	}

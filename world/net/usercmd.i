@@ -1895,6 +1895,7 @@ motto(t) {
 }
 
 private talk(to, handleAliases) {
+	// check if we are already in a query with this person.. here?
 	if (to) {
 		string tn;
 		// looking for a bug.. intermediate hack here..
@@ -3426,6 +3427,7 @@ teleport(where, mcv, quiet, stay, morevars) {
 	}
 	unless(mcv) mcv = "";
 	if (place && member(places, place)) {
+#ifndef EXPERIMENTAL // ALTE_SCHULE
 		if (place == where) {
                         P3(("teleport: %O is already in %O\n", ME, place))
                         // why error.. this should be a _warning !!
@@ -3438,6 +3440,7 @@ teleport(where, mcv, quiet, stay, morevars) {
                         // here's a kludge to not return in that case:
 			unless (morevars) return;
 		}
+#endif
                 if (NICKPLACE) {
                     vSet("lastplace", NICKPLACE);
                     unless (stay) {
@@ -3463,8 +3466,10 @@ teleport(where, mcv, quiet, stay, morevars) {
 	if (places[where]) {
 		place = where;
                 vSet("place", objectp(where) ? where->qName() : where);
+#ifndef EXPERIMENTAL // ALTE_SCHULE
 		unless(quiet) showRoom();
 		return place;
+#endif
 	}
 	return placeRequest(where,
 #ifdef SPEC

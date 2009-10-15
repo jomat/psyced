@@ -572,7 +572,13 @@ htget(prot, query, headers, qs, data, noprocess) {
 		write("\ndocument."+ (query["name"] || MYLOWERNICK)
 		    + " = new Array(\n");
 		logView(a, "ecmascript", 15);
-		write("  \""+ implode(names(), ", ")+"\")\n\n");
+		write("  \""+ implode(names(), ", ")+"\""
+#if defined(ALPHA) && defined(PLACE_TOPIC)
+			// this adds current topic to data structure
+			// but probably breaks all psyclog.js code
+			",\n\t\""+ v("topic") +"\""
+#endif
+		      ")\n\n");
 		break;
 #if 0
 	    case "json":
@@ -1312,7 +1318,7 @@ msg(source, mc, data, mapping vars) {
 		if (isValidRelay(source)
 		    || isValidRelay(vars["_source_relay"])
 		    || isValidRelay(vars["_context"])) {
-			P1(("yes. cast & out.\n"))
+			P1(("yes. cast & out: %O in %O\n", source, ME))
 			return castPresence(source, mc, data, vars,
 			    // don't broadcast the user's presence
 			    !neu || v("_filter_presence"));

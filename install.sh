@@ -1021,14 +1021,14 @@ _IRC_encrypted = $IRCS_PORT
 _HTTP = $HTTP_PORT
 _HTTP_encrypted = $HTTPS_PORT
 _applet = $APPLET_PORT
+_SMTP = $SMTP_PORT
+_SMTP_encrypted = $SMTPS_PORT
 
 ; Experimental protocol services
-;_SMTP = $SMTP_PORT
-;_SMTP_encrypted = $SMTPS_PORT
-;_POP3 = $POP3_PORT
-;_POP3_encrypted = $POP3S_PORT
-;_NNTP = $NNTP_PORT
-;_NNTP_encrypted = $NNTPS_PORT
+_POP3 = $POP3_PORT
+_POP3_encrypted = $POP3S_PORT
+_NNTP = $NNTP_PORT
+_NNTP_encrypted = $NNTPS_PORT
 
 [_optional]
 ; Enable web-based configuration tool
@@ -1079,7 +1079,7 @@ then
 	echo "Creating $BASE_DIR..."
 	if mkdir -m $BASE_PERM -p $BASE_DIR 2> /dev/null
 	then
-		;
+		echo "";    # nop?
 	else
 		if test "x$userid" = "xroot"
 		then

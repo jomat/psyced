@@ -236,13 +236,13 @@ _PAGES_help_display
 |<b> /trust </b> command to specify a custom trust level for this person.
 |
 |<a name="trust"></a>
-|<DT><P><B> /trust &lt;Name&gt; &lt;Digit&gt;|- </B></p></dd>
+|<DT><P><B> /trust &lt;Name&gt; &lt;Digit&gt;|- </B></p><dd>
 |Define a custom trust level value for a person. The trust level must
 |be a digit ranging from 0 to 9, or a minus character, which will restore
 |the default.
 |
 |<a name="expose"></a>
-|<DT><P><B> /expose &lt;Name&gt; &lt;Digit&gt;|- </B></p></dd>
+|<DT><P><B> /expose &lt;Name&gt; &lt;Digit&gt;|- </B></p><dd>
 |Define the exposure level for a friend. This factor defines how high the
 |trust level a person must be, to be enabled to see your friend listed in
 |your profile. By issueing <b> /expose Merlin 0 </b> for instance you can
@@ -562,7 +562,7 @@ _PAGES_help_room
 |invitation.
 |
 |<a name="follow"></a>
-|<p><b> /f(ollow) </b></p><dd>
+|<dt><p><b> /f(ollow) </b></p><dd>
 |The recipient of an invitation just needs to type <b>/f</b> as in
 |<b>/follow</b> to enter the room. If there was no invitation, then
 |the last active room is selected.
