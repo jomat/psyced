@@ -97,8 +97,9 @@ hello(ni) {
 
 #ifdef BRAIN
 morph() {
-	if (user->isNewbie())
-	    emit("\nSorry, no unregistered users currently.\n\n");
-	else return ::morph();
+       if (user->isNewbie())
+	   emit("\nSorry, no unregistered users currently.\n\n");
+       else return ::morph();
 }
 #endif
+
