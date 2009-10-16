@@ -103,7 +103,7 @@ varargs int real_logon(int failure) {
 	//	emit("If-None-Match: " + etag + "\r\n");
 	// we won't need connection: close w/ http/1.0
 	//emit("Connection: close\r\n\r\n");		
-	P1(("%O fetching /%s from %O\n", ME, resource, host))
+	P2(("%O fetching /%s from %O\n", ME, resource, host))
 	P4(("%O using %O\n", ME, buffer))
 	emit("GET /"+ resource +" HTTP/1.0\r\n"
 		 "Host: "+ host +"\r\n"
@@ -137,7 +137,7 @@ int parse_status(string all) {
 	sscanf(all, "%s%t%s", prot, state);
 	sscanf(state, "%d%t%s", http_status, http_message);
 	if (http_status != R_OK) {
-		P1(("%O got %O %O from %O\n", ME,
+		P0(("%O got %O %O from %O\n", ME,
 		    http_status, http_message, host));
 		monitor_report("_failure_unsupported_code_HTTP",
 		    S("http/fetch'ing %O returned %O %O", url || ME,

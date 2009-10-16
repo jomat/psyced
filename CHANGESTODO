@@ -3972,3 +3972,9 @@ net/irc
 -	bugfix from fippo concerning alias interpretation
 include/net.h
 -	the efun has changed from stringprep() to idna_stringprep()
+=== 200910 ============================================================
+irc/user
+-	handle root messages
+jabber/*
+-	deal with < and > in status updates
+
