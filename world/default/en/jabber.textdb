@@ -204,10 +204,12 @@ _message_public_reduce
 |<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_says} {_TEXT_something}.</body></message>
 
 _message_public_question
-|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_asks}: [_data]</body></message>
+|## <message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_asks}: [_data]</body></message>
+|{_message_public}
 
 _message_public_ask
-|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_asks}: [_data]</body></message>
+|## <message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me {_TEXT_action_asks}: [_data]</body></message>
+|{_message_public}
 
 _message_public_text_action
 |<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>[_data]</body></message>
