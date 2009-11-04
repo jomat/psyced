@@ -377,7 +377,8 @@ FOAF	icqChatID
 
 PSYC	_identification
 jProf	psyc_id
-jCard	PSYCID
+# I'm afraid adding a PSYCID field will not be well-recepted by some apps
+#jCard	PSYCID
 FOAF	psycID
 
 PSYC	_identification_other

@@ -129,6 +129,7 @@ msg(source, mc, data, mapping vars, showingLog) {
 	mc = "_notice_place_leave";
     }
     switch (mc) {
+    case "_status_description_time":
     case "_status_person_present":
     case "_status_person_present_implied":
     case "_status_person_absent":

@@ -9,7 +9,8 @@ int msg(string source, string mc, string data,
 	    mapping vars, int showingLog, string target) {
     mixed t;
 
-    switch (mc){
+    switch (mc) {
+    case "_status_description_time":
     case "_status_person_away":
     case "_status_person_present": 
     case "_status_person_present_implied": 
