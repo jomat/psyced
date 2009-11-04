@@ -1011,34 +1011,10 @@ case "_set_password":
 				// TODO? add support for integer _service means multiple
 				// catch-all clients possible. do we want this?
 				if (vars["_service"]) {
-				    // oh. we let it suggest a *different* location?
-				    // interesting. why don't we also do this for clients?
-				    // and who is using this code anyway?
 				    linkDel(vars["_service"]);
 				    linkSet(vars["_service"], vars["_location"], source);
 				    return 0;
 				}
-#if 0
-				if (vars["_password"]) {
-#ifndef VOLATILE
-				    // obviously similar code in usercmd:set()
-				    if (!v("password") &&
-				       (t = legal_password(vars["_password"],
-					       MYNICK))) {
-					    ME->pr(t[0], t[1]);	// TODO
-					    return;
-				    }
-				    // why do we check password here again
-				    // if we are just after a checkPassword?
-				    // what are we doing here?
-#endif
-				} else if (ONLINE &&
-				     v("locations")[0] != source) {
-					sendmsg(source,
-					    "_error_status_person_connected");
-					return 0;
-				}
-#else
 				// this code should also run for _service, but it
 				// needs a reorg
 				t = v("locations")[0];
@@ -1058,7 +1034,6 @@ case "_set_password":
 					// now we leave the old client circuit
 					// to die off.. let's hope that's safe
 				}
-#endif
 #ifdef _flag_disable_module_trust
 				unless(stringp(source)) {
 					m_delete(v("locations"), 0);

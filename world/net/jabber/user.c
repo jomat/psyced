@@ -572,15 +572,16 @@ iq(XMLNode node) {
 
     P3(("+++ %O IQ node %O\n", ME, node))
     iqchild = getiqchild(node);
-    unless(iqchild) switch(node["@type"]) {
-	case "get":
-	case "set":
-	case "result":
-	case "error":
-	    break;
+    unless (iqchild && mappingp(iqchild)) switch(node["@type"]) {
+    case "get":
+    case "set":
+    case "result":
+    case "error":
+	    P1(("%O got empty iq %O\n", ME, node))
+	    return;
     default:
 	    P1(("%O got invalid iq %O\n", ME, node))
-	return;
+	    return;
     }
     helper = iqchild;
 
