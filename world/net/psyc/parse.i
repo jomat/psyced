@@ -1110,6 +1110,7 @@ vamixed startParse(string a) {
 		restart();
 		if (isServer()) greet();
 	}
+// new syntax is so broken, we should not pretend to support it yet FIXME
 # if defined(SPYC_PATH) && defined(USE_SPYC)
 	else if (a == "|") {	// new S_GLYPH_PACKET_DELIMITER
 		object o = clone_object(SPYC_PATH "server");

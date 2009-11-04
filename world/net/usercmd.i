@@ -1637,6 +1637,21 @@ case "_invite":
 			return invite(t, vars);
 		}
 		return 0;
+case "_subscribe_permanent":
+case "_subscribe_temporary":
+case "_subscribe":
+		if (t = vars["_group"] || vars["_focus"]) {
+			subscribe(family == "_subscribe_permanent" ?
+			    SUBSCRIBE_PERMANENT : SUBSCRIBE_TEMPORARY, t);
+			return 1;
+		}
+		return 0;
+case "_unsubscribe":
+		if (t = vars["_group"] || vars["_focus"]) {
+			subscribe(SUBSCRIBE_NOT, t);
+			return 1;
+		}
+		return 0;
 case "_remove_register":
 case "_register_remove": // to go
 		// unregister a user? only if you are trustworthy!
