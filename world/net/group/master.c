@@ -30,6 +30,10 @@
 #include <status.h>
 #include <uniform.h>
 
+#ifdef BETA
+# define ENFORCE_UNIFORM
+#endif
+
 #ifdef CONTEXT_STATE // {{{
 # define HEADER_ONLY
 # include "../state.c"
@@ -98,7 +102,7 @@ castmsg(source, mc, data, vars) {
 #endif // }}}
 
 	P2(("%O castmsg(%O,%O,%O..) for %O\n", ME, source,mc,data, _routes))
-	D3(P2(("%O vars = %O\n", ME, vars)))
+	D4(P2(("%O vars = %O\n", ME, vars)))
 	// _context is an MMP variable, so we use it internally with objectp
 	vars["_context"] = ME;
 
@@ -114,11 +118,11 @@ castmsg(source, mc, data, vars) {
 
 	foreach (route, noa : _routes) {
 #if defined(TIDILY) && defined(MEMBERS_BY_SOURCE)
-	    P3(("place:each(%O,t=%O,s=%O,mc=%O,d=%O,v=%O)\n",
+	    P4(("place:each(%O,t=%O,s=%O,mc=%O,d=%O,v=%O)\n",
 		    mappingp(noa) ? sizeof(noa) : noa, route, source, mc,
 		    data, vars))
 #else
-	    P3(("place:each(%O,t=%O,s=%O,mc=%O,d=%O,v=%O)\n",
+	    P4(("place:each(%O,t=%O,s=%O,mc=%O,d=%O,v=%O)\n",
 		    noa, route, source, mc, data, vars))
 #endif
 	    // if (route == source) return; // skip sender
@@ -191,6 +195,9 @@ protected load(file) {
 
 remove_member(source, origin) {
 	mixed t;
+#ifdef ENFORCE_UNIFORM
+	if (objectp(source)) source = psyc_name(source);
+#endif
 	P2(("%O remove_member(%O, %O)\n", ME, source, origin))
 	if (origin && (
 #if 1 //defined(TIDILY) && defined(MEMBERS_BY_SOURCE)
@@ -241,10 +248,23 @@ jabberisten die freundschaft zum user#fippo entfernte:
 		P2(("%O encountered unnecessary remove of %O from %O\n",
 		    ME, source, _routes))
 	}
+	P3(("%O -> _routes = %O\n", ME, _routes))
 }
 
 insert_member(source, origin) {
     mixed t;
+
+#ifdef ENFORCE_UNIFORM
+    // when storing objects into _routes stupid things can happen:
+    // when a user is created, all her local friends are cloned and
+    // placed into her context. if one of those local friends logs in
+    // under different access a different user object is created -
+    // the old one is destroyed and, guess what, this context mapping
+    // is not updated. always using uniforms is a way to solve this
+    // problem.
+    //
+    if (objectp(source)) source = psyc_name(source);
+#endif
     P2(("%O insert_member(%O, %O)\n", ME, source, origin))
     if (objectp(origin) && (t = origin->qOrigin())) {
 #ifdef FORK
@@ -279,6 +299,7 @@ insert_member(source, origin) {
     // would be nice to do it here, but that's not correct
     //revision += 1;
 #endif
+    P3(("%O -> _routes = %O\n", ME, _routes))
 }
 
 // code duplicaton is faster than others

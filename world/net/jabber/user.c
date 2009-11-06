@@ -251,7 +251,7 @@ showFriends() {
 	      "_INTERNAL_target_jabber" : myjid, 
 	      "_INTERNAL_source_jabber" : mkjid(person),
 	      "_description_presence" : "",  // TODO: get these from state
-	      "_XML_description_presence" : "",
+	      "_INTERNAL_XML_description_presence" : "",
 	      "_INTERNAL_mood_jabber" : "neutral"
 	]));
     }

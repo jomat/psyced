@@ -300,7 +300,7 @@ render(string mc, string data, mapping vars, mixed source) {
 		// if this kind of problem recurrs, we should quote every
 		// single damn variable
 		if (vars["_description_presence"])
-		    vars["_XML_description_presence"] =
+		    vars["_INTERNAL_XML_description_presence"] =
 		      xmlquote(vars["_description_presence"]);
 		if (stringp(data)) data = xmlquote(data);
 		else if (vars["_action"])

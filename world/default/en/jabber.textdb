@@ -366,28 +366,28 @@ _notice_place_leave
 |<presence type='unavailable' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' id='[_tag]'><x xmlns='http://jabber.org/protocol/muc#user'><item affiliation='none' role='none'/></x></presence>
 
 _status_presence_here
-|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><status>[_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><status>[_INTERNAL_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
 
 _status_presence_here_talkative
-|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>chat</show><status>[_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>chat</show><status>[_INTERNAL_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
 
 _status_presence_here_busy
-|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>dnd</show><status>[_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>dnd</show><status>[_INTERNAL_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
 
 _status_presence_away
-|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>away</show><status>[_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>away</show><status>[_INTERNAL_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
 
 _status_presence_absent_vacation
-|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>xa</show><status>[_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>xa</show><status>[_INTERNAL_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
 
 _status_presence_absent
-|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='unavailable'><status>[_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='unavailable'><status>[_INTERNAL_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
 
 _status_presence_here_quiet
 |<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'/>
 
 _notice_presence_here
-|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber_bare]'><status>[_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber_bare]'><status>[_INTERNAL_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
 
 _notice_presence_here_plain
 |<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'/>
@@ -396,19 +396,19 @@ _notice_presence_here_quiet
 |<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'/>
 
 _notice_presence_here_talkative
-|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber_bare]'><show>chat</show><status>[_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber_bare]'><show>chat</show><status>[_INTERNAL_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
 
 _notice_presence_here_busy
-|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'><show>dnd</show><status>[_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'><show>dnd</show><status>[_INTERNAL_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
 
 _notice_presence_away
-|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'><show>away</show><status>[_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'><show>away</show><status>[_INTERNAL_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
 
 _notice_presence_absent_vacation
-|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'><show>xa</show><status>[_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]'><show>xa</show><status>[_INTERNAL_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
 
 _notice_presence_absent
-|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]' type='unavailable'><status>[_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
+|<presence to='[_INTERNAL_target_jabber_bare]' from='[_INTERNAL_source_jabber]' type='unavailable'><status>[_INTERNAL_XML_description_presence]</status><mood xmlns='http://jabber.org/protocol/mood'><[_INTERNAL_mood_jabber]/></mood></presence>
 
 _notice_person_absent_netburp
 |<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>xa</show><status>{_notice_person_absent_netburp}</status></presence>

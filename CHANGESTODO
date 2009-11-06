@@ -3977,4 +3977,7 @@ irc/user
 -	handle root messages
 jabber/*
 -	deal with < and > in status updates
+group/master
+-	don't use local objects as they may get replaced and zeroed
+	use local uniforms instead (fixes some strange ghost membership fx)
 
