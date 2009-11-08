@@ -914,7 +914,7 @@ cmd(a, args, dest, command) {
                 if (member(places, (t = sizeof(args) < 2 ? place : args[1]))) {
                     m_delete(places, t);
                 }
-                // fall thru
+	// fall thru
 	case "unenter":         // and the protocol should follow.. unenter!
 	case "leave":
 	case "part":
@@ -1001,7 +1001,7 @@ cmd(a, args, dest, command) {
 		break;
 	case "notice":
 		t2 = "_message_private_annotate";
-		// fall thru
+	// fall thru
 	case "msg":
 	case "tell":
 	case "m":
@@ -1020,7 +1020,7 @@ cmd(a, args, dest, command) {
 			    "Usage: /more. See also /tell and /talk.");
 			break;
 		}
-		// fall thru
+	// fall thru
 	case "q":
 	case "query":
 	case "talk":
@@ -1046,18 +1046,6 @@ cmd(a, args, dest, command) {
                         return 1;
                 }
                 break;
-	// experimental new way to log out without logging out.
-	// may very well not work as planned
-	case "det":
-	case "detach":
-                //availability = AVAILABILITY_OFFLINE;
-                remove_interactive(ME);
-                //break;
-                // used to fall thru to declare myself offline as well..
-                // now you have to declare yourself offline manually
-                // no you don't. if availability isn't offline the
-                // disconnect() handler will clean you out!
-                // fall thru
 #endif
 #ifndef _flag_disable_module_friendship
 	case "shout":
@@ -1068,9 +1056,19 @@ cmd(a, args, dest, command) {
 		    "Usage: /shout <message-to-your-friends>");
 		break;
 # ifndef _flag_disable_module_presence
-	case "presence":
-                showMyPresence(1);
-		return 1;
+	// experimental new way to log out without logging out.
+	// may very well not work as planned
+	    // detach for psyc clients: _do_presence offline + _unlink
+	case "det":
+	case "detach":
+                //availability = AVAILABILITY_OFFLINE;
+                remove_interactive(ME);
+                //break;
+                // used to fall thru to declare myself offline as well..
+                // now you have to declare yourself offline manually
+                // no you don't. if availability isn't offline the
+                // disconnected() handler will clean you out!
+	// fall thru
 	case "offline":
 		announce(AVAILABILITY_OFFLINE, 1, 1, ARGS(1));
 		return 1;
@@ -1157,6 +1155,9 @@ cmd(a, args, dest, command) {
 		// this command is normally accessed as /mynick
 		// as it behaves similarely to /me
 		return motto(ARGS(1));
+	case "presence":
+                showMyPresence(1);
+		return 1;
 # endif /* _flag_disable_module_presence */
 	case "cancel":
 	case "can":
@@ -1590,7 +1591,7 @@ case "_message":
 			tell(vars["_person"], data, 0, vars["_action"], 0);
 			return 1;
 		}
-		// else.. fall thru
+	// else.. fall thru
 case "_message_public":
 case "_public":
 case "_speak":
@@ -1770,8 +1771,8 @@ case "_presence":
 			return 1;
                 }
                 P1(("got invalid %O: %O, %O\n", mc, vars, data))
-		// complain about missing args?
-		return 0;
+		w("_failure_necessary_variable");
+		return 1;
 #endif // _flag_disable_module_presence
 case "_list_peers_JSON":
 		listAcq(PPL_JSON);
@@ -1788,7 +1789,7 @@ case "_unlink":
 case "_exit":
 		// so this is some kind of ugly hack not to be used.. huh?
 		announce(AVAILABILITY_OFFLINE);
-		// fall thru
+	// fall thru
 case "_quit":
                 // bye(vars["_reason"]);
                 quit();

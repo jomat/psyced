@@ -744,6 +744,9 @@ _error_illegal_password_size
 _error_necessary_registration
 |Tut mir Leid, das geht erst nach Registrierung.
 
+_failure_necessary_variable
+|Unvollständige Anfrage.
+
 _error_necessary_nick_place
 |Du kannst hier nicht einfach hereinlaufen ohne einen anständigen Spitznamen!
 
