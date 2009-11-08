@@ -3980,4 +3980,9 @@ jabber/*
 group/master
 -	don't use local objects as they may get replaced and zeroed
 	use local uniforms instead (fixes some strange ghost membership fx)
+usercmd
++	_failure_necessary_variable for _request_do_presence that
+	doesn't provide _availability (just provides _mood for example)
+-	tycho: Availability degree is not checked by server and can
+	be negative, like -5.
 

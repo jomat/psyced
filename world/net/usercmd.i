@@ -1762,15 +1762,22 @@ case "_friend": // tmp
 		return 1;
 #ifndef _flag_disable_module_presence
 case "_presence":
-		P3(("%O with %O\n", mc, vars))
-		if ((t = vars["_degree_mood"]) && intp(t))
-                    vSet("mood", mood = t);
-		if ((t = vars["_degree_availability"]) && intp(t)) {
-			announce(t, !vars["_degree_automation"],
+		if (t = vars["_degree_mood"]) {
+			if (! sscanf(t, "%1d", t)) {
+				w("_warning_usage_mood");
+				return 1;
+			}
+			vSet("mood", mood = t);
+		}
+		if (t = vars["_degree_availability"]) {
+			if (! sscanf(t, "%1d", t))
+			    w("_warning_usage_availability");
+			else
+			    announce(t, !vars["_degree_automation"],
 				 1, vars["_description_presence"]);
 			return 1;
                 }
-                P1(("got invalid %O: %O, %O\n", mc, vars, data))
+                P1(("got invalid %O: %O, %O in %O\n", mc, vars, data, ME))
 		w("_failure_necessary_variable");
 		return 1;
 #endif // _flag_disable_module_presence
