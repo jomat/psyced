@@ -3985,4 +3985,5 @@ usercmd
 	doesn't provide _availability (just provides _mood for example)
 -	tycho: Availability degree is not checked by server and can
 	be negative, like -5.
-
+user
+-	psyc client _examine was falling thru to _HTML output, added return;

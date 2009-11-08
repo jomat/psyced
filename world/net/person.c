@@ -1345,6 +1345,10 @@ case "_request_execute":
 				// this should be renamed into _context but
 				// that cannot be done before _context is
 				// renamed into _channel .. hehe
+				//
+				// also this would be the perfect place to
+				// make a distinction between _focus and _group
+				// if we wanted to.. actually, no, we want _context
 				if (stringp(t = vars["_focus"]
 					     || vars["_group"])) {
 					// check if the uniform is one of

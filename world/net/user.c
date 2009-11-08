@@ -793,6 +793,7 @@ case "_status_description_place":
 				     "_source_relay": source,
 				    "_uniform_style": vars["_uniform_style"]
 			]) + vars);
+			return 1;
 		    case "_HTML":
 			// client wants HTML
 			if (v("locations")[0]) sendmsg(v("locations")[0],
@@ -802,6 +803,7 @@ case "_status_description_place":
 				     "_source_relay": source,
 				    "_uniform_style": vars["_uniform_style"]
 			]));
+			return 1;
 		    case "_surf":
 			// we're doing a /surf, so stop here
 			return 1;
@@ -814,7 +816,7 @@ case "_status_description_place":
 		// hmmm.. well, that's how psyc to client happens here
 		mc = "_list"+ mc[7..];
 		w(mc+"_on", data, ([		// used by irc whois..
-		   "_source_relay": source,
+		   "_source_relay": source, "_tag_reply": t,
 		   "_nick" : vars["_nick"] || vars["_nick_place"],
 		   "_name_public" : vars["_name_public"] || "",
 		   "_action_motto" : vars["_action_motto"] || "",
@@ -822,8 +824,8 @@ case "_status_description_place":
 		]));
 		listDescription(vars, 1);
 		w(mc+"_off", 0, ([
-		     "_source_relay": source,
-		     "_nick" : vars["_nick"] ]));
+		   "_source_relay": source, "_tag_reply": t,
+		   "_nick" : vars["_nick"] ]));
 		return 1;
 case "_status_place_members_none_automatic":
 		if (beQuiet != -1) {

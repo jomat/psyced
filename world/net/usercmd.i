@@ -1631,6 +1631,7 @@ case "_leave":
 			     , 1, vars["_flag"]);
 		return 1;
 case "_invite":
+		// _focus has been taken care of beforehand in person.c
 		if (t = vars["_person"]) {
 			unless (place) return w("_error_status_place_none",
 			  "You aren't in a room");
