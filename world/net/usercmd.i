@@ -1763,17 +1763,18 @@ case "_friend": // tmp
 		return 1;
 #ifndef _flag_disable_module_presence
 case "_presence":
+		// parser takes care of checking _degree type
 		if (t = vars["_degree_mood"]) {
-			if (! sscanf(t, "%1d", t)) {
-				w("_warning_usage_mood");
-				return 1;
-			}
+//			if (! sscanf(t, "%1d", t)) {
+//				w("_warning_usage_mood");
+//				return 1;
+//			}
 			vSet("mood", mood = t);
 		}
 		if (t = vars["_degree_availability"]) {
-			if (! sscanf(t, "%1d", t))
-			    w("_warning_usage_availability");
-			else
+//			if (! sscanf(t, "%1d", t))
+//			    w("_warning_usage_availability");
+//			else
 			    announce(t, !vars["_degree_automation"],
 				 1, vars["_description_presence"]);
 			return 1;
