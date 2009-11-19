@@ -185,6 +185,9 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 		}
 		PT(("input¹ %O\n", body))
 		if (stringp(body) && strlen(body)) {
+#ifdef BETA
+		    if (body[0] == '\n') body = body[1..];
+#endif
 		    if (body[0] == cmdchar) {
 			// '/ /usr' notation is a USER_PROGRAM feature
 			// so we have to redo it here

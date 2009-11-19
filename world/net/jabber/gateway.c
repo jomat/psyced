@@ -340,7 +340,7 @@ jabberMsg(XMLNode node) {
 	if (node["/connection-timeout"]) {
 	    /* ignore it */
 	} else if (node["/system-shutdown"]) {
-	    P1(("%O: counterpart is doing a system shutdown", ME))
+	    P1(("%O: counterpart is doing a system shutdown\n", ME))
 	    /* ignore it */
 	} else {
 	    P0(("stream error in %O: %O\n", ME, node))

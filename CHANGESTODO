@@ -1,11 +1,14 @@
 vim:nosmarttab:syntax=diff
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-This file contains TODO and CHANGES (at EOF) rolled into one.
-Essentially: whenever you fix something, move that line to the end of file.
-- marks bugs & fixes, + marks new features, ? marks issues, * marks big stuff
+| This file contains TODO and CHANGES (at EOF) rolled into one.
+| Essentially: whenever you fix something, move that line to the end of file.
+| - marks bugs & fixes, + marks new features, ? marks issues, * marks big stuff
 ________________________________________________________________________
 == NEXT RELEASE ========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- interserver xmpp /me expects no leading newline, but pidgin recently
+  started sending one
+
 - autorefetch twitter isnt working
   http/fetch is too complicated. throw out the queue and callback logic. kiss!
 
@@ -21,8 +24,6 @@ ________________________________________________________________________
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-? /ve/TODO/leave-from-user
-
 - newbies are allowed to open new owned rooms
   fippo sagt: ergo brauchst du nen exit-hook der owner löscht wenn der n00b-owner aus dem raum geht
 
@@ -69,6 +70,7 @@ ________________________________________________________________________
 
 ? should /load inform that errors go to the console?
 
+- the ~0 bug
 ________________________________________________________________________
 :_group psyc://psyced.org/@welcome
 :_source_identification psyc://xxx.no-ip.org/~xxx
@@ -94,14 +96,15 @@ In welcome spricht «psyc://xxx.no-ip.org/~0» xxx: it should either ignore firs
 ________________________________________________________________________
 == psyced 1.0 ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-SPYC (implementation of http://about.psyc.eu/Specification)
-* to activate spyc support, defined USE_SPYC
-  it will attempt to use new syntax on outgoing links by default
-* to debug verification, define USE_VERIFICATION
-* to spend an extra round trip time negotiating, define USE_FEATURES
+> SPYC
 - net/spyc is buggy and incomplete
+  (implementation of http://about.psyc.eu/Specification)
+_ to activate spyc support, defined USE_SPYC
+  it will attempt to use new syntax on outgoing links by default
+_ to debug verification, define USE_VERIFICATION
+_ to spend an extra round trip time negotiating, define USE_FEATURES
 
-INVITE ISSUES
+> INVITE ISSUES
 - remote /invite is shown without uniform, just #nick_place
   remote invite thus doesn't work for ircers..
     beta's lynx invites psyc://psyced.org/~gynx into TEST.
@@ -122,7 +125,7 @@ INVITE ISSUES
   there is a circuit already (should it be a _request!?)
 - /invite should do remote echo like _message_private, not local
 
-REMOVE NICKNAMES FROM PROTOCOL
+> REMOVE NICKNAMES FROM PROTOCOL
 ? remote uniforms could be passed around in the psyced as parse_uniform
   arrays rather than as strings. this opens up the possibility to have
   a stringprepped+lowercased version of the uniform for comparisons.
@@ -142,7 +145,7 @@ REMOVE NICKNAMES FROM PROTOCOL
   nick/alias when a friend (or local?), full uniform when unknown...
   so all [_nick] should simply be replaced by [_source] etc.
 ! implementing the latter approach with the uni2nick callback strategy!
-AUTOALIASES & ALIASES FOR PLACES
+> AUTOALIASES & ALIASES FOR PLACES
 + /set aliases auto
     use temporary aliases for people in places,
     keep them in [r]aliases mappings only, not in v("aliases")
@@ -161,7 +164,7 @@ problems that should disappear when we move away from _nick's:
   friendship requests. eh! where's the uniform!?
 - remote /topic shows wrong nick
 
-PRESENCE STATUS
+> PRESENCE STATUS
 + all _status_person need to be upgraded to _status_presence with
   availability etc.
 - _status_person_present appears as a chat msg for local jabber/server users.
@@ -177,7 +180,7 @@ PRESENCE STATUS
   net/jabber/user#whojarr       <message to='whojarr@example.org/Home' from='oops@example.org/irc' type='chat'><body>oops is a roving piker.</body></message>
 * see also various PRESENCE boxes
 
-DECENTRALIZED STATE / PERSISTENT CONTEXT SLAVES
+> DECENTRALIZED STATE / PERSISTENT CONTEXT SLAVES
 - do not send revision with every cast
 + we could use better integration of availability
   because right now CACHE_PRESENCE doesn't work
@@ -203,7 +206,7 @@ DECENTRALIZED STATE / PERSISTENT CONTEXT SLAVES
   is useful even when we have packet ids in place.. some places it's okay
   to lose packets if at least the member lists are in sync
 
-GENERIC CONTEXT SUBSCRIBE / PRESENCE FOR ALL
+> GENERIC CONTEXT SUBSCRIBE / PRESENCE FOR ALL
 + krasser rewrite und fusion von raumanwesenheit und buddylists mittels
   generischer presence.. siehe auch http://about.psyc.eu/presence und..
 schwer zu glauben, wir haben heute festgestellt, dass wir subscribe,
@@ -219,12 +222,13 @@ see also http://about.psyc.eu/subscription
 		  not from own UNI (see #ifdef FRIEND_ECHO)
   ... or just rewrite it all into context subscription!!
 
-ARCHETYPE PLACES
+> ARCHETYPE PLACES
 ? archetype.gen & other places: current privilege model sux.
 	qAide(), qOwner(), boss(source), v("topic-user")
     .. how does this fit with confctrl, _duty and qAllowExternal?
     .. and in some cases you just want to check for isMember
 
+>>>
 - REGISTERED_USERS_ONLY does not behave properly on IRC port
   (see also NO_NEWBIES ... clean up and rename?)
 
@@ -305,6 +309,11 @@ ________________________________________________________________________
 - place redirection doesn't work for ircII: client still thinks i am in the
   first room while i get messages from the second room. when i type stuff
   to the first room, it doesn't even forward to the second.
+
+- psyced spits out _error_rejected_relay_incoming for hostnames that have
+  been redirected using SRV. x-net.hu's A record is still being checked.
+    _psyc._tcp.x-net.hu has SRV record 0 0 14404 psyc.x-net.hu.
+
 ________________________________________________________________________
 == MINOR DELEGATES =====================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -369,12 +378,12 @@ ________________________________________________________________________
 ? generate psyced without cvs support if no cvs installed?
   ... bzw. git
 
-WINDOWS DISTRIBUTION
+> WINDOWS DISTRIBUTION
 ? how can we compile SRV into erq.exe? do we care?
 ? which open source installer for win to use?
 ? what to do about psyconf.. include perl or re-implement psyconf for win?
 
-TWITTER
+> TWITTER
 + resolve redirect-urls before forwarding to subscriptions, that means,
   calling http/fetch on http://tr.im/whatever urls until it no longer
   returns a 30x redirection code. [improves privacy btw, since all those
@@ -400,7 +409,7 @@ ________________________________________________________________________
 
 ? apply more TAGGING (tagged callbacks also avoid the monster switches)
 
-CIRCUITRY
+> CIRCUITRY
 - _request_circuit_shutdown isnt issued or doesnt arrive
   or is the disconnected-detection buggy?
 + net/circuit:pushback TODO:
@@ -431,24 +440,24 @@ CIRCUITRY
 ? what to do when hosts talk faster then we resolve them?
   see around _error_invalid_host_slow
 
-TRUST1
+> TRUST1
 - _request_circuit_trust needs to check some challenge, or it can be
   tricked by replay. so for now only use it over safe networks!!
 ? generic SASL for xmpp, psyc and irc?
-TRUST2
+> TRUST2
 ? TRUSTED_HOSTS are permitted to relay, this allows all users from that host to
   relay.. not so cool.
 + the trust implementation needs to learn to distinguish host trust and
   person trust, yet understand the interaction and develop maths for it
 
-SCHEMES AND SERVICES
+> SCHEMES AND SERVICES
 + allow for icq: rather than xmpp:XXX@icq etc.
 + implement *.service.* and *.scheme.* etc according to
   http://about.psyc.eu/Directory_Service - so that mailto: works for any server
 + move the .psyc.eu suffix into a #define
 + implement forward-to-mailto-when-offline as a generic forwarding feature
 
-FOLLOW INVITES
+> FOLLOW INVITES
 + /set follow all|friends|none
   allow your friends to invite you (and make you follow) into a room
   so that they can immediately start talking to a group of people like
@@ -459,6 +468,7 @@ FOLLOW INVITES
   create a subchannel of your self context, containing only the friends
   you want to have a conversation with, and poof you can start talking!
 
+>>>
 - ok, x@y notation sollte mind. dots im host überprüfen,
   wenn nicht sogar leading #
     In BuHa fragt el_presidente: inseln?
@@ -492,7 +502,7 @@ fritz: fritz zuckt.
    fippo: TAGGING koennte dieses problem bald loesen
    wie denn? was würde reply() anders machen?
 
-PRESENCE
+> PRESENCE
 - eigene mood & availability erscheinen nicht im showStatus
   (description schon, aber das war's noch nicht)
 - irc access receives _status_away notices for each message they send to a
@@ -507,42 +517,8 @@ PRESENCE
   man kann eine passende _notice machen und wird sogar als friend gelistet
 - persistent_presence does not store description and mood
 
- gmail hat irgendwelche anderen probleme...
-- heute nachmittag stand auf dem schirm:
-    oops schließt mit Dir Freundschaft.
-    TAV möchte mit Dir Freundschaft schließen.
-  bin mir ziemlich sicher, dass es keinen lokalen oops gibt.. es handelt sich
-  um eine fehlerhafte doppelte darstellung vom TAV alias ohne sein @gmail.com!?
-  einige stunden später:
-    Du bist mit oops bereits befreundet.
-    TAV möchte mit Dir Freundschaft schließen.
-		? mir scheint das passiert nicht mehr..
-  wenn "bereits befreundet" ausgegeben wird, geht auch ne textmeldung an
-  tav auf gmail raus. eine die es in jabberland nicht gibt. das wär okay
-  wenn wir keinen bug hätten.....
-  * also eigentlich sollte da ein "meinetwegen bist du subscribed" rausgehen
-    weshalb wir nur noch das display an unseren user unterdruecken muessten
-  hier ein ausschnitt aus der rawlog..
-
-» S:xmpp:64.233.166.129:-26112  <presence type="subscribe" from="oops@gmail.example" to="lynx@ve.example.com"/>
-« C:xmpp:gmail.com      <presence to='oops@gmail.example' from='lynx@ve.example.com' type='subscribed'/>
-
-
-« C:xmpp:gmail.com      <presence to='oops@gmail.com' from='lynx@ve.example.com'><x from='lynx@ve.example.com' stamp='20060314T21:21:47' xmlns='jabber:x:delay'/></presence>                                        
-
-  ..man beachte, die newlines nach type='subscribed'/> wurden scheinbar
-  wirklich gesendet, aber vermutlich harmlos. dass gmail einen subscribe
-  abschickt für jemanden mit dem man schon längst befreundet ist, dass ist
-  wohl das problem. vermutlich ein dirty hack im umgang mit herkömmlichen
-  jabber servern welcher bei uns aber doofe effekte hat. was tun? genau
-  genommen müsste man errors zurückschicken, aber das wird die gmail-user
-  nicht glücklich stimmen.. sonst? einfach verwerfen? na gut
-  ... hmm würde es reichen dafür ausserhalb des switch display=0 zu setzen
-  und nur im fall von PPL_NOTIFY_PENDING display=1 einzuschalten?
-  * man sollte wirklich mal von wem kompetentes auf gmail-seite den
-    subscription state checken lassen. ich vermute, die lassen 
-    gaim-b0rkedness raus in die welt.
-- ouch!! ganz schlimm.. es ist kein gmail-only problem!
+>>>
+- unnecessary refriendship requests
   wenn ich mit Alias: xmpp:symlynx@example.ccc.de = JYNX /friend mache kommt:
 symlynx schließt mit Dir Freundschaft.
 JYNX möchte mit Dir Freundschaft schließen.
@@ -579,7 +555,7 @@ JYNX möchte mit Dir Freundschaft schließen.
 
 - falls /set entersilent off so erhalten bleibt, dokumentieren
 
-PROGRAMMABLE USER IDENTIFICATIONS & MULTIPLE CLIENT INTERFACES
+> PROGRAMMABLE USER IDENTIFICATIONS & MULTIPLE CLIENT INTERFACES
 - experimental rename fails sometimes:
         Attempt to rename to existing object '~nautilutz'
   possible fix: separate user identity from user access interface
@@ -600,7 +576,7 @@ PROGRAMMABLE USER IDENTIFICATIONS & MULTIPLE CLIENT INTERFACES
   a UNI server in c++ anyway...  ;)
 ? consider also what CONTEXT CHANNEL requirements the new identity has
 
-WHITELISTING & BLACKLISTING on the SERVER TRUST WEB
+> WHITELISTING & BLACKLISTING on the SERVER TRUST WEB
 + enable the #ifdef such that dialback from new hosts is not automatically
   replied to, but a _request_trust_manual is sent to the monitor.
   see also http://about.psyc.eu/Talk:Encryption
@@ -620,7 +596,7 @@ WHITELISTING & BLACKLISTING on the SERVER TRUST WEB
   when the server tells you about things that have happened automatically,
   like an automatic blacklisting. _info_adopt_trust or something.
 
-CHARSET
+> CHARSET
 + ensure UTF-8 at parsing time on all inputs so we can
  a) remove the action limitation:
 - when an umlaut appears in speakaction, then the entire line is not
@@ -637,7 +613,7 @@ CHARSET
   so it is still necessary that CONSOLE_CHARSET learns to be easy about it
 
 == PSYC 1.0alpha =======================================================
-THE BIG METHOD RENAME
+> THE BIG METHOD RENAME
 - shouldn't all _tag_reply be renamed into the more generic _tag_relay ?
   i mean.. pushback setting _tag_reply is semantically wrong whereas
   setting _tag_relay makes sense. the MMP spec has abandoned _tag_reply
@@ -660,7 +636,7 @@ THE BIG METHOD RENAME
   should have the same names as the entries in psyced.ini if equivalent.
 + after /unsub and /unfriend we should also have /unset
 
-COMPACT METHODS and KEYWORD INHERITANCE
+> COMPACT METHODS and KEYWORD INHERITANCE
 nothing can be as fast as fixing the method inheritance at psyc parsing time.
 since we have to patch compact methods into long methods anyway, we know all
 the methods the muve can handle - so we can handle inheritance before passing
@@ -675,6 +651,7 @@ clients). example:
 in fact.. we can even simplify all abbrev() calls into mere == comparisons
 or switches in our muve code, because they will never be needed!
 
+>>>
 - when a _target does not comply to the rules, a message needs to be replied
   to with an error. currently however, handling falls thru to rootMsg() like
   this:
@@ -686,13 +663,13 @@ or switches in our muve code, because they will never be needed!
 - should ignored people receive an echo for the sake of not being
   distinguishable from not ignored people? yes... but is a nasty change to do
 
-TYPE CHECKING AT PARSING TIME
+> TYPE CHECKING AT PARSING TIME
 - unless trustworthy > 4 all incoming vars should be checked for legal
   content, like chars in actions etc.. or maybe switch over the varnames
   and fix the obvious candidates.. if a method is non-standard (we will
   be aware of this by 1.0) we should check each var mentioned in the body.
 
-PSYC protokoll verbessern, dass implementationen einfach sein können:
+> PSYC protokoll verbessern, dass implementationen einfach sein können:
 + die lookup_identification queue in place/basic ist vermutlich nicht
   notwendig, da (a) clients den zutritt zu einem raum von ihrer UNI
   vermitteln lassen können und (b) scripte ihre informationen für einen
@@ -722,7 +699,7 @@ PSYC protokoll verbessern, dass implementationen einfach sein können:
   dadurch die queues in net/circuit vereinfachen? unwahrscheinlich, aber
   man könnte nochmal seinen grips drauf ansetzen.
 
-HISTORY
+> HISTORY
 + add timestamp search to lastlog.c, add timestamp-based /history and /log
   commands, maybe remove v("new") code. then again, it's quite efficient.
   see person.h for details.
@@ -746,7 +723,7 @@ ________________________________________________________________________
 
 ? _nick_local and coolname are shown, but cannot be identified
 
-localMUC:
+> localMUC:
 - MUC member list may be incorrect after psyced server restart..
   we should probably castmsg all local leaves at shutdown
 - when entering places from XMPP-S2S own id appears both
@@ -763,7 +740,7 @@ localMUC:
   still causing problems
 ? M1: apparently something in psyced's MUC implementation is making mcabber crash :(
 
-remoteMUC:
+> remoteMUC:
 - whispering in remote MUCs:
     xmpp:psyc@conference.jabber.org sagt Dir: test
   would be nice to see the nickname at least..  ;)
@@ -773,6 +750,7 @@ remoteMUC:
   or actually implement it? looks so stupid on telnet when typing <enter>
   ... then again, telnet is the only protocol that could use that.. scrapped
 
+>>>
 - "asks" kommt blöd.. entweder visiblespeakaction immer, oder gar
   nicht (implement visiblespeakaction in net/jabber)
 - ausserdem wird kein asks erzeugt wenn jabberisten fragen stellen
@@ -789,6 +767,8 @@ remoteMUC:
 ________________________________________________________________________
 == JABBER CLIENT ISSUES (...experimental is justified...) ==============
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- display twitter notices somehow
+
 ? XMPP: connecting to psyced.org with psi pops up a profile window everytime
 ? XMPP: first reply to a stranger's remote psyc message did not show up in psi
 ? neulich wurde 'stanly' beim runterfahren von psi nicht aus dem MUC genommen.
@@ -796,7 +776,7 @@ ________________________________________________________________________
   MUC meldungen. ob der fehler bei psi oder uns liegt, k.A.
   ... is this still happening with the new fixes?
 
-ASTERISK IN XMPP: UNIFORMS
+> ASTERISK IN XMPP: UNIFORMS
 - tjgillies: meebo doesn't let you put * in MUC name
   AFAIK the xmpp: uri does not forbid * from the URI RFC thus
   meebo should be incorrect here. we'll have to talk to them..
@@ -810,6 +790,7 @@ ASTERISK IN XMPP: UNIFORMS
   </message>
 - is psi having a problem with this, too?
 
+>>>
 - accurate availability values from friends aren't stored and delivered
 
 - re-subscribe isn't properly handled (so we do friend(0) earlier instead)
@@ -1232,7 +1213,7 @@ ________________________________________________________________________
     fippo hotzenplotzt: möglich
 ? problem: how to allow remote XMPP MUC users to filter web inspection notices?
 
-PROFILES
+> PROFILES
 ! depend on DECENTRALIZED STATE to get to the next stadium of coolness
 - exposed lists aren't properly sorted by expose level. a maximum expose should
   automatically put a friend or group at the top of the profile list etc.
@@ -1248,6 +1229,7 @@ PROFILES
   by channels - so we have a chance to multicast changes to our profile to
   the intended people and don't have complexity explosion in user data for this.
 
+>>>
 - Invalid password error in tn/server appears indented w/o LF
 
 + provide textdb editing mechanisms:
@@ -1291,7 +1273,7 @@ PROFILES
 
 ? _subject in jabber messages wird ignoriert. was machen wir damit?
 
-library/dns ... geht derzeit sowieso nicht ohne erq. erq muss sein!
+> ERQ
 - an mehreren stellen verlassen wir uns darauf, dass __ERQ_MAX_SEND__
   undefiniert sein wird wenn erq beim hochfahren nicht gefunden wurde,
   aber wenn ich ldmud mit -N aufrufe wird __ERQ_MAX_SEND__ trotzdem
@@ -1299,6 +1281,7 @@ library/dns ... geht derzeit sowieso nicht ohne erq. erq muss sein!
 + es gibt neue localhost selbstresolver switche, das müsste mehrere
   if localhost abfragen im bisherigen code unnötig machen. optimization TODO
 
+>>>
 - don't accept connections during shutdown sequence
   should work by returning 0 from master:connect()
 - reorder shutdown? why do we see _notice_place_leave_reload_server
@@ -1405,14 +1388,6 @@ javascript:popnoresize('http://sport.ard.de/php/sportticker/?event_art=6&ticker=
 + spoof tester script in perl- oder pypsyc, welches gespoofte oder fehler-
   hafte meldungen zu erzeugen versucht um w() und co dicht zu kriegen
 
-sollten wir wieder eine "Too deep recursion" im raumbereich haben
-könnte es ein fall sein für diese kleine vermutung:
-	wenn QUIET_REMOTE_MEMBERS nicht defined ist, ist 
-	isValidRelay(vars["_source_relay"]) in place/basic.c:47 bei einem
-	_failure_unsuccessful_delivery true, weil im _source_relay der
-	raum selbst steht. und dann so weiter, da der user nie aus _u
-	verschwindet
-
 + support for transfer/sharing of user data between servers. when a new
   server is started using the .o files of an existing server, each loaded
   user object should be aware, that it is *not* the entity that *made*
@@ -1439,18 +1414,18 @@ könnte es ein fall sein für diese kleine vermutung:
   trying to intantiate ridiculous objects? (no extensions outside static?)
   see also http://about.psyc.eu/Web_Attack
 ________________________________________________________________________
-* GOTCHAs
+> GOTCHAs
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ! When the /topic command makes funny errors, then your room has a custom
   cmd() and doesn't pass vars over. It should use ON_COMMAND instead!
 
 ________________________________________________________________________
-* PSYC FUTURES		    see also http://about.psyc.eu/Category:Vapor
+> PSYC FUTURES		    see also http://about.psyc.eu/Category:Vapor
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 + http://about.psyc.eu/Hashtags
 + http://about.psyc.eu/Follower
 ________________________________________________________________________
-* TOYS IN THE ATTIC
+> TOYS IN THE ATTIC
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 - In welcome spricht Igramul: hmm... the "+list" command made xchat crash
   <fippo> man sollte dazu sagen, dass er danach gesagt hat, dass es ein
@@ -1480,7 +1455,7 @@ mapping rvars msg(source, mc, data, vars, rvars);
   wenn ein msg() signalisieren will, dass die nachricht abgearbeitet ist,
   gibt es return 0 statt return rvars durch. ist das alles, oder fehlt was?
 ________________________________________________________________________
-* GATEBOT / IRCGATE / etc
+> GATEBOT / IRCGATE / etc
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 - /m freenode:symlynx hey
     Sorry, _message_private is not supported by the IRC gateway.
@@ -1581,7 +1556,7 @@ ________________________________________________________________________
   look at: http://freshmeat.net/projects/pyvoicechat/
   dormant since 2004.. oops  
 
-RELAYING
+> RELAYING
 + net/spyc needs relaying (without parsing even), see TODO in parse_content()
 ? relaying doesn't work for psyc clients (xmpp: in particular)
     works for localhost clients
@@ -1601,26 +1576,14 @@ RELAYING
   but some of the old stuff does.. how do we find a proper solution?
 
 == DOCUMENTATION ISSUES ================================================
-ich habs.. jede datei definiert am anfang in welche kategorie sie gehört..
+* ich habs.. jede datei definiert am anfang in welche kategorie sie gehört..
 "library" "user" "server" "language" etc... und jede funktion kann sich 
 dann mit /** library: this stuff.. */ woanders einordnen.. jetzt brauchen wir
 ne dokuware die sowas kann, und jemand der die dokummentare reinschreibt..
   -> doxygen-1.3.9.1.src.tar.gz (2649K)... definitiv kein aufwand, sowas...
 
 == RELEASE ANNOUNCEMENT ================================================
-REDIRECT: http://about.psyc.eu/Release_Announcement .. außerdem:
-
-? Netzeitung.de könnten man beschwatzen schonmal nen echten psyc feed
-  zu liefern.. am besten wenn sie einen stabilen 0.99 server installieren.
-  oder sie führen einfach dpa2psyc aus.
-
-? http://en.wikipedia.org/wiki/Chat und ff. strotzen vor Fehlern..
-  erbarmt sich jemand? und ausserdem.. http://en.wikipedia.org/wiki/PSYC
-  man kann sich ja an http://de.wikipedia.org/wiki/PSYC orientieren  :)
-
-- "CSpace could be the 7th, component of the open office suite, see the
-  discussion on the mailinglist of Open office developers for July 2006"
-  they must be kidding!!!!
+* REDIRECT: http://about.psyc.eu/Release_Announcement
 
 == COMPETITION =========================================================
 + man könnte die kollegen bitten gemäß forschertradition unter "other
@@ -1659,7 +1622,7 @@ http://freshmeat.net/projects/boo/
   mixgerät aus active, server und circuit erstmal ein temporäres newct.c machen
 
 ________________________________________________________________________
-UNDER CONSTRUCTION: (offene baustellen im LPC code)
+== UNDER CONSTRUCTION: (offene baustellen im LPC code) =================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 - file transfers between local jabber clients
 - file transfers between jabber clients and gateways
@@ -1758,7 +1721,7 @@ das sieht doof aus.. gehts auch besser? hmm
 + dns_rresolve should panic when discovering fake PTRs and suchlike
   blacklist_report() ? :)
 
-SHOW STATUS?
+> SHOW STATUS?
 ? is the following stuff superceded by DECENTRALIZED STATE?
 ? _status_flags aus der auswahl _members _topic _configuration und
   _limit_history bei _request_enter mitgeben, damit showStatus dann die
@@ -1770,6 +1733,7 @@ SHOW STATUS?
   same way
 + "/set verbose on" gibt (unter anderem) mehr statuskram beim einloggen aus..
 
+>>>
 ? filter + /msg: auto tmp-friend status ?
   hierzu müsste man wohl einen status "bekannter" in ppl einfügen
 
@@ -1814,7 +1778,7 @@ SHOW STATUS?
 
 - psyctext() hängt sich auf wenn ein [ nicht wieder mit ] geschlossen wird
 
-SPAM / FLOOD CONTROL
+> SPAM / FLOOD CONTROL
 + connect flood protection (against icaruz from XX.XX.XX.XX)
     1. introduce #define MAX_CONNECTIONS_FROM_ONE_IP
     2. warn admins via monitor when MAX_CONNECTIONS_FROM_ONE_IP * 70%
@@ -1932,7 +1896,7 @@ ________________________________________________________________________
   psyc textdb directory tree..
 ? user.c puts host, not ip, into v("ip") - makes sense?
 
-FROM MEDITATION ON PDEV:
+> FROM MEDITATION ON PDEV:
 + elaborate availability/presence features, even before "logon"
 ? do we want var change notifications on psyc parse level so that
   the protocol does not need to issue messages for every minor event?
@@ -1942,6 +1906,9 @@ FROM MEDITATION ON PDEV:
 + unls wie psycbiff melden sich für bestimmte methodenfamilien an
 
 == REAL PSYC ROUTING ===================================================
+? wie unterscheide ich member und subroute?
+falls du es überhaupt brauchst daran, dass subroute seine members definiert.
+
 	=_members <route> sepp frida alex
 	+_members p2puser
 	+_members <subroute> uwe anton fippo
@@ -1954,10 +1921,8 @@ aber casten braucht man nur an die router, die übrig bleiben.
 und der p2puser ist ein sonderfall: er will von allen direkt angenachrichtet
 werden ohne router dazwischen..
 
--> wie unterscheide ich member und subroute?
-falls du es überhaupt brauchst daran, dass subroute seine members definiert.
-
 == P2P ROUTING =========================================================
+* Kademlia
 Möglicherweise interessant ist eine P2P-artige Form von Routing, basierend
 auf Kademlia ( siehe http://de.wikipedia.org/wiki/Kademlia ) + Auth 
 via Public Keys. Man sendet Nachrichten an einen (gehashten ?) Publickey
@@ -1979,7 +1944,7 @@ schaffen oder muss man freigiebiger mit der Information sein?
 	TODO: edit-funktionen, etc
     -> oder gleich den eingebauten zeileneditor ed() von lpmud verwenden
 	(telnet only)
-threads:
+> threads:
     + jeder Message noch eine threadID geben (in-reply-to):
       man numeriert die msgs durch und ein reply trägt noch den _tag von
       seinem vorgänger.. oder so...?
@@ -2005,7 +1970,7 @@ threads:
 
 ? psyc clients as persistent java applets (ie channel, signed ns applet)
 
-TIME - rewrite of all time outputs:
+> TIME - rewrite of all time outputs:
 + handle timezones
 + introduce global psyc time?
 ?   seconds since 2000-01-01 0:0 GMT or	-- still lets you say "in an hour"
@@ -2014,6 +1979,7 @@ TIME - rewrite of all time outputs:
   too bad it cant be done in perl
 + add date/weekday for /log messages older than 24h
 
+>>>
 ? finish up /connect with password
 
 ? wenn man per psyc ne message an xx schickt, gilt der anschliessend
@@ -2122,7 +2088,7 @@ thoughts from buddy-heggy.txt:
 
 - logged_on should be gone
 ________________________________________________________________________
-DRIVER TODO:
+> DRIVER TODO:
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 * moved to psyclpc/TODO file
 
@@ -2130,7 +2096,7 @@ DRIVER TODO:
     - unless (checkVar(&key, &value)) return;
     - psyc/library
 ________________________________________________________________________
-PERLPSYC TODO:
+> PERLPSYC TODO:
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 - FORK
   - negotiation muss sowohl blocking als auch nonblocking funktionieren. per
@@ -2141,7 +2107,7 @@ PERLPSYC TODO:
   konfigurieren können. md5 überprüft dann die legitimität der nachricht.
   oder wir implementieren das auf serverconnect-ebene.. hmmm
 
-sonst noch evtl anguckenswert
+> sonst noch evtl anguckenswert
 + http://search.cpan.org/~sparsons/Net-Dev-Syslog-0.8.0/Syslog.pm
 + http://freshmeat.net/projects/yeemp/		GPG over SSL, UTF8 etc.
 ? http://freshmeat.net/projects/xchatosd/	X11 OSD hihi
@@ -2156,14 +2122,14 @@ sonst noch evtl anguckenswert
  - checkout the fileshare stuff in perlpsyc/bin/
 
 ________________________________________________________________________
-PSYC SPEC TODO:
+> PSYC SPEC TODO:
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
   + option to receive rendered messages instead of templates ( as in ve:w() )
   + option to not receive templates for standard messages?
   + standardized way to select language?
 
 ________________________________________________________________________
-MISCELLANEOUS STUFF:
+> MISCELLANEOUS STUFF:
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ? irc-notify suckt, aber als reines client-interface kann man es doch
   eigentlich erlauben? ison polling nervt, kann man hoffentlich vermeiden,
@@ -2191,10 +2157,11 @@ Similar Projexx:
 	http://freshmeat.net/projects/ymsgr/
 
 == HINTS: Multicast (see also COMPETITION) =============================
+? reliable multicast library?
 From: Gerd Flaig <gefla@pond.example.org>
-> Was brauchen wir in der Praxis also? Eine reliable Multicast
-> Implementation in PSYC einbinden (müsste ja heutzutage ne fertige
-> Library sein zum Aufrufen), [..]
+ > Was brauchen wir in der Praxis also? Eine reliable Multicast
+ > Implementation in PSYC einbinden (müsste ja heutzutage ne fertige
+ > Library sein zum Aufrufen), [..]
 nach so etwas suche ich schon eine ganze Weile, habe aber bisher nur
 im OCaml-Umfeld eine Implementierung gefunden (genaue URL habe ich
 nicht mehr, irgendwo unter http://caml.inria.fr/), die aber wohl noch
@@ -2205,27 +2172,19 @@ stabile Bibliothek entsteht.
 	wer kann ich das mal ansehen?
     http://www.junglemonkey.net/emcast/
 
-und ausserdem... erste gedanken an multicasting bei den jabbers:
-    http://www.jabber.org/jeps/jep-0033.html
-es geht erstmal nur um eine syntax zwischen client und server
-was der server dann tut ist weiterhin unicast... oder?
-neuerdings erste gedanken bei den jabbers an raeume, die raeume joinen,
-was eine rudimentaere Form von effizenter Verteilung sein mag, jedoch
-ohne conferencing control
-
 == DOC: HOW TO PORT TO MUD =============================================
-> #define MUD
-> #undef _flag_enable_routing_UDP will force psyc to use tcp only
-> #define NO_EXTERNAL_LOGINS if you want
-> #define CONFIG_PATH to where your /local/ is
-> #define TEXT_PATH to where you want to put /default/*
+* #define MUD
+ > #undef _flag_enable_routing_UDP will force psyc to use tcp only
+ > #define NO_EXTERNAL_LOGINS if you want
+ > #define CONFIG_PATH to where your /local/ is
+ > #define TEXT_PATH to where you want to put /default/*
 
 if you care to define SERVER_HOST, please do so in local.h, not in net.h
 same goes for DEFAULT_USER_OBJECT. if you need to fake the library
 #include "/net/gl-psyc/simulated.h" in your local.h
 
 ________________________________________________________________________
-LOOKING INTO PIKE:
+> LOOKING INTO PIKE:
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 irc bot in pike:		  http://caudiumforge.net/anoncvs.rxml
 http://cvsweb.caudiumforge.net/cgi-bin/cvsweb.cgi/sugor/?cvsroot=sugor
