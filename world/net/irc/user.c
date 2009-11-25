@@ -846,7 +846,14 @@ logon() {
 	// but i guess it is indeed appropriate to make it clear how very much
 	// different we are from a regular irc server.
 	//
-	reply(RPL_ISUPPORT, "PSYC=.99 ALIAS AVAILABILITY FRIEND HISTORY MOOD SHOUT SSET STATUS SUBSCRIBE THREAD TRUST PREFIX= CHANTYPES=# CHANMODES= NICKLEN="+ (string)MAX_UNIFORM_LEN +" CHANNELLEN="+ (string)MAX_UNIFORM_LEN +" CASEMAPPING=ascii TOPICLEN=4404 KICKLEN=4404 AWAYLEN=4404 MAXTARGETS=1 CHARSET="+ (v("charset")||SYSTEM_CHARSET) +" NETWORK=" SERVER_HOST " CTCP=PRESENCE,TS UNIFORMS=psyc,xmpp :are supported by this server");
+	// reduced TOPICLEN etc from 4404 to 444 because of the 512 limit
+	// which some legacy clients really require. in fact, since we are
+	// very lax on uniform length here, it could be possible to attack
+	// irc clients in a psyc room using suitably long uniforms etc.
+	// solutions are either a uniform length limit in chatrooms or
+	// forced autoalias for ircers.
+	// 
+	reply(RPL_ISUPPORT, "PSYC=.99 ALIAS AVAILABILITY FRIEND HISTORY MOOD SHOUT SSET STATUS SUBSCRIBE THREAD TRUST PREFIX= CHANTYPES=# CHANMODES= NICKLEN="+ (string)MAX_UNIFORM_LEN +" CHANNELLEN="+ (string)MAX_UNIFORM_LEN +" CASEMAPPING=ascii TOPICLEN=444 KICKLEN=444 AWAYLEN=444 MAXTARGETS=1 CHARSET="+ (v("charset")||SYSTEM_CHARSET) +" NETWORK=" SERVER_HOST " CTCP=PRESENCE,TS UNIFORMS=psyc,xmpp :are supported by this server");
 	//
 	// MAXCHANNELS vs CHANLIMIT - we currently only have a limit on subs
 	// STD? what the hell is STD?

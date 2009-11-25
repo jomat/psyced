@@ -24,6 +24,8 @@ ________________________________________________________________________
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- install.sh/configure doesn't *ensure* libidn is available
+
 - newbies are allowed to open new owned rooms
   fippo sagt: ergo brauchst du nen exit-hook der owner löscht wenn der n00b-owner aus dem raum geht
 
@@ -478,13 +480,15 @@ ________________________________________________________________________
     C:xmpp:euirc · euirc does not resolve
     In BuHa fragt el_presidente: was soll da passieren?
 
-- improve handling of "Minusport" outgoing stuff:
-   reject and handle _failures
-? suspend flag on error? like this: when you receive errors, that a user or a
+> ERROR HANDLING
+- reject and handle _failures
+  suspend flag on error? like this: when you receive errors, that a user or a
   host could not be reached, then the castmsg'ing entity could flag this
   candidate as 'suspended' or 'temporarily unreachable' - and automatically
   change this status with the first sign of life from that entity or server.
   this would save friendship status and room presence across downtimes.
+  : added PPL_NOTIFY_INACTIVE to peers.h but actually this needs a more
+    generic solution for all contexts. see krasser rewrite.
 
 ? uni.c kümmert sich nicht um castmsg(), weswegen presence zurecht immer
   zur UNI gehen, aber leider auch raumcasts. im falle von jabber UNRs
@@ -768,6 +772,10 @@ ________________________________________________________________________
 == JABBER CLIENT ISSUES (...experimental is justified...) ==============
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 - display twitter notices somehow
+
+- when 'localhost' is chosen as server name, psyced will append invalid
+  dot and space in jabber output:
+    <bind xmlns='urn:ietf:params:xml:ns:xmpp-bind'><jid>test@localhost. /(null)</jid></bind>
 
 ? XMPP: connecting to psyced.org with psi pops up a profile window everytime
 ? XMPP: first reply to a stranger's remote psyc message did not show up in psi

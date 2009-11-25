@@ -1,25 +1,25 @@
 #!/usr/bin/perl
 # parse the historic CHANGESTODO.txt file and produce
-# a csv according to csv2trac format:
+# a "tab seperated values" CSV according to csv2trac format:
 #
-# 12  Each line in the CSV file needs to have the following entries
-# 13          type            text           -- the ticket purpose
-# 14          time            integer        -- the time it was created
-# 15          changetime      integer
-# 16          component       text
-# 17          severity        text
-# 18          priority        text
-# 19          owner           text           -- who is this ticket assigned to
-# 20          reporter        text
-# 21          cc              text           -- email addresses to notify
-# 22          url             text           -- url related to this ticket
-# 23          version         text           --
-# 24          milestone       text           --
-# 25          status          text
-# 26          resolution      text
-# 27          summary         text           -- one-line summary
-# 28          description     text           -- problem description (long)
-# 29          keywords        text
+# Each line in the CSV file needs to have the following entries
+#	type            text           -- the ticket purpose
+#	time            integer        -- the time it was created
+#	changetime      integer
+#	component       text
+#	severity        text
+#	priority        text
+#	owner           text           -- who is this ticket assigned to
+#	reporter        text
+#	cc              text           -- email addresses to notify
+#	url             text           -- url related to this ticket
+#	version         text           --
+#	milestone       text           --
+#	status          text
+#	resolution      text
+#	summary         text           -- one-line summary
+#	description     text           -- problem description (long)
+#	keywords        text
 
 use locale;
 
