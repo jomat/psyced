@@ -1068,7 +1068,10 @@ cmd(a, args, dest, command) {
                 // now you have to declare yourself offline manually
                 // no you don't. if availability isn't offline the
                 // disconnected() handler will clean you out!
-	// fall thru
+		// ok let's do it manually.. see if we get in trouble later.
+		availability = AVAILABILITY_OFFLINE;
+		// yes v("availability") is retained.. maybe useful later
+		return 1;
 	case "offline":
 		announce(AVAILABILITY_OFFLINE, 1, 1, ARGS(1));
 		return 1;

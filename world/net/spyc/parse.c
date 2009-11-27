@@ -360,7 +360,7 @@ void step() {
 	    step();
 	} else {
 	    croak("_error_syntax_initialization",
-		"The protocol begins with a pipe and a line feed.");
+		"The new protocol begins with a pipe and a line feed.");
 	}
 	break;
     default: // uhm... if we ever get here this is the programmers fault
