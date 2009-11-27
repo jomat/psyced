@@ -191,12 +191,14 @@ private int conclude() {
 		// to also store the list in pvars, but since i'm generally
 		// doubtful if this is the right way to go, i'll leave it to
 		// a later day.. TODO
-	// hooray, we get to check some variable families for sanity
+	// hooray, we get to check some var type families for sanity
 	} else if (abbrev("_degree", lastvar)) {
 		mixed t = cvars[lastvar];
-					// allow for unset degree '-'
-		if (!(intp(t) && t>=0) || (t != "-" &&
-		    !sscanf(t, "%1d", cvars[lastvar]))) {
+		// allow for unset degree '-' ? not unless we know what for.
+		if ((intp(t) && t>=0) || sscanf(t, "%1d", cvars[lastvar])) {
+			// accept
+			if (mod != ":") pvars[lastvar] = cvars[lastvar];
+		} else {
 			reject++;
 			P1(("%O failed to parse %O: %O\n", ME, lastvar, t))
 			croak("_error_type_degree",
@@ -205,7 +207,6 @@ private int conclude() {
 			m_delete(cvars, lastvar);
 			//if (mod != ":") m_delete(pvars, lastvar);
 		}
-		else if (mod != ":") pvars[lastvar] = cvars[lastvar];
 	} else if (abbrev("_list", lastvar)) {	// _tab
 		// we only get here if the _list has one or zero members
 #ifdef PARANOID
