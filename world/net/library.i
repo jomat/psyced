@@ -794,7 +794,12 @@ varargs mixed sendmsg(mixed target, string mc, mixed data, vamapping vars,
 						    showingLog, source, u);
 #endif
 			case 0:
-#ifdef DEVELOPMENT
+#if 0 //def DEVELOPMENT
+				// we get here when doing remote messaging
+				// in xmpp.. and in fact, in net/jabber we
+				// don't *know* which scheme needs to be
+				// used.
+				//
 				raise_error("scheme 0 is a bug\n");
 				//
 				// TODO: we had this error, and maybe it's
