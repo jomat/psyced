@@ -626,7 +626,10 @@ _failure_filter_strangers
 |[_nick] has not enabled messages from strangers.
 
 _failure_necessary_registration
-|[_nick_target] cannot handle friendships yet.
+|[_nick_target] is no registered user yet.
+
+_failure_necessary_variable
+|Your request is incomplete.
 
 _failure_unsuccessful_delivery
 |Could not establish a circuit to [_host] to deliver a [_method_relay] to [_source].

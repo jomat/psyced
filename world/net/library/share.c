@@ -24,11 +24,11 @@ volatile mapping share = ([
 #ifdef JABBER_PATH
 # ifndef _flag_disable_module_presence
 	"jabber2avail": ([
-		0	: AVAILABILITY_HERE,
 		"chat"	: AVAILABILITY_TALKATIVE,
-		"dnd"	: AVAILABILITY_BUSY,
-		"away"	: AVAILABILITY_DO_NOT_DISTURB,
-		"xa"	: AVAILABILITY_AWAY
+		0	: AVAILABILITY_HERE,
+		"dnd"	: AVAILABILITY_BUSY,		// dnd?
+		"away"	: AVAILABILITY_DO_NOT_DISTURB,	// nearby?
+		"xa"	: AVAILABILITY_AWAY		// "not available"
 	]),
 	// map to http://www.jabber.org/jeps/jep-0107.html although that
 	// is more like good ole mud feelings

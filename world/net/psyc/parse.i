@@ -57,7 +57,7 @@ volatile string lastvar, mod, origin_unl;
 volatile array(mixed) list;
 volatile mapping hash;
 volatile int l = 0;
-volatile int pongtime, routing = 1;
+volatile int reject = 0, pongtime; //, routing;
 
 #ifndef PSYC_TCP
 // resolved UNL of remote server (psyc://hostname or psyc://hostname:port)
@@ -129,7 +129,7 @@ int restart() {
 	// delete other stuff too
 	buffer = "";
        	mc = 0;
-        routing = 1;    // unused as yet
+//	routing = 1;    // unused as yet
 #ifdef SYSTEM_SECRET
 	checkpack = vcheck = 0;
 	ctrust = trustworthy;
@@ -191,17 +191,22 @@ private int conclude() {
 		// to also store the list in pvars, but since i'm generally
 		// doubtful if this is the right way to go, i'll leave it to
 		// a later day.. TODO
-	// hooray, we get to check some variable families for sanity
+	// hooray, we get to check some var type families for sanity
 	} else if (abbrev("_degree", lastvar)) {
-					// allow for unset degree '-'
-		if (!stringp(cvars[lastvar]) || (cvars[lastvar] != "-" &&
-		    !sscanf(cvars[lastvar], "%1d", cvars[lastvar]))) {
-			P1(("%O failed to parse %O: %O\n", ME,
-			    lastvar, cvars[lastvar]))
+		mixed t = cvars[lastvar];
+		// allow for unset degree '-' ? not unless we know what for.
+		if ((intp(t) && t>=0) || sscanf(t, "%1d", cvars[lastvar])) {
+			// accept
+			if (mod != ":") pvars[lastvar] = cvars[lastvar];
+		} else {
+			reject++;
+			P1(("%O failed to parse %O: %O\n", ME, lastvar, t))
+			croak("_error_type_degree",
+	"Your value for variable [_variable] does not qualify for a degree.",
+			    ([ "_variable": lastvar ]));
 			m_delete(cvars, lastvar);
-			if (mod != ":") m_delete(pvars, lastvar);
+			//if (mod != ":") m_delete(pvars, lastvar);
 		}
-		else if (mod != ":") pvars[lastvar] = cvars[lastvar];
 	} else if (abbrev("_list", lastvar)) {	// _tab
 		// we only get here if the _list has one or zero members
 #ifdef PARANOID
@@ -293,7 +298,7 @@ vamixed parse(string a) {
 		// to put the mmp variable state away somewhere
 		// and go fetch the psyc variable state for the current
 		// source/target pair from somewhere else.	TODO
-                routing = 0;    // unused as yet
+//              routing = 0;    // unused as yet
 	} else switch(a[0]) {
 	case ':':
 		unless (SCANFIT) {
@@ -576,6 +581,12 @@ vamixed getdata(string a) {
 		// a runtime error (but it's still better to fix it!)
                 next_input_to(#'parse);
 # endif
+		if (reject) {
+			// packet has been rejected by parser for semantic reasons
+			reject = 0;
+			restart();
+			return 1;
+		}
 		if (!t || trustworthy > 5) {
 			deliver(0, 0, mc, buffer, cvars);
 		} else unless (u = parse_uniform(t)) {
@@ -1110,6 +1121,7 @@ vamixed startParse(string a) {
 		restart();
 		if (isServer()) greet();
 	}
+// new syntax is so broken, we should not pretend to support it yet FIXME
 # if defined(SPYC_PATH) && defined(USE_SPYC)
 	else if (a == "|") {	// new S_GLYPH_PACKET_DELIMITER
 		object o = clone_object(SPYC_PATH "server");
@@ -1152,7 +1164,7 @@ vamixed startParse(string a) {
 	else {
 		PT(("PSYC startParse got %O from %O\n", a, query_ip_number()))
 		croak("_error_syntax_initialization",
-		    "The protocol begins with a dot on a line by itself.");
+		    "The old protocol begins with a dot on a line by itself.");
 		// experiencing a loop here, because some implementations
 		// try immediate reconnect. idea: in most places where we
 		// QUIT we should put the tcp link on hold instead, and

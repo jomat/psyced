@@ -48,10 +48,11 @@
 #define PPL_NOTIFY_DEFAULT	PPL_NOTIFY_IMMEDIATE
 #define PPL_NOTIFY_DELAYED	'6'
 #define PPL_NOTIFY_DELAYED_MORE	'4'
-#define PPL_NOTIFY_FRIEND	PPL_NOTIFY_DELAYED_MORE
+#define PPL_NOTIFY_INACTIVE	'3'	// delivery returned error
+#define PPL_NOTIFY_FRIEND	PPL_NOTIFY_INACTIVE
 #define PPL_NOTIFY_MUTE		'2'
-#define PPL_NOTIFY_PENDING	'1'	// friendship request sent
-#define PPL_NOTIFY_OFFERED	'0'	// friendship request received
+#define PPL_NOTIFY_PENDING	'1'	// _outgoing friendship request sent
+#define PPL_NOTIFY_OFFERED	'0'	// _incoming friendship req received
 #define PPL_NOTIFY_NONE		' '
 
 #define TIME_DELAY_NOTIFY	(60 * 3)	// 3 minutes

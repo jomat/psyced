@@ -129,6 +129,7 @@ msg(source, mc, data, mapping vars, showingLog) {
 	mc = "_notice_place_leave";
     }
     switch (mc) {
+    case "_status_description_time":
     case "_status_person_present":
     case "_status_person_present_implied":
     case "_status_person_absent":
@@ -250,7 +251,7 @@ showFriends() {
 	      "_INTERNAL_target_jabber" : myjid, 
 	      "_INTERNAL_source_jabber" : mkjid(person),
 	      "_description_presence" : "",  // TODO: get these from state
-	      "_XML_description_presence" : "",
+	      "_INTERNAL_XML_description_presence" : "",
 	      "_INTERNAL_mood_jabber" : "neutral"
 	]));
     }
@@ -572,15 +573,16 @@ iq(XMLNode node) {
 
     P3(("+++ %O IQ node %O\n", ME, node))
     iqchild = getiqchild(node);
-    unless(iqchild) switch(node["@type"]) {
-	case "get":
-	case "set":
-	case "result":
-	case "error":
-	    break;
+    unless (iqchild && mappingp(iqchild)) switch(node["@type"]) {
+    case "get":
+    case "set":
+    case "result":
+    case "error":
+	    P1(("%O got empty iq %O\n", ME, node))
+	    return;
     default:
 	    P1(("%O got invalid iq %O\n", ME, node))
-	return;
+	    return;
     }
     helper = iqchild;
 

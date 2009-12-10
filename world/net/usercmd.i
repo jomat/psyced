@@ -914,7 +914,7 @@ cmd(a, args, dest, command) {
                 if (member(places, (t = sizeof(args) < 2 ? place : args[1]))) {
                     m_delete(places, t);
                 }
-                // fall thru
+	// fall thru
 	case "unenter":         // and the protocol should follow.. unenter!
 	case "leave":
 	case "part":
@@ -1001,7 +1001,7 @@ cmd(a, args, dest, command) {
 		break;
 	case "notice":
 		t2 = "_message_private_annotate";
-		// fall thru
+	// fall thru
 	case "msg":
 	case "tell":
 	case "m":
@@ -1020,7 +1020,7 @@ cmd(a, args, dest, command) {
 			    "Usage: /more. See also /tell and /talk.");
 			break;
 		}
-		// fall thru
+	// fall thru
 	case "q":
 	case "query":
 	case "talk":
@@ -1046,18 +1046,6 @@ cmd(a, args, dest, command) {
                         return 1;
                 }
                 break;
-	// experimental new way to log out without logging out.
-	// may very well not work as planned
-	case "det":
-	case "detach":
-                //availability = AVAILABILITY_OFFLINE;
-                remove_interactive(ME);
-                //break;
-                // used to fall thru to declare myself offline as well..
-                // now you have to declare yourself offline manually
-                // no you don't. if availability isn't offline the
-                // disconnect() handler will clean you out!
-                // fall thru
 #endif
 #ifndef _flag_disable_module_friendship
 	case "shout":
@@ -1068,8 +1056,21 @@ cmd(a, args, dest, command) {
 		    "Usage: /shout <message-to-your-friends>");
 		break;
 # ifndef _flag_disable_module_presence
-	case "presence":
-                showMyPresence(1);
+	// experimental new way to log out without logging out.
+	// may very well not work as planned
+	    // detach for psyc clients: _do_presence offline + _unlink
+	case "det":
+	case "detach":
+                //availability = AVAILABILITY_OFFLINE;
+                remove_interactive(ME);
+                //break;
+                // used to fall thru to declare myself offline as well..
+                // now you have to declare yourself offline manually
+                // no you don't. if availability isn't offline the
+                // disconnected() handler will clean you out!
+		// ok let's do it manually.. see if we get in trouble later.
+		availability = AVAILABILITY_OFFLINE;
+		// yes v("availability") is retained.. maybe useful later
 		return 1;
 	case "offline":
 		announce(AVAILABILITY_OFFLINE, 1, 1, ARGS(1));
@@ -1157,6 +1158,9 @@ cmd(a, args, dest, command) {
 		// this command is normally accessed as /mynick
 		// as it behaves similarely to /me
 		return motto(ARGS(1));
+	case "presence":
+                showMyPresence(1);
+		return 1;
 # endif /* _flag_disable_module_presence */
 	case "cancel":
 	case "can":
@@ -1590,7 +1594,7 @@ case "_message":
 			tell(vars["_person"], data, 0, vars["_action"], 0);
 			return 1;
 		}
-		// else.. fall thru
+	// else.. fall thru
 case "_message_public":
 case "_public":
 case "_speak":
@@ -1630,11 +1634,27 @@ case "_leave":
 			     , 1, vars["_flag"]);
 		return 1;
 case "_invite":
+		// _focus has been taken care of beforehand in person.c
 		if (t = vars["_person"]) {
 			unless (place) return w("_error_status_place_none",
 			  "You aren't in a room");
                         m_delete(vars, "_person");
 			return invite(t, vars);
+		}
+		return 0;
+case "_subscribe_permanent":
+case "_subscribe_temporary":
+case "_subscribe":
+		if (t = vars["_group"] || vars["_focus"]) {
+			subscribe(family == "_subscribe_permanent" ?
+			    SUBSCRIBE_PERMANENT : SUBSCRIBE_TEMPORARY, t);
+			return 1;
+		}
+		return 0;
+case "_unsubscribe":
+		if (t = vars["_group"] || vars["_focus"]) {
+			subscribe(SUBSCRIBE_NOT, t);
+			return 1;
 		}
 		return 0;
 case "_remove_register":
@@ -1746,17 +1766,25 @@ case "_friend": // tmp
 		return 1;
 #ifndef _flag_disable_module_presence
 case "_presence":
-		P3(("%O with %O\n", mc, vars))
-		if ((t = vars["_degree_mood"]) && intp(t))
-                    vSet("mood", mood = t);
-		if ((t = vars["_degree_availability"]) && intp(t)) {
-			announce(t, !vars["_degree_automation"],
+		// parser takes care of checking _degree type
+		if (t = vars["_degree_mood"]) {
+//			if (! sscanf(t, "%1d", t)) {
+//				w("_warning_usage_mood");
+//				return 1;
+//			}
+			vSet("mood", mood = t);
+		}
+		if (t = vars["_degree_availability"]) {
+//			if (! sscanf(t, "%1d", t))
+//			    w("_warning_usage_availability");
+//			else
+			    announce(t, !vars["_degree_automation"],
 				 1, vars["_description_presence"]);
 			return 1;
                 }
-                P1(("got invalid %O: %O, %O\n", mc, vars, data))
-		// complain about missing args?
-		return 0;
+                P1(("got invalid %O: %O, %O in %O\n", mc, vars, data, ME))
+		w("_failure_necessary_variable");
+		return 1;
 #endif // _flag_disable_module_presence
 case "_list_peers_JSON":
 		listAcq(PPL_JSON);
@@ -1773,7 +1801,7 @@ case "_unlink":
 case "_exit":
 		// so this is some kind of ugly hack not to be used.. huh?
 		announce(AVAILABILITY_OFFLINE);
-		// fall thru
+	// fall thru
 case "_quit":
                 // bye(vars["_reason"]);
                 quit();

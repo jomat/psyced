@@ -1,0 +1,100 @@
+#!/usr/bin/perl
+# parse the historic CHANGESTODO.txt file and produce
+# a "tab seperated values" CSV according to csv2trac format:
+#
+# Each line in the CSV file needs to have the following entries
+#	type            text           -- the ticket purpose
+#	time            integer        -- the time it was created
+#	changetime      integer
+#	component       text
+#	severity        text
+#	priority        text
+#	owner           text           -- who is this ticket assigned to
+#	reporter        text
+#	cc              text           -- email addresses to notify
+#	url             text           -- url related to this ticket
+#	version         text           --
+#	milestone       text           --
+#	status          text
+#	resolution      text
+#	summary         text           -- one-line summary
+#	description     text           -- problem description (long)
+#	keywords        text
+
+use locale;
+
+my $changestodofile = shift or die 'Please provide path to CHANGESTODO.txt';
+open(I, "/usr/bin/expand $changestodofile |")
+    or die "Failed to /usr/bin/expand $changestodofile";
+
+print <<X;
+type\ttime\tchangetime\tcomponent\tseverity\tpriority\towner\treporter\tcc\turl\tversion\tmilestone\tstatus\tresolution\tsummary\tdescription\tkeywords
+X
+
+my $text = '';
+my $headline, $first, $type, $sub;
+
+my %types = (
+	'-' => 'defect',
+	'+' => 'enhancement',
+	'*' => 'task',
+	'?' => 'question',  # needs to be added by trac-admin
+);
+
+sub output {
+	return unless $first;
+	my $t = $types{$type};
+	die 'no type' unless $t;
+	$summary = ($first && $sub) ? "$sub: $first" : ($first || $sub);
+	die 'expand failed' if $summary =~ /\t/ or $text =~ /\t/;
+#	$summary =~ s/\t/        /gm;
+#	$text =~ s/\t/        /gm;
+	$text =~ s/\n/\\n/gm;
+	my $mytime = 1234567890;
+	print <<X;
+$t\t$mytime\t\tpsyced\t\t\t\t\t\t\t$headline\tnew\t\t$summary\t\\n$summary\\n$text\told imported
+X
+	undef $type;
+	undef $first;
+	$text = '';
+}
+
+<I>; # skip first line
+while (<I>) {
+	next if /^[_¯]+$/;
+	next if /^\|/;
+	if ( /^== (.+) =====/ ) {
+		&output;
+		$headline = $1;
+		undef $sub;
+		next;
+	}
+	if ( /^(-|\+|\?|\*) (.+)$/ ) {
+		&output;
+		$type = $1;
+		$first = "$1 $2";
+		next;
+	}
+	if ( /^\> (.+)$/ ) {
+		&output;
+		$sub = $1;
+#		print STDERR $_;
+		next;
+	}
+	if ( /^\>\>\>/ ) {
+		&output;
+		undef $sub;
+		next;
+	}
+	if ( /^=+$/ ) {
+		&output;
+		exit;
+	}
+#	if ( /^  (.+)$/ or /^\t(.+)$/ ) {
+#		$text .= $1;
+#		next;
+#	}
+	$text .= $_;
+#	print STDERR;
+}
+

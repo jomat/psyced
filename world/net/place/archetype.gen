@@ -768,6 +768,7 @@ insert_member(source, mc, data, vars, ni, neu, again) {
 # else
 	// only this code runs
 	vars["_duty"] = "member";
+	// why not _role instead of _duty?
 # endif
 #endif // OWNED
 	// we are also echoing his vars back to the requestor
@@ -1150,6 +1151,8 @@ msg(source, mc, data, mapping vars) {
 		    || abbrev("_request_invitation", mc)) {
 			mc = "_notice_place"+mc[8..];
 #ifdef PLACE_TOPIC
+			// hm, this doesn't just go back to the new
+			// person.. it is resent to all..
 			if (v("topic") &&! abbrev("_request_leave", mc))
 			    vars["_topic"] = v("topic");
 #endif
