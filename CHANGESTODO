@@ -382,6 +382,8 @@ TWITTER
 ________________________________________________________________________
 == OTHER MAJOR TODOS ===================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- occasionally double data sets for psyc://ve.symlynx.com/~nick and nick
+
 + provide a tuning for ACTIVE server-side PING (keepalive) ?
   see http://about.psyc.eu/Ping for explanations.
 
@@ -1580,6 +1582,11 @@ ________________________________________________________________________
 ? support voice chat
   look at: http://freshmeat.net/projects/pyvoicechat/
   dormant since 2004.. oops  
+
++ tycho proposes /log reply of new messages should not necessarily
+  show automatically, in case you are connecting with a client on a
+  mobile phone, especially if you have permanent context subscriptions
+  flowing into your log nonstop.
 
 RELAYING
 + net/spyc needs relaying (without parsing even), see TODO in parse_content()

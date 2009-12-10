@@ -58,3 +58,6 @@ local/all.ls:
 .links:
 	(cd world;../bin/findlinks */de/* */en/*) >$@
 
+exefix:
+	chmod +x bin/* run/* config/psyced.settings install.sh utility/multipatcher
+
