@@ -393,6 +393,8 @@ ________________________________________________________________________
 ________________________________________________________________________
 == OTHER MAJOR TODOS ===================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- occasionally double data sets for psyc://ve.symlynx.com/~nick and nick
+
 + provide a tuning for ACTIVE server-side PING (keepalive) ?
   see http://about.psyc.eu/Ping for explanations.
 
@@ -1564,6 +1566,11 @@ ________________________________________________________________________
   look at: http://freshmeat.net/projects/pyvoicechat/
   dormant since 2004.. oops  
 
++ tycho proposes /log reply of new messages should not necessarily
+  show automatically, in case you are connecting with a client on a
+  mobile phone, especially if you have permanent context subscriptions
+  flowing into your log nonstop.
+
 > RELAYING
 + net/spyc needs relaying (without parsing even), see TODO in parse_content()
 ? relaying doesn't work for psyc clients (xmpp: in particular)
@@ -1584,6 +1591,8 @@ ________________________________________________________________________
   but some of the old stuff does.. how do we find a proper solution?
 
 == DOCUMENTATION ISSUES ================================================
+? should we point to some manuals on how to make and add certificates?
+
 * ich habs.. jede datei definiert am anfang in welche kategorie sie gehört..
 "library" "user" "server" "language" etc... und jede funktion kann sich 
 dann mit /** library: this stuff.. */ woanders einordnen.. jetzt brauchen wir
