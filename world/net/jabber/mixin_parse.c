@@ -221,8 +221,10 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 				 time[TM_YEAR], time[TM_MON], 
 				 time[TM_MDAY], time[TM_HOUR],
 				 time[TM_MIN], time[TM_SEC]);
-		    if (res == 6  && (res = mktime(time)) != -1) {
-			vars["_time_place"] = res; //helper["@stamp"];
+		    if (res == 6) {
+			// mktime uses month from 0 to 11, december error fixed
+			time[TM_MON]--;
+			if ((res = mktime(time)) != -1) vars["_time_place"] = res;
 		    }
 		}
 #endif
