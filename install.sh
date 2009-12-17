@@ -304,10 +304,13 @@ ask "Server host name" HOST_NAME
 get DOMAIN_NAME "" # `grep ^domain /etc/resolv.conf | sed "s/^domain.//"`
 ask "Your domain name" DOMAIN_NAME
 
-get HOST_IP "127.0.0.1"
+#get HOST_IP "127.0.0.1"
+get HOST_IP
 # `nslookup -sil $HOST_NAME | tail -n 2 | head -n 1 | awk '{print $2}' | sed "s/,//"`
 echo ""
-echo "If you have a static IP address for your server, please tell me:"
+echo "If you have a static IP address for your server, please tell me."
+echo "Otherwise I will resolve my own hostname at runtime in order to get my"
+echo "current IP address."
 ask "Server IP address" HOST_IP
 
 echo ""
@@ -371,6 +374,7 @@ done
 #echo "[server output goes to $RUNTIME_OUTPUT]"
  
 ## BUG IN ORDER!!! we dont have $PSYC_PORT yet!!!!! TODO!!111
+## also HOST_IP may be empty
 RUNTIME_OUTPUT_DIR="$LOG_DIR/$HOST_IP-$PSYC_PORT"
 RUNTIME_OUTPUT_STDERR="$RUNTIME_OUTPUT_DIR/stderr"
 RUNTIME_OUTPUT_STDOUT="$RUNTIME_OUTPUT_DIR/stdout"
@@ -793,6 +797,7 @@ else
 	echo "[host name resolving disabled (don't start erq).]"
 fi
 
+## TODO, should be disabled when there is no HOST_IP?
 get WANT_PORTRULES "y"
 
 echo ""
@@ -986,7 +991,8 @@ _host_name = $HOST_NAME
 _host_domain = $DOMAIN_NAME
 
 ; Would you like to bind the server to a specific IP address?
-; If you do you MUST also provide _host_name and _host_domain
+; If you do, you MUST also provide _host_name and _host_domain
+; If you leave this empty, psyced will find out at runtime.
 _host_IP = $HOST_IP
 
 ; Nickname for the chatserver. Appears in login message, telnet prompt,
