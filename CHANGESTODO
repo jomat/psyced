@@ -1767,9 +1767,6 @@ das sieht doof aus.. gehts auch besser? hmm
   remain incarnated longer since mails seem to arrive often enough
   for some users to never leave memory.
 
-+ disallow TLS/SSL connections from localhost to save CPU resources
-  for useful things
-
 - re-examine everything looking for optimizations.. like, are any
   lower_case's being called twice etc. or introduce a "lowercased"
   flag into the driver's string structures  *grin*
