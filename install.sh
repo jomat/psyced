@@ -319,6 +319,9 @@ get USER "psyc"
 if test "x$USER" = "xroot"; then
 	echo ""
 	echo "You shouldn't run psyced as root, so what about a 'psyc' user?"
+	# indigo6 thinks we should run useradd here, even if some unices
+	# do not provide that command. we can >/dev/null the error though...
+	echo "If the user doesn't exist yet, please make one."
 fi
 #while true
 #do
@@ -335,6 +338,7 @@ fi
 get GROUP "psyc"
 #while true
 #do
+	echo "If such a group doesn't exist yet, please create it now."
 	ask "Which group do you want to run psyced as" GROUP
 #	if `id -Gn $USER | grep $GROUP > /dev/null`
 #	then
