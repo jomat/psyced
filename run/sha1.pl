@@ -4,6 +4,8 @@
 # (sort of like cgi) with LDMUD. but by now LDMUD knows how
 # to do MD5 and SHA1 itself, so they are not being used.
 #
+# consult http://about.psyc.eu/spawn for instructions
+#
 use Digest::SHA1 qw(sha1 sha1_hex);
 
 $| = 1;

@@ -4,6 +4,10 @@
 #include "presence.h"
 #include <time.h>
 
+#if !__EFUN_DEFINED__(idna_stringprep)
+# echo Warning: idn support as recommended for XMPP is missing from LPC driver. will try lower_case() instead. usually works.
+#endif
+
 // necessary to implement a minimum set of commands for remote jabber users
 // #undef USER_PROGRAM
 // #undef MYNICK

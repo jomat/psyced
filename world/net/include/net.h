@@ -64,7 +64,6 @@
 # define NAMEPREP(s) FROM_UTF8(idna_stringprep(TO_UTF8(s), STRINGPREP_NAMEPREP))
 # define RESOURCEPREP(s) FROM_UTF8(idna_stringprep(TO_UTF8(s), STRINGPREP_XMPP_RESOURCEPREP))
 #else
-# echo Warning: using lower_case instead of idna_stringprep!
 # define NODEPREP(s) lower_case(s)
 # define NAMEPREP(s) lower_case(s)
 # define RESOURCEPREP(s) (s)

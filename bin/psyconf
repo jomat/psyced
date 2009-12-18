@@ -16,7 +16,8 @@ psyconf - a configuration tool for PSYCED
 
 Usage: psyconf [ <file> ]
 
-The default configuration file used is /etc/psyced.ini
+The default configuration file used is either ./psyced.ini
+or /etc/psyc/psyced.ini
 
 =cut
 
