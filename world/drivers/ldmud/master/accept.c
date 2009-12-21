@@ -129,7 +129,7 @@ object connect(int uid, int port, string service) {
 	peerport = pointerp(arg) ? (arg[2]*256 + arg[3]) : 0;
 	if (peerport < 0) peerport = 65536 + peerport;
 	// no support for non-AF_INET nets yet
-	if (peerport == SPYC_SERVICE) peerport = 0;
+	if (peerport == PSYC_SERVICE) peerport = 0;
 # else
 	// as long as the object names don't collide, this is okay too
 	peerport = 65536 + random(9999999);
