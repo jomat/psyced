@@ -4,6 +4,12 @@ vim:nosmarttab:syntax=diff
 | Essentially: whenever you fix something, move that line to the end of file.
 | - marks bugs & fixes, + marks new features, ? marks issues, * marks big stuff
 ________________________________________________________________________
+== SERIOUS!!! ==========================================================
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- large submissions into scratchpad can crash the driver
+
+- configure script fails on libidn now being in glibc
+________________________________________________________________________
 == NEXT RELEASE ========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 - interserver xmpp /me expects no leading newline, but pidgin recently
@@ -1079,6 +1085,9 @@ cel'><service-unavailable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error><
 ________________________________________________________________________
 == RELEASE INSTALLER ===================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
++ the psyced script could check if psyced.ini has been changed recently
+  and autorun psyconf? or maybe just spit out a warning..
+
 - _charset_console can still lead to unexpected convert_charset errors when
   outputting random data. convert_charset must be non-fatal here!
 

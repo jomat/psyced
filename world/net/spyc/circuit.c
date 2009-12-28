@@ -25,7 +25,7 @@ volatile string netloc;
 
 // this is completely anti-psyc. it should take mcs as arguments
 // and look up the actual message from textdb.. FIXME
-#define CIRCUITERROR(reason) { debug_message("SPYC CIRCUIT: " reason "\n");   \
+#define CIRCUITERROR(reason) { \
                              croak("_error_circuit", "circuit error: "         \
                                     reason);                                   \
                              return 0;                                         \
@@ -55,9 +55,12 @@ void feed(string data) {
 // yes, this is a funny implementation of croak
 // it does not use msg(). Yes, that is intended
 varargs mixed croak(string mc, string data, vamapping vars, vamixed source) {
+    PT(("croak(%O) in %O (%O)\n", mc, ME, query_ip_name()))
+    unless (data) data = T(mc, "");
     binary_message(sprintf("\n%s\n%s\n|\n", mc, data));
-    remove_interactive(ME); 
-    destruct(ME);
+    // right behaviour for all croaks!?
+    remove_interactive(ME);
+//  destruct(ME);
     return 0;
 }
 
