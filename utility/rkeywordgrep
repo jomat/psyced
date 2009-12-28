@@ -1,0 +1,42 @@
+#!/usr/bin/perl
+#
+# recursive PSYC keyword (methods, variables) collector		--lynx98
+# you may like how it looks after a subsequent sort
+# see also http://about.psyc.eu/Rename
+
+require 'find.pl';
+
+$flags = '';
+$flags = shift if $ARGV[0] =~ /^-/;
+$verbose = $flags !~ /s/;
+
+$|=1;
+&find($#ARGV >= 0 ? @ARGV : '.');
+print STDERR '=' x 78, "\n" if $verbose;
+exit;
+
+
+sub wanted {
+	($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+	 $atime,$mtime,$ctime,$blksize,$blocks)
+		= lstat;
+
+	return unless /\.[chi]$/ or /\.gen$/;
+	return if -d _;
+#	return unless $blocks;			# skip symlinks
+	return if $size < 10;
+
+	if ($verbose) {
+		$len = length $name;
+		print STDERR $name, ' ', '=' x (77-$len), "\r" if $len < 77;
+	}
+
+	if (open(I, $_)) {
+		while(<I>) {
+			printf "%-41s -\t$name\n", $1 while s/"(_\w+)"/"got"/;
+		}
+		close I;
+	} else {
+		print STDERR "$name: $!\n";
+	}
+}
