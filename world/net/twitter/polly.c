@@ -28,7 +28,7 @@ parse(string body, mapping headers) {
 	P4((body))
 //#endif
 	unless (pointerp(wurst = parse_json(body))) {
-		monitor_report("_failure_network_fetch_twitter_empty",
+		monitor_report("_failure_network_fetch_twitter_broken",
 		    "[_source] failed to parse its timeline");
 		return;
 	}

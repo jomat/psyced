@@ -551,6 +551,9 @@ _request_description
 _request_open_page
 |Bitte folgende Seite aufrufen: [_page]
 
+_request_open_page_login
+|Bitte öffne [_page_login] um einzuloggen.
+
 _request_open_page_edit
 |Zur Bearbeitung der Einstellungen bitte folgende Seite aufrufen:
 |[_page_edit]

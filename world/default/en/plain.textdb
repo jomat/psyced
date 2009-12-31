@@ -1,6 +1,18 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
 ## Check utf-8: Praise Atatürk!
 
+_failure_unavailable_state
+|State module is not available as yet.
+
+_failure_unknown_glyph
+|Unknown modifier glyph encountered.
+
+_error_illegal_protocol_variable
+|You are not allowed to present a variable named [_variable_name].
+
+_error_type_degree
+|Your value for variable [_variable] does not qualify for a degree.
+
 _error_necessary_nick_local
 |This command only accepts local nicknames.
 
