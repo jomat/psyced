@@ -1353,7 +1353,7 @@ _notice_link_service
 
 _notice_link
 |[_location] linked to [_identification].
-|You are now connected to this big marshmellow in the sky.
+|## You are now connected to this big marshmellow in the sky.
 
 _notice_unlink_exit
 |I wish you good sleep or a fun night-out.
