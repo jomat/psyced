@@ -16,7 +16,10 @@
 start();
 babel();
 
-#define CRESET	start();
+#define CREATE qInit(ME, 1000, 100);
+
+// too aggressive to connect babelfish on every reset!!
+//efine CRESET start();
 inherit NET_PATH "connect";
 #include <place.gen>
 
@@ -27,7 +30,6 @@ volatile mixed *current;
 volatile string krank, buffer;
 
 start() {
-    qInit(ME, 1000, 100);
     unless (has_con || is_con) {
 	is_con = 1;
 	call_out(#'connect, 0, "babelfish.yahoo.com", 80);

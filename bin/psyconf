@@ -16,7 +16,8 @@ psyconf - a configuration tool for PSYCED
 
 Usage: psyconf [ <file> ]
 
-The default configuration file used is /etc/psyced.ini
+The default configuration file used is either ./psyced.ini
+or /etc/psyc/psyced.ini
 
 =cut
 
@@ -386,14 +387,23 @@ X
 		my $t = $c{_basic_path_PEM_key};
 		if ($t) {
 			$t = "$config/$t" unless $t =~ m#^/#;
+			print STDERR <<X unless -r $t;
+WARNING: Key file $t does not exist.
+X
 			$psyced .= " --tls-key $t";
 		}
 		if ($t = $c{_basic_path_PEM_certificate}) {
 			$t = "$config/$t" unless $t =~ m#^/#;
+			print STDERR <<X unless -r $t;
+WARNING: Certificate file $t does not exist.
+X
 			$psyced .= " --tls-cert $t";
 		}
 		if ($t = $c{_basic_path_trust}) {
 			$t = "$config/$t" unless $t =~ m#^/#;
+			print STDERR <<X unless -r $t;
+WARNING: Trust directory $t does not exist.
+X
 			$psyced .= " --tls-trustdirectory $t";
 		}
 # ldmud doesn't support this yet

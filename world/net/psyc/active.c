@@ -70,7 +70,7 @@ int msg(string source, string method, string data,
 	return ::msg(source, method, data, vars, showingLog, target);
 #else // }}}
 	{
-	    P2(("%O ist nicht interactive\n", ME))
+	    P2(("%O is not interactive (no network connection)\n", ME))
 	    if (!member(vars, "_source"))
 		vars["_source"] = UNIFORM(source);
 // this stuff is causing loops and i don't know how to fix it right now

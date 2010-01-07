@@ -58,3 +58,7 @@ local/all.ls:
 .links:
 	(cd world;../bin/findlinks */de/* */en/*) >$@
 
+rights:
+	find . -type d -exec chmod 755 {} \;
+	find . -type f -exec chmod 644 {} \;
+	chmod +x bin/* run/* config/psyced.settings install.sh utility/multipatcher

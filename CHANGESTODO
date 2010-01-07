@@ -4,6 +4,12 @@ vim:nosmarttab:syntax=diff
 | Essentially: whenever you fix something, move that line to the end of file.
 | - marks bugs & fixes, + marks new features, ? marks issues, * marks big stuff
 ________________________________________________________________________
+== SERIOUS!!! ==========================================================
+¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- large submissions into scratchpad can crash the driver
+
+- configure script fails on libidn now being in glibc
+________________________________________________________________________
 == NEXT RELEASE ========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 - interserver xmpp /me expects no leading newline, but pidgin recently
@@ -393,6 +399,8 @@ ________________________________________________________________________
 ________________________________________________________________________
 == OTHER MAJOR TODOS ===================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- occasionally double data sets for psyc://ve.symlynx.com/~nick and nick
+
 + provide a tuning for ACTIVE server-side PING (keepalive) ?
   see http://about.psyc.eu/Ping for explanations.
 
@@ -1077,6 +1085,9 @@ cel'><service-unavailable xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/></error><
 ________________________________________________________________________
 == RELEASE INSTALLER ===================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
++ the psyced script could check if psyced.ini has been changed recently
+  and autorun psyconf? or maybe just spit out a warning..
+
 - _charset_console can still lead to unexpected convert_charset errors when
   outputting random data. convert_charset must be non-fatal here!
 
@@ -1564,6 +1575,11 @@ ________________________________________________________________________
   look at: http://freshmeat.net/projects/pyvoicechat/
   dormant since 2004.. oops  
 
++ tycho proposes /log reply of new messages should not necessarily
+  show automatically, in case you are connecting with a client on a
+  mobile phone, especially if you have permanent context subscriptions
+  flowing into your log nonstop.
+
 > RELAYING
 + net/spyc needs relaying (without parsing even), see TODO in parse_content()
 ? relaying doesn't work for psyc clients (xmpp: in particular)
@@ -1584,6 +1600,8 @@ ________________________________________________________________________
   but some of the old stuff does.. how do we find a proper solution?
 
 == DOCUMENTATION ISSUES ================================================
+? should we point to some manuals on how to make and add certificates?
+
 * ich habs.. jede datei definiert am anfang in welche kategorie sie gehört..
 "library" "user" "server" "language" etc... und jede funktion kann sich 
 dann mit /** library: this stuff.. */ woanders einordnen.. jetzt brauchen wir
@@ -1757,9 +1775,6 @@ das sieht doof aus.. gehts auch besser? hmm
   QUIT'd a while later.. too much noise and rcpt should probably
   remain incarnated longer since mails seem to arrive often enough
   for some users to never leave memory.
-
-+ disallow TLS/SSL connections from localhost to save CPU resources
-  for useful things
 
 - re-examine everything looking for optimizations.. like, are any
   lower_case's being called twice etc. or introduce a "lowercased"

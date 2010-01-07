@@ -15,21 +15,21 @@ int may_parse_more;
 array(mixed) tvars;
 mapping hvars;
 
-// this is completely anti-psyc. it should take mcs as arguments
-// and look up the actual message from textdb.. FIXME
-#define PARSEERROR(reason) { debug_message("PSYC PARSE ERROR: " reason "\n");  \
-                             croak("_error_syntax_broken", "Failed parsing: "  \
-                                    reason);                                   \
-                             return 0;                                           \
-                           }
-                            
-                        
+// being faded out in favor of regular croak()
+#define PARSEERROR(reason) { \
+   	croak("_error_syntax_broken", \
+	      "Failed parsing: " reason); \
+	return 0; }
+
 #define DELIM S_GLYPH_PACKET_DELIMITER "\n"
 #define C_LINEFEED '\n'
 #define MVAR_GLYPH 0
 #define MVAR_STATE 1
 #define MVAR_VALUE 2
 
+#ifndef PSYC_UDP
+# define      QUIT    remove_interactive(ME); return 0;
+#endif
 
 step(); // prototype
 
@@ -76,9 +76,7 @@ void feed(string data) {
 
 
 // overload this as needed
-varargs mixed croak(string mc, string data, vamapping vars, vamixed source) {
-    return 0;
-}
+varargs mixed croak(string mc, string data, vamapping vars) { return 0; }
 
 
 // called when a complete packet has arrived
@@ -101,16 +99,18 @@ mapping process_header(mixed varops) {
 	case C_GLYPH_MODIFIER_DIMINISH:
 	case C_GLYPH_MODIFIER_QUERY:
 	case C_GLYPH_MODIFIER_ASSIGN:
-            PARSEERROR("header modifier with glyph other than ':', this is not implemented")
-            break;
+            croak("_failure_unavailable_state");
+            QUIT
 	default:
-            PARSEERROR("header modifier with unknown glyph")
-	    break;
+            croak("_failure_unknown_glyph");
+            QUIT
         }
-	// FIXME: not every legal varname is a mmp varname
+	// FIXME: not every legal varname is a routing varname
 	// 	look at shared_memory("routing")
 	if (!legal_keyword(vname) || abbrev("_INTERNAL", vname)) {
-	    PARSEERROR("illegal varname in header")
+	    croak("_error_illegal_protocol_variable", 0,
+		([ "_variable_name": vname ]));
+	    return 0;
 	}
     }
     return vars;
@@ -158,7 +158,8 @@ void parse_header() {
 	    buffer = buffer[1..];
 	    break;
 	default:
-	    PARSEERROR("noglyph")
+	    croak("_error_syntax_expected_routing");
+	    QUIT
 	}
 	fit = sscanf(buffer, "%.1s%t", vname);
 	if (fit != 1) {
@@ -222,6 +223,7 @@ void parse_psyc() {
 		PARSEERROR("negative binary length")
 	    }
 	    if (strlen(body_buffer) < len) {
+		// ouch, this is a problem here
 		PARSEERROR("not enough to read binary arg, may not happen")
 	    }
 	    vvalue = body_buffer[..len-1];
@@ -290,9 +292,9 @@ void parse_content() {
     }
     fit = sscanf(body_buffer, "%.1s\n%.0s", method, body_buffer);
     if (fit != 2 || !legal_keyword(method)) {
-	croak("_error_illegal_method",
-	      "That's not a valid method name.");
-	return; // NOTREACHED
+	croak("_error_illegal_method");
+	      // "That's not a valid method name.");
+	return;
     }
 
     // mhmm... why does body_buffer still contain the newline?
@@ -359,8 +361,8 @@ void step() {
 	    first_response();
 	    step();
 	} else {
-	    croak("_error_syntax_initialization",
-		"The new protocol begins with a pipe and a line feed.");
+	    croak("_error_syntax_initialization");
+		// "The new protocol begins with a pipe and a line feed.");
 	}
 	break;
     default: // uhm... if we ever get here this is the programmers fault

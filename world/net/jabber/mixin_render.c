@@ -99,7 +99,7 @@ int msg(string source, string mc, string data,
 				$2["_amount_users_registered"] = helper["@value"];
 				break;
 			    case "users/online":
-				$2["_amount_users"] = helper["@value"];
+				$2["_amount_users_loaded"] = helper["@value"];
 				break;
 			}
 		    }

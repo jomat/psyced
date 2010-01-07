@@ -812,10 +812,23 @@ varargs mixed sendmsg(mixed target, string mc, mixed data, vamapping vars,
 				// fall thru
 			case "xmpp":
 #ifdef SWITCH2PSYC
+				// maybe we should treat all of this just as if
+				// no scheme was given (jid treatment below)
 				P4(("LOOKing for %O in %O\n",
 				    "psyc://"+u[UHost]+"/", targets))
 				tmp = targets["psyc://"+u[UHost]+"/"];
-				if (tmp) { // && interactive(tmp)) {
+				if (tmp) {
+				    // are we talking to our own net/root?
+				    // in the past we used interactive() here
+				    unless (clonep(tmp)) {
+					    tmp = summon_person(u[UNick]);
+					    unless (tmp) {
+						// doesn't have to be an error.. use jid treatment below?
+					        sendmsg(source, "_failure_unavailable_route_place_XMPP",
+							"Sorry, you can't talk to a local chatroom via XMPP uniform.");
+						return 0;
+					    }
+				    }
 				    PT(("SWITCH2PSYC delivery %O for %O (%s)\n", tmp, target,
 					mc || "0"))
 				    // we should very probably generate a redirect here instead! TODO
