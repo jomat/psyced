@@ -12,6 +12,10 @@ ________________________________________________________________________
 ________________________________________________________________________
 == NEXT RELEASE ========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- MASQUERADE nicks show up with recipient's nick sometimes. bad. vars were
+  "_nick":"shouldbe","_nick_place":"welcome","_nick_local":"reallywas"
+  it should have shown either shouldbe or reallywas, but it showed my own.
+
 - interserver xmpp /me expects no leading newline, but pidgin recently
   started sending one
 

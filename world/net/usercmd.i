@@ -464,8 +464,8 @@ cmd(a, args, dest, command) {
 	case "examine":
 		//examine(sizeof(args) > 1 ? args[1] : dest);
 		examine(sizeof(args) > 1 ? args[1] : dest, 0,
-		       	sizeof(args) > 2 ? args[2] : 0,
-		       	/* sizeof(args) > 3 ? args[3] : */ 0);
+		       	sizeof(args) > 2 ? args[2] : 0, 0,
+		       	sizeof(args) > 3 ? args[3] : 0);
 		return 1;
 #ifdef ALIASES
 	case "al":
