@@ -82,10 +82,7 @@ sub say {
 		next if /^;/;
 		next if /^\s*$/;
 		$f = $1, next if /^\[(\w+)\]\s*$/;
-		#   Room name 'ornia ' is not permitted.
-		# isn't this stripping trailing whitespace properly?
-		# should it read \S.+\S ? or at least .+\S ?
-		$c{"$f$1"} = $2, next if /^(\w+)\s*=\s*(.+)\s*$/;
+		$c{"$f$1"} = $2, next if /^(\w+)\s*=\s*(.+?)\s*$/;
 		die "cannot parse line $. in $conf:\n\t$_\n";
 	}
 	close C;
