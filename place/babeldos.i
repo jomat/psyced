@@ -50,14 +50,17 @@ disconnected() {
     P0(("%O received %O bytes of buffer for %O\n", ME, sizeof(buffer), current))
     switch (pointerp(current) ? current[0] : "") {
 case TRANSLATION:
+	    // can you believe, some people want this in their
+	    // psyc clients   ;)))
+	    current[4]["_data_original"] = current[3];
 	    if (sscanf(buffer, FMT, k)) krank = k;
-	    else krank = "und es geschah ihr als sei es von der ferne";
+	    else krank = current[3];
 #ifdef TRANSLATION2
 	    babel(TRANSLATION2, current[1], current[2], krank, current[4]);
 	    break;
 case TRANSLATION2:
 	    if (sscanf(buffer, FMT, k)) krank = k;
-	    else krank = "und sie sah fern als sei es ein geschehen";
+	    else krank = current[3];
 #endif
 	    ::msg(current[1], current[2], replace(krank, "&quot;", "\""), current[4]);
     default:
