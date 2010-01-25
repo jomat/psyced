@@ -1968,6 +1968,8 @@ See the manual for details.");
 			// should provide origin here, huh? don't have it!
 			// let the user make it up..
 			remove_member(args[1], sizeof(args) > 2 && args[2]);
+			// apparently it's pointless if we don't save it
+			save();
 			return 1;
 		}
 		sendmsg(source, "_warning_usage_remove",

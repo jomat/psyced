@@ -12,6 +12,9 @@ ________________________________________________________________________
 ________________________________________________________________________
 == NEXT RELEASE ========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- net/jabber reissues unnecessary friend() requests whenever a user simply
+  reorganizes friends into other roster groups
+
 - MASQUERADE nicks show up with recipient's nick sometimes. bad. vars were
   "_nick":"shouldbe","_nick_place":"welcome","_nick_local":"reallywas"
   it should have shown either shouldbe or reallywas, but it showed my own.

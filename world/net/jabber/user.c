@@ -156,10 +156,10 @@ msg(source, mc, data, mapping vars, showingLog) {
 	ret = ::msg(source, mc, data, vars, showingLog);
 	buddy = objectp(source) ? source -> qName() : source;
 	jid = mkjid(source);
-	emit(sprintf("<iq type='set'>"
+	emit(sprintf("<iq type='set' id='%s'>"
 		     "<query xmlns='jabber:iq:roster'>"
 		     "<item jid='%s' subscription='both'>%s"
-		     "</item></query></iq>", 
+		     "</item></query></iq>", tag,
 		     jid, IMPLODE_XML(xbuddylist[buddy], "<group>") || ""));
 	return ret;
     case "_notice_friendship_removed":
@@ -362,8 +362,10 @@ presence(XMLNode node) {
 	    }
 # ifndef _flag_disable_module_friendship
 	} else if (node["@type"] == "subscribe") {
+	    PT(("XMPP subscribe: %O\n", node))
 	    friend(0, 0, jid2ppl(node["@to"]));
 	} else if (node["@type"] == "unsubscribe") {
+	    PT(("XMPP unsubscribe: %O\n", node))
 	    friend(1, 0, jid2ppl(node["@to"]));
 # endif // _flag_disable_module_friendship
 	} else if (abbrev(XMPP, target)) {

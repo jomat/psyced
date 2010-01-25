@@ -47,7 +47,7 @@ uni2nick(source, vars) {
 		mixed u = parse_uniform(source);
 		// unfortunately UNick already comes lowercased..
 		// we should start using mixed case uniforms..
-		unless (ni = u[UNick]) {
+		unless (u && ni = u[UNick]) {
 			// source is probably a server root
 			raliases[source] = 0; // mark dead
 			return source;
