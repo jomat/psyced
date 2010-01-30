@@ -72,6 +72,7 @@ start_dialback() {
     dialback_outgoing = 1;
     emit(sprintf("<db:result to='%s' from='%s'>%s</db:result>",
 		 hostname, source_host, key));
+    call_out(120, #'connect_failure, "_timeout_dialback", "no dialback response received, timeout");
 }
 
 process_dialback_queue() {
@@ -364,6 +365,7 @@ jabberMsg(XMLNode node) {
 	 * we are originating server and are informed of the result
 	 */
 	dialback_outgoing = 0;
+    	remove_call_out(#'connect_failure);
 	if (node["@type"] == "valid") {
 #ifdef LOG_XMPP_AUTH
 	    D0( log_file("XMPP_AUTH", "\n%O auth dialback", ME); )
