@@ -86,8 +86,11 @@ reset(a) {
 }
 
 create() {
+#ifdef DEFAULT_LAYOUT
 	sTextPath (DEFAULT_LAYOUT, DEFLANG, "smtp");
-
+#else
+	sTextPath (0, 0, "smtp");
+#endif
 	unless (spool) {
 		restore_object(SPOOL_FILE);
 		if (file_format != FILE_FORMAT) spool = 0;
@@ -337,9 +340,11 @@ rendermsg(rcpt) {
 	if (o) m += w("_warning_omitted_messages",
 		"[_amount_messages_omitted] messages omitted.",
 		([ "_amount_messages_omitted" : o ]) );
-#ifndef _flag_disable_mail_signature
+#ifdef DEFAULT_URL_LOGIN
+# ifndef _flag_disable_mail_signature
 	m += "\n--\n"+ w( "_info_mail_signature", "Reply by E-Mail is not possible. Please log in:\n[_URL_login]",
 		([ "_URL_login": (t2 || DEFAULT_URL_LOGIN) ]) ) + "\n";
+# endif
 #endif
 	t2 = "Content-Type: text/plain; charset=" SYSTEM_CHARSET "\n"
 #ifndef SEND_FIRST_MSG_AS_SUBJECT
