@@ -338,6 +338,7 @@ ________________________________________________________________________
   been redirected using SRV. x-net.hu's A record is still being checked.
     _psyc._tcp.x-net.hu has SRV record 0 0 14404 psyc.x-net.hu.
 
++ XEP-0227: Portable Import/Export Format for XMPP-IM Servers
 ________________________________________________________________________
 == MINOR DELEGATES =====================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -1040,7 +1041,6 @@ ________________________________________________________________________
 - wenn man im client einen alias ("name" feld im xml code) setzt beim
   buddymachen, dann geht der im laufe der transaktion verloren und man
   muss ihn später nochmal setzen!
-
 ________________________________________________________________________
 == JABBER FILE TRANSFERS ===============================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
