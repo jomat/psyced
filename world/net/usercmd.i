@@ -2191,8 +2191,8 @@ protected speak(a, dest, room) {
 		//	    sayvars["_nick_long"] = v("longname");
 #ifdef VOLATILE
 			// what about peer scheme, host and -port
-			sayvars["_location"] = v("locations")[0] ||
-			    v("scheme")+"://"+v("host")+":-"+query_mud_port();
+			sayvars["_location"] = (member(v("locations"), 0) && sizeof(v("locations")[0])) ?
+			    m_indices(v("locations")[0])[0] : v("scheme")+"://"+v("host")+":-"+query_mud_port();
 #endif
 		}
 #ifndef NO_PUBLIC_QUESTIONS

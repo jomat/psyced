@@ -152,7 +152,8 @@ sendmsg(target, mc, data, vars, source, showingLog, callback) {
 	//
 	// great, if I ping xmpp:fippo@amessage.de this makes 
 	// is xmpp:fippo@amessage.de/foo, but I DONT WANT THAT!
-	target = t;
+	if (!objectp(target) || (objectp(target) && target->vQuery("scheme") != "psyc"))
+	    target = t;
     }
 #endif //}}}
 #ifdef FORK //{{{

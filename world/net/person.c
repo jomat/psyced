@@ -473,7 +473,8 @@ qDescription(source, vars, profile, itsme) {
 
 qLocation(string service) {
 	ASSERT("qLocation", v("locations"), v("locations"))
-	return v("locations")[service];
+	// which location should we return? it just returns one for now. (only used from sip/udp)
+	if (member(v("locations"), service) && sizeof(v("locations")[service])) return m_indices(v("locations")[service])[0];
 }
 
 // returns 0 if that was just an update. 1 on success.
@@ -485,13 +486,18 @@ sLocation(string service, mixed data) {
 	// yes because a delivery error should remove clients
 	// from the location table, too.. not just proper
 	// unlink requests  FIXME
-	if (v("locations")[service] == data) return 0;
+	if (member(v("locations"), service) && member(v("locations")[service], data)) return 0;
 	unless (data) {
-		string retval = v("locations")[service];
+		//string retval = v("locations")[service];
 		m_delete(v("locations"), service);
-		return retval;
+		return 1; //retval;
 	}
-	return v("locations")[service] = data;
+	if (member(v("locations"), service)) {
+	    v("locations")[service] += ([ data ]);
+	} else {
+	    v("locations")[service]  = ([ data ]);
+	}
+	return 1;
 }
 
 static linkSet(service, location, source) {
@@ -501,7 +507,11 @@ static linkSet(service, location, source) {
 	unless (location) location = source;
 	else unless (source) unless (source = location)
 	    raise_error("You have to provide either source or location!\n");
-	v("locations")[service] = location;
+	if (member(v("locations"), service)) {
+	    v("locations")[service] += ([ location ]);
+	} else {
+	    v("locations")[service]  = ([ location ]);
+	}
 	register_location(location, ME);
 	if (service) sendmsg(source, "_notice_link_service", 0,
 			   ([ "_service" : service,
@@ -527,33 +537,44 @@ static linkSet(service, location, source) {
 		// <lynX> psyced acts indeed too complicated
 		// for simple clients on link when a place is set
 	}
+	P2(("locations after linkSet: %O\n", v("locations")))
 }
 static linkDel(service, source, variant) {
+        P3(("linkDel(%O, %O, %O) called in %O!\n", service, source, variant, ME))
 	string mc = "_notice_unlink";
-	string candidate = v("locations")[service];
-	unless (candidate) {
+	service = service || 0;
+
+	unless (member(v("locations"), service)) {
 		P3(("linkDel(%O, %O) called in %O: no such candidate!\n",
 		    service, source, ME));
 		return 0;
 	}
-	P2(("linkDel(%O, %O) called in %O: unlinking %O.\n",
-	    service, source, ME, candidate));
-	unless (source) source = candidate;
-	// sLocation?
-	register_location(candidate, 0);
-	// maybe actual deletion would need to be delayed after
-	// letting locations know. they might still be sending
-	// stuff to us, right?
-	m_delete(v("locations"), service || 0);
-	if (variant) mc += variant;
-	if (service) sendmsg(source, mc, 0,
-				    ([ "_service" : service,
-			      "_location_service" : candidate,
-				"_identification" : v("_source") ]));
-	else sendmsg(source, mc, 0,
-				   ([ "_location" : candidate,
-				"_identification" : v("_source") ]));
-	return candidate;
+
+	int n = 0;
+	foreach(string candidate : v("locations")[service]) {
+	    if ((objectp(source) && find_target_handler(candidate) != source) ||
+		(source && !objectp(source) && candidate != source)) continue;
+	    P2(("linkDel(%O, %O) called in %O: unlinking %O.\n",
+		service, source, ME, candidate));
+	    // sLocation?
+	    register_location(candidate, 0);
+	    // maybe actual deletion would need to be delayed after
+	    // letting locations know. they might still be sending
+	    // stuff to us, right?
+	    m_delete(v("locations")[service], candidate);
+	    unless (sizeof(v("locations")[service]))
+		m_delete(v("locations"), service);
+	    if (variant) mc += variant;
+	    if (service) sendmsg(candidate, mc, 0,
+				 ([ "_service" : service,
+				    "_location_service" : candidate,
+				    "_identification" : v("_source") ]));
+	    else sendmsg(candidate, mc, 0,
+			 ([ "_location" : candidate,
+			    "_identification" : v("_source") ]));
+	    n++;
+	}
+	return n;
 }
 static linkCleanUp(variant) {
 	mixed type, loc;
@@ -976,21 +997,26 @@ case "_request_location":
 			    return 0;
 			}
 			if (vars["_service"] && member(v("locations"), vars["_service"])) {
-			    // service
-			    sendmsg(source, "_info_location_"+ vars["_service"],
-				    "[_service] has location [_location].",
-				    ([
-				      "_service" : vars["_service"],
-				      "_tag" : vars["_tag"],
-				      "_location" : v("locations")[vars["_service"]],
-				     ]));
-			} else
-			    sendmsg(source, "_info_location", 0,
-				    ([
-				      "_nick" : MYNICK,
-				      "_tag" : vars["_tag"], 
-				      "_location" : v("locations")[0]
-				      ]));
+			    foreach (string location : v("locations")[vars["_service"]]) {
+				// service
+				sendmsg(source, "_info_location_"+ vars["_service"],
+					"[_service] has location [_location].",
+					([
+					  "_service" : vars["_service"],
+					  "_tag" : vars["_tag"],
+					  "_location" : location,
+					  ]));
+			    }
+			} else {
+			    foreach (string location : v("locations")[0]) {
+				sendmsg(source, "_info_location", 0,
+					([
+					  "_nick" : MYNICK,
+					  "_tag" : vars["_tag"],
+					  "_location" : location
+					  ]));
+			    }
+			}
 			return 0;
 case "_request_link":
 case "_set_password":
@@ -1011,14 +1037,13 @@ case "_set_password":
 				// TODO? add support for integer _service means multiple
 				// catch-all clients possible. do we want this?
 				if (vars["_service"]) {
-				    linkDel(vars["_service"]);
+				    //linkDel(vars["_service"]);
 				    linkSet(vars["_service"], vars["_location"], source);
 				    return 0;
 				}
 				// this code should also run for _service, but it
 				// needs a reorg
-				t = v("locations")[0];
-				if (t && t != source) {
+				if (member(v("locations"), 0) && sizeof(v("locations")[0]) && !member(v("locations")[0], source)) {
 					// alright. we have another client
 					// already, or it is a ghost.
 					if (!vars["_password"] && ONLINE) {
@@ -1030,7 +1055,7 @@ case "_set_password":
 					}
 					// we are a legitimate new client.
 					// lets inform the old one
-					linkDel(0, t);
+					//linkDel(0, t);
 					// now we leave the old client circuit
 					// to die off.. let's hope that's safe
 				}
@@ -1207,7 +1232,7 @@ case "_set_password":
 // _request_do_exit currently logs out clients anyway
 // don't use this:
 case "_request_exit":
-			if (itsme && source == v("locations")[0]) {
+			if (itsme && member(v("locations"), 0) && member(v("locations")[0], source)) {
 				linkDel(0, source);
 				quit();
 				return 0;
@@ -1221,9 +1246,9 @@ case "_request_unlink_disconnect":
 case "_request_unlink":
 			if (vars["_service"] &&
 			    member(v("locations"), vars["_service"])) {
-				if (source == v("locations")[vars["_service"]]
+				if (member(v("locations")[vars["_service"]], source)
 				    || checkPassword(vars["_password"])) {
-					linkDel(vars["_service"]);
+					linkDel(vars["_service"], source);
 					return 0;
 				} else {
 					// report?
@@ -1231,8 +1256,8 @@ case "_request_unlink":
 					    ME, mc, source, vars["_service"]))
 				}
 			} else if (member(v("locations"), 0)
-				    && source == v("locations")[0]) {
-				linkDel(0);
+				   && member(v("locations")[0], source)) {
+				linkDel(0, source);
 				if (mc == "_request_unlink_disconnect" && !ONLINE) {
 					// manually calling disconnected() .. hmmm
 					disconnected();
@@ -1893,8 +1918,9 @@ case "_notice_presence_here_busy":
 	// messages from here though, we do it from w().
 	// the other solution would be to forward in user.c
 	// then we dont have to split the switches
-	t = v("locations")[0];
-	if (t && t != source) {
+	//P2((">>>> locations: %O\n", v("locations")))
+	foreach (t : v("locations")[0]) {
+	    if (t && t != source) {
 		// no psyctext rendering happening in this variant
 # ifdef _flag_enable_circuit_proxy_multiplexing
 		vars["_target_forward"] = t;
@@ -1904,6 +1930,7 @@ case "_notice_presence_here_busy":
 		// net/user:msg shouldn't work on this any further,
 		// should it?
 		display = 0;
+	    }
 	}
 	// here we can filter things that do not belong into the lastlog
 	// but shouldn't we simply log _message's only?
@@ -2267,9 +2294,9 @@ checkAuthentication(source, vars) {
 		mixed *u;
 
 		// we should probably foreach this too  TODO
-		if (v("locations")[0] == vars["_location"]) return 5;
+		if (member(v("locations")[0], vars["_location"])) return 5;
 		// assumes v("locations")[X] is lower_case according to policy
-		if (v("locations")[0] == lower_case(vars["_location"]))
+		if (member(v("locations")[0], lower_case(vars["_location"])))
 		     return 4;
 		unless (u = parse_uniform(vars["_location"])) return -1;
 
@@ -2559,8 +2586,9 @@ quit(immediate, variant) {
 
 	P3(("person:QUIT(%O,%O) in %O\n", immediate,variant, ME))
 	// keeping services running while logging out should be possible.. but
-	// we currently don't do that
-	//linkDel(0);
+	// we currently don't do that -- now we do
+	linkDel(0, previous_object());
+#if 0
 	if (sizeof(v("locations"))) { // this should only trigger at first pass
 		linkCleanUp();
 #if 1 //def PARANOID
@@ -2573,6 +2601,7 @@ quit(immediate, variant) {
 		}
 #endif
 	}
+#endif
 	if (immediate == 1 || (immediate && find_call_out(#'quit) != -1)) {
 		rc = save();
 		if (sizeof(places)) {
@@ -2677,12 +2706,15 @@ quit(immediate, variant) {
 #endif
 			logged_on = 0;
 		}
+
 		if (immediate) {
 		    destruct(ME);
 		} else {
-		    vDel("scheme");
 		    remove_interactive(ME);
 		    leaving = 0;
+                    // return if there are some services/clients left
+                    if (sizeof(v("locations"))) return rc;
+                    vDel("scheme");
 		    call_out(#'quit, 20, 1, variant);
 		    return rc;
 		}

@@ -787,7 +787,7 @@ case "_status_description_place":
 		    switch (variant) {
 		    default:
 			// client doesn't want HTML
-			if (v("locations")[0]) sendmsg(v("locations")[0],
+			if (sizeof(v("locations")[0])) sendmsg(m_indices(v("locations")[0])[0],
 				mc, data, ([
 				        "_tag_reply": t,
 				     "_source_relay": source,
@@ -796,7 +796,7 @@ case "_status_description_place":
 			return 1;
 		    case "_HTML":
 			// client wants HTML
-			if (v("locations")[0]) sendmsg(v("locations")[0],
+			if (sizeof(v("locations")[0])) sendmsg(m_indices(v("locations")[0])[0],
 				mc+"_HTML", htDescription(), ([
 				        "_type_data": "text/html",
 				        "_tag_reply": t,
@@ -916,21 +916,23 @@ case "_failure_unsuccessful_delivery":
 case "_failure_network_connect_invalid_port":
 // is this the right place to do this? i have seen a recursion where
 // person.c was never asked for opinion, so i'm putting this into user.c
-#ifdef ALPHA
+#if 0 //def ALPHA
 		string loc;
-		foreach (t, loc : v("locations"))
-		    if (vars["_source_relay"] == loc) {
+		foreach (t, loc : v("locations")s)
+		    if (member(loc, vars["_source_relay"])) {
 			P1(("%O in %O talking to its %O location at %O.",
 			    mc, ME, t, loc))
 			sLocation(t, 0);
 		}
 #else
-		// TODO: walk thru entire locations mapping!
-		if (vars["_source_relay"] == v("locations")[0]) {
-			P0(("%O got %O, deleting 0 from %O\n", ME,
-			    mc, v("locations")))
-			m_delete(v("locations"), 0);
-                }
+		foreach (string type, mapping locs : v("locations")) {
+		    if (member(locs, vars["_source_relay"])) {
+			P0(("%O got %O, deleting %O from %O\n", ME, mc, vars["_source_relay"], v("locations")))
+			m_delete(locs, vars["_source_relay"]);
+			unless (sizeof(locs)) m_delete(v("locations"), type);
+		    }
+		}
+		P4(("locations left: %O\n", v("locations")))
 #endif
 		// fall thru - not strictly necessary but adds a feature
 case "_failure_redirect_permanent":
@@ -1260,6 +1262,7 @@ pr(mc, fmt, a,b,c,d,e,f,g,h,i,j,k) {
 //
 w(string mc, string data, mapping vars, mixed source, int showingLog) {
 	string template, output, type, loc;
+	mapping locs;
 	mapping di = printStyle(mc); // display infos
 	int t;
 
@@ -1286,13 +1289,13 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 
 	    //PT(("%O user:w(%O,%O..%O) - %O\n", ME,mc,data,source, template))
 	    P4(("%O user:w locations %O\n", ME, v("locations")))
-	    foreach (type, loc : v("locations")) {
+	    foreach (type, locs : v("locations")) {
 		// check uniformness of location here?
 		// no! no broken location should have made it into the
 		// mapping at this point. if you need to check it, check
 		// it in sLocation()
 #if DEBUG > 0
-		if (!loc) {
+		if (!sizeof(locs)) {
 			// oh.. happens on beta?
 			P1(("%O late deletion of a %O zero location - should never happen\n", ME, type))
 			//m_delete(v("locations"), type);
@@ -1363,25 +1366,27 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 #else
 # echo No LPC? Wow. Good luck!
 #endif
+		    foreach (loc : locs) {
 #ifdef _flag_enable_circuit_proxy_multiplexing
-		    // this is necessary when a single proxy is emulating
-		    // several clients for several users. to figure out
-		    // which context stuff is forwarded to which client
-		    // we need to add this _target_forward. this is not the
-		    // way psyc should operate in the long term. psyc clients
-		    // should be integrated into the context distribution
-		    // tree themselves, thus the proxy would manage a cslave
-		    // for them instead of accepting forwards from each UNI
-		    vars["_target_forward"] = loc;
-		    // maybe this can be avoided when no _context is set...?
-		    P3(("%O user:w forwarding %O to %O\n", ME, mc, vars["_target_forward"]))
+			// this is necessary when a single proxy is emulating
+			// several clients for several users. to figure out
+			// which context stuff is forwarded to which client
+			// we need to add this _target_forward. this is not the
+			// way psyc should operate in the long term. psyc clients
+			// should be integrated into the context distribution
+			// tree themselves, thus the proxy would manage a cslave
+			// for them instead of accepting forwards from each UNI
+			vars["_target_forward"] = loc;
+			// maybe this can be avoided when no _context is set...?
+			P3(("%O user:w forwarding %O to %O\n", ME, mc, vars["_target_forward"]))
 #endif
-		    sendmsg(loc, mc, nudata, vars);
-//		    PT(("PSYCW: %s -> %O (%O)\n", mc, loc, vars))
+			    sendmsg(loc, mc, nudata, vars);
+			//		    PT(("PSYCW: %s -> %O (%O)\n", mc, loc, vars))
 #if DEBUG > 1
-		    log_file("PSYCW", "%s(%O) %O » %O\n", mc, type,
-			     nudata, type && loc);
+			log_file("PSYCW", "%s(%O) %O » %O\n", mc, type,
+				 nudata, type && loc);
 #endif
+		    }
 		}
 	    }
 	}
@@ -1701,6 +1706,11 @@ quit(immediate, variant) {
 //
 // we also call this manually from _request_unlink_disconnect
 disconnected(remainder) {
+	P2(("disconnected(%O) called in %O\nlocations: %O\n", remainder, ME, v("locations")))
+	// if there are any catch-all connections left don't quit, just delete link
+	if (member(v("locations"), 0) && sizeof(v("locations")[0]) > 1)
+	    return linkDel(0, previous_object());
+
 	// user did not detach his client properly. we'll make a wild guess
 	// at how many messages he may have missed - enough to make the user
 	// check the lastlog if that's not enough.

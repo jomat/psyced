@@ -36,7 +36,7 @@
 #ifdef RELAY
 # define ONLINE	(availability != 0)
 #else
-# define ONLINE	(ME && (interactive(ME) || v("locations")[0]))
+# define ONLINE	(ME && (interactive(ME) || (member(v("locations"), 0) && sizeof(v("locations")[0]))))
 #endif
 
 #ifdef NO_NEWBIES
