@@ -908,6 +908,32 @@ cmd(a, args, dest, command) {
 		else
 		    teleport(args[1], "_join", 0, 1);
 		break;
+	case "forceenter":
+	case "forcejoin":
+	        if (sizeof(args) < 2) {
+		    w("_warning_usage_forceenter", "Usage: /forceenter <context> [<nick_place>]");
+		    break;
+		}
+
+	        string plc = args[1];
+		string nick_place = sizeof(args) >= 3 ? args[2] : regreplace(plc, "^.*@", "", 1);
+
+		placeRequest(plc,
+#ifdef SPEC
+			     "_request_context_enter"
+#else
+			     "_request_enter"
+#endif
+			     );
+
+		places[plc] = nick_place;
+
+		P3(("%O force joins mcast group for %O\n", ME, plc))
+		register_context(ME, plc);
+
+		w("_notice_forceenter", "You force entered [_place] ([_nick_place]).", ([ "_place": plc, "_nick_place": nick_place ]));
+
+		break;
         // etwas hässlich so.. aber was will man sonst? beim zweiten versuch?
         // oder gar als flag von /leave?
         case "forceleave": // delete the membership from places mapping
