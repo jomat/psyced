@@ -61,12 +61,14 @@ removeGateway(gw, id) {
     }
 }
 
+#ifdef BETA
 static connectTimeOut() {
 	// should we do something more or else here?
 	remove_interactive(ME);
 	connect_failure("_timeout_dialback",
 		       	"no dialback response received, timeout");
 }
+#endif
 
 start_dialback() {
     string source_host, key;
@@ -79,7 +81,9 @@ start_dialback() {
     dialback_outgoing = 1;
     emit(sprintf("<db:result to='%s' from='%s'>%s</db:result>",
 		 hostname, source_host, key));
+#ifdef BETA
     call_out(#'connectTimeOut, 120);
+#endif
 }
 
 process_dialback_queue() {
@@ -372,7 +376,9 @@ jabberMsg(XMLNode node) {
 	 * we are originating server and are informed of the result
 	 */
 	dialback_outgoing = 0;
+#ifdef BETA
     	remove_call_out(#'connectTimeOut);
+#endif
 	if (node["@type"] == "valid") {
 #ifdef LOG_XMPP_AUTH
 	    D0( log_file("XMPP_AUTH", "\n%O auth dialback", ME); )
