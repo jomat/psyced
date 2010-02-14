@@ -664,6 +664,9 @@ _failure_unsuccessful_delivery_resolve
 _failure_unsuccessful_delivery_self
 |The [_host] address points to [_source_origin] which however wasn't instructed to handle that.
 
+_failure_unsuccessful_delivery_timeout_dialback
+|Could not establish an XMPP dialback to [_host] to deliver a [_method_relay] to [_source].
+
 _failure_unavailable_service_version
 |Requesting version from [_nick_target] is not possible.
 

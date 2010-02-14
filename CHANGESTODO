@@ -86,6 +86,15 @@ ________________________________________________________________________
 ? should /load inform that errors go to the console?
 
 - the ~0 bug
+  i found a reliable way to reproduce this ~0 uni problem
+  - start psyced
+  - connect with a native psyc client
+  - kill psyced while the client is connected
+  - start psyced again
+  - connect with native psyc client
+  it will give you this ~0 uni then
+  until you connect with a telnet client
+  but it works again after you connect & disconnect w/ a telnet client
 ________________________________________________________________________
 :_group psyc://psyced.org/@welcome
 :_source_identification psyc://xxx.no-ip.org/~xxx
@@ -3976,3 +3985,7 @@ usercmd
 	be negative, like -5.
 user
 -	psyc client _examine was falling thru to _HTML output, added return;
+=== 201001 ============================================================
+jabber/active
++	handle dialback timeouts, thx fip
+

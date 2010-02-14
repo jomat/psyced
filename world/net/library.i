@@ -621,6 +621,21 @@ int greater_user(object a, object b) { return file_name(a) > file_name(b); }
 object* sorted_users() { return sort_array(users(), #'greater_user; }
 #endif
 
+volatile mixed mailer;
+
+// simple SMTP interface.. used from person:logAppend - why target?
+// assumes that mailto: rcpt has already been checked with legal_mailto() !
+int smtp_sendmsg(string target, string method, string data,
+	     mapping vars, string source, string rcpt, string loginurl) {
+#ifdef SMTP_PATH
+	unless (mailer) mailer = SMTP_PATH "outgoing" -> load();
+	return mailer -> enqueue(target, method, data, vars, source, rcpt,
+				 loginurl);
+#else
+	return 0;
+#endif
+}
+
 int xmpp_sendmsg(mixed target, string mc, mixed data, mapping vars,
 	     mixed source, array(mixed) u, int showingLog, string otarget) {
 	string tmp;

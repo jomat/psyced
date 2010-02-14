@@ -843,6 +843,9 @@ _failure_unsuccessful_delivery_resolve
 _failure_unsuccessful_delivery_self
 |Die Adresse [_host] zeigt auf [_source_origin], ist dort aber nicht vorgesehen.
 
+_failure_unsuccessful_delivery_timeout_dialback
+|Konnte kein XMPP dialback zu [_host] herstellen um [_method_relay] an [_source] auszuliefern.
+
 _failure_unavailable_service
 |Solch ein Dienst wird hier derzeit nicht angeboten.
 
