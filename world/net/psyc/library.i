@@ -117,6 +117,7 @@ object psyc_object(string uniform) {
 
 #ifndef FORK
 object find_psyc_object(array(mixed) u) {
+	P3((">> find_psyc_object(%O)\n", u))
 	string t, r, svc, user;
 	object o;
 
@@ -131,7 +132,15 @@ object find_psyc_object(array(mixed) u) {
 #endif
 		if (strlen(r)) switch(r[0]) {
 		case '^':
+			break;
 		case '~':
+			if (u[UChannel]) {
+			    t = lower_case(r + "#" + u[UChannel]);
+			    r = PLACE_PATH + t;
+			    if (o = find_object(r)) break;
+			    unless (t = legal_name(t)) break;
+			    catch(o = r -> load(t));
+			}
 			break;
 		case '$':
 			// target wird auf serv/args gesetzt
@@ -174,6 +183,7 @@ object find_psyc_object(array(mixed) u) {
 		o = summon_person(user); //, PSYC_PATH "user");
                 P2(("%O summoning %O: %O\n", ME, user, o))
 	}
+	P3((">>> found psyc object: %O\n", o))
 	return o;
 }
 

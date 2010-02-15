@@ -291,8 +291,8 @@ msgView(source, mc, data, vars, showingLog) {
 //		t = regreplace(s, ": ", "\", \"", 1);
 //		if (s == t) return;
 		if (showingLog == "html")
-//			fmt = "(<i>%s</i>) <b>%s %s</b>: %s<br>\n";
-			fmt = stringp(t[2]) ? "<tr><td nowrap class=ts>%s</td><td nowrap class=sp><b>%s</b> %s</td><td class=tx>%s</td></tr>\n" : "<tr><td nowrap class=ts>%s</td><td colspan=2 nowrap class=sp><b>%s</b> %s</td></tr>\n";
+//			fmt = "(<i>%s</i>) <b>%s %s</b>: %s<br/>\n";
+			fmt = stringp(t[2]) ? "<div class='msg'><span class='ts'>%s</span> <span class='sp'><b>%s</b> %s</span> <span class='tx'>%s</span></div>\n" : "<div class='msg'><span class='ts'>%s</span> <span class='sp'><b>%s</b> %s</span></div>\n";
 		else // showingLog == "ecmascript"
 			fmt = "\t%O, %O, %O, %O,\n";
 		
@@ -2614,5 +2614,3 @@ qAide(snicker, aidesonly) {
 
 qOwner(snicker) { return member(v("owners"), lower_case(snicker)); }
 #endif
-
-

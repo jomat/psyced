@@ -35,11 +35,13 @@ volatile int last_modified;
 volatile string webact;
 
 create() {
+	P3((">> threads:create()\n"))
 	::create();
 	unless (pointerp(_thread)) _thread = ({ });
 }
 
 cmd(a, args, b, source, vars) {
+	P3((">> threads:cmd(%O, %O, %O, %O, %O)", a, args, b, source, vars))
 // TODO: multiline-sachen irgendwie
 	mapping entry; 
 	int i = 0;
@@ -51,34 +53,73 @@ cmd(a, args, b, source, vars) {
 		// _thread[<5..]
 		foreach( entry : _thread[<num_entries..] ) {
 			sendmsg(source, "_list_thread_item", 
-					// hier auch noch den text?
-					"([_number]) \"[_thread]\", [_author]",
+					"#[_number] - [_author][_sep][_thread]: [_text] ([_comments])",
 					([ 
+						"_sep" : strlen(entry["thread"]) ? " - " : "",
 						"_thread" : entry["thread"],
 						"_text" : entry["text"],
 						"_author" : entry["author"],
 						"_date" : entry["date"],
+						"_comments": sizeof(entry["comments"]),
 						"_number" : i++,
 						"_nick_place" : MYNICK ]) );
 		}
 		return 1;
+	case "entry":
+		unless (sizeof(args) > 1){
+			sendmsg(source, "_warning_usage_entry",
+					"Usage: /entry <threadid>", ([ ]));
+			return 1;
+		}
+		int n = to_int(args[1]);
+		entry = _thread[n];
+		sendmsg(source, "_list_thread_item",
+				"#[_number] [_author][_sep][_thread]: [_text] ([_comments])",
+				([
+					"_sep" : strlen(entry["thread"]) ? " - " : "",
+					"_thread" : entry["thread"],
+					"_text" : entry["text"],
+					"_author" : entry["author"],
+					"_date" : entry["date"],
+					"_comments": sizeof(entry["comments"]),
+					"_number" : n,
+					"_nick_place" : MYNICK ]) );
+
+		if (entry["comments"]) {
+		    foreach(mapping item : entry["comments"]) {
+			sendmsg(source, "_list_thread_comment",
+					"> [_nick]: [_text]",
+					([
+						"_nick" : item["nick"],
+						"_text" : item["text"],
+						"_nick_place" : MYNICK ]) );
+		    }
+		}
+		return 1;
 	case "thread":
-		unless (sizeof(args) > 2){ // num + thread
+		unless (sizeof(args) > 2){
 			sendmsg(source, "_warning_usage_thread",
 					"Usage: /thread <threadid> <title>", ([ ]));
 			return 1;
 		}
 		return setSubject(to_int(args[1]), ARGS(2));
+	case "comment":
+		unless (sizeof(args) >= 2) {
+		    sendmsg(source, "_warning_usage_reply",
+	                            "Usage: /comment <threadid> <text>", ([ ]));
+		    return 1;
+		}
+		return addComment(ARGS(2), SNICKER, to_int(args[1]));
 	case "blog":
 	case "submit":
 	case "addentry":
 		unless (qAide(SNICKER)) return;
-		unless (sizeof(args) >= 2) {
+		unless (sizeof(args) >= 1) {
 		    sendmsg(source, "_warning_usage_submit", 
-	                            "Usage: /submit <title> <text>", ([ ]));
+	                            "Usage: /submit <text>", ([ ]));
 		    return 1;
 		}
-		return addEntry(ARGS(2), SNICKER, args[1]);
+		return addEntry(ARGS(1), SNICKER);
 	// TODO: append fuer multiline-sachen
 #if 0
 	case "iterator":
@@ -111,8 +152,8 @@ cmd(a, args, b, source, vars) {
 	return ::cmd(a, args, b, source, vars);
 }
 
-msg(source, mc, data, mapping vars){
-	P2(("blog.c's msg: mc %O, source %O\n", mc, source))
+msg(source, mc, data, vars){
+	P3(("thread:msg(%O, %O, %O, %O)", source, mc, data, vars))
 	// TODO: die source muss hierbei uebereinstimmen mit dem autor
 	if (abbrev("_notice_authentication", mc)){
 		sendmsg(source, "_notice_place_blog_authentication_success", "([_entry]) has been authenticated", 
@@ -252,6 +293,7 @@ delEntry(int number, source, vars)  {
     }
 
     _thread = entries[0..number-1] + entries[number+1..];
+    //_thread[number] = 0;
     save();
 
     return 1;
@@ -449,47 +491,61 @@ displayMain(last) {
 }
 #endif
 
-displayMain(last) {
+htMain(last) {
 	int i;
 	int len;
 	string t;
+	string ht = "";
 
 	len = sizeof(_thread);
 	if (last > len) last = len;
 	
 	// reverse order
 	for (i = len-1; i >= len - last; i--) {
+		P3((">>> _thread[%O]: %O\n", i, _thread[i]))
 		t = htquote(_thread[i]["text"]);
 		t = replace(t, "\n", "<br>\n");
-		write("<table class='newsTable' width='560px'>\n"
-			  "<tr>"
-			  "<td class='newsAuthor' width='20%'>" + _thread[i]["author"] + "</td>"
-			  "<td class='newsTime' nowrap width='20%'>" + _thread[i]["date"] + "</td>"
-			  "<td class='newsSubject' width='60%'>" + htquote(_thread[i]["thread"]) + "</td>"
-			  "</tr>\n"
-			  "<tr>"
-			  "<td colspan='3' class='newsText'>" + t + "</td>"
-			  "</tr>\n"
-			  "<tr>"
-			  "<td colspan='3' class='newsLink'><a href='" + webact + "?comments"
-			  "=" + i + "'>" + sizeof(_thread[i]["comments"]) + " comments</a></td>"
-			  "</tr>\n"
-			  "</table>\n");
+		t = replace(t, "<", "&lt;");
+		t = replace(t, ">", "&gt;");
+
+		ht += "<div class='entry'>\n"
+			"<div class='title'>\n"
+		          "<span class='author'>" + _thread[i]["author"] + "</span>\n"
+		          "<span class='subject'>" + htquote(_thread[i]["thread"]) + "</span>\n"
+		        "</div>\n"
+		        "<div class='text'>" + t + "</div>\n"
+		        "<div class='footer'>\n"
+		          "<span class='date'>" + _thread[i]["date"] + "</span>\n"
+			  "<span class='comments'>"
+		            "<a href='" + webact + "?comments=" + i + "'>" + sizeof(_thread[i]["comments"]) + " comments</a>"
+		          "</span>\n"
+			"</div>\n"
+		      "</div>\n";
 	}
+	return "<div class='threads'>" + ht + "</div>";
+}
+
+htComments(data) {
+    mapping item;
+    string ht = "";
+
+    write("<b>" + data["author"] + "</b>: " + data["text"] + "<br><br>\n");
+    if (data["comments"]) {       
+	foreach(item : data["comments"]) {
+	    ht += "<b>" + item["nick"] + "</b>: " + item["text"] + "<br>\n";
+	}
+    } else {
+	ht += "no comments...<br>\n";
+    }
+    return ht;
+}
+
+displayMain(last) {
+    write(htMain(last));
 }
 
 displayComments(data) {
-	mapping item;
-
-	write("Ursprüngliche Nachricht:<br>"
-		  "<b>" + data["author"] + "</b>: " + data["text"] + "<br><br>\n");
-    if (data["comments"]) {       
-		foreach(item : data["comments"]) {
-			write("<b>" + item["nick"] + "</b>: " + item["text"] + "<br>\n");       
-		}
-	} else {
-		write("no comments...<br>\n");
-	}
+    write(htComments(data));
 }
 
 nntpget(cmd, args) {
@@ -539,7 +595,7 @@ default:
 }
 
 #ifndef STYLESHEET 
-# define STYLESHEET (v("_uniform_style") || "http://www.psyc.eu/blog.css")
+# define STYLESHEET (v("_uniform_style") || "/static/examine.css")
 #endif
 
 // wir können zwei strategien fahren.. die technisch einfachere ist es
@@ -553,28 +609,10 @@ default:
 //
 displayHeader() {
 	w("_HTML_head_threads",
-	    "<link rel='stylesheet' type='text/css' href='"+
-		STYLESHEET +"'>\n"+
-	    "<style type='text/css'>\n"
-		"<!--\n"
-		"body { font-family: lucida,verdana,geneva; }\n"
-		"td { font-family: lucida,verdana,geneva; }\n"
-		"table.newsTable {border: 1px solid #6f6; padding:4px; margin:6px;}\n"
-		"table td.newsAuthor {color:#fff; font-weight:bold;"
-		" border: 1px solid #6f6;"
-	    " background-color:#041;}\n"
-		"table td.newsTime {color:#ddd;border: 1px solid #6f6;"
-        " background-color:#030;}\n"
-		"table td.newsSubject {color:#ddd; border: 1px solid #6f6;"
-        " background-color:#030;}\n"
-		"table td.newsLink {background-color:#030;}\n"
-		"table td.newsText {}\n"
-		"//-->\n"
-		"</style>\n"
-	    "<body bgcolor='#002200' text='#33ff33' link='#ffdf00'" 
-		            "vlink='#ffaf00' alink='#00ff00'>\n\n");
+	    "<html><head><link rel='stylesheet' type='text/css' href='"+
+		STYLESHEET +"'></head>\n"+
+	    "<body class='threads'>\n\n");
 }
 displayFooter() {
-	w("_HTML_tail_threads", "</body>");
+	w("_HTML_tail_threads", "</body></html>");
 }
-

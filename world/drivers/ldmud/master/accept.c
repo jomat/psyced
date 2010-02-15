@@ -336,6 +336,7 @@ object connect(int uid, int port, string service) {
 #ifdef DRIVER_HAS_RENAMED_CLONES
 // named clones		-lynx
 object compile_object(string file) {
+	P3((">> compile_object(%O)\n", file))
 	string path, name;
 	object rob;
 
@@ -383,21 +384,30 @@ object compile_object(string file) {
 	    return rob;
 	}
 # endif
-	if (sscanf(file, "%s#%s.c", path, name) && name != "") {
-		unless (name = SIMUL_EFUN_FILE->legal_name(name))
-		    return (object)0;
-		rob = clone_object(path);
-		rob -> sName(name);
-		D2(if (rob) PP(("NAMED CLONE: %O becomes %s of %s\n",
-				rob, name, path));)
-		return rob;
-	}
 	if (sscanf(file, "place/%s.c", name) && name != "") {
 #ifdef SANDBOX
 		string t;
 #endif
-		unless (name = SIMUL_EFUN_FILE->legal_name(name))
+		unless (name = SIMUL_EFUN_FILE->legal_name(name, 1))
 		    return (object)0;
+
+		string username;
+		if (sscanf(file, "place/~%s#updates", username)) {
+		    object p;
+		    unless ((p = SIMUL_EFUN_FILE->summon_person(username, NET_PATH "user")) && p->vQuery("password")) {
+			P3(("PLACE %O NOT CLONED: %O isn't a registered user\n", name, username));
+			return (object)0;
+		    }
+
+		    if (rob = clone_object(NET_PATH "place/userthreads")) {
+			PP(("PLACE CLONED: %O becomes %O\n", rob, file));
+			rob->sName(name);
+			return rob;
+		    } else {
+			P3(("ERROR: could not clone place %O\n", name));
+			return (object)0;
+		    }
+		}
 
 #ifdef SANDBOX
 		if (file_size(t = USER_PATH + name + ".c") != -1) {
@@ -405,14 +415,15 @@ object compile_object(string file) {
 		    D2(if (rob) PP(("USER PLACE loaded: %O becomes %O\n", rob, file));)
 		} else {
 #endif
+
 #ifdef _flag_disable_places_arbitrary
 		    P2(("WARN: cloned places disabled by #define %O\n", file))
 		    return (object)0;
 #else
 #ifdef _path_archetype_place_default
-                    rob = clone_object(_path_archetype_place_default);
+		    rob = clone_object(_path_archetype_place_default);
 #else
-                    rob = clone_object(NET_PATH "place/default");
+		    rob = clone_object(NET_PATH "place/default");
 #endif
 		    rob -> sName(name);
 		    D2(if (rob) PP(("PLACE CLONED: %O becomes %O\n", rob, file));)
@@ -420,6 +431,15 @@ object compile_object(string file) {
 #ifdef SANDBOX
 		}
 #endif
+		return rob;
+	}
+	if (sscanf(file, "%s#%s.c", path, name) && name != "") {
+		unless (name = SIMUL_EFUN_FILE->legal_name(name))
+		    return (object)0;
+		rob = clone_object(path);
+		rob -> sName(name);
+		D2(if (rob) PP(("NAMED CLONE: %O becomes %s of %s\n",
+				rob, name, path));)
 		return rob;
 	}
 	if (sscanf(file, "%s/text.c", path) && path != "") {

@@ -546,12 +546,13 @@ int boss(mixed guy) {
 }
 
 mixed find_place(mixed a) {
+	P3((">> find_place(%O)\n", a))
 	string path, err;
 	object o;
 
 	if (objectp(a)) return a;
 	if (path = lower_uniform(a)) return path;
-	unless (a = legal_name(a)) return 0;
+	unless (a = legal_name(a, 1)) return 0;
 	path = PLACE_PATH + lower_case(a); // assumes amylaar
 	o = find_object(path);
 	if (o) return o;

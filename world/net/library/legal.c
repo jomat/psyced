@@ -2,8 +2,9 @@
 #include <net.h>
 
 // legal nickname/placename test..
-string legal_name(string n) {
+varargs string legal_name(string name, int place) {
 	int i;
+	string n = name;
 
 	//PT(("legal_name(%O) in %O\n", n, ME))
 	if (shutdown_in_progress) {
@@ -25,17 +26,24 @@ string legal_name(string n) {
 		P1(("not legal_name: %O has !=- as first char.\n", n))
 		return 0;
 	}
-	for (i=strlen(n)-1; i>=0; i--) {
-		if (index("\
+
+	string nick;
+	if (place && sscanf(name, "~%s#updates", nick))
+	    n = nick;
+
+	string chars = "\
 abcdefghijklmnopqrstuvwxyz\
 ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-0123456789_-=+", n[i]) == -1) {
+0123456789_-=+";
+
+	for (i=strlen(n)-1; i>=0; i--) {
+		if (index(chars, n[i]) == -1) {
 			P1(("not legal_name: %O has ill char at %d (%O).\n",
 			    n, i, n[i]))
 			return 0;
 		}
 	}
-	return n;
+	return name;
 }
 
 array(string) legal_password(string pw, string nick) {

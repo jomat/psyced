@@ -1,7 +1,8 @@
+body.threads,
 .Pe {
 	font-family: verdana,helvetica;
-	font-weight: bold;
-	font-size: 9;
+	/*font-weight: bold;*/
+	font-size: 12px;
 	padding: 44;
 	background: #333;
 	color: white;
@@ -30,8 +31,12 @@
 	padding: 4;
 	margin-bottom: 23px;
 }
+
 .ldp {
 	font-size: 9;
+}
+.entry,
+.ldp {
 	font-weight: normal;
 	border: 3px dashed #333;
 	background: #933;
@@ -39,6 +44,7 @@
 	margin: 44;
         width: 562;
 }
+.entry .title,
 .ldpc {
 	background: #f33;
 	color: black;
@@ -67,3 +73,32 @@
 	width: 400;
 }
 
+.entry {
+  margin: 22px 44px;
+}
+
+.entry .text {
+  background: black;
+  padding: 5px;
+}
+
+.entry .title {
+  display: none;
+}
+.entry .title .author {}
+.entry .title .subject {}
+
+.entry .footer a,
+.entry .footer a:visited {
+  color: white;
+  background: transparent;
+}
+
+.entry .footer a:hover,
+.entry .footer a:visited:hover {
+  text-decoration: underline;
+}
+
+.entry .footer .comments {
+  float: right;
+}
