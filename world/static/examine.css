@@ -77,9 +77,19 @@ body.threads,
   margin: 22px 44px;
 }
 
-.entry .text {
+.entry .body {
   background: black;
   padding: 5px;
+}
+
+.entry .body .comment {
+  margin: 0.5em 1em 0;
+  padding: 2px;
+  border-top: 1px solid #933;
+}
+
+.entry .body .comment-author {
+  font-weight: bold;
 }
 
 .entry .title {
@@ -90,6 +100,7 @@ body.threads,
 
 .entry .footer a,
 .entry .footer a:visited {
+  cursor: pointer;
   color: white;
   background: transparent;
 }
@@ -99,6 +110,10 @@ body.threads,
   text-decoration: underline;
 }
 
-.entry .footer .comments {
+.entry .footer .comments-link {
   float: right;
+}
+
+.hidden {
+  display: none;
 }

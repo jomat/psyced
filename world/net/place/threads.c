@@ -495,7 +495,10 @@ htMain(last) {
 	int i;
 	int len;
 	string t;
-	string ht = "";
+	string ht =
+	  "<script type='text/javascript'>"
+	    "function toggle(e) { e = document.getElementById(e); e.className = e.className.match('hidden') ? e.className.replace(/ *hidden/, '') : e.className + ' hidden'; }"
+	  "</script>";
 
 	len = sizeof(_thread);
 	if (last > len) last = len;
@@ -503,21 +506,30 @@ htMain(last) {
 	// reverse order
 	for (i = len-1; i >= len - last; i--) {
 		P3((">>> _thread[%O]: %O\n", i, _thread[i]))
-		t = htquote(_thread[i]["text"]);
+		mapping item = _thread[i];
+		t = htquote(item["text"]);
 		t = replace(t, "\n", "<br>\n");
 		t = replace(t, "<", "&lt;");
 		t = replace(t, ">", "&gt;");
 
+		string c = "";
+		if (item["comments"])
+		    foreach(mapping comment : item["comments"])
+			c += "<div class='comment'><span class='comment-author'>" + comment["nick"] + "</span>: <span class='comment-text'>" + comment["text"] + "</span></div>\n";
+
 		ht += "<div class='entry'>\n"
 			"<div class='title'>\n"
-		          "<span class='author'>" + _thread[i]["author"] + "</span>\n"
-		          "<span class='subject'>" + htquote(_thread[i]["thread"]) + "</span>\n"
+		          "<span class='author'>" + item["author"] + "</span>\n"
+		          "<span class='subject'>" + htquote(item["thread"]) + "</span>\n"
 		        "</div>\n"
-		        "<div class='text'>" + t + "</div>\n"
+		        "<div class='body'>\n"
+		          "<div class='text'>" + t + "</div>\n"
+		          "<div id='comments-" + i + "' class='comments hidden'>" + c + "</div>\n"
+		        "</div>\n"
 		        "<div class='footer'>\n"
-		          "<span class='date'>" + _thread[i]["date"] + "</span>\n"
-			  "<span class='comments'>"
-		            "<a href='" + webact + "?comments=" + i + "'>" + sizeof(_thread[i]["comments"]) + " comments</a>"
+		          "<span class='date'>" + item["date"] + "</span>\n"
+			  "<span class='comments-link'>"
+		            "<a onclick=\"toggle('comments-"+i+"')\">" + sizeof(item["comments"]) + " comments</a>"
 		          "</span>\n"
 			"</div>\n"
 		      "</div>\n";
