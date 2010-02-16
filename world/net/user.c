@@ -923,11 +923,12 @@ case "_failure_network_connect_invalid_port":
 // person.c was never asked for opinion, so i'm putting this into user.c
 #if 0 //def ALPHA
 		string loc;
-		foreach (t, loc : v("locations")s)
+		foreach (t, loc : v("locations")) {
 		    if (member(loc, vars["_source_relay"])) {
 			P1(("%O in %O talking to its %O location at %O.",
 			    mc, ME, t, loc))
 			sLocation(t, 0);
+		    }
 		}
 #else
 		foreach (string type, mapping locs : v("locations")) {
