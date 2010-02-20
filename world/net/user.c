@@ -284,7 +284,7 @@ htDescription(anonymous, query, headers, qs, variant, vars) {
 // <input type=hidden name=lang value=\""+v("language")+"\">\n\
 //
 
-	object u = find_place("~" + nick + "#updates");
+	object u = find_place("~" + nick + "#follow"); //TODO
 	string updates = objectp(u) ? u->htMain(10) : "";
 
 	return psyctext(page, vars + ([

@@ -2614,3 +2614,8 @@ qAide(snicker, aidesonly) {
 
 qOwner(snicker) { return member(v("owners"), lower_case(snicker)); }
 #endif
+
+qMember(snicker) {
+    P3((">> qMember(%O) in _u: %O\n", snicker, _u))
+    return member(_u, snicker);
+}

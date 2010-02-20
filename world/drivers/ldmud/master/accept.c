@@ -391,10 +391,10 @@ object compile_object(string file) {
 		unless (name = SIMUL_EFUN_FILE->legal_name(name, 1))
 		    return (object)0;
 
-		string username;
-		if (sscanf(file, "place/~%s#updates", username)) {
-		    object p;
-		    unless ((p = SIMUL_EFUN_FILE->summon_person(username, NET_PATH "user")) && p->vQuery("password")) {
+		string username, channel;
+		if (sscanf(file, "place/~%s#%s", username, channel)) {
+		    object p = SIMUL_EFUN_FILE->summon_person(username, NET_PATH "user");
+		    unless (p && !p->isNewbie()) {
 			P3(("PLACE %O NOT CLONED: %O isn't a registered user\n", name, username));
 			return (object)0;
 		    }

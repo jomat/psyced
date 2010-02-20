@@ -27,9 +27,9 @@ varargs string legal_name(string name, int place) {
 		return 0;
 	}
 
-	string nick;
-	if (place && sscanf(name, "~%s#updates", nick))
-	    n = nick;
+	string nick, channel;
+	if (place && sscanf(name, "~%s#%s", nick, channel))
+	    return (legal_name(nick) && legal_name(channel)) ? name : 0;
 
 	string chars = "\
 abcdefghijklmnopqrstuvwxyz\

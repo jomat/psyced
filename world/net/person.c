@@ -655,6 +655,8 @@ sName2(a) {
 	if (v("locations")) linkCleanUp("_crash");
 	else vSet("locations", ([ ]));
 
+	unless (v("channels")) vSet("channels", ([]));
+
 	// protection against file read errors
 	if (IS_NEWBIE) {
 		if (boss(a)) {
@@ -2915,6 +2917,26 @@ static qFriends() {
 	if (strlen(present) < 3) return D3("~lynx");
 	P2(("qFriends outbound » %s «\n", present[1..]))
 	return present[1..];
+}
+
+qFriend(object snicker) {
+	P3((">> qFriend(%O)\n", snicker))
+	return member(friends, snicker);
+}
+
+qFollower(object snicker) {
+	P3((">> qFollower(%O)\n", snicker))
+	foreach (string c : v("channels")) {
+		object p = find_place(c);
+		P3((">>> c: %O, p: %O\n", c, p))
+		if (p && p->qMember(snicker)) return 1;
+	}
+	return 0;
+}
+
+sChannel(string channel) {
+	P3((">> sChannel(%O)\n", channel))
+	v("channels")[channel] = 1;
 }
 
 sPerson(person, ix, value) {
