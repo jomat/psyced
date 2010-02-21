@@ -655,6 +655,9 @@ sName2(a) {
 	if (v("locations")) linkCleanUp("_crash");
 	else vSet("locations", ([ ]));
 
+#ifdef _flag_enable_module_microblogging
+	unless (v("channels")) vSet("channels", ([]));
+#endif
 	// protection against file read errors
 	if (IS_NEWBIE) {
 		if (boss(a)) {
@@ -2916,6 +2919,28 @@ static qFriends() {
 	P2(("qFriends outbound » %s «\n", present[1..]))
 	return present[1..];
 }
+
+#ifdef _flag_enable_module_microblogging
+qFriend(object snicker) {
+	P3((">> qFriend(%O)\n", snicker))
+	return member(friends, snicker);
+}
+
+qFollower(object snicker) {
+	P3((">> qFollower(%O)\n", snicker))
+	foreach (string c : v("channels")) {
+		object p = find_place(c);
+		P3((">>> c: %O, p: %O\n", c, p))
+		if (p && p->qMember(snicker)) return 1;
+	}
+	return 0;
+}
+
+sChannel(string channel) {
+	P3((">> sChannel(%O)\n", channel))
+	v("channels")[channel] = 1;
+}
+#endif
 
 sPerson(person, ix, value) {
 	P2(("%O: sPerson(%O, %O, %O) bfor: %O\n", MYNICK, person, ix, value, ppl))

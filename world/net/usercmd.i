@@ -2424,6 +2424,12 @@ friend(rm, entity, ni, trustee) {
 //	if (member(ppl, t)) switch(ppl[t][PPL_NOTIFY]) {
 	switch (member(ppl, t) ? ppl[t][PPL_NOTIFY] : PPL_NOTIFY_NONE) {
 	case PPL_NOTIFY_OFFERED:
+		sPerson(t, PPL_NOTIFY, PPL_NOTIFY_DEFAULT);
+		friends[entity, FRIEND_NICK] = ni || 1;
+		if (objectp(entity))
+		    insert_member(entity);
+		else
+		    insert_member(entity, parse_uniform(entity, 1)[URoot]);
 		// this used to imply a symmetric request for
 		// friendship, but we prefer to make it an
 		// informational message instead. the protocol
@@ -2440,7 +2446,9 @@ friend(rm, entity, ni, trustee) {
 		// within psyc.. even jabber should
 		// normally auto-acknowledge this request
 		sendmsg(entity, "_request_friendship_implied",
-			    0, ([ "_nick": MYNICK ]) );
+			0, ([ "_nick": MYNICK, "_degree_availability": availability ]) );
+		sendmsg(entity, "_request_status_person",
+			0, ([ "_nick": MYNICK ]) );
 		// did i just say something about symmetry?
 #ifdef TRY_THIS
 		// currently friend() only gets called from
@@ -2452,7 +2460,6 @@ friend(rm, entity, ni, trustee) {
 		// carrying _presence be enough? well, we
 		// don't have _presence yet
 #endif
-		sPerson(t, PPL_NOTIFY, PPL_NOTIFY_DEFAULT);
 		return 1;
 	case PPL_NOTIFY_NONE:
                 sPerson(t, PPL_NOTIFY, PPL_NOTIFY_PENDING);

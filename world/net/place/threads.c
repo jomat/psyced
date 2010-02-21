@@ -113,7 +113,7 @@ cmd(a, args, b, source, vars) {
 	case "blog":
 	case "submit":
 	case "addentry":
-		unless (qAide(SNICKER)) return;
+		unless (canPost(SNICKER)) return;
 		unless (sizeof(args) >= 1) {
 		    sendmsg(source, "_warning_usage_submit", 
 	                            "Usage: /submit <text>", ([ ]));
@@ -123,7 +123,7 @@ cmd(a, args, b, source, vars) {
 	// TODO: append fuer multiline-sachen
 #if 0
 	case "iterator":
-		unless (qAide(SNICKER)) return;
+		unless (canPost(SNICKER)) return;
 		sendmsg(source, "_notice_thread_iterator",
 			"[_iterator] blog entries have been requested "
 			"since creation.", ([
@@ -135,7 +135,7 @@ cmd(a, args, b, source, vars) {
 #endif
 	case "deblog":
 	case "delentry":
-		unless (qAide(SNICKER)) return;
+		unless (canPost(SNICKER)) return;
 		// ist das ein typecheck ob args ein int is?
 		if (sizeof(regexp( ({ args[1] }) , "^[0-9][0-9]*$"))) {
 		    unless (delEntry(to_int(args[1]), source, vars)) {
@@ -273,7 +273,8 @@ addComment(text, unick, entry_id) {
 				"_comment" : text,
 				"_nick" : unick,
 		]) );
-		return save();
+		save();
+		return 1;
 	}
 	return -1;
 }
@@ -288,7 +289,7 @@ delEntry(int number, source, vars)  {
     unless (size = sizeof(entries)) return 0;
     if (number >= size) return 0;
 
-    if (qAide(unick = lower_case(SNICKER))) {
+    if (canPost(unick = lower_case(SNICKER))) {
 	unless (lower_case(entries[number]["author"]) == unick) return 0;
     }
 
@@ -349,7 +350,7 @@ htget(prot, query, headers, qs, data) {
 //			return 1;
 		}
 #ifdef OWNED
-		if (qAide(nick)) {
+		if (canPost(nick)) {
 #endif
 #if 0 
 		sendmsg(target, "_request_authentication", "please auth me!", 
@@ -627,4 +628,8 @@ displayHeader() {
 }
 displayFooter() {
 	w("_HTML_tail_threads", "</body></html>");
+}
+
+canPost(snicker) {
+    return qAide(snicker);
 }

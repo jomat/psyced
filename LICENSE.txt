@@ -1,18 +1,22 @@
- [ «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» ]
-
   psyced, a scalable distributed multi-protocol chat and messaging server
 	 solution based on the PSYC protocol for synchronous conferencing.
 ___
 
   Copyright (C) since 1997 by:
-      Carlo von Loesch	(psyc://ve.symlynX.com/~lynX).
+      Carlo von Loesch	(psyc://psyced.org/~lynX).
 
   Since 2002 copyright also in parts by:
       Philipp Hancke	(psyc://goodadvice.pages.de/~fippo)
       Tobias Josefowitz	(psyc://goodadvice.pages.de/~heldensaga)
       Arne Gödeke	(psyc://psyced.org/~el) and
       Dominik Sander	(psyc://psyced.org/~depairet).
-___
+
+  All development prior to 2010 has been published under a GNU GPL as
+  described below. Development since 2010-01-01 is published under the
+  MIT license also described below. To deploy psyced installations of
+  versions since 2010, both license requirements must typically be met.
+
+___ Until 2010:
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of version 2 of the GNU General Public License as
@@ -22,33 +26,47 @@ ___
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
+
+___ Since 2010:
+
+    Permission is hereby granted, free of charge, to any person obtaining
+    a copy of this software and associated documentation files
+    (the "Software"), to deal in the Software without restriction,
+    including without limitation the rights to use, copy, modify, merge,
+    publish, distribute, sublicense, and/or sell copies of the Software,
+    and to permit persons to whom the Software is furnished to do so,
+    subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be
+	included in all copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+	EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+	MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+	IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+	CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+	TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+	SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ___
 
     This program is also available under different license from
     Carlo von Loesch and symlynX. To this purpose all copyright
-    owners grant Carlo von Loesch and symlynX the right to use
-    and license this program in whatever suitable way.
+    owners until 2010 grant Carlo von Loesch and symlynX the right
+    to use and license this program in whatever suitable way.
 
-    Should you wish to contribute to this program, you can receive a
-    write access to the psyced software repository from symlynX. By checking
-    code in, you grant us permission to license your contribution under
-    both the GNU General Public License and under other licenses as
-    described above.
-
-    With the act of checking into the software repository, you guarantee
+    By the act of submitting code to the psyced maintainers you guarantee
     that you are either the author and copyright owner of the contribution
     you are making, or that you have a license to use said contribution in
-    a way compatible with our terms of use. If you fail to do so, you
-    remain the sole responsible for your acting; no part of the
+    a way compatible with our licenses. If you fail to do so, you
+    remain the sole responsible for your actions; no part of the
     responsibility will be transferred to symlynX.
 
     This means, for example, that you cannot contribute code elements
     which stem from an other GPL project, as this would not comply with
-    the dual licensing requirement described above.
+    the MIT license requirement after 2010.
 
     You can however keep this kind of modifications to yourself, or
     publish your own GPL licensed fork of this software, or - in agreement
     with us - add optional parts to this software clearly marked as not
-    adhering to the dual license described above.
+    adhering to this license.
 
- [ «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» «» ]

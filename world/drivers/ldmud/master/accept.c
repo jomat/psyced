@@ -392,10 +392,10 @@ object compile_object(string file) {
 		    return (object)0;
 
 #ifdef _flag_enable_module_microblogging
-		string username;
-		if (sscanf(file, "place/~%s#updates", username)) {
-		    object p;
-		    unless ((p = SIMUL_EFUN_FILE->summon_person(username, NET_PATH "user")) && p->vQuery("password")) {
+		string username, channel;
+		if (sscanf(file, "place/~%s#%s", username, channel)) {
+		    object p = SIMUL_EFUN_FILE->summon_person(username, NET_PATH "user");
+		    unless (p && !p->isNewbie()) {
 			P3(("PLACE %O NOT CLONED: %O isn't a registered user\n", name, username));
 			return (object)0;
 		    }

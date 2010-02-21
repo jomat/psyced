@@ -28,10 +28,11 @@ varargs string legal_name(string name, int isPlace) {
 	}
 
 #ifdef _flag_enable_module_microblogging
-	string nick;
-	if (isPlace && sscanf(name, "~%s#updates", nick))
-	    n = nick;
+	string nick, channel;
+	if (isPlace && sscanf(name, "~%s#%s", nick, channel))
+	    return (legal_name(nick) && legal_name(channel)) ? name : 0;
 #endif
+
 	string chars = "\
 abcdefghijklmnopqrstuvwxyz\
 ABCDEFGHIJKLMNOPQRSTUVWXYZ\

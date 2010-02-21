@@ -3995,6 +3995,7 @@ person, user
 +	allow multiple psyc clients per user, thx tg
 usercmd
 +	/forceenter only exists temporarily to circumvent a bug
+-	immediately show presence of a newly acquired friend, thx tg
 userthreads, threads, accept etc
 +	experimental microblogging on your web profile, thx tg
 	#define _flag_enable_module_microblogging
