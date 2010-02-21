@@ -134,6 +134,7 @@ object find_psyc_object(array(mixed) u) {
 		case '^':
 			break;
 		case '~':
+#ifdef _flag_enable_module_microblogging
 			if (u[UChannel]) {
 			    t = lower_case(r + "#" + u[UChannel]);
 			    r = PLACE_PATH + t;
@@ -141,6 +142,7 @@ object find_psyc_object(array(mixed) u) {
 			    unless (t = legal_name(t)) break;
 			    catch(o = r -> load(t));
 			}
+#endif
 			break;
 		case '$':
 			// target wird auf serv/args gesetzt

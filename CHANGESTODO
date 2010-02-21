@@ -3988,4 +3988,13 @@ user
 === 201001 ============================================================
 jabber/active
 +	handle dialback timeouts, thx fip
-
+smtp/outgoing, smtp/user
++	implementation of outgoing mail queue
+=== 201002 ============================================================
+person, user
++	allow multiple psyc clients per user, thx tg
+usercmd
++	/forceenter only exists temporarily to circumvent a bug
+userthreads, threads, accept etc
++	experimental microblogging on your web profile, thx tg
+	#define _flag_enable_module_microblogging

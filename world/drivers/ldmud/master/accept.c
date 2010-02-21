@@ -391,6 +391,7 @@ object compile_object(string file) {
 		unless (name = SIMUL_EFUN_FILE->legal_name(name, 1))
 		    return (object)0;
 
+#ifdef _flag_enable_module_microblogging
 		string username;
 		if (sscanf(file, "place/~%s#updates", username)) {
 		    object p;
@@ -408,6 +409,7 @@ object compile_object(string file) {
 			return (object)0;
 		    }
 		}
+#endif
 
 #ifdef SANDBOX
 		if (file_size(t = USER_PATH + name + ".c") != -1) {

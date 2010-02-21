@@ -146,13 +146,13 @@ sendmsg(target, mc, data, vars, source, showingLog, callback) {
 	// maybe we should keep the _identification of the target somewhere
 	// in vars. but where? _target_identification ? and who needs that?
 	//
-	// we have _target_localtion and _target_identification here. but
-	// since its not implemented anywhere we are happy with this very
-	// comment. TODO
-	//
 	// great, if I ping xmpp:fippo@amessage.de this makes 
-	// is xmpp:fippo@amessage.de/foo, but I DONT WANT THAT!
-	if (!objectp(target) || (objectp(target) && target->vQuery("scheme") != "psyc"))
+	// it xmpp:fippo@amessage.de/foo, but I DONT WANT THAT!
+# ifdef ALPHA
+	// why do we if this?
+	if (!objectp(target) || (objectp(target)
+				 && target->vQuery("scheme") != "psyc"))
+# endif
 	    target = t;
     }
 #endif //}}}

@@ -2,7 +2,7 @@
 #include <net.h>
 
 // legal nickname/placename test..
-varargs string legal_name(string name, int place) {
+varargs string legal_name(string name, int isPlace) {
 	int i;
 	string n = name;
 
@@ -27,10 +27,11 @@ varargs string legal_name(string name, int place) {
 		return 0;
 	}
 
+#ifdef _flag_enable_module_microblogging
 	string nick;
-	if (place && sscanf(name, "~%s#updates", nick))
+	if (isPlace && sscanf(name, "~%s#updates", nick))
 	    n = nick;
-
+#endif
 	string chars = "\
 abcdefghijklmnopqrstuvwxyz\
 ABCDEFGHIJKLMNOPQRSTUVWXYZ\
@@ -43,7 +44,7 @@ ABCDEFGHIJKLMNOPQRSTUVWXYZ\
 			return 0;
 		}
 	}
-	return name;
+	return name; // we used to return n here instead..
 }
 
 array(string) legal_password(string pw, string nick) {

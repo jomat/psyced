@@ -284,9 +284,10 @@ htDescription(anonymous, query, headers, qs, variant, vars) {
 // <input type=hidden name=lang value=\""+v("language")+"\">\n\
 //
 
+# ifdef _flag_enable_module_microblogging
 	object u = find_place("~" + nick + "#updates");
 	string updates = objectp(u) ? u->htMain(10) : "";
-
+# endif
 	return psyctext(page, vars + ([
 	"_FORM_start"                   : "\
 <form class=\"Pef\" name=\"Pef\" action=\"\">\n\
@@ -296,8 +297,11 @@ htDescription(anonymous, query, headers, qs, variant, vars) {
 	"_nick_me"			: MYNICK,
 	"_FORM_end"                     : "</form>\n",
 		])
-	) + updates;
-;
+	)
+# ifdef _flag_enable_module_microblogging
+	    + updates
+# endif
+	;
 }
 #endif
 

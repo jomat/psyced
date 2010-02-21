@@ -908,6 +908,7 @@ cmd(a, args, dest, command) {
 		else
 		    teleport(args[1], "_join", 0, 1);
 		break;
+#ifdef DEVELOPMENT
 	case "forceenter":
 	case "forcejoin":
 	        if (sizeof(args) < 2) {
@@ -936,6 +937,7 @@ cmd(a, args, dest, command) {
 		break;
         // etwas hässlich so.. aber was will man sonst? beim zweiten versuch?
         // oder gar als flag von /leave?
+#endif
         case "forceleave": // delete the membership from places mapping
                 if (member(places, (t = sizeof(args) < 2 ? place : args[1]))) {
                     m_delete(places, t);
