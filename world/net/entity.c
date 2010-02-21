@@ -148,11 +148,14 @@ sendmsg(target, mc, data, vars, source, showingLog, callback) {
 	//
 	// great, if I ping xmpp:fippo@amessage.de this makes 
 	// it xmpp:fippo@amessage.de/foo, but I DONT WANT THAT!
-# ifdef ALPHA
-	// why do we if this?
+	//
+	// also in order to allow for multiple psyc clients we need
+	// this if here, but i think we should rather ensure these
+	// candidates are not in uni2unl[]..	--lynX
+#if 1 //FIXME
 	if (!objectp(target) || (objectp(target)
 				 && target->vQuery("scheme") != "psyc"))
-# endif
+#endif
 	    target = t;
     }
 #endif //}}}
