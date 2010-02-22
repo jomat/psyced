@@ -453,7 +453,7 @@ htget(prot, query, headers, qs, data, noprocess) {
 # ifdef PLACE_SCRATCHPAD
         sTextPath(query["layout"] || MYNICK, query["lang"], "html");
 	if (!noprocess && (!qs || query["scratchpad"])) {
-		string rand, buf;
+		string rand, buf, len;
 // microscopic wiki functionality .. cheap imitation of tobi's save.pike
 //
 // things one could add:
@@ -475,7 +475,7 @@ htget(prot, query, headers, qs, data, noprocess) {
 		// his changes first.. well. might not happen.
 		// TODO: prefix id with epoch?
 		if (stringp(query["scratchpad"])
-			&& strlen(query["scratchpad"]) > 1
+			&& (len = strlen(query["scratchpad"])) > 1
 //
 // id logic serves the purpose of not changing the scratchpad while going
 // "back" in the browser history. only a new "post" should change it.
@@ -499,14 +499,14 @@ htget(prot, query, headers, qs, data, noprocess) {
 //			call_out(#'m_delete, 86400 /* 24 hours */,
 //				 used, query["id"]);
 
-			castmsg(ME, "_notice_update_scratchpad",
-			    "The [_page_scratchpad] has changed.", ([
+			castmsg(ME, "_notice_update_scratchpad", 0, ([
+				"_size_scratchpad": len,
 #ifdef PRO_PATH // __TLS__
-			       "_page_scratchpad":
+				"_page_scratchpad":
 				  ((tls_available() && HTTPS_URL) || HTTP_URL)
 #else
 			    // problem with POST over https apparently..
-			       "_page_scratchpad": (HTTP_URL)
+				"_page_scratchpad": (HTTP_URL)
 #endif
 					  // TODO: use psycName() here instead
 						 +"/@"+ MYNICK +"?scratchpad"

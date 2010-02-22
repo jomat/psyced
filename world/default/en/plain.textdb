@@ -553,6 +553,9 @@ _request_description_vCard
 _request_friendship_implied
 |## no output
 
+_notice_update_scratchpad
+|[_page_scratchpad] has changed ([_size_scratchpad] bytes).
+
 _request_call_link
 |[_nick] would like to speak to you. Use [_page_call] to answer the call.
 

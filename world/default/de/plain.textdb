@@ -558,6 +558,9 @@ _request_open_page_edit
 |Zur Bearbeitung der Einstellungen bitte folgende Seite aufrufen:
 |[_page_edit]
 
+_notice_update_scratchpad
+|[_page_scratchpad] wurde verändert ([_size_scratchpad] bytes).
+
 _request_call_link
 |Anruf von [_nick]: Annehmen durch Klick auf [_page_call].
 
