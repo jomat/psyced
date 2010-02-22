@@ -86,7 +86,7 @@ parse_url(input) {
 parse_header(input) {
     string key, val;
 
-    P4((input + "\n"))
+    P4(("parse_header(%O)\n", input))
     
     unless (input == "") {
 	if (sscanf(input, "%s:%1.0t%s", key, val)) {

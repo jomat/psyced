@@ -14,7 +14,7 @@ http_ok(string prot, string type, string extra) {
 	out = type || extra ? htheaders(type, extra) +"\n"
 	       	: "Content-type: " DEFAULT_CONTENT_TYPE "\n\n";
 	emit(out = HTTP_SVERS " 200 Sure\n"+ out);
-	P3((out))
+	P3(("http_ok: out: %O\s", out))
 }
 
 varargs http_error(string prot, int code, string comment, string html) {

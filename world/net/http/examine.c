@@ -15,7 +15,7 @@ htget(prot, query, headers, qs) {
 	} else unless (user->validToken(query["token"])) {
 		t = "_error_invalid_authentication_token";
 	} else if ((t = query["cmd"]) && strlen(t)) {
-		user->parsecmd(t);	// htcmd?
+		user->parsecmd(t, query["dest"]);	// htcmd?
 		t = "_echo_execute_web";
 	} else if (t = user->htDescription(0, query, headers, qs, "")) {
 		P4(("result: %O\n", t))
