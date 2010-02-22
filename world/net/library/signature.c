@@ -73,6 +73,12 @@ private volatile mapping _sigs = ([
 	"_request_ni":		({ "_request_nick_local", 0, "_nick_local", "_INTERNAL_stuss" }),
 	"_request_public":	({ "_request_public", 0, "_flag_public" }),
 	"_request_pub":		({ "_request_public", 0, "_flag_public" }),
+#ifdef _flag_enable_module_microblogging
+	"_request_add":		({ "_request_add", 0, "_person" }),
+	"_request_remove":	({ "_request_remove", 0, "_person" }),
+	"_request_priv":	({ "_request_privacy", 0, "_privacy" }),
+	"_request_privacy":	({ "_request_privacy", 0, "_privacy" }),
+#endif
 #ifdef EXPERIMENTAL
 	// stuff to play around with
 	"_request_pset":	({ "_request_set", 0, "_key", "_value" }),

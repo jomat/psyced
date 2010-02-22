@@ -467,6 +467,16 @@ qDescription(source, vars, profile, itsme) {
 		if (v("fname"))
 		    dv["_name_first"] = v("fname");
 	}
+
+#ifdef _flag_enable_module_microblogging
+	mapping channels = ([ ]);
+	foreach (string c : v("channels")) {
+	    object p = find_place(c);
+	    unless (objectp(p) && (p->isPublic() || (source && p->qMember(source))) /*&& p->numEntries() > 0*/) continue;
+	    channels += ([ p->qChannel(): p->entries(10)]);
+	}
+	dv["_channels"] = make_json(channels);
+#endif
 //	PT(("sending: %O\n", dv))
 	return dv;
 }
@@ -2038,10 +2048,18 @@ case "_request_friendship_implied":
 			friends[source, FRIEND_AVAILABILITY] =
 			    vars["_degree_availability"] || AVAILABILITY_HERE;
 #endif
-			if (objectp(source)) 
+			if (objectp(source))
 			    insert_member(source);
 			else
 			    insert_member(source, parse_uniform(source, 1)[URoot]);
+
+#ifdef _flag_enable_module_microblogging
+			string uni = psyc_name(ME);
+			sendmsg(source, "_notice_place_enter_automatic_subscription_follow",
+				"Following [_nick_place]", (["_nick": MYNICK, "_nick_place": uni + "#follow" ]));
+			sendmsg(source, "_notice_place_enter_automatic_subscription_follow",
+				"Following [_nick_place]", (["_nick": MYNICK, "_nick_place": uni + "#friends" ]));
+#endif
 			showFriends();
 			// fall thru
 		// all other cases describe established friendships,
@@ -2179,6 +2197,31 @@ case "_status_person_present":
 		    source, display, logged_on))
 		return logged_on && display; // what about availability?
 #endif // _flag_disable_module_presence
+#ifdef _flag_enable_module_microblogging
+case "_notice_place_enter_automatic_subscription_follow":
+case "_notice_place_leave_automatic_subscription_follow":
+		string src = objectp(source) ? psyc_name(source) : source;
+		string nick = objectp(source) ? source->qNameLower() : source;
+		string nick_place = vars["_nick_place"];
+		if (qFriend(source) || qSubscription(src, 1) || qSubscription("~"+nick, 1)) {
+		    P3((">>> %O: %O subscribed me to %O\n", ME, source, nick_place))
+		    subscribe(abbrev("_notice_place_enter", mc) ?
+			      SUBSCRIBE_TEMPORARY : SUBSCRIBE_NOT, nick_place);
+		} else if (member(places, find_place(nick_place)) &&
+			   (sscanf(nick_place, src+"#%s", t) || sscanf(nick_place, "~"+nick+"#%s", t))) {
+		    placeRequest(nick_place,
+#ifdef SPEC
+				 "_request_context_leave",
+#else
+				 "_request_leave",
+#endif
+				 1);
+		} else {
+		    P3((">>> %O: got a %O from %O, but he is not a friend or not already following him.\n",
+			ME, mc, source, nick_place))
+		}
+		return "";
+#endif
 case "_notice_mail":
 		// on request by y0shi.. remember mail notifications
 		// even when offline
@@ -2605,7 +2648,7 @@ quit(immediate, variant) {
 #endif
 	}
 #endif
-	if (immediate == 1 || (immediate && find_call_out(#'quit) != -1)) {
+	if (immediate == 1 || (immediate && find_call_out(#'quit) != -1)) { //'
 		rc = save();
 		if (sizeof(places)) {
 			P2(("%O stayin' alive because of places %O"
@@ -2718,7 +2761,7 @@ quit(immediate, variant) {
                     // return if there are some services/clients left
                     if (sizeof(v("locations"))) return rc;
                     vDel("scheme");
-		    call_out(#'quit, 20, 1, variant);
+		    call_out(#'quit, 20, 1, variant); //'
 		    return rc;
 		}
 	} else {
@@ -2921,17 +2964,31 @@ static qFriends() {
 }
 
 #ifdef _flag_enable_module_microblogging
-qFriend(object snicker) {
-	P3((">> qFriend(%O)\n", snicker))
-	return member(friends, snicker);
+qFriend(person) {
+	P3((">> qFriend(%O)\n", person))
+	if (IS_NEWBIE) return 0;
+	if (objectp(person)) person = person->qNameLower();
+	return member(ppl, person) && ppl[person][PPL_NOTIFY] >= PPL_NOTIFY_FRIEND;
 }
 
-qFollower(object snicker) {
-	P3((">> qFollower(%O)\n", snicker))
+qFollower(person) {
+	P3((">> qFollower(%O)\n", person))
+	if (IS_NEWBIE) return 0;
 	foreach (string c : v("channels")) {
 		object p = find_place(c);
 		P3((">>> c: %O, p: %O\n", c, p))
-		if (p && p->qMember(snicker)) return 1;
+		if (p && p->qMember(person)) return 1;
+	}
+	return 0;
+}
+
+qSubscription(target, without_channel) {
+	P3((">> qSubscription(%O, %O)\n", target, without_channel))
+	if (IS_NEWBIE) return 0;
+	unless (without_channel) return member(v("subscriptions"), target);
+	string c;
+	foreach (string t : v("subscriptions")) {
+	    if (sscanf(t, target + "#%s", c)) return 1;
 	}
 	return 0;
 }
@@ -3039,7 +3096,7 @@ void reset(int again) {
 #if 0
 		} else {
 			P3(("RESET: quitting %O\n", ME))
-			if (find_call_out(#'quit) == -1) quit();
+			if (find_call_out(#'quit) == -1) quit(); //'
 #endif
 		}
 	} else { // hmm.. why do we still use reset(0) for this?

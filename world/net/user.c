@@ -158,7 +158,7 @@ htDescription(anonymous, query, headers, qs, variant, vars) {
 #else
 	int doTalk = 0;
 
-	P3(("htDescription for %O showing %O or %O\n", qs, vars, descvars))
+	P3(("htDescription in %O for %O showing %O or %O\n", ME, qs, vars, descvars))
 	if (query) sTextPath(query["layout"] || v("layout"),
 			     query["lang"] || v("language"), "html");
 	else sTextPath(v("layout"), v("language"), "html");
@@ -285,13 +285,53 @@ htDescription(anonymous, query, headers, qs, variant, vars) {
 //
 
 # ifdef _flag_enable_module_microblogging
-	object u = find_place("~" + nick + "#follow"); //TODO
-	string updates = objectp(u) ? u->htMain(10) : "";
+    mapping channels;
+    string htchannels;
+    if (vars["_channels"] && (channels = parse_json(vars["_channels"]))) {
+	P3((">>> channels: %O\n", channels))
+	htchannels =
+	    "<script type='text/javascript'>\n"
+	      "function selectTab(parent, id) {"
+	        "var tabs = document.getElementById(parent);"
+	        "var tab = tabs.firstChild;"
+	        "while (tab) {"
+	          "tab.className = (tab.id == parent+'-'+id) ? 'selected' : '';"
+	          "tab = tab.nextSibling;"
+	        "}"
+	      "}\n"
+	      "function switchTab(id) {"
+	        "selectTab('tabs', id);"
+	        "selectTab('tab-contents', id);"
+	      "}\n"
+	    "</script>\n";
+
+	string tabs = "";
+	string contents = "";
+	int first = 1;
+	object threads = clone_object(NET_PATH "place/threads");
+
+	foreach (string channel, array(mapping) entries : channels) {
+	    unless (sizeof(entries) > 0) continue;
+	    tabs +=
+		"<a id='tabs-" + channel + "' onclick=\"switchTab('" + channel + "')\" "
+		  + (first ? "class='selected'" : "") + ">#" + channel + "</a>\n";
+	    contents +=
+		"<div id='tab-contents-" + channel + "' "
+		+ (first ? "class='selected'" : "") + ">" + threads->htmlEntries(entries, 0, first, channel, anonymous ? "" : vars["_identification"] + "#" + channel) + "</div>\n";
+	    first = 0;
+	}
+
+	if (first) htchannels = "";
+	else htchannels +=
+	    "<div id='tabs' class='tabs'>\n" + tabs + "</div>\n"
+	    "<div id='tab-contents' class='tab-contents'>\n" + contents + "</div>\n";
+    }
 # endif
 	return psyctext(page, vars + ([
 	"_FORM_start"                   : "\
 <form class=\"Pef\" name=\"Pef\" action=\"\">\n\
-<input type=hidden name=cmd value=\"\">\n",
+<input type=\"hidden\" name=\"cmd\" value=\"\">\n\
+<input type=\"hidden\" name=\"dest\" value=\"\">\n",
 	"_QUERY_STRING"                 : qs || "",
 	"_HTML_photo"			: foto,
 	"_nick_me"			: MYNICK,
@@ -299,7 +339,7 @@ htDescription(anonymous, query, headers, qs, variant, vars) {
 		])
 	)
 # ifdef _flag_enable_module_microblogging
-	    + updates
+	    + htchannels
 # endif
 	;
 }

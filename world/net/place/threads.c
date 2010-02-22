@@ -43,27 +43,37 @@ create() {
 cmd(a, args, b, source, vars) {
 	P3((">> threads:cmd(%O, %O, %O, %O, %O)", a, args, b, source, vars))
 // TODO: multiline-sachen irgendwie
-	mapping entry; 
+	mapping entry;
+	array(mapping) entries;
 	int i = 0;
+	int id;
 	int num_entries;
 	//unless (source) source = previous_object();
 	switch (a) {
 	case "entries":
 		num_entries = sizeof(args) >= 2 ? to_int(args[1]) : DEFAULT_BACKLOG;
 		// _thread[<5..]
-		foreach( entry : _thread[<num_entries..] ) {
-			sendmsg(source, "_list_thread_item", 
-					"#[_number] - [_author][_sep][_thread]: [_text] ([_comments])",
-					([ 
-						"_sep" : strlen(entry["thread"]) ? " - " : "",
-						"_thread" : entry["thread"],
-						"_text" : entry["text"],
-						"_author" : entry["author"],
-						"_date" : entry["date"],
-						"_comments": sizeof(entry["comments"]),
-						"_number" : i++,
-						"_nick_place" : MYNICK ]) );
+		//foreach( entry : _thread[<num_entries..] ) {
+		entries = ({ });
+		for (i = sizeof(_thread) - 1; i >= 0; i--) {
+		    unless (entry = _thread[i]) continue;
+		    entries =
+			({ ([
+			     "_sep" : strlen(entry["thread"]) ? " - " : "",
+			     "_thread" : entry["thread"],
+			     "_text" : entry["text"],
+			     "_author" : entry["author"],
+			     "_date" : entry["date"],
+			     "_comments": sizeof(entry["comments"]),
+			     "_id" : i,
+			     "_nick_place" : MYNICK,
+			     ]) }) + entries;
+		    if (sizeof(entries) == num_entries) break;
 		}
+		foreach(entry : entries)
+		    sendmsg(source, "_list_thread_entry",
+			    "#[_id] - [_author][_sep][_thread]: [_text] ([_comments])",
+			    entry);
 		return 1;
 	case "entry":
 		unless (sizeof(args) > 1){
@@ -71,10 +81,18 @@ cmd(a, args, b, source, vars) {
 					"Usage: /entry <threadid>", ([ ]));
 			return 1;
 		}
-		int n = to_int(args[1]);
-		entry = _thread[n];
-		sendmsg(source, "_list_thread_item",
-				"#[_number] [_author][_sep][_thread]: [_text] ([_comments])",
+		id = to_int(args[1]);
+		if (id >= 0 && id < sizeof(_thread))
+		    entry = _thread[id];
+
+		unless (entry) {
+		    sendmsg(source, "_error_thread_invalid_entry",
+			    "#[_id]: no such entry", (["_id": id]));
+		    return 1;
+		}
+
+		sendmsg(source, "_list_thread_entry",
+				"#[_id] [_author][_sep][_thread]: [_text] ([_comments])",
 				([
 					"_sep" : strlen(entry["thread"]) ? " - " : "",
 					"_thread" : entry["thread"],
@@ -82,7 +100,7 @@ cmd(a, args, b, source, vars) {
 					"_author" : entry["author"],
 					"_date" : entry["date"],
 					"_comments": sizeof(entry["comments"]),
-					"_number" : n,
+					"_id" : id,
 					"_nick_place" : MYNICK ]) );
 
 		if (entry["comments"]) {
@@ -92,6 +110,7 @@ cmd(a, args, b, source, vars) {
 					([
 						"_nick" : item["nick"],
 						"_text" : item["text"],
+						"_date": item["date"],
 						"_nick_place" : MYNICK ]) );
 		    }
 		}
@@ -102,28 +121,38 @@ cmd(a, args, b, source, vars) {
 					"Usage: /thread <threadid> <title>", ([ ]));
 			return 1;
 		}
-		return setSubject(to_int(args[1]), ARGS(2));
+		id = to_int(args[1]);
+		unless (setSubject(id, ARGS(2)))
+		    sendmsg(source, "_error_thread_invalid_entry",
+			    "#[_id]: no such entry", (["_id": id]));
+
+		return 1;
 	case "comment":
 		unless (sizeof(args) >= 2) {
 		    sendmsg(source, "_warning_usage_reply",
 	                            "Usage: /comment <threadid> <text>", ([ ]));
 		    return 1;
 		}
-		return addComment(ARGS(2), SNICKER, to_int(args[1]));
+		id = to_int(args[1]);
+		unless (addComment(ARGS(2), SNICKER, id))
+		    sendmsg(source, "_error_thread_invalid_entry",
+			    "#[_id]: no such entry", (["_id": id]));
+		return 1;
 	case "blog":
 	case "submit":
 	case "addentry":
-		unless (canPost(SNICKER)) return;
+		unless (canPost(SNICKER)) return 0;
 		unless (sizeof(args) >= 1) {
 		    sendmsg(source, "_warning_usage_submit", 
 	                            "Usage: /submit <text>", ([ ]));
 		    return 1;
 		}
-		return addEntry(ARGS(1), SNICKER);
+		addEntry(ARGS(1), SNICKER);
+		return 1;
 	// TODO: append fuer multiline-sachen
 #if 0
 	case "iterator":
-		unless (canPost(SNICKER)) return;
+		unless (canPost(SNICKER)) return 0;
 		sendmsg(source, "_notice_thread_iterator",
 			"[_iterator] blog entries have been requested "
 			"since creation.", ([
@@ -133,19 +162,18 @@ cmd(a, args, b, source, vars) {
 			]) );
 		return 1;
 #endif
+	case "unblog":
 	case "deblog":
 	case "delentry":
-		unless (canPost(SNICKER)) return;
-		// ist das ein typecheck ob args ein int is?
-		if (sizeof(regexp( ({ args[1] }) , "^[0-9][0-9]*$"))) {
-		    unless (delEntry(to_int(args[1]), source, vars)) {
-			    sendmsg(source,"_error_invalid_thread_item",
-				"There is no such thread item.", ([ ]));
-		    } else {
-			sendmsg(source, "_notice_thread_item_removed", 
-			    "Thread item [_number] has been removed.", 
-			    ([ "_number" : ARGS(1) ]) );
-		    }
+		unless (canPost(SNICKER)) return 0;
+		id = to_int(args[1]);
+		if (delEntry(id, source, vars)) {
+		    sendmsg(source, "_notice_thread_entry_removed",
+			    "Entry #[_id] has been removed.",
+			    ([ "_id" : id ]) );
+		} else {
+		    sendmsg(source, "_error_thread_invalid_entry",
+			    "#[_id]: no such entry", (["_id": id]));
 		}
 		return 1;
 	}
@@ -185,19 +213,19 @@ listLastEntries(number) {
 allEntries(source) {
     mapping* entries;
     mapping ar;
-	int i = 0;
+    int i = 0;
 
     entries = _thread || ({ });
 
     unless (sizeof(entries)) return 1;
 
     foreach (ar : entries) {
-	sendmsg(source, "_message_", "([_number]) \"[_topic]\", [_author]", ([ // ??
+	sendmsg(source, "_message_", "([_id]) \"[_topic]\", [_author]", ([ // ??
 	    "_topic" : ar["topic"],
 		"_text" : ar["text"],
 		"_author" : ar["author"],
 		"_date" : ar["date"],
-		"_number" : i++,
+		"_id" : i++,
 		"_nick_place" : MYNICK ]) );
     }
     return 1;
@@ -224,77 +252,80 @@ _notice_thread
 }
 #endif
 
-setSubject(num, thread) {
-	mapping* entries;
-
-	entries = _thread || ({ });
-	// TODO: das hier muss sicherer
-	entries[num]["thread"] = thread;
-	_thread = entries;
-	save();
-	return 1;
+setSubject(id, thread) {
+    unless (_thread && id >= 0 && id <= sizeof(_thread) && _thread[id]) return 0;
+    _thread[id]["thread"] = thread;
+    save();
+    return 1;
 }
 
 // TODO: topic uebergeben
 addEntry(text, unick, thread) {
-	mapping* entries;
-	mapping newentry = ([	"text" : text,
-				"author" : unick,
-				"date" : isotime(ctime(), 1),
-				"thread" : thread || "",
-			     ]);
-	entries = _thread || ({ });
-	entries += ({ newentry }); 
-	_thread = entries;
-	save();
-	castmsg(ME, "_notice_thread_item",
-		"[_nick] adds an entry in \"[_thread]\" of [_nick_place].", ([
-			"_entry" : text,
-			"_thread" : thread,
-			"_nick" : unick,
-		]) );
-	return 1;
+    mapping* entries;
+    mapping newentry = ([
+			 "text" : text,
+			 "author" : unick,
+			 "date" : time(),
+			 "thread" : thread || "",
+			 ]);
+    entries = _thread || ({ });
+    entries += ({ newentry });
+    int id = sizeof(entries) - 1;
+    _thread = entries;
+    save();
+    castmsg(ME, "_notice_thread_entry",
+	    thread ?
+	        "[_nick] adds an entry in [_nick_place] (#[_id]): \"[_thread]\":\n[_entry]" :
+	        "[_nick] adds an entry in [_nick_place] (#[_id]):\n[_entry]",
+	    ([
+	      "_entry": text,
+	      "_id": id,
+	      "_thread": thread,
+	      "_nick": unick,
+	      ]));
+    return 1;
 }
 
-addComment(text, unick, entry_id) {
-	mapping entry;
-	
-	if (sizeof(_thread) > entry_id) {
-		entry = _thread[entry_id];
-		unless (entry["comments"]) {
-			entry["comments"] = ({ });
-		}
-		entry["comments"] += ({ (["text" : text, "nick" : unick ]) });
-		// vSet("entries", entries);
-		castmsg(ME, "_notice_thread_comment",
-	    "[_nick] adds a comment in \"[_thread]\" of [_nick_place].", ([
-				"_entry" : entry["text"],
-				"_thread" : entry["thread"],
-				"_comment" : text,
-				"_nick" : unick,
-		]) );
-		save();
-		return 1;
-	}
-	return -1;
+addComment(text, unick, id) {
+    mapping entry;
+    unless (_thread && id >= 0 && id <= sizeof(_thread) && _thread[id]) return 0;
+
+    entry = _thread[id];
+    unless (entry["comments"]) {
+	entry["comments"] = ({ });
+    }
+    int date = time();
+    entry["comments"] += ({ (["text" : text, "nick" : unick, "date": date ]) });
+    // vSet("entries", entries);
+    save();
+    castmsg(ME, "_notice_thread_comment",
+	    entry["thread"] && strlen(entry["thread"]) ?
+	        "[_nick] adds a comment to \"[_thread]\" (entry #[_id]) of [_nick_place]:\n[_comment]" :
+	        "[_nick] adds a comment to entry #[_id] of [_nick_place]:\n[_comment]",
+	    ([
+	      "_entry" : entry["text"],
+	      "_id" : id,
+	      "_thread" : entry["thread"],
+	      "_comment" : text,
+	      "_nick" : unick,
+	      "_date": date,
+	      ]));
+    return 1;
 }
 
-delEntry(int number, source, vars)  {
+delEntry(int id, source, vars)  {
+    unless (_thread && id >= 0 && id <= sizeof(_thread) && _thread[id]) return 0;
+
     array(string) entries, authors, a;
     string unick;
-    int size;
-
-    entries = _thread || ({ });
-
-    unless (size = sizeof(entries)) return 0;
-    if (number >= size) return 0;
 
     if (canPost(unick = lower_case(SNICKER))) {
-	unless (lower_case(entries[number]["author"]) == unick) return 0;
+	unless (lower_case(_thread[id]["author"]) == unick) return 0;
     }
 
-    _thread = entries[0..number-1] + entries[number+1..];
-    //_thread[number] = 0;
+    //_thread = _thread[0..id-1] + _thread[id+1..];
+    // set to 0 instead so entry ids won't change
+    _thread[id] = 0;
     save();
 
     return 1;
@@ -438,14 +469,13 @@ rssExport(last) {
 		      "\t<title>"+ _thread[i]["thread"]  +"</title>\n"
 		      "\t<link>http://" + SERVER_HOST + ":33333" + webact +  "?comments=" + i + "</link>\n"
 		      "\t<description>" + _thread[i]["text"] + "</description>\n"
-		      "\t<dc:date>" + _thread[i]["date"] + "</dc:date>\n"
+		      "\t<dc:date>" + isotime(ctime(_thread[i]["date"]), 1) + "</dc:date>\n"
 		      "\t<dc:creator>" + _thread[i]["author"] + "</dc:creator>\n");
 		write("</item>\n");
 	}
-			
+
 	write("</rdf:RDF>\n");	
 }
-
 
 jscriptExport(last) {
 	mapping item;
@@ -460,9 +490,9 @@ jscriptExport(last) {
 			"}\n\n"
 			"document.blogentries = new Array(\n");
 	foreach (item : _thread[<last..]) {
-		buf += "new Entry(\"" + item["thread"] + "\", \""
+	    if (item) buf += "new Entry(\"" + item["thread"] + "\", \""
 			    	+ item["author"] + "\", \""
-				+ item["date"] + "\", \""
+				+ isotime(ctime(item["date"]), 1) + "\", \""
 				+ item["text"] + "\"),\n";
 	}
 	buf = buf[..<3] + ");";
@@ -482,7 +512,7 @@ displayMain(last) {
 		write("<table><tr><td class='blogthread'>" + _thread[i]["thread"]
 			+ "</td>"
 			  "<td class='blogauthor'>" + _thread[i]["author"] + "</td>"
-			  "<td class='blogdate'>" + _thread[i]["date"] + "</td></tr>" 
+			  "<td class='blogdate'>" + isotime(ctime(_thread[i]["date"]), 1) + "</td></tr>"
 			  "<tr><td class='blogtext' colspan=3>" + _thread[i]["text"]
 			+ "</td></tr>"
 			  "<tr><td colspan=3 align='right'>");
@@ -492,59 +522,96 @@ displayMain(last) {
 }
 #endif
 
-htMain(last) {
-	int i;
-	int len;
-	string t;
-	string ht =
-	  "<script type='text/javascript'>"
-	    "function toggle(e) { e = document.getElementById(e); e.className = e.className.match('hidden') ? e.className.replace(/ *hidden/, '') : e.className + ' hidden'; }"
-	  "</script>";
+htmlEntries(array(mapping) entries, int last, int js, string chan, string submit) {
+    P3((">> threads:htmlentries(%O, %O)\n", entries, last))
+    string t;
+    string ht = "";
+    if (js) ht +=
+	"<script type='text/javascript'>\n"
+	  "function toggle(e) { e = document.getElementById(e); e.className = e.className.match('hidden') ? e.className.replace(/ *hidden/, '') : e.className + ' hidden'; }\n"
+	"</script>\n";
+    string id_prefix = chan ? chan + "-" : "";
 
-	len = sizeof(_thread);
-	if (last > len) last = len;
-	
-	// reverse order
-	for (i = len-1; i >= len - last; i--) {
-		P3((">>> _thread[%O]: %O\n", i, _thread[i]))
-		mapping item = _thread[i];
-		t = htquote(item["text"]);
-		t = replace(t, "\n", "<br>\n");
-		t = replace(t, "<", "&lt;");
-		t = replace(t, ">", "&gt;");
+    mapping item;
+    int n = 0;
+    int id;
+    // reverse order
+    for (id = sizeof(entries) - 1; id >= 0; id--) {
+	P3((">>> entries[%O]: %O\n", id, entries[id]))
+	unless (item = entries[id]) continue;
 
-		string c = "";
-		if (item["comments"])
-		    foreach(mapping comment : item["comments"])
-			c += "<div class='comment'><span class='comment-author'>" + comment["nick"] + "</span>: <span class='comment-text'>" + comment["text"] + "</span></div>\n";
+	t = htquote(item["text"]);
+	t = replace(t, "\n", "<br>\n");
+	t = replace(t, "<", "&lt;");
+	t = replace(t, ">", "&gt;");
 
-		ht += "<div class='entry'>\n"
-			"<div class='title'>\n"
-		          "<span class='author'>" + item["author"] + "</span>\n"
-		          "<span class='subject'>" + htquote(item["thread"]) + "</span>\n"
-		        "</div>\n"
-		        "<div class='body'>\n"
-		          "<div class='text'>" + t + "</div>\n"
-		          "<div id='comments-" + i + "' class='comments hidden'>" + c + "</div>\n"
-		        "</div>\n"
-		        "<div class='footer'>\n"
-		          "<span class='date'>" + item["date"] + "</span>\n"
-			  "<span class='comments-link'>"
-		            "<a onclick=\"toggle('comments-"+i+"')\">" + sizeof(item["comments"]) + " comments</a>"
-		          "</span>\n"
-			"</div>\n"
-		      "</div>\n";
-	}
-	return "<div class='threads'>" + ht + "</div>";
+	string c = "";
+	if (item["comments"])
+	    foreach(mapping comment : item["comments"])
+		c += "<div class='comment' title='" + isotime(ctime(comment["date"]), 1) + "'><span class='comment-author'>" + comment["nick"] + "</span>: <span class='comment-text'>" + comment["text"] + "</span></div>\n";
+
+	ht +=
+	    "<div class='entry'>\n"
+	      "<div class='title'>\n"
+	        "<span class='id'>#" + id + "</span> - \n"
+		"<span class='author'>" + item["author"] + "</span>\n"
+		+ (item["thread"] && strlen(item["thread"]) ? " - " : "") +
+		"<span class='subject'>" + htquote(item["thread"]) + "</span>\n"
+	      "</div>\n"
+	      "<div class='body'>\n"
+		"<div class='text'>" + t + "</div>\n"
+		"<div id='comments-" + id_prefix + id + "' class='comments hidden'>" + c +
+	        (submit && strlen(submit) ?
+		  "<div class='comment-submit'>"
+		    "<textarea autocomplete='off'></textarea>"
+		    //FIXME: cmd is executed twice, because after a set-cookie it's parsed again
+	            "<input type='button' value='Comment' onclick=\"cmd('comment " + id + " '+ this.previousSibling.value, '" + submit + "')\">"
+		  "</div>" : "") +
+	        "</div>\n"
+	      "</div>\n"
+	      "<div class='footer'>\n"
+		"<span class='date'>" + isotime(ctime(item["date"]), 1) + "</span>\n"
+		"<span class='comments-link'>"
+		  "<a onclick=\"toggle('comments-" + id_prefix + id + "')\">" + sizeof(item["comments"]) + " comments</a>"
+		"</span>\n"
+	      "</div>\n"
+	    "</div>\n";
+	if (last && ++n >= last) break;
+    }
+    P3((">>> ht: %O\n", ht))
+    return "<div class='threads'>" + ht + "</div>";
 }
 
-htComments(data) {
+htMain(int last) {
+    return htmlEntries(_thread, last, 1);
+}
+
+entries(int last) {
+    array(mapping) entries = ({ });
+    int n = 0;
+    int id;
+    // reverse order
+    for (id = sizeof(_thread) - 1; id >= 0; id--) {
+	P3((">>> _thread[%O]: %O\n", id, _thread[id]))
+	unless (_thread[id]) continue;
+	entries += ({ _thread[id] });
+	if (++n >= last) break;
+    }
+
+    return entries;
+}
+
+jsonEntries(int last) {
+    return make_json(entries(last));
+}
+
+htComments(entry) {
     mapping item;
     string ht = "";
 
-    write("<b>" + data["author"] + "</b>: " + data["text"] + "<br><br>\n");
-    if (data["comments"]) {       
-	foreach(item : data["comments"]) {
+    write("<b>" + entry["author"] + "</b>: " + entry["text"] + "<br><br>\n");
+    if (entry["comments"]) {
+	foreach(item : entry["comments"]) {
 	    ht += "<b>" + item["nick"] + "</b>: " + item["text"] + "<br>\n";
 	}
     } else {
@@ -557,8 +624,8 @@ displayMain(last) {
     write(htMain(last));
 }
 
-displayComments(data) {
-    write(htComments(data));
+displayComments(entry) {
+    write(htComments(entry));
 }
 
 nntpget(cmd, args) {
@@ -573,13 +640,14 @@ case "ARTICLE":
 		i = to_int(args) - 1;
 		P2(("i is: %d\n", i))
 		P2(("entries: %O\n", _thread))
+		unless (_thread && i >= 0 && i <= sizeof(_thread) && _thread[i]) break;
 		item = _thread[i];
 		write(S("220 %d <%s%d@%s> article\n", 
 			i + 1, MYNICK, i + 1, SERVER_HOST));
 		write(S("From: %s\n", item["author"]));
 		write(S("Newsgroups: %s\n", MYNICK));
 		write(S("Subject: %s\n", item["thread"]));
-		write(S("Date: %s\n", item["date"]));
+		write(S("Date: %s\n", isotime(ctime(item["date"]), 1)));
 		write(S("Xref: %s %s:%d\n", SERVER_HOST, MYNICK, i + 1));
 		write(S("Message-ID: <%s$%d@%s>\n", MYNICK, i+1, SERVER_HOST));
 		write("\n");
@@ -592,11 +660,11 @@ case "GROUP":
 		break;
 case "XOVER":
 		for (i = 0; i < sizeof(_thread); i++) {
-			item = _thread[i];
+			unless(item = _thread[i]) continue;
 	                P2(("item: %O\n", item))
 			write(S("%d\t%s\t%s\t%s <%s%d@%s>\t1609\t22\tXref: news.t-online.com\t%s:%d\n", 
 				i+1, item["thread"],
-				item["author"], item["date"],
+				item["author"], isotime(ctime(item["date"]), 1),
 				MYNICK, i+1,
 				SERVER_HOST, MYNICK, i+1));
 		}
@@ -632,4 +700,12 @@ displayFooter() {
 
 canPost(snicker) {
     return qAide(snicker);
+}
+
+mayLog(mc) {
+    return abbrev("_notice_thread", mc) || abbrev("_message", mc);
+}
+
+numEntries() {
+    return sizeof(_thread);
 }

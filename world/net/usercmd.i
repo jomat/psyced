@@ -2430,6 +2430,14 @@ friend(rm, entity, ni, trustee) {
 		    insert_member(entity);
 		else
 		    insert_member(entity, parse_uniform(entity, 1)[URoot]);
+
+#ifdef _flag_enable_module_microblogging
+		string uni = psyc_name(ME);
+		sendmsg(entity, "_notice_place_enter_automatic_subscription_follow",
+			"Following [_nick_place]", (["_nick": MYNICK, "_nick_place": uni + "#follow" ]));
+		sendmsg(entity, "_notice_place_enter_automatic_subscription_follow",
+			"Following [_nick_place]", (["_nick": MYNICK, "_nick_place": uni + "#friends" ]));
+#endif
 		// this used to imply a symmetric request for
 		// friendship, but we prefer to make it an
 		// informational message instead. the protocol
@@ -3377,14 +3385,17 @@ subscribe(how, arg, quiet) {
 			// be like implementing HTTPs cookies..
 	//		if (arg = placeRequest(arg, "_request_enter_subscribe"))
 	//		    sups += ([ objectp(arg) ? arg->qName() : arg ]);
-			if (placeRequest(arg,
+			if (find_place(arg)) {
+			    // don't join to temporarily subscribed places when not online
+			    if (ONLINE || how == SUBSCRIBE_PERMANENT)
+				placeRequest(arg,
 #ifdef SPEC
 				     "_request_context_enter_subscribe",
 #else
 				     "_request_enter_subscribe",
 #endif
-					 0, quiet)) {
-				sups += ([ arg : how ]);
+				     0, quiet);
+			    sups += ([ arg : how ]);
 			} else return 1;
 		}
 		if (size != sizeof(sups)) {

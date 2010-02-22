@@ -19,6 +19,7 @@ body.threads,
 	padding: 4;
 	border: 1px solid #f33;
 }
+.comment-submit textarea, .comment-submit input,
 .Pe form input,select,textarea {
 	background: black;
 	color: #f33;
@@ -79,12 +80,17 @@ body.threads,
 
 .entry .body {
   background: black;
-  padding: 5px;
+  padding: 0.4em 0.4em 0 0.4em;
+}
+
+.entry .body .text,
+.entry .body .comment-submit {
+  padding-bottom: 0.4em;
 }
 
 .entry .body .comment {
-  margin: 0.5em 1em 0;
-  padding: 2px;
+  margin: 0.2em 1em;
+  padding: 0.2em;
   border-top: 1px solid #933;
 }
 
@@ -92,9 +98,19 @@ body.threads,
   font-weight: bold;
 }
 
-.entry .title {
-  display: none;
+.entry .body .comment-submit {
+  margin: 0 1em;
 }
+
+.entry .body .comment-submit input,
+.entry .body .comment-submit textarea {
+  font-size: 12px;
+}
+.entry .body .comment-submit textarea {
+  width: 100%;
+}
+
+.entry .title {}
 .entry .title .author {}
 .entry .title .subject {}
 
@@ -112,6 +128,36 @@ body.threads,
 
 .entry .footer .comments-link {
   float: right;
+}
+
+.tabs {
+  width: 574px;
+  margin: 22px 44px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid #933;
+}
+
+.tabs a {
+  padding: 2px;
+  background: #333;
+  border: 1px solid #933;
+  cursor: pointer;
+}
+
+.tabs a:hover {
+  background: #222;
+}
+
+.tabs > a.selected {
+  background: #000;
+}
+
+
+.tab-contents > div {
+  display: none;
+}
+.tab-contents > div.selected {
+  display: block;
 }
 
 .hidden {
