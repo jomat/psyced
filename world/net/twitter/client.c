@@ -11,6 +11,7 @@
  * - then in local.h #define TWITTER_KEY & TWITTER_SECRET
  */
 #include <net.h>
+#include <ht/http.h>
 
 inherit NET_PATH "http/oauth";
 
