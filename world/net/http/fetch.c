@@ -92,6 +92,11 @@ void connect() {
 	::connect(thehost, port);
 }
 
+// some people think these are case sensitive.. let's fix it for them (only works for most cases)
+string http_header_capitalize(string name) {
+    return regreplace(name, "(^.|-.)", (: return upper_case($1); :), 1);
+}
+
 varargs int real_logon(int failure) {
 	string scheme;
 
@@ -115,7 +120,7 @@ varargs int real_logon(int failure) {
 
 	buffer = "";
 	foreach (string key, string value : rheaders) {
-	    buffer += key + ": " + value + "\r\n";
+	    buffer += http_header_capitalize(key) + ": " + value + "\r\n";
 	}
 
 	// we won't need connection: close w/ http/1.0

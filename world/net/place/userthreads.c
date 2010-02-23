@@ -16,7 +16,7 @@ volatile mixed lastTry;
 
 volatile string owner;
 volatile string channel;
-volatile object twitter;
+volatile object twitter, identica;
 
 load(name, keep) {
     P3((">> userthreads:load(%O, %O)\n", name, keep))
@@ -25,6 +25,7 @@ load(name, keep) {
     vSet("owners", ([ owner: 0 ]));
     vSet("privacy", "private");
     vSet("twitter", 0);
+    vSet("identica", 0);
 
     vSet("_restrict_invitation", BLAME);
     vSet("_filter_conversation", BLAME);
@@ -55,6 +56,7 @@ enter(source, mc, data, vars) {
     if (p == source) {
 	p->sChannel(MYNICK);
 	if (v("twitter") && !twitter) twitter = clone_object(NET_PATH "twitter/client")->load(source);
+	if (v("identica") && !identica) identica = clone_object(NET_PATH "identica/client")->load(source);
     }
 
     return ::enter(source, mc, data, vars);
@@ -144,9 +146,29 @@ _request_twitter(source, mc, data, vars, b) {
     return 1;
 }
 
+_request_identica(source, mc, data, vars, b) {
+    string sw = vars["_switch"];
+    if (sw == "on" || sw == "enabled" || sw == "1") {
+	unless (identica) identica = clone_object(NET_PATH "identica/client")->load(source);
+	vSet("identica", 1);
+	save();
+    } else if (sw == "off" || sw == "disabled" || sw == "0") {
+	if (identica) identica = 0;
+	vSet("identica", 0);
+	save();
+    }
+    DT(else if (sw == "test") identica->home_timeline();)
+
+    sendmsg(source, "_status_identica", "Identi.ca submission is [_status].", (["_status": v("identica") ? "enabled" : "disabled"]));
+    return 1;
+}
+
+
 addEntry(text, unick, thread) {
-    if (::addEntry(text, unick, thread) && v("twitter") && twitter)
-	twitter->status_update(text);
+    if (::addEntry(text, unick, thread)) {
+	if (v("twitter") && twitter) twitter->status_update(text);
+	if (v("identica") && identica) identica->status_update(text);
+    }
 }
 
 htMain(int last) {

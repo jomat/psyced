@@ -59,6 +59,7 @@ void parse_request_token(string body, mapping headers, int http_status) {
 	url_parse_query(request_params, body);
 	if (strlen(request_params["oauth_token"]) && strlen(request_params["oauth_token_secret"])) {
 	    shared_memory("oauth_request_tokens")[request_params["oauth_token"]] = ME;
+	    //P3((">>> adding token: %O to shm: %O\n", request_params["oauth_token"], shared_memory("oauth_request_tokens")))
 	    sendmsg(user, "_notice_oauth_authorize_url", "Open [_url] to perform authorization.",
 		    (["_url": authorize_url + "?oauth_token=" + request_params["oauth_token"]]));
 	    return;

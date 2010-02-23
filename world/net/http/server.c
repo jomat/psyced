@@ -179,8 +179,8 @@ case "/static/":
 case "/oauth":
 	object oauth;
 	http_ok(version);
-	//PT((">>> shm: %O\n", shared_memory("oauth_request_tokens")))
-	if (query["oauth_verifier"] && (oauth = shared_memory("oauth_request_tokens")[query["oauth_token"]])) {
+	//PT((">>> looking up token %O in shm: %O\n", query["oauth_token"], shared_memory("oauth_request_tokens")))
+	if (oauth = shared_memory("oauth_request_tokens")[query["oauth_token"]]) {
 	    //PT((">>> oauth: %O\n", oauth))
 	    oauth->verified(query["oauth_verifier"]);
 	    m_delete(shared_memory("oauth_request_tokens"), query["oauth_token"]);

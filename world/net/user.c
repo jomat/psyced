@@ -285,9 +285,11 @@ htDescription(anonymous, query, headers, qs, variant, vars) {
 //
 
 # ifdef _flag_enable_module_microblogging
-    mapping channels;
     string htchannels;
-    if (vars["_channels"] && (channels = parse_json(vars["_channels"]))) {
+    mapping channels;
+    if (mappingp(vars["_channels"])) channels = vars["_channels"];
+    else channels = parse_json(vars["_channels"]);
+    if (channels) {
 	P3((">>> channels: %O\n", channels))
 	htchannels =
 	    "<script type='text/javascript'>\n"

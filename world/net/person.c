@@ -475,7 +475,8 @@ qDescription(source, vars, profile, itsme) {
 	    unless (objectp(p) && (p->isPublic() || (source && p->qMember(source))) /*&& p->numEntries() > 0*/) continue;
 	    channels += ([ p->qChannel(): p->entries(10)]);
 	}
-	dv["_channels"] = make_json(channels);
+	// don't make_json for anonymous queries which are handled locally
+	dv["_channels"] = source ? make_json(channels) : channels;
 #endif
 //	PT(("sending: %O\n", dv))
 	return dv;
