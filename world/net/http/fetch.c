@@ -25,8 +25,11 @@ inherit NET_PATH "queue2";
 inherit NET_PATH "queue";
 #endif
 
+// additional headers. we keep them lower-case to ensure we have no
+// double items in there. HTTP ignores case by spec.
+volatile mapping rheaders = ([ "user-agent": SERVER_VERSION ]);
+
 volatile mapping headers, fheaders;
-volatile mapping rheaders = (["User-Agent": SERVER_VERSION]);
 volatile string http_message;
 volatile int http_status, port, fetching, ssl;
 volatile string buffer, thehost, url, fetched, host, resource, method;
@@ -59,10 +62,10 @@ varargs void fetch(string murl, string meth, mixed body, mapping hdrs) {
 object load() { return ME; }
 
 void sAuth(string user, string password) {
-	rheaders["Authorization"] = "Basic " + encode_base64(user +":"+ password);
+	rheaders["authorization"] = "basic "+ encode_base64(user +":"+ password);
 }
 
-string sAgent(string a) { return rheaders["User-Agent"] = a; }
+string sAgent(string a) { return rheaders["user-agent"] = a; }
 
 // net/place/news code follows.
 
@@ -76,13 +79,15 @@ void connect() {
 			P0(("%O couldn't parse %O\n", ME, url))
 			return 0;
 		}
-		thehost = lower_case(thehost);
+		//thehost = lower_case(thehost); // why? who needs that?
 		ssl = t == "s";
 	}
 	P4(("URL, THEHOST: %O, %O\n", url, thehost))
-	unless (port) 
-	    unless (sscanf(thehost, "%s:%d", thehost, port) == 2)
-		port = ssl? HTTPS_SERVICE: HTTP_SERVICE;
+	unless (port) {
+		unless (sscanf(thehost, "%s:%d", thehost, port) == 2)
+		    port = ssl? HTTPS_SERVICE: HTTP_SERVICE;
+		rheaders["host"] = thehost;
+	}
 	P2(("Resolving %O and connecting.\n", thehost))
 	::connect(thehost, port);
 }
@@ -103,10 +108,10 @@ varargs int real_logon(int failure) {
 	    body = rbody;
 	} else if (mappingp(rbody) && sizeof(rbody)) {
 	    body = make_query_string(rbody);
-	    unless (rheaders["Content-Type"])
-		rheaders["Content-Type"] = "application/x-www-form-urlencoded";
+	    unless (rheaders["content-type"])
+		rheaders["content-type"] = "application/x-www-form-urlencoded";
 	}
-	if (strlen(body)) rheaders["Content-Length"] = strlen(body);
+	if (strlen(body)) rheaders["content-length"] = strlen(body);
 
 	buffer = "";
 	foreach (string key, string value : rheaders) {
@@ -118,8 +123,7 @@ varargs int real_logon(int failure) {
 	P2(("%O fetching /%s from %O\n", ME, resource, host))
 	P4(("%O using %O\n", ME, buffer))
 	emit(method + " /"+ resource +" HTTP/1.0\r\n"
-		 "Host: "+ host +"\r\n"
-		 + buffer + "\r\n" + body);
+	     + buffer + "\r\n" + body);
 
 	buffer = "";
 	next_input_to(#'parse_status);
@@ -189,9 +193,9 @@ disconnected(remainder) {
 	P2(("%O got disconnected.. %O\n", ME, remainder))
 	headers["_fetchtime"] = isotime(ctime(time()), 1);
 	if (headers["last-modified"])
-	    rheaders["If-Modified-Since"] = headers["last-modified"];
+	    rheaders["if-modified-since"] = headers["last-modified"];
 	//if (headers["etag"])
-	//    rheaders["If-None-Match"] = headers["etag"]; // heise does not work with etag
+	//    rheaders["if-none-match"] = headers["etag"]; // heise does not work with etag
 
 	fetched = buffer;
 	if (remainder) fetched += remainder;
@@ -240,11 +244,11 @@ string qHeader(mixed key) {
 }
 
 string qReqHeader(string key) {
-	return rheaders[key];
+	return rheaders[lower_case(key)];
 }
 
 void sReqHeader(string key, string value) {
-	rheaders[key] = value;
+	rheaders[lower_case(key)] = value;
 }
 
 varargs void refetch(closure cb, int willbehave) {
@@ -252,12 +256,7 @@ varargs void refetch(closure cb, int willbehave) {
 	unless (fetching) connect();
 }
 
-void reset() {
-	fetched = 0;
+protected create() {
 	qCreate();
 	qInit(ME, 150, 5);
-}
-
-protected create() {
-	reset();
 }

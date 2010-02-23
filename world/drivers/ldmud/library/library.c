@@ -18,7 +18,6 @@ inherit PRO_PATH "http/library2";
 # ifdef SANDBOX
 inherit NET_PATH "library/sandbox";
 # endif
-inherit NET_PATH "library/base64";
 inherit NET_PATH "library/hmac";
 inherit NET_PATH "library/dns";
 inherit NET_PATH "library/htbasics";

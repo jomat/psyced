@@ -112,7 +112,7 @@ process() {
     P4(("found cookie: %O\n", t))
     if (t && sscanf(t, "psyced=\"%s\"", t)) {
 	P3(("got cookie: %O\n", t))
-	query = parse_query(query, t);
+	query = url_parse_query(query, t);
 	P4(("parsed cookie: %O\n", query))
     }
 #ifdef GENERIC_COOKIES	// we might need them someday..?
@@ -135,7 +135,7 @@ process() {
 #endif
     if (sscanf(url, "%s?%s", file, qs)) {
 	P3(("got query: %O\n", qs))
-	query = parse_query(query, qs);
+	query = url_parse_query(query, qs);
     } else {
 	file = url;
     }

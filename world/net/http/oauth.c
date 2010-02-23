@@ -45,13 +45,13 @@ varargs void fetch(object ua, string url, string method, mapping get, mapping po
     foreach (string key, string value : oauth)
 	p += (strlen(p) ? "," : "") + key + "=\"" + urlencode(to_string(value)) + "\"";
 
-    ua->fetch(url, method, post, (["Authorization": "OAuth " + p]));
+    ua->fetch(url, method, post, (["authorization": "OAuth " + p]));
 }
 
 void parse_request_token(string body, mapping headers) {
     P3((">> oauth:parse_request_token(%O, %O)\n", body, headers))
     request_params = ([]);
-    parse_query(request_params, body);
+    url_parse_query(request_params, body);
     if (strlen(request_params["oauth_token"]) && strlen(request_params["oauth_token_secret"])) {
 	shared_memory("oauth_request_tokens")[request_params["oauth_token"]] = ME;
 	sendmsg(user, "_notice_oauth_authorize_url", "Open [_url] to perform authorization.",
@@ -64,7 +64,7 @@ void parse_request_token(string body, mapping headers) {
 void parse_access_token(string body, mapping headers) {
     P3((">> oauth:parse_access_token(%O, %O)\n", body, headers))
     access_params = ([]);
-    parse_query(access_params, body);
+    url_parse_query(access_params, body);
     if (strlen(access_params["oauth_token"]) && strlen(access_params["oauth_token_secret"])) {
 	sendmsg(user, "_notice_oauth_success", "OAuth successful.");
     } else {
