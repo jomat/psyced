@@ -13,6 +13,7 @@
 #include <net.h>
 #include <uniform.h>
 #include <services.h>
+#include <regexp.h>
 
 virtual inherit NET_PATH "output"; // virtual: in case we get inherited..
 inherit NET_PATH "connect";
@@ -25,11 +26,10 @@ inherit NET_PATH "queue";
 #endif
 
 volatile mapping headers, fheaders;
-volatile string modificationtime, etag, http_message;
-volatile string useragent = SERVER_VERSION;
+volatile mapping rheaders = (["User-Agent": SERVER_VERSION]);
+volatile string http_message;
 volatile int http_status, port, fetching, ssl;
-volatile string buffer, thehost, url, fetched, host, resource;
-volatile string basicauth = "";
+volatile string buffer, thehost, url, fetched, host, resource, method;
 
 int parse_status(string all);
 int parse_header(string all);
@@ -37,7 +37,9 @@ int buffer_content(string all);
 
 string qHost() { return thehost; }
 
-void fetch(string murl) {
+varargs void fetch(string murl, string meth, mapping hdrs) {
+	method = meth || "GET";
+	if (hdrs) rheaders += hdrs;
 	if (url != murl) {
 		// accept.c does this for us:
 		//url = replace(murl, ":/", "://");
@@ -55,11 +57,10 @@ void fetch(string murl) {
 object load() { return ME; }
 
 void sAuth(string user, string password) {
-	basicauth = "Authorization: Basic "+
-	    encode_base64(user +":"+ password) +"\r\n";
+	rheaders["Authorization"] = "Basic " + encode_base64(user +":"+ password);
 }
 
-string sAgent(string a) { return useragent = a; }
+string sAgent(string a) { return rheaders["User-Agent"] = a; }
 
 // net/place/news code follows.
 
@@ -95,17 +96,15 @@ varargs int real_logon(int failure) {
 	unless (url) return -3;
 	unless (resource) sscanf(url, "%s://%s/%s", scheme, host, resource); 
 
-	buffer = basicauth;
-	if (modificationtime)
-	    buffer += "If-Modified-Since: "+ modificationtime + "\r\n";
-	if (useragent) buffer += "User-Agent: "+ useragent +"\r\n";
-	//if (etag)
-	//	emit("If-None-Match: " + etag + "\r\n");
+	buffer = "";
+	foreach (string key, string value : rheaders) {
+	    buffer += key + ": " + value + "\r\n";
+	}
 	// we won't need connection: close w/ http/1.0
 	//emit("Connection: close\r\n\r\n");		
 	P2(("%O fetching /%s from %O\n", ME, resource, host))
 	P4(("%O using %O\n", ME, buffer))
-	emit("GET /"+ resource +" HTTP/1.0\r\n"
+	emit(method + " /"+ resource +" HTTP/1.0\r\n"
 		 "Host: "+ host +"\r\n"
 		 + buffer +
 		 "\r\n");
@@ -178,9 +177,9 @@ disconnected(remainder) {
 	P2(("%O got disconnected.. %O\n", ME, remainder))
 	headers["_fetchtime"] = isotime(ctime(time()), 1);
 	if (headers["last-modified"])
-	    modificationtime = headers["last-modified"];
-	if (headers["etag"]) 
-	    etag = headers["etag"]; // heise does not work with etag
+	    rheaders["If-Modified-Since"] = headers["last-modified"];
+	//if (headers["etag"])
+	//    rheaders["If-None-Match"] = headers["etag"]; // heise does not work with etag
 
 	fetched = buffer;
 	if (remainder) fetched += remainder;
@@ -228,12 +227,25 @@ string qHeader(mixed key) {
 	return 0;
 }
 
+string qReqHeader(string key) {
+	return rheaders[key];
+}
+
+void sReqHeader(string key, string value) {
+	rheaders[key] = value;
+}
+
 varargs void refetch(closure cb, int willbehave) {
 	enqueue(ME, ({ cb, willbehave }));
 	unless (fetching) connect();
 }
 
-protected create() {
+void reset() {
+	fetched = 0;
 	qCreate();
 	qInit(ME, 150, 5);
+}
+
+protected create() {
+	reset();
 }

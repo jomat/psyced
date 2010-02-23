@@ -134,6 +134,20 @@ string urldecode(string txt) {
 	return txt;
 }
 
+static string xx2c(string xx) {
+    string c = " ";
+    c[0] = hex2int(xx);
+    return c;
+}
+
+static string c2xx(string c) {
+    return "%" + upper_case(sprintf("%x", c[0]));
+}
+
+string urlencode(string txt) {
+    return regreplace(txt, "[^A-Za-z0-9._~-]", #'c2xx, 1);
+}
+
 #ifndef DEFAULT_HT_TYPE
 # define DEFAULT_HT_TYPE	"text/plain"
 #endif
@@ -176,4 +190,20 @@ default:
 	return DEFAULT_HT_TYPE;
     }
     return 0;
+}
+
+parse_query(query, qs) {
+    foreach (string pair : explode(qs, "&")) {
+	string key, val;
+
+	if (sscanf(pair, "%s=%s", key, val)) {
+	    P3(("query: pair: %s, %s\n", urldecode(key),
+		   urldecode(val)))
+	    query[urldecode(key)] = urldecode(val);
+	} else {
+	    P3(("query: single: %s\n", urldecode(pair)))
+	    query[urldecode(pair)] = 1;
+	}
+    }
+    return query;
 }

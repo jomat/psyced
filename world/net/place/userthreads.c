@@ -16,6 +16,7 @@ volatile mixed lastTry;
 
 volatile string owner;
 volatile string channel;
+volatile object twitter;
 
 load(name, keep) {
     P3((">> userthreads:load(%O, %O)\n", name, keep))
@@ -23,6 +24,7 @@ load(name, keep) {
     sscanf(name, "~%s#%s", owner, channel);
     vSet("owners", ([ owner: 0 ]));
     vSet("privacy", "private");
+    vSet("twitter", 0);
 
     vSet("_restrict_invitation", BLAME);
     vSet("_filter_conversation", BLAME);
@@ -52,6 +54,7 @@ enter(source, mc, data, vars) {
 
     if (p == source) {
 	p->sChannel(MYNICK);
+	if (v("twitter") && !twitter) twitter = clone_object(NET_PATH "twitter/client")->load(source);
     }
 
     return ::enter(source, mc, data, vars);
@@ -122,6 +125,23 @@ _request_privacy(source, mc, data, vars, b) {
 	save();
     }
     sendmsg(source, "_status_privacy", "Privacy is: [_privacy].", (["_privacy": v("privacy")]));
+    return 1;
+}
+
+_request_twitter(source, mc, data, vars, b) {
+    string sw = vars["_switch"];
+    if (sw == "on" || sw == "enabled" || sw == "1") {
+	unless (twitter) twitter = clone_object(NET_PATH "twitter/client")->load(source);
+	vSet("twitter", 1);
+	save();
+    } else if (sw == "off" || sw == "disabled" || sw == "0") {
+	if (twitter) twitter = 0;
+	vSet("twitter", 0);
+	save();
+    }
+    DT(else if (sw == "test") twitter->home();)
+
+    sendmsg(source, "_status_twitter", "Twitter submission is [_status].", (["_status": v("twitter") ? "enabled" : "disabled"]));
     return 1;
 }
 

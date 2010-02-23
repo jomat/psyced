@@ -100,22 +100,6 @@ parse_header(input) {
     }
 }
 
-parse_query(query, qs) {
-    foreach (string pair : explode(qs, "&")) {
-	string key, val;
-
-	if (sscanf(pair, "%s=%s", key, val)) {
-	    P3(("query: pair: %s, %s\n", urldecode(key),
-		   urldecode(val)))
-	    query[urldecode(key)] = urldecode(val);
-	} else {
-	    P3(("query: single: %s\n", urldecode(pair)))
-	    query[urldecode(pair)] = 1;
-	}
-    }
-    return query;
-}
-
 process() {
     string t, ext;
     mapping query = ([]);
@@ -192,6 +176,15 @@ case "/static": // really don't like to do this, but the IE stores directories
 case "/static/":
 	file = "/static/index.html";
 	break;
+case "/oauth":
+	object oauth;
+	//PT((">>> shm: %O\n", shared_memory("oauth_request_tokens")))
+	if (query["oauth_verifier"] && (oauth = shared_memory("oauth_request_tokens")[query["oauth_token"]])) {
+	    //PT((">>> oauth: %O\n", oauth))
+	    oauth->verified(query["oauth_verifier"]);
+	    m_delete(shared_memory("oauth_request_tokens"), query["oauth_token"]);
+	}
+	return 1;
     }
     switch (file[1]) {
     case '~':

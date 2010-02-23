@@ -171,6 +171,7 @@ volatile mapping share = ([
 	       "_understand_modules" : PSYC_ROUTING,
 	       "_using_modules" : PSYC_ROUTING,
 	]),
+	"oauth_request_tokens": ([ ]),
 ]);
 
 varargs mixed shared_memory(mixed datensatz, mixed value) {
