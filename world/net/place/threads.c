@@ -267,17 +267,15 @@ setSubject(id, thread) {
 
 // TODO: topic uebergeben
 addEntry(text, unick, thread) {
-    mapping* entries;
+    int id = sizeof(_thread);
     mapping newentry = ([
-			 "text" : text,
-			 "author" : unick,
-			 "date" : time(),
-			 "thread" : thread || "",
+			 "id": id,
+			 "text": text,
+			 "author": unick,
+			 "date": time(),
+			 "thread": thread || "",
 			 ]);
-    entries = _thread || ({ });
-    entries += ({ newentry });
-    int id = sizeof(entries) - 1;
-    _thread = entries;
+    _thread += ({ newentry });
     save();
     castmsg(ME, "_notice_thread_entry",
 	    thread ?
@@ -528,23 +526,18 @@ displayMain(last) {
 }
 #endif
 
-htmlEntries(array(mapping) entries, int last, int js, string chan, string submit) {
-    P3((">> threads:htmlentries(%O, %O)\n", entries, last))
-    string t;
-    string ht = "";
+htmlEntries(array(mapping) entries, int js, string chan, string submit) {
+    P3((">> threads:htmlentries(%O, %O, %O, %O)\n", entries, js, chan, submit))
+    string t, ht = "";
+    string id_prefix = chan ? chan + "-" : "";
     if (js) ht +=
 	"<script type='text/javascript'>\n"
 	  "function toggle(e) { e = document.getElementById(e); e.className = e.className.match('hidden') ? e.className.replace(/ *hidden/, '') : e.className + ' hidden'; }\n"
 	"</script>\n";
-    string id_prefix = chan ? chan + "-" : "";
 
-    mapping item;
-    int n = 0;
-    int id;
-    // reverse order
-    for (id = sizeof(entries) - 1; id >= 0; id--) {
-	P3((">>> entries[%O]: %O\n", id, entries[id]))
-	unless (item = entries[id]) continue;
+    foreach (mapping item : entries) {
+	P3((">>> item: %O\n", item))
+	unless (item) continue;
 
 	t = htquote(item["text"]);
 	t = replace(t, "\n", "<br>\n");
@@ -559,48 +552,45 @@ htmlEntries(array(mapping) entries, int last, int js, string chan, string submit
 	ht +=
 	    "<div class='entry'>\n"
 	      "<div class='title'>\n"
-	        "<span class='id'>#" + id + "</span> - \n"
+	        "<span class='id'>#" + item["id"] + "</span> - \n"
 		"<span class='author'>" + item["author"] + "</span>\n"
 		+ (item["thread"] && strlen(item["thread"]) ? " - " : "") +
 		"<span class='subject'>" + htquote(item["thread"]) + "</span>\n"
 	      "</div>\n"
 	      "<div class='body'>\n"
 		"<div class='text'>" + t + "</div>\n"
-		"<div id='comments-" + id_prefix + id + "' class='comments hidden'>" + c +
+		"<div id='comments-" + id_prefix + item["id"] + "' class='comments hidden'>" + c +
 	        (submit && strlen(submit) ?
 		  "<div class='comment-submit'>"
 		    "<textarea autocomplete='off'></textarea>"
 		    //FIXME: cmd is executed twice, because after a set-cookie it's parsed again
-	            "<input type='button' value='Comment' onclick=\"cmd('comment " + id + " '+ this.previousSibling.value, '" + submit + "')\">"
+	            "<input type='button' value='Comment' onclick=\"cmd('comment " + item["id"] + " '+ this.previousSibling.value, '" + submit + "')\">"
 		  "</div>" : "") +
 	        "</div>\n"
 	      "</div>\n"
 	      "<div class='footer'>\n"
 		"<span class='date'>" + isotime(ctime(item["date"]), 1) + "</span>\n"
 		"<span class='comments-link'>"
-		  "<a onclick=\"toggle('comments-" + id_prefix + id + "')\">" + sizeof(item["comments"]) + " comments</a>"
+		  "<a onclick=\"toggle('comments-" + id_prefix + item["id"] + "')\">" + sizeof(item["comments"]) + " comments</a>"
 		"</span>\n"
 	      "</div>\n"
 	    "</div>\n";
-	if (last && ++n >= last) break;
     }
     P3((">>> ht: %O\n", ht))
     return "<div class='threads'>" + ht + "</div>";
 }
 
 htMain(int last) {
-    return htmlEntries(_thread, last, 1);
+    return htmlEntries(entries(last), 1);
 }
 
 entries(int last) {
     array(mapping) entries = ({ });
-    int n = 0;
-    int id;
-    // reverse order
-    for (id = sizeof(_thread) - 1; id >= 0; id--) {
-	P3((">>> _thread[%O]: %O\n", id, _thread[id]))
-	unless (_thread[id]) continue;
-	entries += ({ _thread[id] });
+    int i, n = 0;
+    for (i = sizeof(_thread) - 1; i >= 0; i--) {
+	P3((">>> _thread[%O]: %O\n", i, _thread[i]))
+	unless (_thread[i]) continue;
+	entries += ({ _thread[i] });
 	if (++n >= last) break;
     }
 
