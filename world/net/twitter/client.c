@@ -1,6 +1,11 @@
 /* twitter client
  *
  * - register @ http://twitter.com/apps
+ *   - settings:
+ *     - name: e.g. psyc://your.host/
+ *     - app type: browser
+ *     - callback url: http://your.host/oauth
+ *     - access type: read/write
  * - then in local.h #define TWITTER_KEY & TWITTER_SECRET
  */
 #include <net.h>
