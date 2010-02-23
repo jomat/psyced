@@ -202,15 +202,14 @@ disconnected(remainder) {
 	fheaders = headers;
 	buffer = headers = 0;
 	switch (http_status) {
-	case R_OK:
+	default:
 		mixed *waiter;
 		while (qSize(ME)) {
 			waiter = shift(ME);
 			P2(("%O calls back.. body is %O\n", ME, fetched))
-			funcall(waiter[0], fetched, waiter[1] ? fheaders : copy(fheaders));
+			funcall(waiter[0], fetched, waiter[1] ? fheaders : copy(fheaders), http_status);
 		}
-		break;
-	default:
+		if (http_status == R_OK) break;
 		// doesn't seem to get here when HTTP returns 301 or 302. strange.
 		// fall thru
 	case R_NOTMODIFIED:

@@ -9,6 +9,7 @@
 
 #include <net.h>
 #include <tls.h>
+#include <ht/http.h>
 
 string consumer_key;
 string consumer_secret;
@@ -51,28 +52,32 @@ varargs void fetch(object ua, string url, string method, mapping post, mapping o
     ua->fetch(url, method, post, (["authorization": "OAuth " + p]));
 }
 
-void parse_request_token(string body, mapping headers) {
-    P3((">> oauth:parse_request_token(%O, %O)\n", body, headers))
-    request_params = ([]);
-    url_parse_query(request_params, body);
-    if (strlen(request_params["oauth_token"]) && strlen(request_params["oauth_token_secret"])) {
-	shared_memory("oauth_request_tokens")[request_params["oauth_token"]] = ME;
-	sendmsg(user, "_notice_oauth_authorize_url", "Open [_url] to perform authorization.",
-		(["_url": authorize_url + "?oauth_token=" + request_params["oauth_token"]]));
-    } else {
-	sendmsg(user, "_error_oauth_token_request", "OAuth failed: could not get a request token.");
+void parse_request_token(string body, mapping headers, int http_status) {
+    P3((">> oauth:parse_request_token(%O, %O, %O)\n", body, headers, http_status))
+    if (http_status == R_OK) {
+	request_params = ([]);
+	url_parse_query(request_params, body);
+	if (strlen(request_params["oauth_token"]) && strlen(request_params["oauth_token_secret"])) {
+	    shared_memory("oauth_request_tokens")[request_params["oauth_token"]] = ME;
+	    sendmsg(user, "_notice_oauth_authorize_url", "Open [_url] to perform authorization.",
+		    (["_url": authorize_url + "?oauth_token=" + request_params["oauth_token"]]));
+	    return;
+	}
     }
+    sendmsg(user, "_error_oauth_token_request", "OAuth failed: could not get a request token.");
 }
 
-void parse_access_token(string body, mapping headers) {
-    P3((">> oauth:parse_access_token(%O, %O)\n", body, headers))
-    access_params = ([]);
-    url_parse_query(access_params, body);
-    if (strlen(access_params["oauth_token"]) && strlen(access_params["oauth_token_secret"])) {
-	sendmsg(user, "_notice_oauth_success", "OAuth successful.");
-    } else {
-	sendmsg(user, "_error_oauth_token_access", "OAuth failed: could not get an access token.");
+void parse_access_token(string body, mapping headers, int http_status) {
+    P3((">> oauth:parse_access_token(%O, %O, %O)\n", body, headers, http_status))
+    if (http_status == R_OK) {
+	access_params = ([]);
+	url_parse_query(access_params, body);
+	if (strlen(access_params["oauth_token"]) && strlen(access_params["oauth_token_secret"])) {
+	    sendmsg(user, "_notice_oauth_success", "OAuth successful.");
+	    return;
+	}
     }
+    sendmsg(user, "_error_oauth_token_access", "OAuth failed: could not get an access token.");
 }
 
 void verified(string verifier) {

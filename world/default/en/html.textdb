@@ -1352,8 +1352,9 @@ _PAGES_start_description
 |<script>
 |var longer = 44
 |
-|function cmd(wish) {
+|function cmd(wish, dest) {
 |	Pef.cmd.value = wish
+|	Pef.dest.value = dest || ''
 |	Pef.submit()
 |	longer = 44
 |	return false

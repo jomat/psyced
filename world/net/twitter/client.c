@@ -1,4 +1,5 @@
 /* twitter client
+ * http://apiwiki.twitter.com/Twitter-API-Documentation
  *
  * - register @ http://twitter.com/apps
  *   - settings:
@@ -23,8 +24,10 @@ object load(object usr, string key, string secret, string request, string access
     return ::load(usr, key, secret, request, access, authorize);
 }
 
-void parse_status_update(string body, string headers) {
-    P3(("twitter/client:parse_status_update(%O, %O)\n", body, headers))
+void parse_status_update(string body, string headers, int http_status) {
+    P3(("twitter/client:parse_status_update(%O, %O, %O)\n", body, headers, http_status))
+    if (http_status != R_OK)
+	sendmsg(user, "_error_twitter_status_update", "Error: failed to post status update on twitter.");
 }
 
 void status_update(string text) {
@@ -36,8 +39,8 @@ void status_update(string text) {
     fetch(ua, "http://api.twitter.com/1/statuses/update.json", "POST", (["status": text]));
 }
 
-void parse_home_timeline(string body, string headers) {
-    P3(("twitter/client:parse_home_timeline(%O, %O)\n", body, headers))
+void parse_home_timeline(string body, string headers, int http_status) {
+    P3(("twitter/client:parse_home_timeline(%O, %O, %O)\n", body, headers, http_status))
 }
 
 void home_timeline() {
