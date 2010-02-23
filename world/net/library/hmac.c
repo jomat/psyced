@@ -1,11 +1,19 @@
-#include <net.h>
+#include "base64.c"
 
-inherit NET_PATH "library/base64";
-
-#include HTTP_PATH "library.i"
+#if 0 // inline this (see below)
+static string xx2c(string xx) {
+    string c = " ";
+    c[0] = hex2int(xx);
+    return c;
+}
+#endif
 
 string hmac_bin(int method, string key, string arg) {
-    return regreplace(hmac(method, key, arg), "..", #'xx2c, 1); //'
+    string c = " ";
+    return regreplace(hmac(method, key, arg), "..", (:
+	    c[0] = hex2int($1);
+	    return c;
+						    :), 1);
 }
 
 string hmac_base64(int method, string key, string arg) {

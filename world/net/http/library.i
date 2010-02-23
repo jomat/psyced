@@ -134,18 +134,15 @@ string urldecode(string txt) {
 	return txt;
 }
 
-static string xx2c(string xx) {
-    string c = " ";
-    c[0] = hex2int(xx);
-    return c;
-}
-
+#if 0	// inline this instead, see below
 static string c2xx(string c) {
-    return "%" + upper_case(sprintf("%x", c[0]));
+    return "%"+ upper_case(sprintf("%x", c[0]));
 }
+#endif
 
 string urlencode(string txt) {
-    return regreplace(txt, "[^A-Za-z0-9._~-]", #'c2xx, 1);
+    return regreplace(txt, "[^A-Za-z0-9._~-]", (:
+		"%"+ upper_case(sprintf("%x", $1[0])) :), 1);
 }
 
 #ifndef DEFAULT_HT_TYPE
@@ -192,7 +189,7 @@ default:
     return 0;
 }
 
-parse_query(query, qs) {
+mapping url_parse_query(mapping query, string qs) {
     foreach (string pair : explode(qs, "&")) {
 	string key, val;
 

@@ -61,5 +61,5 @@ alias	cvsdeath 'find . -name CVS -print -prune -exec rm -r {} \;'
 # then "git fetch <nick>" and view with "gdifR <nick>"
 alias	gdifR	'git diff master..\!:1/master |& difvu -'
 # to merge all the changes, use "gmergR <nick>"
-alias	gmergR	'git git merge -s resolve \!:1/master'
+alias	gmergR	'git merge -s resolve \!:1/master'
 

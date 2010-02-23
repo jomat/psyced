@@ -52,7 +52,7 @@ varargs void fetch(object ua, string url, string method, mapping oauth) {
 void parse_request_token(string body, mapping headers) {
     P3((">> oauth:parse_request_token(%O, %O)\n", body, headers))
     mapping params = ([]);
-    parse_query(params, body);
+    url_parse_query(params, body);
     request_token = params["oauth_token"];
     request_secret = params["oauth_token_secret"];
     if (strlen(request_token) && strlen(request_secret)) {
@@ -67,7 +67,7 @@ void parse_request_token(string body, mapping headers) {
 void parse_access_token(string body, mapping headers) {
     P3((">> oauth:parse_access_token(%O, %O)\n", body, headers))
     mapping params = ([]);
-    parse_query(params, body);
+    url_parse_query(params, body);
     access_token = params["oauth_token"];
     access_secret = params["oauth_token_secret"];
     if (strlen(access_token) && strlen(access_secret)) {
