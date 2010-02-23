@@ -73,6 +73,17 @@ private volatile mapping _sigs = ([
 	"_request_ni":		({ "_request_nick_local", 0, "_nick_local", "_INTERNAL_stuss" }),
 	"_request_public":	({ "_request_public", 0, "_flag_public" }),
 	"_request_pub":		({ "_request_public", 0, "_flag_public" }),
+
+	"_request_entries":	({ "_request_entries", 0, "_num" }),
+	"_request_entry":	({ "_request_entry", 0, "_id" }),
+	"_request_comment":	({ "_request_comment", 0, "_id", "_text" }),
+	"_request_thread":	({ "_request_thread", 0, "_id", "_title" }),
+	"_request_addentry":	({ "_request_addentry", 0, "_text" }),
+	"_request_submit":	({ "_request_addentry", 0, "_text" }),
+	"_request_blog":	({ "_request_addentry", 0, "_text" }),
+	"_request_delentry":	({ "_request_delentry", 0, "_id" }),
+	"_request_unsubmit":	({ "_request_delentry", 0, "_id" }),
+	"_request_unblog":	({ "_request_delentry", 0, "_id" }),
 #ifdef _flag_enable_module_microblogging
 	"_request_add":		({ "_request_add", 0, "_person" }),
 	"_request_remove":	({ "_request_remove", 0, "_person" }),

@@ -192,7 +192,7 @@ default:
     return 0;
 }
 
-parse_query(query, qs) {
+mapping parse_query(mapping query, string qs) {
     foreach (string pair : explode(qs, "&")) {
 	string key, val;
 
@@ -206,4 +206,15 @@ parse_query(query, qs) {
 	}
     }
     return query;
+}
+
+varargs string make_query_string(mapping params, int sort) {
+    string q = "";
+    array(mixed) keys = m_indices(params);
+    if (sort) keys = sort_array(keys, #'>);
+
+    foreach(string key : keys)  {
+	q += (strlen(q) ? "&" : "") + urlencode(to_string(key)) + "=" + urlencode(to_string(params[key]));
+    }
+    return q;
 }

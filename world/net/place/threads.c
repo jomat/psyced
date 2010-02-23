@@ -40,145 +40,151 @@ create() {
 	unless (pointerp(_thread)) _thread = ({ });
 }
 
-cmd(a, args, b, source, vars) {
-	P3((">> threads:cmd(%O, %O, %O, %O, %O)", a, args, b, source, vars))
-// TODO: multiline-sachen irgendwie
-	mapping entry;
-	array(mapping) entries;
-	int i = 0;
-	int id;
-	int num_entries;
-	//unless (source) source = previous_object();
-	switch (a) {
-	case "entries":
-		num_entries = sizeof(args) >= 2 ? to_int(args[1]) : DEFAULT_BACKLOG;
-		// _thread[<5..]
-		//foreach( entry : _thread[<num_entries..] ) {
-		entries = ({ });
-		for (i = sizeof(_thread) - 1; i >= 0; i--) {
-		    unless (entry = _thread[i]) continue;
-		    entries =
-			({ ([
-			     "_sep" : strlen(entry["thread"]) ? " - " : "",
-			     "_thread" : entry["thread"],
-			     "_text" : entry["text"],
-			     "_author" : entry["author"],
-			     "_date" : entry["date"],
-			     "_comments": sizeof(entry["comments"]),
-			     "_id" : i,
-			     "_nick_place" : MYNICK,
-			     ]) }) + entries;
-		    if (sizeof(entries) == num_entries) break;
-		}
-		foreach(entry : entries)
-		    sendmsg(source, "_list_thread_entry",
-			    "#[_id] - [_author][_sep][_thread]: [_text] ([_comments])",
-			    entry);
-		return 1;
-	case "entry":
-		unless (sizeof(args) > 1){
-			sendmsg(source, "_warning_usage_entry",
-					"Usage: /entry <threadid>", ([ ]));
-			return 1;
-		}
-		id = to_int(args[1]);
-		if (id >= 0 && id < sizeof(_thread))
-		    entry = _thread[id];
+_request_entries(source, mc, data, vars, b) {
+    int num = to_int(vars["_num"]) || DEFAULT_BACKLOG;
+    array(mapping) entries = ({ });
+    mapping entry;
 
-		unless (entry) {
-		    sendmsg(source, "_error_thread_invalid_entry",
-			    "#[_id]: no such entry", (["_id": id]));
-		    return 1;
-		}
-
-		sendmsg(source, "_list_thread_entry",
-				"#[_id] [_author][_sep][_thread]: [_text] ([_comments])",
-				([
-					"_sep" : strlen(entry["thread"]) ? " - " : "",
-					"_thread" : entry["thread"],
-					"_text" : entry["text"],
-					"_author" : entry["author"],
-					"_date" : entry["date"],
-					"_comments": sizeof(entry["comments"]),
-					"_id" : id,
-					"_nick_place" : MYNICK ]) );
-
-		if (entry["comments"]) {
-		    foreach(mapping item : entry["comments"]) {
-			sendmsg(source, "_list_thread_comment",
-					"> [_nick]: [_text]",
-					([
-						"_nick" : item["nick"],
-						"_text" : item["text"],
-						"_date": item["date"],
-						"_nick_place" : MYNICK ]) );
-		    }
-		}
-		return 1;
-	case "thread":
-		unless (sizeof(args) > 2){
-			sendmsg(source, "_warning_usage_thread",
-					"Usage: /thread <threadid> <title>", ([ ]));
-			return 1;
-		}
-		id = to_int(args[1]);
-		unless (setSubject(id, ARGS(2)))
-		    sendmsg(source, "_error_thread_invalid_entry",
-			    "#[_id]: no such entry", (["_id": id]));
-
-		return 1;
-	case "comment":
-		unless (sizeof(args) >= 2) {
-		    sendmsg(source, "_warning_usage_reply",
-	                            "Usage: /comment <threadid> <text>", ([ ]));
-		    return 1;
-		}
-		id = to_int(args[1]);
-		unless (addComment(ARGS(2), SNICKER, id))
-		    sendmsg(source, "_error_thread_invalid_entry",
-			    "#[_id]: no such entry", (["_id": id]));
-		return 1;
-	case "blog":
-	case "submit":
-	case "addentry":
-		unless (canPost(SNICKER)) return 0;
-		unless (sizeof(args) >= 1) {
-		    sendmsg(source, "_warning_usage_submit", 
-	                            "Usage: /submit <text>", ([ ]));
-		    return 1;
-		}
-		addEntry(ARGS(1), SNICKER);
-		return 1;
-	// TODO: append fuer multiline-sachen
-#if 0
-	case "iterator":
-		unless (canPost(SNICKER)) return 0;
-		sendmsg(source, "_notice_thread_iterator",
-			"[_iterator] blog entries have been requested "
-			"since creation.", ([
-			    // i suppose this wasn't intentionally using
-			    // MMP _count so i rename it to _iterator
-			    "_iterator" : v("iterator")
-			]) );
-		return 1;
-#endif
-	case "unblog":
-	case "deblog":
-	case "delentry":
-		unless (canPost(SNICKER)) return 0;
-		id = to_int(args[1]);
-		if (delEntry(id, source, vars)) {
-		    sendmsg(source, "_notice_thread_entry_removed",
-			    "Entry #[_id] has been removed.",
-			    ([ "_id" : id ]) );
-		} else {
-		    sendmsg(source, "_error_thread_invalid_entry",
-			    "#[_id]: no such entry", (["_id": id]));
-		}
-		return 1;
-	}
-	return ::cmd(a, args, b, source, vars);
+    for (int i = sizeof(_thread) - 1; i >= 0; i--) {
+	unless (entry = _thread[i]) continue;
+	entries =
+	    ({ ([
+		 "_sep" : strlen(entry["thread"]) ? " - " : "",
+		 "_thread" : entry["thread"],
+		 "_text" : entry["text"],
+		 "_author" : entry["author"],
+		 "_date" : entry["date"],
+		 "_comments": sizeof(entry["comments"]),
+		 "_id" : i,
+		 "_nick_place" : MYNICK,
+		 ]) }) + entries;
+	if (sizeof(entries) == num) break;
+    }
+    foreach(entry : entries)
+	sendmsg(source, "_list_thread_entry",
+		"#[_id] - [_author][_sep][_thread]: [_text] ([_comments])",
+		entry);
+    return 1;
 }
+
+_request_entry(source, mc, data, vars, b) {
+    unless (vars["_id"] && strlen(vars["_id"])) {
+	sendmsg(source, "_warning_usage_entry",
+		"Usage: /entry <id>", ([ ]));
+	return 1;
+    }
+
+    mapping entry;
+    int id = to_int(vars["_id"]);
+
+    if (id >= 0 && id < sizeof(_thread))
+	entry = _thread[id];
+
+    unless (entry) {
+	sendmsg(source, "_error_thread_invalid_entry",
+		"#[_id]: no such entry", (["_id": id]));
+	return 1;
+    }
+
+    sendmsg(source, "_list_thread_entry",
+	    "#[_id] [_author][_sep][_thread]: [_text] ([_comments])",
+	    ([
+	      "_sep" : strlen(entry["thread"]) ? " - " : "",
+	      "_thread" : entry["thread"],
+	      "_text" : entry["text"],
+	      "_author" : entry["author"],
+	      "_date" : entry["date"],
+	      "_comments": sizeof(entry["comments"]),
+	      "_id" : id,
+	      "_nick_place" : MYNICK ]) );
+
+    if (entry["comments"]) {
+	foreach(mapping item : entry["comments"]) {
+	    sendmsg(source, "_list_thread_comment",
+		    "> [_nick]: [_text]",
+		    ([
+		      "_nick" : item["nick"],
+		      "_text" : item["text"],
+		      "_date": item["date"],
+		      "_nick_place" : MYNICK ]) );
+	}
+    }
+    return 1;
+}
+
+_request_thread(source, mc, data, vars, b) {
+    unless (vars["_id"] && strlen(vars["_id"])) {
+	sendmsg(source, "_warning_usage_thread",
+		"Usage: /thread <id> <title>", ([ ]));
+	return 1;
+    }
+
+    int id = to_int(vars["_id"]);
+    unless (setSubject(id, vars["_title"]))
+	sendmsg(source, "_error_thread_invalid_entry",
+		"#[_id]: no such entry", (["_id": id]));
+
+    return 1;
+}
+
+_request_comment(source, mc, data, vars, b) {
+    unless (vars["_id"] && strlen(vars["_id"]) &&
+	    vars["_text"] && strlen(vars["_text"])) {
+	sendmsg(source, "_warning_usage_reply",
+		"Usage: /comment <id> <text>", ([ ]));
+	return 1;
+    }
+
+    int id = to_int(vars["_id"]);
+    unless (addComment(vars["_text"], SNICKER, id))
+	sendmsg(source, "_error_thread_invalid_entry",
+		"#[_id]: no such entry", (["_id": id]));
+
+    return 1;
+}
+
+_request_addentry(source, mc, data, vars, b) {
+    unless (canPost(SNICKER)) return 0;
+    unless (vars["_text"] && strlen(vars["_text"])) {
+	sendmsg(source, "_warning_usage_addentry",
+		"Usage: /addentry <text>", ([ ]));
+	return 1;
+    }
+    addEntry(vars["_text"], SNICKER);
+    return 1;
+}
+
+_request_delentry(source, mc, data, vars, b) {
+    unless (canPost(SNICKER)) return 0;
+    unless (vars["_id"] && strlen(vars["_id"])) {
+	sendmsg(source, "_warning_usage_delentry",
+		"Usage: /delentry <id>", ([ ]));
+	return 1;
+    }
+    int id = to_int(vars["_id"]);
+    if (delEntry(id, source, vars)) {
+	sendmsg(source, "_notice_thread_entry_removed",
+		"Entry #[_id] has been removed.",
+		([ "_id" : id ]) );
+    } else {
+	sendmsg(source, "_error_thread_invalid_entry",
+		"#[_id]: no such entry", (["_id": id]));
+    }
+    return 1;
+}
+
+#if 0
+_request_iterator(source, mc, data, vars, b) {
+    unless (canPost(SNICKER)) return 0;
+    sendmsg(source, "_notice_thread_iterator",
+	    "[_iterator] blog entries have been requested "
+	    "since creation.", ([
+				 // i suppose this wasn't intentionally using
+				 // MMP _count so i rename it to _iterator
+				 "_iterator" : v("iterator")
+				 ]) );
+    return 1;
+#endif
 
 msg(source, mc, data, vars){
 	P3(("thread:msg(%O, %O, %O, %O)", source, mc, data, vars))

@@ -30,6 +30,7 @@ volatile mapping rheaders = (["User-Agent": SERVER_VERSION]);
 volatile string http_message;
 volatile int http_status, port, fetching, ssl;
 volatile string buffer, thehost, url, fetched, host, resource, method;
+volatile mixed rbody;
 
 int parse_status(string all);
 int parse_header(string all);
@@ -37,8 +38,9 @@ int buffer_content(string all);
 
 string qHost() { return thehost; }
 
-varargs void fetch(string murl, string meth, mapping hdrs) {
+varargs void fetch(string murl, string meth, mixed body, mapping hdrs) {
 	method = meth || "GET";
+	rbody = body;
 	if (hdrs) rheaders += hdrs;
 	if (url != murl) {
 		// accept.c does this for us:
@@ -96,18 +98,28 @@ varargs int real_logon(int failure) {
 	unless (url) return -3;
 	unless (resource) sscanf(url, "%s://%s/%s", scheme, host, resource); 
 
+	string body = "";
+	if (stringp(rbody)) {
+	    body = rbody;
+	} else if (mappingp(rbody) && sizeof(rbody)) {
+	    body = make_query_string(rbody);
+	    unless (rheaders["Content-Type"])
+		rheaders["Content-Type"] = "application/x-www-form-urlencoded";
+	}
+	if (strlen(body)) rheaders["Content-Length"] = strlen(body);
+
 	buffer = "";
 	foreach (string key, string value : rheaders) {
 	    buffer += key + ": " + value + "\r\n";
 	}
+
 	// we won't need connection: close w/ http/1.0
 	//emit("Connection: close\r\n\r\n");		
 	P2(("%O fetching /%s from %O\n", ME, resource, host))
 	P4(("%O using %O\n", ME, buffer))
 	emit(method + " /"+ resource +" HTTP/1.0\r\n"
 		 "Host: "+ host +"\r\n"
-		 + buffer +
-		 "\r\n");
+		 + buffer + "\r\n" + body);
 
 	buffer = "";
 	next_input_to(#'parse_status);

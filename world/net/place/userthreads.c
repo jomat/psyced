@@ -139,10 +139,14 @@ _request_twitter(source, mc, data, vars, b) {
 	vSet("twitter", 0);
 	save();
     }
-    DT(else if (sw == "test") twitter->home();)
 
     sendmsg(source, "_status_twitter", "Twitter submission is [_status].", (["_status": v("twitter") ? "enabled" : "disabled"]));
     return 1;
+}
+
+addEntry(text, unick, thread) {
+    if (::addEntry(text, unick, thread) && v("twitter") && twitter)
+	twitter->status_update(text);
 }
 
 htMain(int last) {

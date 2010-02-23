@@ -184,7 +184,7 @@ case "/oauth":
 	    //PT((">>> oauth: %O\n", oauth))
 	    oauth->verified(query["oauth_verifier"]);
 	    m_delete(shared_memory("oauth_request_tokens"), query["oauth_token"]);
-	    write("OAuth succeeded");
+	    write("OAuth succeeded, you can now return to your client.");
 	} else {
 	    write("OAuth failed: token not found");
 	}
