@@ -1,3 +1,8 @@
+/* twitter client
+ *
+ * - register @ http://twitter.com/apps
+ * - then in local.h #define TWITTER_KEY & TWITTER_SECRET
+ */
 #include <net.h>
 
 inherit NET_PATH "http/oauth";
