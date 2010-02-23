@@ -261,4 +261,13 @@
 // still using rawp anywhere?
 //#define	rawp(TEXT) { P1(("rawp? "+TEXT)) emit(TEXT); }
 
+#ifdef _flag_enable_module_microblogging
+# if defined(TWITTER_KEY) && defined(TWITTER_SECRET)
+#  define TWITTER
+# endif
+# if defined(IDENTICA_KEY) && defined(IDENTICA_SECRET)
+#  define IDENTICA
+# endif
+#endif
+
 #endif

@@ -94,10 +94,14 @@ private volatile mapping _sigs = ([
 	"_request_remove":	({ "_request_remove", 0, "_person" }),
 	"_request_priv":	({ "_request_privacy", 0, "_privacy" }),
 	"_request_privacy":	({ "_request_privacy", 0, "_privacy" }),
+#ifdef TWITTER
 	"_request_tw":		({ "_request_twitter", 0, "_switch" }),
 	"_request_twitter":	({ "_request_twitter", 0, "_switch" }),
+#endif
+#ifdef IDENTICA
 	"_request_ica":		({ "_request_identica", 0, "_switch" }),
 	"_request_identica":	({ "_request_identica", 0, "_switch" }),
+#endif
 #endif
 #ifdef EXPERIMENTAL
 	// stuff to play around with
