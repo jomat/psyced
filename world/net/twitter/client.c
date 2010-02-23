@@ -33,7 +33,7 @@ void status_update(string text) {
 
     object ua = clone_object(NET_PATH "http/fetch");
     ua->content(#'parse_status_update, 1, 1); //');
-    fetch(ua, "http://api.twitter.com/1/statuses/update.json", "POST", 0, (["status": text]));
+    fetch(ua, "http://api.twitter.com/1/statuses/update.json", "POST", (["status": text]));
 }
 
 void parse_home_timeline(string body, string headers) {

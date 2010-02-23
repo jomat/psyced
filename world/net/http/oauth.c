@@ -20,12 +20,15 @@ string authorize_url;
 string callback_url = "http://" + my_lower_case_host() + ":" + HTTP_PORT + "/oauth"; //TODO: https?
 object user;
 
-varargs void fetch(object ua, string url, string method, mapping get, mapping post, mapping oauth) {
+varargs void fetch(object ua, string url, string method, mapping post, mapping oauth) {
     P3((">> oauth:fetch(%O, %O, %O)\n", url, method, oauth))
     unless (method) method = "GET";
-    unless (get) get = ([]);
     unless (post) post = ([]);
     unless (oauth) oauth = ([]);
+    mapping get = ([]);
+    string qs, base_url = url;
+    if (sscanf(url, "%s?%s", base_url, qs))
+	url_parse_query(get, qs);
 
     oauth["oauth_consumer_key"] = consumer_key;
     string token;
@@ -38,7 +41,7 @@ varargs void fetch(object ua, string url, string method, mapping get, mapping po
     oauth["oauth_version"] = "1.0";
 
     P3(("token: %O, token_secret: %O, access: %O, request: %O\n", token, token_secret, access_params, request_params))
-    string base_str = method + "&" + urlencode(url) + "&" + urlencode(make_query_string(get + post + oauth, 1));
+    string base_str = method + "&" + urlencode(base_url) + "&" + urlencode(make_query_string(get + post + oauth, 1));
     oauth["oauth_signature"] = hmac_base64(TLS_HASH_SHA1, urlencode(consumer_secret) + "&" + urlencode(token_secret), base_str);
 
     string p = "";
@@ -76,7 +79,7 @@ void verified(string verifier) {
     P3((">> oauth:verified(%O)\n", verifier))
     object ua = clone_object(NET_PATH "http/fetch");
     ua->content(#'parse_access_token, 1, 1); //');
-    fetch(ua, access_token_url, "POST", 0, 0, (["oauth_verifier": verifier]));
+    fetch(ua, access_token_url, "POST", 0, (["oauth_verifier": verifier]));
 }
 
 object load(object usr, string key, string secret, string request, string access, string authorize) {
@@ -90,7 +93,7 @@ object load(object usr, string key, string secret, string request, string access
     if (request_token_url && user) {
 	object ua = clone_object(NET_PATH "http/fetch");
 	ua->content(#'parse_request_token, 1, 1); //');
-	fetch(ua, request_token_url, "POST", 0, 0, (["oauth_callback": callback_url]));
+	fetch(ua, request_token_url, "POST", 0, (["oauth_callback": callback_url]));
     }
     return ME;
 }
