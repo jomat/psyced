@@ -212,10 +212,9 @@ qHistoryGlimpse() {
 }
 
 psycName() {
-    ASSERT("psycName", stringp(MYNICK), MYNICK)
     return MYLOWERNICK;
 }
 
 pathName() {
-    return regreplace(psycName(), "#", "/", 1);
+    return regreplace(MYNICK, "#", "/", 1);
 }

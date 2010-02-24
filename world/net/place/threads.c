@@ -631,10 +631,6 @@ numEntries() {
     return sizeof(_thread);
 }
 
-pathName() {
-    return psycName();
-}
-
 // old stuff
 
 #if 0

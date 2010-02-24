@@ -2029,7 +2029,7 @@ showStatus(verbosity, al, person, mc, data, vars) {
 				// problem with POST over https apparently..
 			       (HTTP_URL)
 #  endif
-				 + "/@"+ MYNICK +" "+
+				+ "/"+ pathName() +" "+
 # endif
 # ifdef SIP_PATH
 		//	     "sip:#"+ MYLOWERNICK +"@"+ SERVER_HOST +" "+
@@ -2124,6 +2124,11 @@ memberInfo() { return _u; }		// used by showRoom() in http/user
 psycName() {
 	ASSERT("psycName", stringp(MYNICK), MYNICK)
 	return "@"+MYLOWERNICK;
+}
+
+pathName() {
+	ASSERT("pathName", stringp(MYNICK), MYNICK)
+	return "@"+MYNICK;
 }
 
 // inheritance hooks
