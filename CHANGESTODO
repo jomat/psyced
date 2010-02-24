@@ -378,6 +378,7 @@ ________________________________________________________________________
 
 - parse.i erlaubt es den begrüßungspunkt wegzulassen wenn man
   stattdessen ne leerzeile liefert. aua -- egal, wir wechseln auf spyc
+- auch derb, er akzeptiert ".xx" statt "."
 
 - /silence conversation doesn't filter /action
 
@@ -3996,6 +3997,12 @@ person, user
 usercmd
 +	/forceenter only exists temporarily to circumvent a bug
 -	immediately show presence of a newly acquired friend, thx tg
+http/fetch
++	POST support
+new: http/oauth
 userthreads, threads, accept etc
 +	experimental microblogging on your web profile, thx tg
 	#define _flag_enable_module_microblogging
++	twitter submit
++	signatures
+

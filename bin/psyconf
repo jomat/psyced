@@ -459,11 +459,11 @@ then
 #	echo "and finally 'git merge -s resolve origin' instead"
 #	exit 1
 #	echo "${hi}ATTENTION: ${lo}Please give an empty password to log in (-> press enter)"
-##	(cd $sandbox/.. && cvs login && cvs -q update -dP && cvs logout)
+##	(cd $base && cvs login && cvs -q update -dP && cvs logout)
 	echo ""
 	echo "Fetching update from public git repository..."
 	echo ""
-	(cd $sandbox/.. && git fetch origin)
+	(cd $base && git fetch origin)
 	echo ""
 	echo "You can now read the changes using ${hi}\$0 -d${lo}"
 	echo "or activate the changes using ${hi}\$0 -m${lo}"
@@ -496,11 +496,15 @@ fi
 
 if test "\$1" = "-m"
 then
-    # git is seriously unsuited for this job. we need to "check in" the changes
-    # to file permissions etc or otherwise we can't update things at all...
-    (cd $base && git commit -a -m 'automatic by psyced -m')
+#   # git is seriously unsuited for this job. we need to "check in" the changes
+#   # to file permissions etc or otherwise we can't update things at all...
+#   (cd $base && git commit -a -m 'automatic by psyced -m')
+    # stash local changes
+    (cd $base && git stash)
     # merging will of course fail.. sigh
     (cd $base && git merge -s resolve origin)
+    # restore local changes
+    (cd $base && git stash apply)
     exit
 fi
 
