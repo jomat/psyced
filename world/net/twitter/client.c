@@ -1,7 +1,7 @@
 /* twitter client
  * http://apiwiki.twitter.com/Twitter-API-Documentation
  *
- * - register @ http://twitter.com/apps
+ * - register @ https://twitter.com/apps
  *   - settings:
  *     - app name: e.g. psyc://your.host/
  *     - app type: browser

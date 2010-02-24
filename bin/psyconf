@@ -121,35 +121,37 @@ sub say {
 	    unless -x $base;
 	my $sandbox = "$base/world";
 	die "psyced library $sandbox does not exist" unless -x $sandbox;
-	my $arch = "$base/bin-$_type_architecture";
+	my $execs = "$base/bin-$_type_architecture";
 	my $config = $c{_basic_path_configuration} || $base;
 	# this isn't taking $ARCH_DIR from install.sh into account
 	# but maybe it shouldn't anyway..
-	say "Looking for driver in $arch/$driver\n";
-	unless (-x $arch && -x "$arch/$driver") {
-		$arch = "$base/bin-$_type_system";
-		say "Looking for driver in $arch/$driver\n";
-		unless (-x $arch && -x "$arch/$driver") {
-			$arch = "$base/bin-linux";
-			say "Looking for driver in $arch/$driver\n";
-			if (-x $arch && -x "$arch/$driver") {
-				say "\nBug in $0: We didn't find $base/bin-linux in the appropriate way.\nThat's not nice. Continuing however.\n"
-			} elsif (not -x ($arch = "$base/bin") && -x "$arch/$driver") {
-				say "Looking for driver in $arch/$driver\n";
-				# bad place for psyclpc really..
-				# since it is usually of no commandline use
-				# but where else should psyclpc.ebuild
-				# install it? in /opt/psyclpc? for two files?
-				$arch = "/usr/sbin";
-				say "Looking for driver in $arch/$driver\n";
-				# the following is very unlikely to happen:
-				die <<X unless -x $arch && -x "$arch/$driver";
+	say "Looking for driver in $execs/$driver\n";
+	unless (-x $execs && -x "$execs/$driver") {
+	    $execs = "$base/bin-$_type_system";
+	    say "Looking for driver in $execs/$driver\n";
+	    unless (-x $execs && -x "$execs/$driver") {
+		$execs = "$base/bin-linux";
+		say "Looking for driver in $execs/$driver\n";
+		unless (-x $execs && -x "$execs/$driver") {
+		    $execs = "$base/bin";
+		    say "Looking for driver in $execs/$driver\n";
+		    unless (-x $execs && -x "$execs/$driver") {
+			$execs = "/usr/local/sbin";
+			say "Looking for driver in $execs/$driver\n";
+			unless (-x $execs && -x "$execs/$driver") {
+			    $execs = "/usr/sbin";
+			    say "Looking for driver in $execs/$driver\n";
+			    die <<X unless -x $execs && -x "$execs/$driver";
 Could not find any directory containing $driver.
 X
 			}
+		    }
 		}
+	    }
 	}
-	say "Found driver in $arch/$driver\n";
+	say "Found driver in $execs/$driver\n";
+	# is it really that hard?
+	die "but $execs/erq is missing\n" unless -x "$execs/erq";
 
 	my $user = $c{_basic_system_user} || 'daemon';
 	my ($login,$pass,$uid,$gid) = getpwnam($user)
@@ -345,7 +347,7 @@ X
 	open O, '>', $t or die "Cannot write to $t";
 
 	my $db = $c{_optional_level_debug} || '0';
-	my $psyced = "$arch/$driver -DDEBUG=$db";
+	my $psyced = "$execs/$driver -DDEBUG=$db";
 	my $debugfile;
 
 	if ( $c{_optional_use_file_debug} ) {
@@ -454,18 +456,12 @@ if test "\$1" = "-u"
 then
     if test -e $sandbox/status-0-beta-OK
     then
-#	echo "automated update functionality no longer available. try"
-#	echo "'git fetch origin', optionally 'git diff master..origin/master'"
-#	echo "and finally 'git merge -s resolve origin' instead"
-#	exit 1
-#	echo "${hi}ATTENTION: ${lo}Please give an empty password to log in (-> press enter)"
-##	(cd $sandbox/.. && cvs login && cvs -q update -dP && cvs logout)
 	echo ""
 	echo "Fetching update from public git repository..."
 	echo ""
-	(cd $sandbox/.. && git fetch origin)
+	git fetch origin
 	echo ""
-	echo "You can now read the changes using ${hi}\$0 -d${lo}"
+	echo "You can now look at the changes using ${hi}\$0 -d${lo}"
 	echo "or activate the changes using ${hi}\$0 -m${lo}"
     fi
     if ! test -e $sandbox/status-0-beta-OK
@@ -482,30 +478,34 @@ then
 	echo "The file you just saw is: ${hi}${lib}/status-0-DEPRECATED${lo}."
 	exit 1
     else
- 	echo "It may be a good idea to run ${hi}\$0${lo} again before you continue."
+	# this \$0 is for psyconf, not for psyced.. don't escape it
+	echo ""
+ 	echo "It may be a good idea to run ${hi}$0${lo} again before you continue."
     fi
     exit
 fi
 
 if test "\$1" = "-d"
 then
-##  (cd $base && cvs -q diff -ur HEAD|\$PAGER)
-    (cd $base && git diff master..origin/master | \$PAGER)
+##  cvs -q diff -ur HEAD|\$PAGER
+    git diff master..origin/master | \$PAGER
     exit
 fi
 
 if test "\$1" = "-m"
 then
-    # git is seriously unsuited for this job. we need to "check in" the changes
-    # to file permissions etc or otherwise we can't update things at all...
-    (cd $base && git commit -a -m 'automatic by psyced -m')
-    # merging will of course fail.. sigh
-    (cd $base && git merge -s resolve origin)
+    git stash save 'changes stashed automatically by psyced -m'
+    git merge -s resolve origin
+    # restore local changes?
+#   git stash apply
+    echo ""
+    echo "If you had local changes to your files you can now restore them using"
+    echo "${hi}git stash apply${lo}"
     exit
 fi
 
 # if your ldmud is too old, it may not understand --pidfile and --tls-*
-commandline="$psyced -s 0 -s v0 --swap-file $base/psyced.swap --erq $arch/erq --pidfile $sandbox/data/$driver.pid -m $sandbox -u $portUDP $ports"
+commandline="$psyced -s 0 -s v0 --swap-file $base/psyced.swap --erq $execs/erq --pidfile $sandbox/data/$driver.pid -m $sandbox -u $portUDP $ports"
 
 # keep the pid of this wrapper process, too
 echo \$\$ >data/psyced.pid
