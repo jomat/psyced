@@ -125,6 +125,9 @@
 # endif
 #endif
 
+#define HTTPS_OR_HTTP_URL (HTTPS_URL ? HTTPS_URL : HTTP_URL)
+#define HTTP_OR_HTTPS_URL (HTTP_URL ? HTTP_URL : HTTPS_URL)
+
 #ifdef _uniform_node
 # define SERVER_UNIFORM _uniform_node
 #else

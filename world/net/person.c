@@ -477,6 +477,7 @@ qDescription(source, vars, profile, itsme) {
 	}
 	// don't make_json for anonymous queries which are handled locally
 	dv["_channels"] = source ? make_json(channels) : channels;
+	dv["_profile_url"] = HTTPS_OR_HTTP_URL + "/~" + MYNICK;
 #endif
 //	PT(("sending: %O\n", dv))
 	return dv;

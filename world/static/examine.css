@@ -13,7 +13,7 @@ body.threads,
 .Pe a {
 	text-decoration: none;
 	color: #f33;
-	background: black;
+	/*background: black;*/
 }
 .Peb a {
 	padding: 4;
@@ -110,19 +110,22 @@ body.threads,
   width: 100%;
 }
 
-.entry .title {}
+.entry .title a {
+  color: black;
+}
 .entry .title .author {}
 .entry .title .subject {}
 
 .entry .footer a,
 .entry .footer a:visited {
-  cursor: pointer;
   color: white;
-  background: transparent;
 }
 
-.entry .footer a:hover,
-.entry .footer a:visited:hover {
+.entry a {
+  cursor: pointer;
+  text-decoration: none;
+}
+.entry a:hover {
   text-decoration: underline;
 }
 

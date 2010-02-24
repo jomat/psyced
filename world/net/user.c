@@ -319,7 +319,7 @@ htDescription(anonymous, query, headers, qs, variant, vars) {
 		  + (first ? "class='selected'" : "") + ">#" + channel + "</a>\n";
 	    contents +=
 		"<div id='tab-contents-" + channel + "' "
-		+ (first ? "class='selected'" : "") + ">" + threads->htmlEntries(entries, 0, first, channel, anonymous ? "" : vars["_identification"] + "#" + channel) + "</div>\n";
+		+ (first ? "class='selected'" : "") + ">" + threads->htmlEntries(entries, !first, channel, anonymous ? "" : vars["_identification"] + "#" + channel, vars["_profile_url"] + "/" + channel) + "</div>\n";
 	    first = 0;
 	}
 

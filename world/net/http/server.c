@@ -191,15 +191,21 @@ case "/oauth":
 	quit();
 	return 1;
     }
+    string name;
     switch (file[1]) {
     case '~':
-	    if (o = summon_person(file[2..], NET_PATH "user")) {
-		o->htinfo(version, query, headers, qs);
+	    string channel, nick = file[2..];
+	    if (sscanf(file, "/~%s/%s", nick, channel)) {
+		name = "~" + nick + "#" + channel;
+	    } else if (o = summon_person(nick, NET_PATH "user")) {
+		o->htinfo(version, query, headers, qs, channel);
+		quit();
+		return 1;
 	    }
-	    quit();
-	    return 1;
+	    //fall thru
     case '@':
-	    file = PLACE_PATH+ lower_case(file[2..]);
+	    unless(name) name = file[2..];
+	    o = find_place(name);
 	    break;
     default:
 	    if (abbrev("/static/", file)) {
@@ -232,7 +238,7 @@ case "/oauth":
 	return;
     }
 
-    o = file -> load();
+    unless (o) o = file -> load();
     if (objectp(o) || o = find_object(file))
 	done = o->htget(version, query, headers, qs) != HTMORE;
 

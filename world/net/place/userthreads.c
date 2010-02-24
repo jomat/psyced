@@ -187,8 +187,8 @@ addEntry(text, unick, thread) {
     }
 }
 
-htMain(int last) {
-    return htmlEntries(_thread, last, 1, channel);
+htMain(int limit, int offset) {
+    return ::htMain(limit, offset, channel);
 }
 
 canPost(snicker) {
@@ -199,10 +199,23 @@ isPublic() {
     return vQuery("privacy") == "public";
 }
 
+showWebLog() {
+    return 0;
+}
+
 qChannel() {
     return channel;
 }
 
 qHistoryGlimpse() {
     return HISTORY_GLIMPSE;
+}
+
+psycName() {
+    ASSERT("psycName", stringp(MYNICK), MYNICK)
+    return MYLOWERNICK;
+}
+
+pathName() {
+    return regreplace(psycName(), "#", "/", 1);
 }

@@ -18,7 +18,7 @@ mapping request_params = ([ ]);
 mapping access_params = ([ ]);
 string access_token_url;
 string authorize_url;
-string callback_url = "http://" + my_lower_case_host() + ":" + HTTP_PORT + "/oauth"; //TODO: https?
+string callback_url = HTTPS_OR_HTTP_URL + "/oauth";
 object user;
 
 varargs void fetch(object ua, string url, string method, mapping post, mapping oauth) {

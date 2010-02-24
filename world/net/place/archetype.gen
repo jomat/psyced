@@ -450,6 +450,7 @@ showTopic(rcpt, verbose, mc) {
 
 #if HAS_PORT(HTTP_PORT, HTTP_PATH) || HAS_PORT(HTTPS_PORT, HTTP_PATH)
 htget(prot, query, headers, qs, data, noprocess) {
+    //P3((">> archetype.gen:htget(%O, %O, %O, %O, %O, %O)\n", prot, query, headers, qs, data, noprocess))
 # ifdef PLACE_SCRATCHPAD
         sTextPath(query["layout"] || MYNICK, query["lang"], "html");
 	if (!noprocess && (!qs || query["scratchpad"])) {
