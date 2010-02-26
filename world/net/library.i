@@ -658,7 +658,7 @@ int xmpp_sendmsg(mixed target, string mc, mixed data, mapping vars,
 	if (o = targets[tmp]) {
 	    P2(("%O to be delivered on %O\n",
 		otarget, o ))
-	} else if (is_localhost(u[UHost])) {
+	} else if (is_localhost(lower_case(u[UHost]))) {
 	    unless (u[UUser]) {
 		P0(("Intercepted %O to %O from %O\n", mc, target, source))
 		// 0 makes sendmsg try to relay via xmpp.scheme.psyced.org

@@ -3992,6 +3992,9 @@ jabber/active
 smtp/outgoing, smtp/user
 +	implementation of outgoing mail queue
 === 201002 ============================================================
+*
+-	in many spots is_localhost() was being called
+	with hostnames that have not been lowercased. oops!?
 person, user
 +	allow multiple psyc clients per user, thx tg
 usercmd
