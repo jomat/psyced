@@ -49,7 +49,7 @@ void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
             DISPATCHERROR("target is not an uniform\n")
         }
 	// FIXME relaying support here?
-        if (!is_localhost(u[UHost])) {
+        if (!is_localhost(local_host(u[UHost]))) {
             DISPATCHERROR("target is not configured on this server\n")
 	}
     }

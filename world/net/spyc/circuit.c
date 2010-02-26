@@ -235,7 +235,7 @@ void circuit_msg(string mc, mapping vars, string data) {
 	if (tls_query_connection_state(ME) == 0) {
 	    array(string) targethosts = ({ });
 	    foreach(string ho : vars["_list_targets_hosts"]) {
-		if (is_localhost(ho)) {
+		if (is_localhost(lower_case(ho))) {
 		    targethosts += ({ ho });
 		}
 	    }

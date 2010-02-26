@@ -2525,7 +2525,7 @@ logon(host) {
 		    && mode[PPL_NOTIFY] >= PPL_NOTIFY_FRIEND) continue;
 	    if (u = parse_uniform(ni)) {
 		// <lynX> first we change the ppl, then we need this code
-//		if (is_localhost(u[UHost])) {
+//		if (is_localhost(lower_case(u[UHost]))) {
 //		    o = summon_person(u[UNick]);
 //		    insert_member(o);
 //		} else {
