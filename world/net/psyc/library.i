@@ -136,10 +136,11 @@ object find_psyc_object(array(mixed) u) {
 		case '~':
 #ifdef _flag_enable_module_microblogging
 			if (u[UChannel]) {
-			    t = lower_case(r + "#" + u[UChannel]);
+			    t = lower_case(r +"#"+ u[UChannel]);
 			    r = PLACE_PATH + t;
 			    if (o = find_object(r)) break;
-			    unless (t = legal_name(t)) break;
+			    unless (t = legal_name(t, 1)) break;
+			    // untreated catch? interesting..
 			    catch(o = r -> load(t));
 			}
 #endif

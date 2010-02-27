@@ -79,7 +79,7 @@ _request_add(source, mc, data, vars, b) {
     }
 
     unless (ni && p && (p->qFriend(target) || p->qFollower(target))) {
-	sendmsg(source, "_error_add",
+	sendmsg(source, "_error_request_add", // FIXMC
 		"Error: [_person] is not a friend or follower.", ([ "_person": vars["_person"]]));
 	return 1;
     }
@@ -102,7 +102,7 @@ _request_remove(source, mc, data, vars, b) {
     object target = summon_person(vars["_person"], NET_PATH "user") || vars["_person"];
 
     unless (p && (qMember(target) || p->qFriend(target) || p->qFollower(target))) {
-	sendmsg(source, "_error_add",
+	sendmsg(source, "_error_request_remove", // FIXMC
 		"Can't remove: [_person] is not a friend or follower.", ([ "_person": vars["_person"]]));
 	return 1;
     }
