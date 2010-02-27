@@ -41,7 +41,7 @@ mapping confmap = ([]);
 mapping systemQ;
 
 // protos
-//string legal_name(string n);
+//string legal_name(string n, int isPlace);
 //string legal_mailto(string a);
 int psyc_sendmsg(mixed target, string method, mixed data, mapping vars,
 	        int showingLog, mixed source, array(mixed) uniform);
