@@ -80,7 +80,7 @@ private volatile mapping _sigs = ([
 	"_request_ent":		({ "_request_entry", 0, "_id" }),
 	"_request_comment":	({ "_request_comment", 0, "_id", "_text" }),
 	"_request_com":		({ "_request_comment", 0, "_id", "_text" }),
-	"_request_thread":	({ "_request_thread", 0, "_id", "_title" }),
+	"_request_title":	({ "_request_title", 0, "_id", "_title" }),
 	"_request_addentry":	({ "_request_addentry", 0, "_text" }),
 	"_request_addent":	({ "_request_addentry", 0, "_text" }),
 	"_request_submit":	({ "_request_addentry", 0, "_text" }),

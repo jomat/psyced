@@ -45,7 +45,7 @@ body.threads,
 	margin: 44;
         width: 562;
 }
-.entry .title,
+.entry .header,
 .ldpc {
 	background: #f33;
 	color: black;
@@ -110,11 +110,11 @@ body.threads,
   width: 100%;
 }
 
-.entry .title a {
+.entry .header a {
   color: black;
 }
-.entry .title .author {}
-.entry .title .subject {}
+.entry .header .author {}
+.entry .header .title {}
 
 .entry .footer a,
 .entry .footer a:visited {

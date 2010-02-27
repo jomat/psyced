@@ -6,12 +6,13 @@
 // to make sure they won't trigger
 // html commands
 //
-string htquote(string s) {
+varargs string htquote(string s, int newlines) {
 	ASSERT("htquote", stringp(s), s)
         s = replace(s, "&", "&amp;");
 //      s = replace(s, "\"", "&quot;"); //"
         s = replace(s, "<", "&lt;");
         s = replace(s, ">", "&gt;");
+	if (newlines) s = replace(s, "\n", "<br>\n");
         return s;
 }
 

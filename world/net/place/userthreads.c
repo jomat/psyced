@@ -4,8 +4,6 @@
 
 #define BLAME "!configuration"
 #define DONT_REWRITE_NICKS
-#define PLACE_HISTORY
-#define PLACE_OWNED
 #define HISTORY_GLIMPSE 12
 
 #include <uniform.h>
@@ -28,7 +26,7 @@ load(name, keep) {
     P3((">> userthreads:load(%O, %O)\n", name, keep))
 
     sscanf(name, "~%s#%s", owner, channel);
-    vSet("owners", ([ owner: 0 ]));
+    vSet("owners", ([ lower_case(owner) ]));
     vSet("privacy", "private");
     vSet("twitter", 0);
     vSet("identica", 0);
@@ -176,8 +174,9 @@ _request_identica(source, mc, data, vars, b) {
 }
 #endif
 
-addEntry(text, unick, thread) {
-    if (::addEntry(text, unick, thread)) {
+varargs int addEntry(mixed source, string snicker, string text, string title, int parent_id) {
+    int ret;
+    if (ret = ::addEntry(source, snicker, text, title, parent_id)) {
 #ifdef TWITTER
 	if (v("twitter") && twitter) twitter->status_update(text);
 #endif
@@ -185,6 +184,7 @@ addEntry(text, unick, thread) {
 	if (v("identica") && identica) identica->status_update(text);
 #endif
     }
+    return ret;
 }
 
 htMain(int limit, int offset) {
@@ -218,3 +218,9 @@ psycName() {
 pathName() {
     return regreplace(MYNICK, "#", "/", 1);
 }
+
+#ifdef _flag_save_userthreads_immediately
+qSaveImmediately() {
+    return 1;
+}
+#endif

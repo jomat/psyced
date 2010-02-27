@@ -172,3 +172,10 @@ varargs void w(string mc, string data, mixed vars) {
 }
 #endif
 
+// a simple implementation of perl's x operator
+string x(string str, int n) {
+    int i;
+    string res = "";
+    for (i = 0; i < n; i++) res += str;
+    return res;
+}

@@ -208,6 +208,22 @@ private volatile string _logfile;
 qLogging() { return v("logging"); }
 #endif
 
+int qSaveImmediately() {
+#if defined(SAVE_LOG_IMMEDIATELY) || defined(_flag_save_place_log_immediately)
+    return 1;
+#else
+    return 0;
+#endif
+}
+
+int qHistoryPersistentLimit() {
+    return _limit_amount_history_persistent;
+}
+
+int qHistoryExportLimit() {
+    return _limit_amount_history_export;
+}
+
 // to be overloaded by place.gen
 qNewsfeed() { return 0; }
 // _request_list_feature uses this in *all* place objects, dont ifdef
@@ -561,8 +577,7 @@ htget(prot, query, headers, qs, data, noprocess) {
 	unless (noprocess) {
 	    if (query["amount"]) {
 		sscanf(query["amount"], "%d", a);
-		a = a < _limit_amount_history_export ? a :
-		       	_limit_amount_history_export;
+		a = a < qHistoryExportLimit() ? a : qHistoryExportLimit();
 		P4(("%O amount is %O\n", ME, a))
 	    }
 	    switch(query["format"]) {
@@ -741,7 +756,7 @@ insert_member(source, mc, data, vars, ni, neu, again) {
 	// NEW: if OWNERS have not been provided by place.gen
 	// we'll make the first guy who walks in our owner.
 	unless (v("owners")) {
-		vSet("owners", ([ SNICKER: source ]));
+	    vSet("owners", ([ lower_case(SNICKER): source ]));
 		// don't send _warning_place_duty_owner
 		// before acquitting enter operation..
 		vars["_duty"] = "owner"; // _owner_new ?
@@ -1515,6 +1530,7 @@ castmsg(source, mc, data, vars) {
 # endif
 		logAppend(source, mc, data, vars, 0, "_time_place");
 		_histChange++;
+		if (qSaveImmediately()) save();
 		// cannot just call ::castmsg after logAppend because
 		// logAppend adds the _time_place var so i have to
 		// patch around one way or the other
@@ -1624,13 +1640,13 @@ void create() {
 #ifdef PLACE_HISTORY
 void reset(int again) {
 //	::reset(again);
-	if (_histChange) {
-		logClip(2 * _limit_amount_history_persistent,
-			    _limit_amount_history_persistent);
-		save();
-		P2(("RESET: %O stores its history (+%O)\n",
-			ME, _histChange))
-	}
+    if (_histChange) {
+	if (qHistoryPersistentLimit())
+	    logClip(2 * qHistoryPersistentLimit(), qHistoryPersistentLimit());
+	save();
+	P2(("RESET: %O stores its history (+%O)\n", ME, _histChange))
+    }
+
 	_histChange = 0;
 #if 0 //ndef NOCLEANUP
 	// keep the server clean. unused places may exit.
@@ -2310,7 +2326,7 @@ _request_set_style(source, mc, data, vars, b) {
 		string value = vars["_uniform_style"] || vars["_value"];
 		if (value && (value = legal_url(value, "http")))
 		    vSet("_uniform_style", value);
-		else {
+		else if (value) {
 			sendmsg(source, 
 			    "_error_illegal_scheme",
 	    "That is not a valid [_scheme] URL for a file.",
@@ -2583,6 +2599,10 @@ sAide(whom) {
     int ret;
     mapping aides = v("aides") || ([]);
 
+    // change local uniform to nick
+    array(mixed) u = parse_uniform(whom);
+    if (u && is_localhost(lower_case(u[UHost]))) whom = u[UResource];
+
     t = lower_case(whom);
     if (aides[t]) {
 	aides -= ([ t ]);
@@ -2612,7 +2632,8 @@ listAides(source) {
 qAide(snicker, aidesonly) {
 // never call with objectp.. use SNICKER
 //  if (objectp(whom)) whom = whom->qName();
-    snicker = lower_case(snicker);	// should we enforce SNICKER to be lc?
+
+    snicker = lower_case(snicker);	// should we enforce SNICKER to be lc? yes!
     if (!aidesonly && sizeof(v("owners")) && member(v("owners"), snicker)) return 4;
     unless (mappingp(v("aides"))) return 0;
     return v("aides")[snicker];

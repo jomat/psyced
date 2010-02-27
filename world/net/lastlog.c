@@ -13,6 +13,7 @@
 #endif
 
 #include <net.h>
+#include <lastlog.h>
 
 protected array(mixed) _log;
 
@@ -66,6 +67,7 @@ logInit(takeThis) {
 }
 
 logClip(maxlen, cutlen) {
+	P3(("logClip(%O, %O)\n", maxlen, cutlen))
 	int howmany;
 
 	howmany = sizeof(_log);
@@ -109,6 +111,7 @@ logView(a, showingLog, defAmount) {
 		mapping m;
 
 		ll = 0; for(i=0; i<sizeof(_log); i+=4) {
+			unless (_log[i]) continue;
 			if (mappingp(m = _log[i+3])) if (
 			    ((text = _log[i+2]) && strstr(text, grep) >= 0)
 			 || ((t = m["_nick"]) && strstr(t, grep) >= 0)
@@ -145,6 +148,7 @@ logView(a, showingLog, defAmount) {
 		i = sizeof(_log) - ll;
 	}
 	while (i < sizeof(_log)) {
+		unless (_log[i]) { i+= 4; continue; }
 #ifndef UNSAFE_LASTLOG
 		msgView((pointerp(_log[i])
 			 ? _log[i++][0] || _log[i-1][1]
@@ -159,14 +163,16 @@ logView(a, showingLog, defAmount) {
 	return ll / 4;
 }
 
-// pick a single message. used by POP3
-logPick(i) {
+int logExists(int i) {
 	i *= 4;
-	if (i < 0) {
-		i = sizeof(_log) + i;
-		if (i < 0) return 0;
-	}
-	if (i > sizeof(_log)) return 0;
+	if (i < 0 || i >= sizeof(_log) || !_log[i]) return 0;
+	return 1;
+}
+
+// pick a single message. used by POP3 & place/threads
+array(mixed) logPick(int i) {
+	unless (logExists(i)) return 0;
+	i *= 4;
 #ifndef UNSAFE_LASTLOG
 	return ({ (pointerp(_log[i])
 		   ? _log[i++][0] || _log[i-1][1]
@@ -177,8 +183,27 @@ logPick(i) {
 #endif /* UNSAFE_LASTLOG */
 }
 
+varargs public int logSize(string mc) {
+    unless (mc) return sizeof(_log) / 4;
+
+    int i, n = 0;
+    for (i = 0; i < sizeof(_log); i += 4)
+	if (_log[i] && abbrev(mc, _log[i])) n++;
+
+    return n;
+}
+
+int logSet(int i, array(mixed) item) {
+    if (i < 0 || i > logSize()) return 0;
+    if (i == logSize()) {
+	_log += item;
+    } else {
+	i *= 4;
+	_log[i..i+3] = item[0..3];
+    }
+    return 1;
+}
+
 // used to make a temporary copy of the log, in POP3
 public logQuery() { return _log; }
-
-public logSize() { return sizeof(_log) / 4; }
 

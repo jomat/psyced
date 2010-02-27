@@ -46,7 +46,7 @@ void status_update(string text) {
     fetch(ua, api_base_url + "/statuses/update.json", "POST", (["status": text]));
 }
 
-#if 1 //not used, just an example
+#if 0 //not used, just an example
 void parse_home_timeline(string body, string headers, int http_status) {
     P3(("twitter/client:parse_home_timeline(%O, %O, %O)\n", body, headers, http_status))
 }

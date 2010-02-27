@@ -473,7 +473,7 @@ qDescription(source, vars, profile, itsme) {
 	foreach (string c : v("channels")) {
 	    object p = find_place(c);
 	    unless (objectp(p) && (p->isPublic() || (source && p->qMember(source))) /*&& p->numEntries() > 0*/) continue;
-	    channels += ([ p->qChannel(): p->entries(10)]);
+	    channels += ([ p->qChannel(): p->entries(10, 0, 1)]);
 	}
 	// don't make_json for anonymous queries which are handled locally
 	dv["_channels"] = source ? make_json(channels) : channels;
