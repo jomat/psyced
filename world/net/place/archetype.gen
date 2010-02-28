@@ -462,6 +462,18 @@ showTopic(rcpt, verbose, mc) {
 	  ]) );
 	return 1;
 }
+
+_request_set_topic(source, mc, data, vars, b) {
+    string value = vars["_value"] || vars["_topic"];
+    if (strlen(value)) {
+	if (value == "-") value = 0;
+	sTopic(value, source, vars["_nick"]);
+    } else {
+	showTopic(source, 1, OFFICIAL);
+    }
+    return 1;
+}
+
 #endif
 
 #if HAS_PORT(HTTP_PORT, HTTP_PATH) || HAS_PORT(HTTPS_PORT, HTTP_PATH)
@@ -1838,6 +1850,7 @@ cmd(a, args, b, source, vars) {
 		return 1;
 #endif
 #ifdef PLACE_TOPIC_COMMAND
+	// not used anymore, see _request_set_topic() instead
 	case "topic":
 	case "topi":
 	case "top":
@@ -2234,9 +2247,11 @@ _request_set(source, mc, data, vars, b) {
 	PT(("set(%O, %O, %O, %O, %O) called\n", source, mc, data, vars, b))
 	if (k = vars["_key"])
 	    // pass on to a subhandler
-	    if (call_signature(source, "_request_set"+ k, data, vars, b))
+	    if (call_signature(source, "_request_set_"+ k, data, vars, b))
 	    	return 1;
-	return 0;
+
+	sendmsg(source, "_warning_usage_place", "Usage: /place <variable> [<value>]");
+	return 1;
 }
 
 #ifdef PLACE_OWNED
@@ -2331,16 +2346,16 @@ _request_set_style(source, mc, data, vars, b) {
 		    vSet("_uniform_style", value);
 		    save();
 		} else if (value) {
-			sendmsg(source, 
+		    sendmsg(source,
 			    "_error_illegal_scheme",
-	    "That is not a valid [_scheme] URL for a file.",
+			    "That is not a valid [_scheme] URL for a file.",
 			    ([ "_scheme" : "http" ]));
-			return 1;
+		    return 1;
 		}
 		sendmsg(source, "_status_place_uniform_style",
-		    "Style file [_uniform_style] is in use here.",
+			"Style file [_uniform_style] is in use here.",
 			([ "_uniform_style" :
-			 v("_uniform_style") || "-" ]));
+			   v("_uniform_style") || "-" ]));
 		return 1;
 	}
 	return 0;

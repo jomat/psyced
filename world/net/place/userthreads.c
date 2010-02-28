@@ -129,47 +129,47 @@ _request_remove(source, mc, data, vars, b) {
 //  - public: anyone can enter
 _request_privacy(source, mc, data, vars, b) {
     P3((">> userthreads:_request_privace(%O, %O, %O, %O, %O)\n", source, mc, data, vars, b))
-    string p = vars["_privacy"];
-    if (p == "public" || p == "private") {
-	vSet("privacy", p);
+    string value = vars["_value"];
+    if (value == "public" || value == "private") {
+	vSet("privacy", value);
 	save();
     }
-    sendmsg(source, "_status_privacy", "Privacy is: [_privacy].", (["_privacy": v("privacy")]));
+    sendmsg(source, "_info_set_place_privacy", "Privacy is: [_value].", (["_value": v("privacy")]));
     return 1;
 }
 
 #ifdef TWITTER
-_request_twitter(source, mc, data, vars, b) {
-    string sw = vars["_switch"];
-    if (sw == "on" || sw == "enabled" || sw == "1") {
+_request_set_twitter(source, mc, data, vars, b) {
+    string value = vars["_value"];
+    if (is_true(value)) {
 	unless (twitter) twitter = clone_object(NET_PATH "twitter/client")->load(source);
 	vSet("twitter", 1);
 	save();
-    } else if (sw == "off" || sw == "disabled" || sw == "0") {
+    } else if (is_false(value)) {
 	if (twitter) twitter = 0;
 	vSet("twitter", 0);
 	save();
     }
 
-    sendmsg(source, "_status_twitter", "Twitter submission is [_status].", (["_status": v("twitter") ? "enabled" : "disabled"]));
+    sendmsg(source, "_info_set_place_twitter", "Twitter submission is [_status].", (["_status": v("twitter") ? "enabled" : "disabled"]));
     return 1;
 }
 #endif
 
 #ifdef IDENTICA
-_request_identica(source, mc, data, vars, b) {
-    string sw = vars["_switch"];
-    if (sw == "on" || sw == "enabled" || sw == "1") {
+_request_set_identica(source, mc, data, vars, b) {
+    string value = vars["_value"];
+    if (is_true(value)) {
 	unless (identica) identica = clone_object(NET_PATH "identica/client")->load(source);
 	vSet("identica", 1);
 	save();
-    } else if (sw == "off" || sw == "disabled" || sw == "0") {
+    } else if (is_false(value)) {
 	if (identica) identica = 0;
 	vSet("identica", 0);
 	save();
     }
 
-    sendmsg(source, "_status_identica", "Identi.ca submission is [_status].", (["_status": v("identica") ? "enabled" : "disabled"]));
+    sendmsg(source, "_info_set_place_identica", "Identi.ca submission is [_status].", (["_status": v("identica") ? "enabled" : "disabled"]));
     return 1;
 }
 #endif

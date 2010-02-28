@@ -51,12 +51,19 @@ private volatile mapping _sigs = ([
 	"_request_nickname":	({ "_request_nick_local", 0, "_nick_local", "_INTERNAL_stuss" }),
 	// the real thing, maybe? method inheritance could even lead to here
 	// for all of the _request_set_something methods. good? bad?
+	"_request_place":	({ "_request_set", 0, "_key", "_value" }),
 	"_request_set":		({ "_request_set", 0, "_key", "_value" }),
 	// when called by _request_set(), value might be in _value
 	"_request_set_masquerade": ({ "_request_masquerade", 0, "_flag_masquerade" }),
 	"_request_set_owners":	({ "_request_owners", 0, "_list_owners" }), // _tab
 	"_request_set_public":	({ "_request_public", 0, "_flag_public" }),
 	"_request_set_style":	({ "_request_set_style", 0, "_uniform_style" }),
+	"_request_set_topic":	({ "_request_set_topic", 0, "_value" }),
+	"_request_topic":	({ "_request_set_topic", 0, "_value" }),
+	"_request_topi":	({ "_request_set_topic", 0, "_value" }),
+	"_request_top":		({ "_request_set_topic", 0, "_value" }),
+	"_request_to":		({ "_request_set_topic", 0, "_value" }),
+	"_request_t":		({ "_request_set_topic", 0, "_value" }),
 	// "INTERNAL" METHODS
 	// all of the following "fake" _request methods are just the psyced
 	// way to handle command name variations and shortcuts. never use this
@@ -92,15 +99,15 @@ private volatile mapping _sigs = ([
 #ifdef _flag_enable_module_microblogging
 	"_request_add":		({ "_request_add", 0, "_person" }),
 	"_request_remove":	({ "_request_remove", 0, "_person" }),
-	"_request_priv":	({ "_request_privacy", 0, "_privacy" }),
-	"_request_privacy":	({ "_request_privacy", 0, "_privacy" }),
+	"_request_set_priv":	({ "_request_set_privacy", 0, "_value" }),
+	"_request_set_privacy":	({ "_request_set_privacy", 0, "_value" }),
 #ifdef TWITTER
-	"_request_tw":		({ "_request_twitter", 0, "_switch" }),
-	"_request_twitter":	({ "_request_twitter", 0, "_switch" }),
+	"_request_set_tw":	({ "_request_set_twitter", 0, "_value" }),
+	"_request_set_twitter":	({ "_request_set_twitter", 0, "_value" }),
 #endif
 #ifdef IDENTICA
-	"_request_ica":		({ "_request_identica", 0, "_switch" }),
-	"_request_identica":	({ "_request_identica", 0, "_switch" }),
+	"_request_set_ica":	({ "_request_set_identica", 0, "_value" }),
+	"_request_set_identica":({ "_request_set_identica", 0, "_value" }),
 #endif
 #endif
 #ifdef EXPERIMENTAL
