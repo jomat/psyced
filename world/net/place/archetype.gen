@@ -2324,9 +2324,13 @@ _request_kick(source, mc, data, vars, b) {
 _request_set_style(source, mc, data, vars, b) {
 	if (qOwner(SNICKER)) {
 		string value = vars["_uniform_style"] || vars["_value"];
-		if (value && (value = legal_url(value, "http")))
+		if (value == "-") {
+		    vDel("_uniform_style", value);
+		    save();
+		} else if (value && (value = legal_url(value, "http"))) {
 		    vSet("_uniform_style", value);
-		else if (value) {
+		    save();
+		} else if (value) {
 			sendmsg(source, 
 			    "_error_illegal_scheme",
 	    "That is not a valid [_scheme] URL for a file.",

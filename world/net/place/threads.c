@@ -5,9 +5,6 @@
 #include <status.h>
 #include <lastlog.h>
 
-#define PLACE_HISTORY
-#define _limit_amount_history_persistent 0
-
 #ifndef DEFAULT_BACKLOG
 # define DEFAULT_BACKLOG 10
 #endif
@@ -567,6 +564,7 @@ htget(prot, query, headers, qs, data) {
     return 1;
 }
 
+// don't know if this works, needs to be tested
 void nntpget(string cmd, string args) {
     array(mixed) entry, entries;
     mapping vars;
