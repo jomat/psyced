@@ -51,12 +51,19 @@ private volatile mapping _sigs = ([
 	"_request_nickname":	({ "_request_nick_local", 0, "_nick_local", "_INTERNAL_stuss" }),
 	// the real thing, maybe? method inheritance could even lead to here
 	// for all of the _request_set_something methods. good? bad?
+	"_request_place":	({ "_request_set", 0, "_key", "_value" }),
 	"_request_set":		({ "_request_set", 0, "_key", "_value" }),
 	// when called by _request_set(), value might be in _value
 	"_request_set_masquerade": ({ "_request_masquerade", 0, "_flag_masquerade" }),
 	"_request_set_owners":	({ "_request_owners", 0, "_list_owners" }), // _tab
 	"_request_set_public":	({ "_request_public", 0, "_flag_public" }),
 	"_request_set_style":	({ "_request_set_style", 0, "_uniform_style" }),
+	"_request_set_topic":	({ "_request_set_topic", 0, "_value" }),
+	"_request_topic":	({ "_request_set_topic", 0, "_value" }),
+	"_request_topi":	({ "_request_set_topic", 0, "_value" }),
+	"_request_top":		({ "_request_set_topic", 0, "_value" }),
+	"_request_to":		({ "_request_set_topic", 0, "_value" }),
+	"_request_t":		({ "_request_set_topic", 0, "_value" }),
 	// "INTERNAL" METHODS
 	// all of the following "fake" _request methods are just the psyced
 	// way to handle command name variations and shortcuts. never use this
@@ -73,35 +80,47 @@ private volatile mapping _sigs = ([
 	"_request_ni":		({ "_request_nick_local", 0, "_nick_local", "_INTERNAL_stuss" }),
 	"_request_public":	({ "_request_public", 0, "_flag_public" }),
 	"_request_pub":		({ "_request_public", 0, "_flag_public" }),
-
+	// threads
 	"_request_entries":	({ "_request_entries", 0, "_num" }),
 	"_request_ents":	({ "_request_entries", 0, "_num" }),
 	"_request_entry":	({ "_request_entry", 0, "_id" }),
 	"_request_ent":		({ "_request_entry", 0, "_id" }),
-	"_request_comment":	({ "_request_comment", 0, "_id", "_text" }),
-	"_request_com":		({ "_request_comment", 0, "_id", "_text" }),
-	"_request_title":	({ "_request_title", 0, "_id", "_title" }),
-	"_request_addentry":	({ "_request_addentry", 0, "_text" }),
-	"_request_addent":	({ "_request_addentry", 0, "_text" }),
-	"_request_submit":	({ "_request_addentry", 0, "_text" }),
-	"_request_blog":	({ "_request_addentry", 0, "_text" }),
-	"_request_delentry":	({ "_request_delentry", 0, "_id" }),
-	"_request_delent":	({ "_request_delentry", 0, "_id" }),
-	"_request_unsubmit":	({ "_request_delentry", 0, "_id" }),
-	"_request_unblog":	({ "_request_delentry", 0, "_id" }),
+	"_request_entry_reply":	({ "_request_entry_reply", 0, "_parent", "_text" }),
+	"_request_comment":	({ "_request_entry_reply", 0, "_parent", "_text" }),
+	"_request_com":		({ "_request_entry_reply", 0, "_parent", "_text" }),
+	"_request_entry_add":	({ "_request_entry_add", 0, "_text" }),
+	"_request_addentry":	({ "_request_entry_add", 0, "_text" }),
+	"_request_addent":	({ "_request_entry_add", 0, "_text" }),
+	"_request_submit":	({ "_request_entry_add", 0, "_text" }),
+	"_request_blog":	({ "_request_entry_add", 0, "_text" }),
+	"_request_entry_del":	({ "_request_entry_del", 0, "_id" }),
+	"_request_delentry":	({ "_request_entry_del", 0, "_id" }),
+	"_request_delent":	({ "_request_entry_del", 0, "_id" }),
+	"_request_unsubmit":	({ "_request_entry_del", 0, "_id" }),
+	"_request_unblog":	({ "_request_entry_del", 0, "_id" }),
+	"_request_entry_edit":	({ "_request_entry_edit", 0, "_id", "_text" }),
+	"_request_editentry":	({ "_request_entry_edit", 0, "_id", "_text" }),
+	"_request_edentry":	({ "_request_entry_edit", 0, "_id", "_text" }),
+	"_request_edent":	({ "_request_entry_edit", 0, "_id", "_text" }),
+	"_request_set_addact":	({ "_request_set_addaction", 0, "_value" }),
+	"_request_set_addaction":({ "_request_set_addaction", 0, "_value" }),
+	"_request_set_editact":	({ "_request_set_editaction", 0, "_value" }),
+	"_request_set_editaction":({ "_request_set_editaction", 0, "_value" }),
+	"_request_set_showform":({ "_request_set_showform", 0, "_value" }),
+	"_request_set_showcomments":({ "_request_set_showcomments", 0, "_value" }),
 #ifdef _flag_enable_module_microblogging
 	"_request_add":		({ "_request_add", 0, "_person" }),
 	"_request_remove":	({ "_request_remove", 0, "_person" }),
-	"_request_priv":	({ "_request_privacy", 0, "_privacy" }),
-	"_request_privacy":	({ "_request_privacy", 0, "_privacy" }),
-#ifdef TWITTER
-	"_request_tw":		({ "_request_twitter", 0, "_switch" }),
-	"_request_twitter":	({ "_request_twitter", 0, "_switch" }),
-#endif
-#ifdef IDENTICA
-	"_request_ica":		({ "_request_identica", 0, "_switch" }),
-	"_request_identica":	({ "_request_identica", 0, "_switch" }),
-#endif
+	"_request_set_priv":	({ "_request_set_privacy", 0, "_value" }),
+	"_request_set_privacy":	({ "_request_set_privacy", 0, "_value" }),
+# ifdef TWITTER
+	"_request_set_tw":	({ "_request_set_twitter", 0, "_value" }),
+	"_request_set_twitter":	({ "_request_set_twitter", 0, "_value" }),
+# endif
+# ifdef IDENTICA
+	"_request_set_ica":	({ "_request_set_identica", 0, "_value" }),
+	"_request_set_identica":({ "_request_set_identica", 0, "_value" }),
+# endif
 #endif
 #ifdef EXPERIMENTAL
 	// stuff to play around with

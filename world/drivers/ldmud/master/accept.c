@@ -435,6 +435,12 @@ object compile_object(string file) {
 #endif
 		return rob;
 	}
+	if (sscanf(file, "%s/text.c", path) && path != "") {
+		rob = clone_object(NET_PATH "text");
+		rob -> sPath(path);
+		D2(if (rob) PP(("DB CLONED: %O becomes %s/text\n", rob, path));)
+		return rob;
+	}
 	if (sscanf(file, "%s#%s.c", path, name) && name != "") {
 		unless (name = SIMUL_EFUN_FILE->legal_name(name))
 		    return (object)0;
@@ -442,12 +448,6 @@ object compile_object(string file) {
 		rob -> sName(name);
 		D2(if (rob) PP(("NAMED CLONE: %O becomes %s of %s\n",
 				rob, name, path));)
-		return rob;
-	}
-	if (sscanf(file, "%s/text.c", path) && path != "") {
-		rob = clone_object(NET_PATH "text");
-		rob -> sPath(path);
-		D2(if (rob) PP(("DB CLONED: %O becomes %s/text\n", rob, path));)
 		return rob;
 	}
 # ifdef JABBER_PATH

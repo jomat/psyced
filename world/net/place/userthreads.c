@@ -24,17 +24,19 @@ volatile object identica;
 
 load(name, keep) {
     P3((">> userthreads:load(%O, %O)\n", name, keep))
+    int ret = ::load(name, keep);
 
     sscanf(name, "~%s#%s", owner, channel);
-    vSet("owners", ([ lower_case(owner) ]));
-    vSet("privacy", "private");
-    vSet("twitter", 0);
-    vSet("identica", 0);
+
+    unless (v("owners")) vSet("owners", ([ lower_case(owner) ]));
+    unless (v("privacy")) vSet("privacy", "private");
+    unless (vExist("twitter")) vSet("twitter", 0);
+    unless (vExist("identica")) vSet("identica", 0);
 
     vSet("_restrict_invitation", BLAME);
     vSet("_filter_conversation", BLAME);
 
-    return ::load(name, keep);
+    return ret;
 }
 
 enter(source, mc, data, vars) {
@@ -127,68 +129,63 @@ _request_remove(source, mc, data, vars, b) {
 // set privacy: private or public
 //  - private: only friends & invited people can enter (default)
 //  - public: anyone can enter
-_request_privacy(source, mc, data, vars, b) {
-    P3((">> userthreads:_request_privace(%O, %O, %O, %O, %O)\n", source, mc, data, vars, b))
-    string p = vars["_privacy"];
-    if (p == "public" || p == "private") {
-	vSet("privacy", p);
-	save();
-    }
-    sendmsg(source, "_status_privacy", "Privacy is: [_privacy].", (["_privacy": v("privacy")]));
-    return 1;
+_request_set_privacy(source, mc, data, vars, b) {
+    return _request_set_default_list(source, mc, data, vars, b, ({"public", "private"}));
 }
 
 #ifdef TWITTER
-_request_twitter(source, mc, data, vars, b) {
-    string sw = vars["_switch"];
-    if (sw == "on" || sw == "enabled" || sw == "1") {
+_request_set_twitter(source, mc, data, vars, b) {
+    unless (qOwner(SNICKER)) return 0;
+    string value = vars["_value"];
+    if (is_true(value)) {
 	unless (twitter) twitter = clone_object(NET_PATH "twitter/client")->load(source);
 	vSet("twitter", 1);
 	save();
-    } else if (sw == "off" || sw == "disabled" || sw == "0") {
+    } else if (is_false(value)) {
 	if (twitter) twitter = 0;
 	vSet("twitter", 0);
 	save();
     }
 
-    sendmsg(source, "_status_twitter", "Twitter submission is [_status].", (["_status": v("twitter") ? "enabled" : "disabled"]));
+    sendmsg(source, "_info_set_place_twitter", "Twitter submission is [_status].", (["_status": v("twitter") ? "enabled" : "disabled"]));
     return 1;
 }
 #endif
 
 #ifdef IDENTICA
-_request_identica(source, mc, data, vars, b) {
-    string sw = vars["_switch"];
-    if (sw == "on" || sw == "enabled" || sw == "1") {
+_request_set_identica(source, mc, data, vars, b) {
+    unless (qOwner(SNICKER)) return 0;
+    string value = vars["_value"];
+    if (is_true(value)) {
 	unless (identica) identica = clone_object(NET_PATH "identica/client")->load(source);
 	vSet("identica", 1);
 	save();
-    } else if (sw == "off" || sw == "disabled" || sw == "0") {
+    } else if (is_false(value)) {
 	if (identica) identica = 0;
 	vSet("identica", 0);
 	save();
     }
 
-    sendmsg(source, "_status_identica", "Identi.ca submission is [_status].", (["_status": v("identica") ? "enabled" : "disabled"]));
+    sendmsg(source, "_info_set_place_identica", "Identi.ca submission is [_status].", (["_status": v("identica") ? "enabled" : "disabled"]));
     return 1;
 }
 #endif
 
-varargs int addEntry(mixed source, string snicker, string text, string title, int parent_id) {
+varargs int addEntry(mixed source, mapping vars, string _data, string _mc) {
     int ret;
-    if (ret = ::addEntry(source, snicker, text, title, parent_id)) {
+    if (ret = ::addEntry(source, vars, _data, _mc)) {
 #ifdef TWITTER
-	if (v("twitter") && twitter) twitter->status_update(text);
+	if (v("twitter") && twitter) twitter->status_update(vars["_text"]);
 #endif
 #ifdef IDENTICA
-	if (v("identica") && identica) identica->status_update(text);
+	if (v("identica") && identica) identica->status_update(vars["_text"]);
 #endif
     }
     return ret;
 }
 
-htMain(int limit, int offset) {
-    return ::htMain(limit, offset, channel);
+htMain(int limit, int offset, int submit) {
+    return ::htMain(limit, offset, submit, channel);
 }
 
 canPost(snicker) {
@@ -207,7 +204,7 @@ qChannel() {
     return channel;
 }
 
-qHistoryGlimpse() {
+int qHistoryGlimpse() {
     return HISTORY_GLIMPSE;
 }
 

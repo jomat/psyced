@@ -319,7 +319,7 @@ htDescription(anonymous, query, headers, qs, variant, vars) {
 		  + (first ? "class='selected'" : "") + ">#" + channel + "</a>\n";
 	    contents +=
 		"<div id='tab-contents-" + channel + "' "
-		+ (first ? "class='selected'" : "") + ">" + threads->htmlEntries(entries, !first, channel, anonymous ? "" : vars["_identification"] + "#" + channel, vars["_profile_url"] + "/" + channel) + "</div>\n";
+		+ (first ? "class='selected'" : "") + ">" + threads->htmlEntries(entries, 1, 1, !first, channel, anonymous ? "" : vars["_identification"] + "#" + channel, vars["_profile_url"] + "/" + channel) + "</div>\n";
 	    first = 0;
 	}
 
@@ -1322,7 +1322,7 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 	else t = vars["_time_log"] || vars["_time_place"];
 	// would be nicer to have _time_log in /log rather than showingLog
 	if (!t && showingLog) t = vars["_time_INTERNAL"];
-	if (t && intp(t)) di["_prefix"] = time_or_date(t) +" ";
+	if (t && intp(t)) di["_prefix"] = time_or_date(t);
 #if 0
 	template = T(di["_method"] || mc, 0);
 #else
@@ -1448,7 +1448,12 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 	// who is that output for anyway?
 
 	output = psyctext(template, vars, data, source);
-	if (di["_prefix"]) output = di["_prefix"]+output;
+	if (di["_prefix"]) {
+	    if (vars["_postfix_time_log"])
+		output += " " + di["_prefix"];
+	    else
+		output = di["_prefix"] +" "+ output;
+	}
 
 	if (output) {
 		if (template == "") {

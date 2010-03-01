@@ -15,7 +15,7 @@ htget(prot, query, headers, qs) {
 		t = "_error_invalid_authentication_token";
 	} else {
 		PT(("replacing cookie %O\n", headers["cookie"]))
-		htok3(prot, 0, "Set-Cookie: psyced=\""+ qs +"\";\n");
+		htok3(prot, 0, "Set-Cookie: psyced=\""+ qs +"\"; path=/;\n");
 #if 1
 		// login was supposed to something more than just /surf
 		// but until this is the case, why lose time?

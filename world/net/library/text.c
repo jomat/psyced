@@ -179,3 +179,13 @@ string x(string str, int n) {
     for (i = 0; i < n; i++) res += str;
     return res;
 }
+
+int is_true(string v) {
+    if (strlen(v) && regmatch(v, "^(?:on|yes|true|enabled|1)$")) return 1;
+    return 0;
+}
+
+int is_false(string v) {
+    if (strlen(v) && regmatch(v, "^(?:off|no|false|disabled|0)$")) return 1;
+    return 0;
+}

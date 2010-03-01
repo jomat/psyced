@@ -9,8 +9,9 @@
 
 #include "header.i"
 
-volatile string url, file, qs, version;
+volatile string url, file, qs, version, method, body = "";
 volatile mapping headers;
+volatile int length;
 
 // we're using #'closures to point to the functions we're giving the
 // next_input_to(). as i don't want to restructure the whole file, i need
@@ -19,6 +20,7 @@ volatile mapping headers;
 // quite stupid indeed, as they don't got any modifiers or whatever :)
 parse_url(input);
 parse_header(input);
+parse_body(input);
 devNull();
 
 qScheme() { return "html"; }
@@ -67,14 +69,17 @@ parse_wait(null) { // waiting to send my error message here
 
 parse_url(input) {
     P3(("=== SmallHTTP got: %O\n", input))
-    unless (sscanf(input, "GET%t%s%tHTTP/%s", url, version)) {
-	if (sscanf(input, "CONNECT%t%~s")) {
+    unless (sscanf(input, "%s%t%s%tHTTP/%s", method, url, version)) quit();
+    switch (method) {
+	case "CONNECT":
 	    next_input_to(#'parse_wait);
 	    return;
-	} else {
+	case "GET":
+	case "POST":
+	    break;
+	default:
 	    quit();
 	    return;
-	}
     }
 
     version = "HTTP/" + version;
@@ -95,9 +100,23 @@ parse_header(input) {
 
 	next_input_to(#'parse_header);
     } else {
-	process();
-	next_input_to(#'devNull);
+	if (method == "POST" && (length = to_int(headers["content-length"])) &&
+	    headers["content-type"] == "application/x-www-form-urlencoded") {
+	    input_to(#'parse_body, INPUT_IGNORE_BANG | INPUT_CHARMODE | INPUT_NO_TELNET);
+	} else {
+	    process();
+	    next_input_to(#'devNull);
+	}
     }
+}
+
+parse_body(input) {
+    //P4(("parse_body(%O)\n", input))
+    body += input;
+    if (strlen(body) == length)
+	process();
+    else
+	input_to(#'parse_body, INPUT_IGNORE_BANG | INPUT_CHARMODE | INPUT_NO_TELNET);
 }
 
 process() {
@@ -138,6 +157,9 @@ process() {
 	query = url_parse_query(query, qs);
     } else {
 	file = url;
+    }
+    if (method == "POST" && headers["content-type"] == "application/x-www-form-urlencoded") {
+	query = url_parse_query(query, body);
     }
     P4(("parsed query: %O\n", query))
     switch (file) {

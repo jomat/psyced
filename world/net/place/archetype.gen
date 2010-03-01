@@ -216,18 +216,6 @@ int qSaveImmediately() {
 #endif
 }
 
-#ifdef _limit_amount_history_persistent
-int qHistoryPersistentLimit() {
-    return _limit_amount_history_persistent;
-}
-#endif
-
-#ifdef _limit_amount_history_export
-int qHistoryExportLimit() {
-    return _limit_amount_history_export;
-}
-#endif
-
 // to be overloaded by place.gen
 qNewsfeed() { return 0; }
 // _request_list_feature uses this in *all* place objects, dont ifdef
@@ -237,7 +225,9 @@ mayLog(mc) { return abbrev("_message", mc); }
 
 qHistory() { return v("log"); }
 
-qHistoryGlimpse() { return DEFAULT_GLIMPSE; }
+int qHistoryGlimpse() { return DEFAULT_GLIMPSE; }
+int qHistoryPersistentLimit() { return _limit_amount_history_persistent; }
+int qHistoryExportLimit() { return _limit_amount_history_export; }
 
 histClear(a, b, source, vars) {
 	int l = logSize();
@@ -466,6 +456,19 @@ showTopic(rcpt, verbose, mc) {
 	  ]) );
 	return 1;
 }
+
+# ifdef SIGS
+_request_set_topic(source, mc, data, vars, b) {
+    string value = vars["_value"] || vars["_topic"];
+    if (strlen(value)) {
+	if (value == "-") value = 0;
+	sTopic(value, source, vars["_nick"]);
+    } else {
+	showTopic(source, 1, OFFICIAL);
+    }
+    return 1;
+}
+# endif
 #endif
 
 #if HAS_PORT(HTTP_PORT, HTTP_PATH) || HAS_PORT(HTTPS_PORT, HTTP_PATH)
@@ -1844,6 +1847,7 @@ cmd(a, args, b, source, vars) {
 		return 1;
 #endif
 #ifdef PLACE_TOPIC_COMMAND
+	// not used anymore, see _request_set_topic() instead
 	case "topic":
 	case "topi":
 	case "top":
@@ -2240,10 +2244,70 @@ _request_set(source, mc, data, vars, b) {
 	PT(("set(%O, %O, %O, %O, %O) called\n", source, mc, data, vars, b))
 	if (k = vars["_key"])
 	    // pass on to a subhandler
-	    if (call_signature(source, "_request_set"+ k, data, vars, b))
+	    if (call_signature(source, "_request_set_"+ k, data, vars, b))
 	    	return 1;
-	return 0;
+
+	sendmsg(source, "_warning_usage_place", "Usage: /place <variable> [<value>]");
+	return 1;
 }
+
+_request_set_default_text(source, mc, data, vars, b) {
+    unless (qOwner(SNICKER)) return 0;
+    string key = vars["_key"];
+    string value = vars["_value"];
+
+    if (strlen(value)) {
+	vSet(key, value);
+	save();
+    }
+
+    sendmsg(source, "_info_set_place_" + key, "Setting \"[_key_set]\" is \"[_value]\".", (["_key_set": key, "_value": v(key)]));
+    return 1;
+}
+
+_request_set_default_list(source, mc, data, vars, b, list) {
+    unless (qOwner(SNICKER)) return 0;
+    string key = vars["_key"];
+    string value;
+
+    foreach (string item : list) {
+	if (item == vars["_value"]) {
+	    value = vars["_value"];
+	    break;
+	}
+    }
+
+    if (strlen(value)) {
+	vSet(key, value);
+	save();
+    } else if (strlen(vars["_value"])) {
+	sendmsg(source, "_error_invalid_setting_value",
+		"Sorry, that is not a valid value for the [_key_set] setting. Valid values are: [_values].",
+		([ "_key_set": key, "_values": implode(list, ", ") ]) );
+	return 1;
+    }
+
+    sendmsg(source, "_info_set_place_" + key, "Setting \"[_key_set]\" is \"[_value]\".", (["_key_set": key, "_value": v(key)]));
+    return 1;
+}
+
+_request_set_default_bool(source, mc, data, vars, b) {
+    unless (qOwner(SNICKER)) return 0;
+    string key = vars["_key"];
+    string value = vars["_value"];
+
+    if (is_true(value)) {
+	vSet(key, 1);
+	save();
+    } else if (is_false(value)) {
+	vSet(key, 0);
+	save();
+    }
+
+    sendmsg(source, "_info_set_place_" + key, "Setting \"[_key_set]\" is [_value].", (["_key_set": key, "_value": v(key) ? "on" : "off"]));
+    return 1;
+}
+
 
 #ifdef PLACE_OWNED
 _request_owners(source, mc, data, vars, b) {
@@ -2337,16 +2401,16 @@ _request_set_style(source, mc, data, vars, b) {
 		    vSet("_uniform_style", value);
 		    save();
 		} else if (value) {
-			sendmsg(source, 
+		    sendmsg(source,
 			    "_error_illegal_scheme",
-	    "That is not a valid [_scheme] URL for a file.",
+			    "That is not a valid [_scheme] URL for a file.",
 			    ([ "_scheme" : "http" ]));
-			return 1;
+		    return 1;
 		}
 		sendmsg(source, "_status_place_uniform_style",
-		    "Style file [_uniform_style] is in use here.",
+			"Style file [_uniform_style] is in use here.",
 			([ "_uniform_style" :
-			 v("_uniform_style") || "-" ]));
+			   v("_uniform_style") || "-" ]));
 		return 1;
 	}
 	return 0;
