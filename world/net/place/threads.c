@@ -533,6 +533,12 @@ htget(prot, query, headers, qs, data) {
     int a;
     int limit = to_int(query["limit"]) || DEFAULT_BACKLOG;
     int offset = to_int(query["offset"]);
+    int authed = checkToken(query) ? 1 : 0;
+    unless (isPublic() || authed) {
+	write("<h1>404</h1>");
+	return 1;
+    }
+
     string webact = PLACE_PATH + MYLOWERNICK;
     // shouldnt it be "html" here?
     sTextPath(query["layout"] || MYNICK, query["lang"], "ht");
@@ -542,18 +548,7 @@ htget(prot, query, headers, qs, data) {
 	htok(prot);
 	// kommentare + urspruengliche Nachricht anzeigen
 	displayHeader("entry");
-	displayEntry(to_int(query["id"]), checkToken(query) ? 1 : 0);
-#if 0
-	// eingabeformular ohne betreff
-	write("<form action='"+ webact +"' method='GET'>\n"
-	      "<input type='hidden' name='request' value='post'>\n"
-	      "PSYC Uni: <input type='text' name='uni'><br>\n"
-	      "<input type='hidden' name='reply' value='"+ query["comments"] +"'>\n"
-	      "<textarea name='text' rows='14' cols='80'>Enter your text here</textarea><br>\n"
-	      "<input type='submit' value='submit'>\n"
-	      "</form>\n");
-	write("<br><hr><br>");
-#endif
+	displayEntry(to_int(query["id"]), authed);
 	//logView(a < 24 ? a : 12, "html", 15);
 	displayFooter();
 	return 1;
@@ -589,7 +584,7 @@ htget(prot, query, headers, qs, data) {
 	return 1;
     }
 
-    //::htget(prot, query, headers, qs, data, 1);	// no processing, just info
+    ::htget(prot, query, headers, qs, data, 1);	// no processing, just info
 
     string export = query["export"] || query["format"];
     if (export == "js") {
