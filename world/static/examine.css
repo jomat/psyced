@@ -19,7 +19,7 @@ body.threads,
 	padding: 4;
 	border: 1px solid #f33;
 }
-.comment-submit textarea, .comment-submit input,
+.entry textarea, .entry input,
 .Pe form input,select,textarea {
 	background: black;
 	color: #f33;
@@ -74,6 +74,7 @@ body.threads,
 	width: 400;
 }
 
+a.add-entry,
 .entry {
   margin: 22px 44px;
 }
@@ -102,12 +103,35 @@ body.threads,
   margin: 0 1em;
 }
 
-.entry .body .comment-submit input,
-.entry .body .comment-submit textarea {
+.entry .body .comment-form-toggle {
+  float: right;
+}
+
+.entry input,
+.entry textarea {
   font-size: 12px;
 }
-.entry .body .comment-submit textarea {
+.entry input[type=text],
+.entry textarea {
   width: 100%;
+}
+
+body.entry-add textarea {
+  height: 40em;
+}
+
+.entry form {
+  margin: 0.2em 0;
+  padding: 0;
+}
+
+h1 a,
+.entry a {
+  cursor: pointer;
+  text-decoration: none;
+}
+.entry a:hover {
+  text-decoration: underline;
 }
 
 .entry .header a {
@@ -116,17 +140,15 @@ body.threads,
 .entry .header .author {}
 .entry .header .title {}
 
+.entry .body a {
+  color: #f33;
+}
+
+h1 a,
+a.add-entry,
 .entry .footer a,
 .entry .footer a:visited {
   color: white;
-}
-
-.entry a {
-  cursor: pointer;
-  text-decoration: none;
-}
-.entry a:hover {
-  text-decoration: underline;
 }
 
 .entry .footer .comments-link {

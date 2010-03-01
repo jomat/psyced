@@ -68,6 +68,10 @@ vInc(k, howmuch) {
 }
 // vDec(k) { _v[k]--; }
 
+vExist(k) {
+    return member(_v, k);
+}
+
 vEmpty() { return sizeof(_v) == 0; }
 vSize() { return sizeof(_v); }
 

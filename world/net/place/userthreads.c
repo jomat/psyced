@@ -24,17 +24,19 @@ volatile object identica;
 
 load(name, keep) {
     P3((">> userthreads:load(%O, %O)\n", name, keep))
+    int ret = ::load(name, keep);
 
     sscanf(name, "~%s#%s", owner, channel);
-    vSet("owners", ([ lower_case(owner) ]));
-    vSet("privacy", "private");
-    vSet("twitter", 0);
-    vSet("identica", 0);
+
+    unless (v("owners")) vSet("owners", ([ lower_case(owner) ]));
+    unless (v("privacy")) vSet("privacy", "private");
+    unless (vExist("twitter")) vSet("twitter", 0);
+    unless (vExist("identica")) vSet("identica", 0);
 
     vSet("_restrict_invitation", BLAME);
     vSet("_filter_conversation", BLAME);
 
-    return ::load(name, keep);
+    return ret;
 }
 
 enter(source, mc, data, vars) {
@@ -127,19 +129,13 @@ _request_remove(source, mc, data, vars, b) {
 // set privacy: private or public
 //  - private: only friends & invited people can enter (default)
 //  - public: anyone can enter
-_request_privacy(source, mc, data, vars, b) {
-    P3((">> userthreads:_request_privace(%O, %O, %O, %O, %O)\n", source, mc, data, vars, b))
-    string value = vars["_value"];
-    if (value == "public" || value == "private") {
-	vSet("privacy", value);
-	save();
-    }
-    sendmsg(source, "_info_set_place_privacy", "Privacy is: [_value].", (["_value": v("privacy")]));
-    return 1;
+_request_set_privacy(source, mc, data, vars, b) {
+    return _request_set_default_list(source, mc, data, vars, b, ({"public", "private"}));
 }
 
 #ifdef TWITTER
 _request_set_twitter(source, mc, data, vars, b) {
+    unless (qOwner(SNICKER)) return 0;
     string value = vars["_value"];
     if (is_true(value)) {
 	unless (twitter) twitter = clone_object(NET_PATH "twitter/client")->load(source);
@@ -158,6 +154,7 @@ _request_set_twitter(source, mc, data, vars, b) {
 
 #ifdef IDENTICA
 _request_set_identica(source, mc, data, vars, b) {
+    unless (qOwner(SNICKER)) return 0;
     string value = vars["_value"];
     if (is_true(value)) {
 	unless (identica) identica = clone_object(NET_PATH "identica/client")->load(source);
@@ -174,21 +171,21 @@ _request_set_identica(source, mc, data, vars, b) {
 }
 #endif
 
-varargs int addEntry(mixed source, string snicker, string text, string title, int parent_id) {
+varargs int addEntry(mixed source, mapping vars, string _data, string _mc) {
     int ret;
-    if (ret = ::addEntry(source, snicker, text, title, parent_id)) {
+    if (ret = ::addEntry(source, vars, _data, _mc)) {
 #ifdef TWITTER
-	if (v("twitter") && twitter) twitter->status_update(text);
+	if (v("twitter") && twitter) twitter->status_update(vars["_text"]);
 #endif
 #ifdef IDENTICA
-	if (v("identica") && identica) identica->status_update(text);
+	if (v("identica") && identica) identica->status_update(vars["_text"]);
 #endif
     }
     return ret;
 }
 
-htMain(int limit, int offset) {
-    return ::htMain(limit, offset, channel);
+htMain(int limit, int offset, int submit) {
+    return ::htMain(limit, offset, submit, channel);
 }
 
 canPost(snicker) {
@@ -207,7 +204,7 @@ qChannel() {
     return channel;
 }
 
-qHistoryGlimpse() {
+int qHistoryGlimpse() {
     return HISTORY_GLIMPSE;
 }
 
