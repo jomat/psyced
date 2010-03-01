@@ -172,20 +172,22 @@ varargs void w(string mc, string data, mixed vars) {
 }
 #endif
 
-// a simple implementation of perl's x operator
-string x(string str, int n) {
-    int i;
-    string res = "";
-    for (i = 0; i < n; i++) res += str;
-    return res;
+// a simple implementation of perl's x repetition operator
+string repeat(string str, int n) {
+	int i;
+	string res = "";
+	for (i = 0; i < n; i++) res += str;
+	return res;
 }
 
 int is_true(string v) {
-    if (strlen(v) && regmatch(v, "^(?:on|yes|true|enabled|1)$")) return 1;
-    return 0;
+	if (strlen(v) && regmatch(v, "^(?:on|yes|y|ja|true|enabled|1)$"))
+	    return 1;
+	return 0;
 }
 
 int is_false(string v) {
-    if (strlen(v) && regmatch(v, "^(?:off|no|false|disabled|0)$")) return 1;
-    return 0;
+	if (strlen(v) && regmatch(v, "^(?:off|no|n|nein|false|disabled|0)$"))
+	    return 1;
+	return 0;
 }

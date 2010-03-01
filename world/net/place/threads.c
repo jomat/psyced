@@ -180,7 +180,7 @@ sendEntries(mixed source, array(mixed) entries, int level) {
 	vars = entry[LOG_VARS];
 	sendmsg(source, regreplace(entry[LOG_MC], "^_notice", "_list", 1),
 		"[_indent][_nick]: "+ (vars["_title"] ? "[_title]\n" : "") +"[_text] (#[_id])",
-		vars + ([ "_level": level, "_indent": x("  ", level), "_postfix_time_log": 1 ]));
+		vars + ([ "_level": level, "_indent": repeat("  ", level), "_postfix_time_log": 1 ]));
 	if (sizeof(entry) >= LOG_CHILDREN + 1) sendEntries(source, entry[LOG_CHILDREN], level + 1);
 	n++;
     }
