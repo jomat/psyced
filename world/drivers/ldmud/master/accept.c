@@ -384,12 +384,6 @@ object compile_object(string file) {
 	    return rob;
 	}
 # endif
-	if (sscanf(file, "%s/text.c", path) && path != "") {
-		rob = clone_object(NET_PATH "text");
-		rob -> sPath(path);
-		D2(if (rob) PP(("DB CLONED: %O becomes %s/text\n", rob, path));)
-		return rob;
-	}
 	if (sscanf(file, "place/%s.c", name) && name != "") {
 #ifdef SANDBOX
 		string t;
@@ -448,6 +442,12 @@ object compile_object(string file) {
 		rob -> sName(name);
 		D2(if (rob) PP(("NAMED CLONE: %O becomes %s of %s\n",
 				rob, name, path));)
+		return rob;
+	}
+	if (sscanf(file, "%s/text.c", path) && path != "") {
+		rob = clone_object(NET_PATH "text");
+		rob -> sPath(path);
+		D2(if (rob) PP(("DB CLONED: %O becomes %s/text\n", rob, path));)
 		return rob;
 	}
 # ifdef JABBER_PATH

@@ -216,13 +216,17 @@ int qSaveImmediately() {
 #endif
 }
 
+#ifdef _limit_amount_history_persistent
 int qHistoryPersistentLimit() {
     return _limit_amount_history_persistent;
 }
+#endif
 
+#ifdef _limit_amount_history_export
 int qHistoryExportLimit() {
     return _limit_amount_history_export;
 }
+#endif
 
 // to be overloaded by place.gen
 qNewsfeed() { return 0; }
@@ -281,7 +285,7 @@ msgView(source, mc, data, vars, showingLog) {
 		s = psyctext( T(mc, ""), vars, data, source );
 		if (strlen(s) < 7) return;
 		s = s[..<2];
-// htquote ist nicht so gründlich wie für javascript notwendig
+// htquote doesn't do the job as necessary for javascript
 		s = regreplace(s, "\&", "\\\&amp;", 1);
 		s = regreplace(s, "<", "\\\&lt;", 1);
 		s = regreplace(s, ">", "\\\&gt;", 1);
@@ -468,7 +472,8 @@ showTopic(rcpt, verbose, mc) {
 htget(prot, query, headers, qs, data, noprocess) {
     //P3((">> archetype.gen:htget(%O, %O, %O, %O, %O, %O)\n", prot, query, headers, qs, data, noprocess))
 # ifdef PLACE_SCRATCHPAD
-        sTextPath(query["layout"] || MYNICK, query["lang"], "html");
+	// we *could* allow each place to define its own textdb.. but why?
+        sTextPath(query["layout"] /* || MYNICK */, query["lang"], "html");
 	if (!noprocess && (!qs || query["scratchpad"])) {
 		string rand, buf, len;
 // microscopic wiki functionality .. cheap imitation of tobi's save.pike
@@ -607,8 +612,9 @@ htget(prot, query, headers, qs, data, noprocess) {
 		break;
 #endif
 	    default:
-		sTextPath(query["layout"] || MYNICK, query["lang"], "html");
+		sTextPath(query["layout"], query["lang"], "html");
 		htok(prot);
+		// we could output a css something here..
 		// w("_HTML_head");
 		write("\n\n<table>");
 		logView(a, "html", 15);

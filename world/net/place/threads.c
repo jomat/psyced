@@ -274,8 +274,12 @@ varargs string htmlComments(array(mixed) entries, int level) {
     string ht = "", style;
     foreach(entry : entries) {
 	vars = entry[LOG_VARS];
+	ht = htquote(vars["_text"]);
+        ht = replace(ht, "\n", "<br/>\n");
+
 	style = level ? "style='padding-left: " + level + "em'" : "";
-	ht += "<div class='comment' title='" + isotime(ctime(vars["_time_place"]), 1) + "' " + style + "><span class='comment-author'>" + vars["_nick"] + "</span>: <span class='comment-text'>" + htquote(vars["_text"], 1) + "</span></div>\n";
+	ht += "<div class='comment' title='" + isotime(ctime(vars["_time_place"]), 1) + "' " + style + "><span class='comment-author'>" + vars["_nick"] + "</span>: <span class='comment-text'>"+ ht +"</span></div>\n";
+
 	if (sizeof(entry) >= LOG_CHILDREN + 1) ht += htmlComments(entry[LOG_CHILDREN], level + 1);
     }
     return ht;
@@ -295,8 +299,7 @@ varargs string htmlEntries(array(mixed) entries, int nojs, string chan, string s
     foreach (entry : entries) {
 	P3((">>> entry: %O\n", entry))
 	vars = entry[LOG_VARS];
-
-	text = htquote(vars["_text"], 1);
+        text = replace(htquote(vars["_text"]), "\n", "<br/>\n");
 
 	string comments = "";
 	if (sizeof(entry) >= LOG_CHILDREN + 1) comments = htmlComments(entry[LOG_CHILDREN]);
@@ -349,13 +352,17 @@ string rssEntries(array(mixed) entries) {
 	"</channel>\n";
 
     mapping entry, vars;
+    string ht;
     foreach (entry : entries) {
 	vars = entry[LOG_VARS];
+	ht = htquote(vars["_text"]);
+	// does RSS define <br/> for linebreaks?
+        //ht = replace(ht, "\n", "<br/>\n");
 	rss +=
 	    "\n<item>\n"
 	      "\t<title>"+ (vars["_title"] || "no title") +"</title>\n"
 	      "\t<link>http://" + HTTP_OR_HTTPS_URL + "/" + pathName() +  "?id=" + vars["_id"] + "</link>\n"
-	      "\t<description>" + vars["_text"] + "</description>\n"
+	      "\t<description>"+ ht +"</description>\n"
 	      "\t<dc:date>" + isotime(ctime(vars["_time_place"]), 1) + "</dc:date>\n"
 	      "\t<dc:creator>" + vars["_nick"] + "</dc:creator>\n"
 	    "</item>\n";
@@ -379,6 +386,7 @@ string jsEntries(array(mixed) entries) {
     mapping entry, vars;
     foreach (entry : entries) {
 	vars = entry[LOG_VARS];
+	// should probably be htquoted too
 	js += "new Entry(" + vars["_id"] + ","
 		"\"" + vars["_title"] + "\","
 		"\"" + vars["_nick"] + "\","
@@ -447,8 +455,7 @@ htget(prot, query, headers, qs, data) {
     int limit = to_int(query["limit"]) || DEFAULT_BACKLOG;
     int offset = to_int(query["offset"]);
     string webact = PLACE_PATH + MYLOWERNICK;
-    // shouldnt it be "html" here?
-    sTextPath(query["layout"] || MYNICK, query["lang"], "ht");
+    sTextPath(query["layout"], query["lang"], "html");
 
     // Kommentare anzeigen
     if (query["id"]) {
@@ -545,7 +552,6 @@ htget(prot, query, headers, qs, data) {
     } else if (export == "rss" || export == "rdf") {
 	// export als RSS
 	// scheinbar gibt es ein limit von 15 items / channel
-	// htquote auch hier anwenden
 	// check If-Modified-Since header
 	htok3(prot, "text/xml", "");
 	rssExport(limit, offset);

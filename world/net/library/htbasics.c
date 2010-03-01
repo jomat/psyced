@@ -4,15 +4,16 @@
 
 // html-escaping of generic strings     -lynx
 // to make sure they won't trigger
-// html commands
+// html commands. this should become an inline macro, maybe use
+// regreplace if that is faster, or even better, be implemented in C
+// together with an auto hyperlink and a linebreak conversion option.
 //
-varargs string htquote(string s, int newlines) {
+varargs string htquote(string s) {
 	ASSERT("htquote", stringp(s), s)
         s = replace(s, "&", "&amp;");
 //      s = replace(s, "\"", "&quot;"); //"
         s = replace(s, "<", "&lt;");
         s = replace(s, ">", "&gt;");
-	if (newlines) s = replace(s, "\n", "<br>\n");
         return s;
 }
 
