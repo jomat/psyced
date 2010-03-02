@@ -15,9 +15,7 @@
 
 inherit NET_PATH "place/owned";
 
-int qHistoryPersistentLimit() {
-    return 0;
-}
+int qHistoryPersistentLimit() { return 0; }
 
 canPost(snicker) { return qAide(snicker); }
 canReply(snicker) { return qAide(snicker); }
@@ -530,6 +528,14 @@ void displayHeader(string class) {
 }
 void displayFooter() {
     w("_HTML_tail_threads", "</body></html>");
+}
+
+static object checkToken(mapping query) {
+	string nick;
+	object user;
+	if (nick = query["user"]) user = find_person(nick);
+	if (user && user->validToken(query["token"])) return user;
+	return 0;
 }
 
 htget(prot, query, headers, qs, data) {

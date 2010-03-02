@@ -216,10 +216,3 @@ varargs string make_query_string(mapping params, int sort) {
     return q;
 }
 
-object checkToken(mapping query) {
-    string nick;
-    object user;
-    if (nick = query["user"]) user = find_person(nick);
-    if (user && user->validToken(query["token"])) return user;
-    return 0;
-}
