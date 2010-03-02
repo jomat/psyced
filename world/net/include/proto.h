@@ -14,6 +14,7 @@
 void dns_resolve(string hostname, closure callback, varargs array(mixed) extra);
 void dns_rresolve(string ip, closure callback, varargs array(mixed) extra);
 #endif
+varargs object find_person(string name, vaint lowercazed);
 #ifndef hex2int
 int hex2int(string hex);
 #endif

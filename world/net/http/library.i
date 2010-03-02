@@ -7,6 +7,7 @@
 
 #include <net.h>
 #include <services.h>
+#include <proto.h>
 
 #include "driver.h"
 //#include CONFIG_PATH "ports.h"
@@ -215,4 +216,14 @@ varargs string make_query_string(mapping params, int sort) {
     }
     return q;
 }
+
+object check_query_token(mapping query) {
+        string nick;
+        object user;
+
+        if (nick = query["user"]) user = find_person(nick);
+        if (user && user->validToken(query["token"])) return user;
+        return 0;
+}
+
 

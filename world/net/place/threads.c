@@ -530,14 +530,6 @@ void displayFooter() {
     w("_HTML_tail_threads", "</body></html>");
 }
 
-static object checkToken(mapping query) {
-	string nick;
-	object user;
-	if (nick = query["user"]) user = find_person(nick);
-	if (user && user->validToken(query["token"])) return user;
-	return 0;
-}
-
 htget(prot, query, headers, qs, data) {
     mapping entrymap;
     mixed target;
@@ -546,7 +538,7 @@ htget(prot, query, headers, qs, data) {
     int a;
     int limit = to_int(query["limit"]) || DEFAULT_BACKLOG;
     int offset = to_int(query["offset"]);
-    int authed = checkToken(query) ? 1 : 0;
+    int authed = check_query_token(query) ? 1 : 0;
     unless (isPublic() || authed) {
 	write("<h1>404</h1>");
 	return 1;
@@ -570,7 +562,7 @@ htget(prot, query, headers, qs, data) {
 	htok(prot);
 
 	// TODO: remote user auth
-	unless (user = checkToken(query)) {
+	unless (user = check_query_token(query)) {
 	    write("Not authenticated!\n");
 	    return 1;
 	}
@@ -618,10 +610,10 @@ htget(prot, query, headers, qs, data) {
 	//P2(("all entries: %O\n", _thread))
 	htok3(prot, "text/html", "Cache-Control: no-cache\n");
 	displayHeader("entries");
-	if ((user = checkToken(query)) && canPost(user->qName()))
+	if ((user = check_query_token(query)) && canPost(user->qName()))
 	    displayForm(!v("showform"));
 	// display the blog
-	displayMain(limit, offset, checkToken(query) ? 1 : 0);
+	displayMain(limit, offset, check_query_token(query) ? 1 : 0);
 	// display the chatlog
 	if (showWebLog()) logView(a < 24 ? a : 12, "html", 15);
 	displayFooter();
