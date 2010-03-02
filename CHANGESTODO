@@ -6,9 +6,22 @@ vim:nosmarttab:syntax=diff
 ________________________________________________________________________
 == SERIOUS!!! ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-- large submissions into scratchpad can crash the driver
+- /m freenode:symlynx hey
+    Sorry, _message_private is not supported by the IRC gateway.
+  huh? wasn't that once the point to make them? debug...
 
+- msg from irc to remote psyc user doesn't work:
+	ERQ could not resolve "symlynX".
+	(it tries to resolve the irc:nick)
+
+- psyced's memory of places joined is weird -- and neither the default
+  place from psyced.ini, nor the autojoin rooms in the irc client seem
+  to make a difference
+
+LPC
+- large submissions into scratchpad can crash the driver
 - configure script fails on libidn now being in glibc
+- buffer stuff in erq
 ________________________________________________________________________
 == NEXT RELEASE ========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -1493,14 +1506,6 @@ mapping rvars msg(source, mc, data, vars, rvars);
 ________________________________________________________________________
 > GATEBOT / IRCGATE / etc
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-- /m freenode:symlynx hey
-    Sorry, _message_private is not supported by the IRC gateway.
-  huh? wasn't that once the point to make them? debug...
-
-- msg from irc to remote psyc user doesn't work:
-	ERQ could not resolve "symlynX".
-	(it tries to resolve the irc:nick)
-
 - MAUR: psyc dont send jid disconnect on nickchange and/or quit?
 - reconnect?
 - MAUR: I set a crontab to HUP ldmud
