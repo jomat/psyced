@@ -138,7 +138,7 @@ _query_password_sha1
 |<iq type='result' from='{_VAR_server_XMPP}' id='[_tag_reply]'><query xmlns='jabber:iq:auth'><username/><sha1/><resource/></query></iq>
 
 _request_user_amount
-|<iq type='get' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]'  id='[_tag]'><query xmlns='http://jabber.org/protocol/stats'><stat name='users/online'/><stat name='users/total'/></query></iq>
+|<iq type='get' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' id='[_tag]'><query xmlns='http://jabber.org/protocol/stats'><stat name='users/online'/><stat name='users/total'/></query></iq>
 
 _request_registration_query
 |<iq type='get' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' id='[_tag]' xml:lang='[_language]'><query xmlns='jabber:iq:register'/></iq>
@@ -448,7 +448,6 @@ _status_log_new
 
 _status_time_boot
 |<iq id='[_tag_reply]' type='result' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]'><query xmlns='jabber:iq:last' seconds='[_time_boot_duration]'></query></iq>
-|	  
 
 _status_place_topic
 |<message type='groupchat' to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber_bare]'><subject>[_topic]</subject><body>Topic is: [_topic]</body></message> 

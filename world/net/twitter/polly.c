@@ -40,17 +40,14 @@ parse(string body, mapping headers) {
 	// this used to fail on MAX_INT turning the ints to negative.. it would work for
 	// a while longer using floats, but since floating point mantissa in lpc is only
 	// 32 bits wide, it's just a question of time until we hit that roof again (when
-	// status_id reaches 4294967296). so let's try strings instead. funny to run into
+	// status_id reaches 4294967296). so let's use bignums instead. funny to run into
 	// such a weird problem only after years that twitter has been in existence.
-	// twitterific may have run into the same problem, as the timing of its breakdown
-	// matches ours.
-	if (lastid && wurst[0]["id"] <= lastid) {
+	if (lastid && bignum_cmp(wurst[0]["id"], lastid) <= 0) {
 		P1(("%O received %d old updates (id0 %O <= lastid %O).\n",
 		    ME, sizeof(wurst), wurst[0]["id"], lastid))
 		return;
 	}
 	lastid = wurst[0]["id"];
-	P2(("%O -- new lastid %O\n", ME, lastid))
 	save_object(DATA_PATH "twitter");
 	for (i=sizeof(wurst)-1; i>=0; i--) {
 		d = wurst[i];
@@ -111,7 +108,7 @@ parse(string body, mapping headers) {
 
 fetch() {
 	P2(("%O going to fetch from %O since %O\n", ME, feed, lastid))
-	call_out( #'fetch, 4 * 59 );	// odd is better
+	call_out( #'fetch, 9 * 59 );	// odd is better.. was 4*59
 	feed -> content( #'parse, 1, 1 );
 	// twitter ignores since_id if count is present. stupid.
 	feed -> fetch("http://twitter.com/statuses/friends_timeline.json?"
@@ -124,7 +121,7 @@ create() {
 	object o = find_object(CONFIG_PATH "config");
 
 	if (o) config = o->qConfig();
-	if (!config) {
+	if (!config || !config["password"]) {
 		P1(("\nNo configuration for twitter gateway found.\n"))
 		//destruct(ME);
 		return;
@@ -134,6 +131,10 @@ create() {
 	// we could even choose to inherit this instead...
 	feed = clone_object(NET_PATH "http/fetch");
 	//feed -> sAgent(SERVER_VERSION " builtin Twitter to PSYC gateway");
+
+    // http://apiwiki.twitter.com/OAuth-FAQ#WhenareyougoingtoturnoffBasicAuth
+    // we should be using oauth by june 2010!
+	P1(("Using twitter account %O for %O ...\n", config["nickname"], ME))
 	feed -> sAuth(config["nickname"], config["password"]);
 	call_out( #'fetch, 14 );
 }

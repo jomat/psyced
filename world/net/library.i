@@ -1222,6 +1222,25 @@ string decode_embedded_charset(string text) {
     return text;
 }
 
+// things only the twitter gateway needs...
+//
+// this is compatible to Perl's <=> operator:
+// Binary "<=>" returns -1, 0, or 1 depending on whether the left argument
+// is numerically less than, equal to, or greater than the right argument.
+int bignum_cmp(string a, string b) {
+	int i;
+	if (a == b) return 0;
+	// calling strlen is probably faster than
+	// allocating a local variable to "cache" it
+	if (strlen(a) > strlen(b)) return 1;
+	if (strlen(a) < strlen(b)) return -1;
+	for (i=0; i<strlen(a); i++) {
+		if (a[i] == b[i]) continue;
+		if (a[i] > b[i]) return 1;
+		if (a[i] < b[i]) return -1;
+	}
+}
+
 #endif // __PIKE__
 
 object library_object() {

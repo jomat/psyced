@@ -18,6 +18,9 @@ ________________________________________________________________________
   place from psyced.ini, nor the autojoin rooms in the irc client seem
   to make a difference
 
+- "invalid context" errors happen where local rooms send _context
+  as string uniform while local users expect the object pointer. huh?
+
 LPC
 - large submissions into scratchpad can crash the driver
 - configure script fails on libidn now being in glibc
