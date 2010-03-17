@@ -29,6 +29,10 @@ INSTALL.txt:
 corpses:
 	find . -name .#\* -print
 
+# show me the fingerprint of the certificate i am about to install
+fp: local/cert.pem
+	openssl x509 -in local/cert.pem -fingerprint -sha1 | head -n 1
+
 ##############################################################################
 ## USER AND PLACE DATA MAINTAINANCE
 
@@ -59,6 +63,7 @@ local/all.ls:
 	(cd world;../bin/findlinks */de/* */en/*) >$@
 
 rights:
+# how do i tell him to skip .git ?
 	find . -type d -exec chmod 755 {} \;
 	find . -type f -exec chmod 644 {} \;
 	chmod +x bin/* run/* config/psyced.settings install.sh utility/multipatcher

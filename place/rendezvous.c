@@ -16,9 +16,7 @@
 //
 //# define PLACE_HISTORY    // if you want to keep a /history
 //# define LOCAL	    // if you don't want to allow remote users here
-
-// but this one can't harm  ;)
-# define PLACE_MASQUERADE
+//# define PLACE_MASQUERADE // currently brokenish
 #endif
 
 #include <place.gen>	// now generate the place according to the rules

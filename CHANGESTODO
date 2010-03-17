@@ -28,6 +28,11 @@ LPC
 ________________________________________________________________________
 == NEXT RELEASE ========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
++ active certs: have data/host/psyc.host.name.pem contain tls cert
+  for this host, so when that file exists psyced automatically tries
+  a tls_init_connection() when psyc-connecting that host and checks if
+  the certificate is still correct. it also does on incoming tls.
+
 - net/jabber reissues unnecessary friend() requests whenever a user simply
   reorganizes friends into other roster groups
 
@@ -2135,6 +2140,14 @@ thoughts from buddy-heggy.txt:
 - where IS_NEWBIE is known to be 0 several parts of code can be ifdef'd out
 
 - logged_on should be gone
+
++ this is more about predictability than performance. fippo thinks it's
+  easier to develop in psyced if sendmsg() was executed asynchronously,
+  that means: messages queued up, rest of the current code executed,
+  messages delivered when current object is done. only decent way to do
+  this seems to be with 0-delay call_out() - unfortunately lpc does not
+  provide for that (yet) - even in pike you need to tweak it, as pike
+  inverts the order of execution of 0-delay callouts.
 ________________________________________________________________________
 > DRIVER TODO:
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -2170,13 +2183,6 @@ ________________________________________________________________________
  - checkout the fileshare stuff in perlpsyc/bin/
 
 ________________________________________________________________________
-> PSYC SPEC TODO:
-¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-  + option to receive rendered messages instead of templates ( as in ve:w() )
-  + option to not receive templates for standard messages?
-  + standardized way to select language?
-
-________________________________________________________________________
 > MISCELLANEOUS STUFF:
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 ? irc-notify suckt, aber als reines client-interface kann man es doch
@@ -2192,50 +2198,6 @@ ________________________________________________________________________
   ? tobi hatte doch da in pike schonmal was gecoded.
     was ich mir wünschen würde wäre eine if-ueberpruefung, ob ne var
     gesetzt ist
-
-? fippo findet, psyc sollte zumindest das nodeprep von xmpp übernehmen
-  am besten auch noch saslprep benutzen, nameprep sowies.
-  Bahnhof? http://about.psyc.eu/Stringprep
-
-== MOBILE APPS / GPRS / PSYCobile ======================================
-Similar Projexx:
-	http://freshmeat.net/projects/jimm/
-	http://freshmeat.net/projects/mojab/
-	http://freshmeat.net/projects/eb-lite/
-	http://freshmeat.net/projects/ymsgr/
-
-== HINTS: Multicast (see also COMPETITION) =============================
-? reliable multicast library?
-From: Gerd Flaig <gefla@pond.example.org>
- > Was brauchen wir in der Praxis also? Eine reliable Multicast
- > Implementation in PSYC einbinden (müsste ja heutzutage ne fertige
- > Library sein zum Aufrufen), [..]
-nach so etwas suche ich schon eine ganze Weile, habe aber bisher nur
-im OCaml-Umfeld eine Implementierung gefunden (genaue URL habe ich
-nicht mehr, irgendwo unter http://caml.inria.fr/), die aber wohl noch
-einiges an Arbeit verschlingen würde, bis daraus eine mundfertige,
-stabile Bibliothek entsteht.
-
-<lynX>	hmm.. könnte das hier so eine bibliothek sein?
-	wer kann ich das mal ansehen?
-    http://www.junglemonkey.net/emcast/
-
-== DOC: HOW TO PORT TO MUD =============================================
-* #define MUD
- > #undef _flag_enable_routing_UDP will force psyc to use tcp only
- > #define NO_EXTERNAL_LOGINS if you want
- > #define CONFIG_PATH to where your /local/ is
- > #define TEXT_PATH to where you want to put /default/*
-
-if you care to define SERVER_HOST, please do so in local.h, not in net.h
-same goes for DEFAULT_USER_OBJECT. if you need to fake the library
-#include "/net/gl-psyc/simulated.h" in your local.h
-
-________________________________________________________________________
-> LOOKING INTO PIKE:
-¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-irc bot in pike:		  http://caudiumforge.net/anoncvs.rxml
-http://cvsweb.caudiumforge.net/cgi-bin/cvsweb.cgi/sugor/?cvsroot=sugor
 
 ________________________________________________________________________
 ========================================================================
