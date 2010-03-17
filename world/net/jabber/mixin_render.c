@@ -28,6 +28,7 @@ int msg(string source, string mc, string data,
 		PT(("_time_idle %O == %O, right?\n", vars["_time_idle"], t))
 	    }
 	    t = gmtime(time() - t);
+	    vars["_INTERNAL_time_jabber_legacy"] = JABBERTIMELEGACY(t);
 	    vars["_INTERNAL_time_jabber"] = JABBERTIME(t);
 	} else {
 	    return 1;
@@ -385,6 +386,7 @@ int msg(string source, string mc, string data,
 	    // and JEP-0091 Delayed Delivery
 	    mc = "_message_public_history";
 	    t = gmtime(vars["_time_place"]);
+	    vars["_INTERNAL_time_place_jabber_legacy"] = JABBERTIMELEGACY(t);
 	    vars["_INTERNAL_time_place_jabber"] = JABBERTIME(t);
 	} else if (!vars["_context"]) {
 	    mc = "_request_message_public";

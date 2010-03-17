@@ -144,8 +144,10 @@ msg(source, mc, data, mapping vars, showingLog) {
                 P2(("_time_idle %O == %O, right?\n", vars["_time_idle"], t))
             }
             t = gmtime(time() - t);
+            vars["_INTERNAL_time_jabber_legacy"] = JABBERTIMELEGACY(t);
             vars["_INTERNAL_time_jabber"] = JABBERTIME(t);
         } else {
+            vars["_INTERNAL_time_jabber_legacy"] = JABBERTIMELEGACY(gmtime(time()));
             vars["_INTERNAL_time_jabber"] = JABBERTIME(gmtime(time()));
         }
 	break;

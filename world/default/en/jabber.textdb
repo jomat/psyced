@@ -189,7 +189,7 @@ _message_echo_public_action_possessive
 |<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me 's [_action_possessive]</body></message>
 
 _message_public_history
-|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>[_data]</body><x xmlns='jabber:x:delay' from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_place_jabber]'/></message>
+|<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>[_data]</body><x xmlns='jabber:x:delay' from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_place_jabber_legacy]'/><x xmlns='urn:xmpp:delay' from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_place_jabber]'/></message>
 
 _message_public_action
 |<message to='[_INTERNAL_target_jabber]' type='groupchat' from='[_INTERNAL_source_jabber]'><body>/me [_action]</body></message>
@@ -473,10 +473,10 @@ _status_description_vCard
 |<iq type='result' from='[_INTERNAL_source_jabber]' to='[_INTERNAL_target_jabber]' id='[_tag_reply]'>[_INTERNAL_data_XML]</iq>
 
 _status_person_present
-|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><x from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_jabber]' xmlns='jabber:x:delay'/></presence>
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><x xmlns='jabber:x:delay' from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_jabber_legacy]'/><x xmlns='urn:xmpp:delay' from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_jabber]'/></presence>
 
 _status_person_present_implied
-|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><x from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_jabber]' xmlns='jabber:x:delay'/></presence>
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><x xmlns='jabber:x:delay' from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_jabber_legacy]'/><x xmlns='urn:xmpp:delay' from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_jabber]'/></presence>
 
 _status_person_present_action
 |{_status_person_present}
@@ -491,7 +491,7 @@ _status_person_present_netburp_action
 |{_status_person_present_netburp}
 
 _status_person_away
-|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>away</show><status>[_action]</status><x from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_jabber]' xmlns='jabber:x:delay'/></presence>
+|<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]'><show>away</show><status>[_action]</status><x xmlns='jabber:x:delay' from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_jabber_legacy]'/><x xmlns='urn:xmpp:delay' from='[_INTERNAL_source_jabber]' stamp='[_INTERNAL_time_jabber]'/></presence>
 
 _status_person_absent
 |<presence to='[_INTERNAL_target_jabber]' from='[_INTERNAL_source_jabber]' type='unavailable'><status>Offline</status></presence>

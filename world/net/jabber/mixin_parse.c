@@ -214,17 +214,26 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 		vars["_nick_place"] = vars["_INTERNAL_identification"] || origin;
 
 #if __EFUN_DEFINED__(mktime)
-		if (helper = getchild(node, "x", "jabber:x:delay")) {
+		if ((helper = getchild(node, "x", "jabber:x:delay")) || (helper = getchild(node, "x", "urn:xmpp:delay")) {
 		    string fmt = helper["@stamp"];
 		    int *time = allocate(TM_MAX);
 		    int res;
 
-		    // xep 0091 style CCYYMMDDThh:mm:ss
-		    // 20080410T19:12:22
-		    res = sscanf(fmt, "%4d%2d%2dT%2d:%2d:%2d", 
-				 time[TM_YEAR], time[TM_MON], 
-				 time[TM_MDAY], time[TM_HOUR],
-				 time[TM_MIN], time[TM_SEC]);
+		    if (helper["@xmlns"] == "jabber:x:delay") {
+			    // xep 0091 style CCYYMMDDThh:mm:ss
+			    // 20080410T19:12:22
+			    res = sscanf(fmt, "%4d%2d%2dT%2d:%2d:%2d", 
+					 time[TM_YEAR], time[TM_MON], 
+					 time[TM_MDAY], time[TM_HOUR],
+					 time[TM_MIN], time[TM_SEC]);
+		    } else {
+			    // xep 0203 style CC-YY-MMDDThh:mm:ssZ
+			    // 2002-09-10T23:05:37Z
+			    res = sscanf(fmt, "%d-%2d-%2dT%2d:%2d:%2dZ", 
+					 time[TM_YEAR], time[TM_MON], 
+					 time[TM_MDAY], time[TM_HOUR],
+					 time[TM_MIN], time[TM_SEC]);
+		    }
 		    if (res == 6) {
 			// mktime uses month from 0 to 11, december error fixed
 			time[TM_MON]--;
@@ -690,10 +699,10 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 		int isstatus;
 		/* see http://www.psyc.eu/presence */
 		// if the node contains a x element in the
-		// jabber:x:delay namespace this is a
-		// _status_presence_here
+		// jabber:x:delay namespace or the urm:xmpp:delay namespace 
+		// this is a _status_presence
 		o = summon_person(tu[UUser]);
-		if (helper = getchild(node, "x", "jabber:x:delay")) {
+		if ((helper = getchild(node, "x", "jabber:x:delay")) || (helper = getchild(node, "x", "urn:xmpp:delay"))) {
 		    isstatus = 1;
 		}
 //		if (!intp(isstatus)) {

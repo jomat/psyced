@@ -42,7 +42,11 @@ virtual inherit JABBER_PATH "common";
 
 #define IMPLODE_XML(list, tag) pointerp(list) ? tag + implode(list, "</" + tag[1..] + tag) + "</" + tag[1..] : tag[..<2] + "/>"
 
-#define JABBERTIME(gm) sprintf("%d%02d%02dT%02d:%02d:%02d", gm[TM_YEAR], gm[TM_MON] + 1, gm[TM_MDAY], gm[TM_HOUR], gm[TM_MIN], gm[TM_SEC])
+// http://xmpp.org/extensions/xep-0203.html
+#define JABBERTIME(gm) sprintf("%d-%02d-%02dT%02d:%02d:%02dZ", gm[TM_YEAR], gm[TM_MON] + 1, gm[TM_MDAY], gm[TM_HOUR], gm[TM_MIN], gm[TM_SEC])
+// http://xmpp.org/extensions/xep-0091.html
+#define JABBERTIMELEGACY(gm) sprintf("%d%02d%02dT%02d:%02d:%02d", gm[TM_YEAR], gm[TM_MON] + 1, gm[TM_MDAY], gm[TM_HOUR], gm[TM_MIN], gm[TM_SEC])
+// "Implementations that support XEP-0091 should support the protocol defined herein as soon as possible, but should continue to support the protocol defined in XEP-0091 for backwards compatibility until the status of that specification is changed to Obsolete."
 
 #define xbuddylist v("peoplegroups")
 
