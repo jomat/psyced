@@ -194,16 +194,6 @@ handle_stream_features(XMLNode node) {
 	    return;
 	} else
 #endif
-	if (mechs["DIGEST-MD5"] 
-		   && config(XMPP + hostname, "_secret_shared")) { 
-	    PT(("jabber/active requesting to do digest md5\n"))
-	    emit("<auth mechanism='DIGEST-MD5' "
-		 "xmlns='" NS_XMPP "xmpp-sasl>" +
-		 encode_base64(_host_XMPP) +
-		 "</auth>");
-	    return;
-
-	}
     }
 #endif
 #ifdef SWITCH2PSYC
