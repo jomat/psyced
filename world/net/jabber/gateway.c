@@ -199,7 +199,6 @@ jabberMsg(XMLNode node) {
     if (! (source && target 
 		|| node[Tag] == "stream:error"
 		|| node[Tag] == "auth"
-		|| node[Tag] == "response"
 #ifdef SWITCH2PSYC
 		|| node[Tag] == "switching"
 #endif
@@ -380,57 +379,10 @@ jabberMsg(XMLNode node) {
 		QUIT
 	    }
 	    break;
-	case "DIGEST-MD5":
-	    PT(("jabber/gateway got a request to do digest md5\n"))
-	    // if the other side thinks, that is has a shared
-	    // secret with us... well, THEY tried
-	    if (config(XMPP + t, "_secret_shared")) {
-		emit("<challenge xmlns='" NS_XMPP "xmpp-sasl'>" + 
-		     encode_base64(sprintf("realm=\"%s\",nonce=\"%s\","
-					   "qop=\"auth\",charset=utf-8,"
-					   "algorithm=md5-sess", 
-					   _host_XMPP, RANDHEXSTRING)
-				   ) + "</challenge>");
-	    } else {
-		// kind of 'unknown username'
-		SASL_ERROR("not-authorized")
-		QUIT
-	    }
-	    break;
 	default:
 	    SASL_ERROR("invalid-mechanism")
 	    QUIT
 	    break;
-	}
-	return;
-    case "response":
-	P2(("%O got SASL response\n", ME))
-	if ((t2 = node[Cdata])
-		&& (t = to_string(decode_base64(t2)))) {
-	    // this one is very similar to the stuff in active.c
-	    string secret;
-	    mixed data;
-
-	    data = sasl_parse(t);
-
-	    P2(("extracted: %O\n", data))
-
-	    secret = config(XMPP + data["username"], "_secret_shared");
-	    unless(secret) {
-		// tell the host that we dont share a secret with them
-		// currently this happens as not-authorized
-	    }
-	    if (data["response"] == sasl_calculate_digestMD5(data, secret, 0)) {
-		emit("<success xmlns='" NS_XMPP "xmpp-sasl'>"
-		     + encode_base64("rspauth=" + sasl_calculate_digestMD5(data, secret, 1)) + "</success>");
-# ifdef LOG_XMPP_AUTH
-		D0( log_file("XMPP_AUTH", "\n%O has authenticated %O via SASL digest md5", ME, data["username"]); )
-# endif 
-		sAuthenticated(data["username"]);
-	    } else {
-		SASL_ERROR("not-authorized")
-		QUIT
-	    }
 	}
 	return;
 #endif
@@ -517,17 +469,6 @@ open_stream(XMLNode node) {
 	    } else unless (mappingp(authhosts)) {
 # ifdef WANT_S2S_SASL
 		packet += "<mechanisms xmlns='" NS_XMPP "xmpp-sasl'>";
-		// let the other side decide if it knows a shared secret 
-		// with us
-		// if it it has, it will use it with digest-md5
-#  ifndef _flag_disable_authentication_digest_MD5
-		if (node["@from"] 
-			&& config(XMPP + node["@from"], 
-				  "_secret_shared")) {
-		    packet += "<mechanism>DIGEST-MD5</mechanism>";
-		}
-#  endif
-		
 		// if the other side did present a client certificate
 		// and we have verified it as X509_V_OK (0)
 		// we offer SASL external (authentication via name
