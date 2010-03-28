@@ -255,21 +255,32 @@ jabberMsg(XMLNode node) {
 	    remove_interactive(ME);
 	    return;
 	}
-	sendmsg(origin,
-		"_dialback_request_verify", 0,
-		([ "_INTERNAL_target_jabber" : source,
-		   "_INTERNAL_source_jabber" : NAMEPREP(_host_XMPP),
-		   "_dialback_key" : node[Cdata],
-		   "_tag" : streamid
-		   ])
-		);
-	unless (o = find_target_handler(NAMEPREP(origin))) {
-	    // sendmsg should have created it!
-	    P0(("%O could not find target handler for %O "
-		"after sendmsg\n", ME, origin))
-	    return;
+	// dialback without dial-back - if the certificate is valid and the sender 
+	// is contained in the subject take the shortcut and consider the request
+	// valid
+	// paranoia note: as with XEP 0178 we might want to check dns anyway to
+	// 	protect against stolen certificates
+	if (mappingp(certinfo) && certinfo[0] == 0 
+	    && node["@from"] && certificate_check_jabbername(node["@from"], certinfo)) {
+		P2(("dialback without dialback %O\n", certinfo))
+		verify_connection(node["@to"], node["@from"], "valid"); 
+	} else {
+		sendmsg(origin,
+			"_dialback_request_verify", 0,
+			([ "_INTERNAL_target_jabber" : source,
+			   "_INTERNAL_source_jabber" : NAMEPREP(_host_XMPP),
+			   "_dialback_key" : node[Cdata],
+			   "_tag" : streamid
+			   ])
+			);
+		unless (o = find_target_handler(NAMEPREP(origin))) {
+		    // sendmsg should have created it!
+		    P0(("%O could not find target handler for %O "
+			"after sendmsg\n", ME, origin))
+		    return;
+		}
+		active = o -> sGateway(ME, target, streamid);
 	}
-	active = o -> sGateway(ME, target, streamid);
 	return;
     case "db:verify":
 	target = NAMEPREP(target);
@@ -474,6 +485,7 @@ open_stream(XMLNode node) {
 		// we offer SASL external (authentication via name
 		// presented in x509 certificate
 		P3(("gateway::certinfo %O\n", certinfo))
+#  ifndef DIALBACK_WITHOUT_DIAL_BACK
 		if (mappingp(certinfo) && certinfo[0] == 0) {
 		    // if from attribute is present we only offer
 		    // sasl external if we know that it will succeed
@@ -484,6 +496,7 @@ open_stream(XMLNode node) {
 			packet += "<mechanism>EXTERNAL</mechanism>";
 		    }
 		}
+#  endif
 		packet += "</mechanisms>";
 # endif
 	    }
