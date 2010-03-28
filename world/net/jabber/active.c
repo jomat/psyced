@@ -192,7 +192,7 @@ handle_stream_features(XMLNode node) {
 		 encode_base64(_host_XMPP)
 		 + "</auth>");
 	    return;
-	} else
+	} 
 #endif
     }
 #endif
