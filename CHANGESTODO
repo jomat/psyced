@@ -3,9 +3,15 @@ vim:nosmarttab:syntax=diff
 | This file contains TODO and CHANGES (at EOF) rolled into one.
 | Essentially: whenever you fix something, move that line to the end of file.
 | - marks bugs & fixes, + marks new features, ? marks issues, * marks big stuff
+|
+| This file is mostly being used by lynX. The public bug tracker for psyced
+| resides at https://projects.x-net.hu/projects/psyced/ and contains the
+| same stuff in a more multiuser accessible fashion.
 ________________________________________________________________________
 == SERIOUS!!! ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- remote psycers do not always show up properly via jabber client + MUC
+
 - /m freenode:symlynx hey
     Sorry, _message_private is not supported by the IRC gateway.
   huh? wasn't that once the point to make them? debug...
@@ -58,6 +64,8 @@ ________________________________________________________________________
 ________________________________________________________________________
 == currently being inspected ===========================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- https://psyced.org/~lynX should use web browser language, not mine
+
 - install.sh/configure doesn't *ensure* libidn is available
 
 - newbies are allowed to open new owned rooms
@@ -1875,6 +1883,10 @@ see also: http://about.psyc.eu/SPAM
 + some irc clients do not implement their own pinging, and some NATs really
   kill your irc session if it is too quiet too long. we need optional server
   side pings
++ since pinging has become so frequent, and packet sizes aren't of much
+  relevance as long as they are below the MTU (1492 for DSL, 576 for ISDN)
+  we might aswell answer those dumb ISON poll requests instead of just
+  doing ping pong.  => implement irc-style notify/ison in irc/user.c
 
 - (psyc://allo.homeunix.org/~allo) allo: hm, die userlist hier hat sich bei deinem nickchange nicht angepasst im ircgateway
   saga: ja, das ist ein bug, der mich auch immer wieder nervt
@@ -2181,23 +2193,6 @@ ________________________________________________________________________
   to manually send files to friends or browse their offers or friendcast searches (via
   the UNI). still my friends need to be able to do all of this with a psyconaut..
  - checkout the fileshare stuff in perlpsyc/bin/
-
-________________________________________________________________________
-> MISCELLANEOUS STUFF:
-¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-? irc-notify suckt, aber als reines client-interface kann man es doch
-  eigentlich erlauben? ison polling nervt, kann man hoffentlich vermeiden,
-  aber die presence notifications cann man auch als ison replies rausgeben,
-  umstellbar mittels einem +set vielleicht. warum? weil dann clients wie
-  gaim die presence info sinnvoll nutzen statt jedes mal ein popup aufzumachen
-  welches nur sagt, dass ich da bin.
-
-? ifdef in der textdb: was ist wenn wir templates on-compile unterschiedlich
-  rendern wollen? also eher ein {if} als ein [if]? dachte gerade daran, dass
-  für presence->ISON die textdb sich unterschiedlich verhalten müsste..
-  ? tobi hatte doch da in pike schonmal was gecoded.
-    was ich mir wünschen würde wäre eine if-ueberpruefung, ob ne var
-    gesetzt ist
 
 ________________________________________________________________________
 ========================================================================
@@ -3978,4 +3973,11 @@ userthreads, threads, accept etc
 	#define _flag_enable_module_microblogging
 +	twitter submit
 +	signatures
+=== 201005 ============================================================
+net/user
+-	bug in login greeting logic
+net/circuit
+?	raised size of queue from 123 to 3303 since i have seen errors
+	caused by queue being too short. not sure if this solves a problem
+	or postpones it to become a bigger problem later  ;)
 

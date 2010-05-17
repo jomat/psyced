@@ -1555,6 +1555,7 @@ logon() {
 	// makeToken() isn't a good idea here, apparently
 	sTextPath(v("layout"), v("language"), t);
 	// cannot if (greeting) this since jabber:iq:auth depends on this
+	// also greeting will only be defined after ::logon()
 	// (use another w() maybe?)
 	w("_notice_login", 0, ([ "_nick": MYNICK,
 	      "_page_network": "http://www.psyc.eu/",
@@ -1567,15 +1568,6 @@ logon() {
 	autojoin();
 	cmdchar = (v("commandcharacter") ||
 		   T("_MISC_character_command", "/"))[0..0];
-#ifndef _flag_disable_info_session
-	if (greeting) {
-		w("_warning_usage_set_language",
- "Mittels \"/set language de\" kann zur deutschen Sprache gewechselt werden.");
-		if (cmdchar != "/") w("_warning_modified_command_character",
- "Beware, \"[_command_character]\" is configured as your command character.",
-		    ([ "_command_character" : cmdchar ]) );
-	}
-#endif
 	cmdchar = cmdchar[0];
 
 	actchar = v("actioncharacter") || T("_MISC_character_action",":");
@@ -1597,6 +1589,17 @@ logon() {
 #endif
 	::logon( query_ip_name(ME) ||
 		(this_interactive() && query_ip_name(this_interactive())) );
+
+#ifndef _flag_disable_info_session
+	// greeting is only defined after ::logon has run
+	if (greeting) {
+		w("_warning_usage_set_language",
+ "Mittels \"/set language de\" kann zur deutschen Sprache gewechselt werden.");
+		if (cmdchar != "/") w("_warning_modified_command_character",
+ "Beware, \"[_command_character]\" is configured as your command character.",
+		    ([ "_command_character" : cmdchar ]) );
+	}
+#endif
 }
 
 // net/jabber/user filters this call, so this is never executed for

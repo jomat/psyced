@@ -683,6 +683,7 @@ PSYC	_color
 #PSYC	_degree_mood
 PSYC	_description_private
 PSYC	_description_presence
+# erm.. _flag here?
 PSYC	_select_filter_presence
 PSYC	_flag_action_speak_visible
 PSYC	_flag_colors_ignore

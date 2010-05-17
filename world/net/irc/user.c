@@ -1198,30 +1198,31 @@ static privmsg(args, text, req) {
 	    text = text[..<2];
 	}
 #endif
-	if (index(args, ',') > 0) {
+	if (args) {
+	    if (index(args, ',') > 0) {
 		w("_failure_unsupported_targets_multiple",
 	"We do not allow sending to several recipients at once. Why did your client ignore our MAXTARGETS=1 directive?");
 		return 0;
-	}
-	if (room = channel2place(args)) {
-	    if (!place || !v("place") || stricmp(room, v("place"))) {
-		if (t = find_place(room)) {
-		    place = t;
-		    // this makes positive use of the psyc notion
-		    // of a "current" room even if irc doesn't support
-		    // that protocolwise..
-		    vSet("place", room);
-		} else { // should the caller print this on privmsg() == 0?
-		    w("_error_illegal_name_place", "Room name contains illegal "
-		      "characters."); // uh. might be a lie
-		    return 0;
-		}
 	    }
-	} else {
-	    if (lower_case(args) == "nickserv") return parsecmd(text);
-	    person = args;
+	    if (room = channel2place(args)) {
+		if (!place || !v("place") || stricmp(room, v("place"))) {
+		    if (t = find_place(room)) {
+			place = t;
+			// this makes positive use of the psyc notion
+			// of a "current" room even if irc doesn't support
+			// that protocolwise..
+			vSet("place", room);
+		    } else { // should the caller print this on privmsg() == 0?
+			w("_error_illegal_name_place", "Room name contains illegal "
+			  "characters."); // uh. might be a lie
+			return 0;
+		    }
+		}
+	    } else {
+		if (lower_case(args) == "nickserv") return parsecmd(text);
+		person = args;
+	    }
 	}
-
 	unless (text = decode(text, person, req)) return;
 
 //	unless (args) speak(text);

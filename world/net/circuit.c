@@ -189,7 +189,7 @@ circuit(ho, po, transport, srv, whoami, sysQ, uniform) {
 #else
 	unless(whoami) whoami = ho || ME; 
 #endif
-	qInit(me = whoami, 123, 12);
+	qInit(me = whoami, 3303, 12);
 	D1( if (q[me]) PP(("%O using %O's queue: %O\n", ME, me, sizeof(q[me]) > 2 ? sizeof(q[me]) : q[me])); )
 	waitforme = CONNECT_RETRY;
 	retry = 0;
