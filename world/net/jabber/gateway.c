@@ -199,7 +199,6 @@ jabberMsg(XMLNode node) {
     if (! (source && target 
 		|| node[Tag] == "stream:error"
 		|| node[Tag] == "auth"
-		|| node[Tag] == "response"
 #ifdef SWITCH2PSYC
 		|| node[Tag] == "switching"
 #endif
@@ -256,21 +255,32 @@ jabberMsg(XMLNode node) {
 	    remove_interactive(ME);
 	    return;
 	}
-	sendmsg(origin,
-		"_dialback_request_verify", 0,
-		([ "_INTERNAL_target_jabber" : source,
-		   "_INTERNAL_source_jabber" : NAMEPREP(_host_XMPP),
-		   "_dialback_key" : node[Cdata],
-		   "_tag" : streamid
-		   ])
-		);
-	unless (o = find_target_handler(NAMEPREP(origin))) {
-	    // sendmsg should have created it!
-	    P0(("%O could not find target handler for %O "
-		"after sendmsg\n", ME, origin))
-	    return;
+	// dialback without dial-back - if the certificate is valid and the sender 
+	// is contained in the subject take the shortcut and consider the request
+	// valid
+	// paranoia note: as with XEP 0178 we might want to check dns anyway to
+	// 	protect against stolen certificates
+	if (mappingp(certinfo) && certinfo[0] == 0 
+	    && node["@from"] && certificate_check_jabbername(node["@from"], certinfo)) {
+		P2(("dialback without dialback %O\n", certinfo))
+		verify_connection(node["@to"], node["@from"], "valid"); 
+	} else {
+		sendmsg(origin,
+			"_dialback_request_verify", 0,
+			([ "_INTERNAL_target_jabber" : source,
+			   "_INTERNAL_source_jabber" : NAMEPREP(_host_XMPP),
+			   "_dialback_key" : node[Cdata],
+			   "_tag" : streamid
+			   ])
+			);
+		unless (o = find_target_handler(NAMEPREP(origin))) {
+		    // sendmsg should have created it!
+		    P0(("%O could not find target handler for %O "
+			"after sendmsg\n", ME, origin))
+		    return;
+		}
+		active = o -> sGateway(ME, target, streamid);
 	}
-	active = o -> sGateway(ME, target, streamid);
 	return;
     case "db:verify":
 	target = NAMEPREP(target);
@@ -380,57 +390,10 @@ jabberMsg(XMLNode node) {
 		QUIT
 	    }
 	    break;
-	case "DIGEST-MD5":
-	    PT(("jabber/gateway got a request to do digest md5\n"))
-	    // if the other side thinks, that is has a shared
-	    // secret with us... well, THEY tried
-	    if (config(XMPP + t, "_secret_shared")) {
-		emit("<challenge xmlns='" NS_XMPP "xmpp-sasl'>" + 
-		     encode_base64(sprintf("realm=\"%s\",nonce=\"%s\","
-					   "qop=\"auth\",charset=utf-8,"
-					   "algorithm=md5-sess", 
-					   _host_XMPP, RANDHEXSTRING)
-				   ) + "</challenge>");
-	    } else {
-		// kind of 'unknown username'
-		SASL_ERROR("not-authorized")
-		QUIT
-	    }
-	    break;
 	default:
 	    SASL_ERROR("invalid-mechanism")
 	    QUIT
 	    break;
-	}
-	return;
-    case "response":
-	P2(("%O got SASL response\n", ME))
-	if ((t2 = node[Cdata])
-		&& (t = to_string(decode_base64(t2)))) {
-	    // this one is very similar to the stuff in active.c
-	    string secret;
-	    mixed data;
-
-	    data = sasl_parse(t);
-
-	    P2(("extracted: %O\n", data))
-
-	    secret = config(XMPP + data["username"], "_secret_shared");
-	    unless(secret) {
-		// tell the host that we dont share a secret with them
-		// currently this happens as not-authorized
-	    }
-	    if (data["response"] == sasl_calculate_digestMD5(data, secret, 0)) {
-		emit("<success xmlns='" NS_XMPP "xmpp-sasl'>"
-		     + encode_base64("rspauth=" + sasl_calculate_digestMD5(data, secret, 1)) + "</success>");
-# ifdef LOG_XMPP_AUTH
-		D0( log_file("XMPP_AUTH", "\n%O has authenticated %O via SASL digest md5", ME, data["username"]); )
-# endif 
-		sAuthenticated(data["username"]);
-	    } else {
-		SASL_ERROR("not-authorized")
-		QUIT
-	    }
 	}
 	return;
 #endif
@@ -517,22 +480,12 @@ open_stream(XMLNode node) {
 	    } else unless (mappingp(authhosts)) {
 # ifdef WANT_S2S_SASL
 		packet += "<mechanisms xmlns='" NS_XMPP "xmpp-sasl'>";
-		// let the other side decide if it knows a shared secret 
-		// with us
-		// if it it has, it will use it with digest-md5
-#  ifndef _flag_disable_authentication_digest_MD5
-		if (node["@from"] 
-			&& config(XMPP + node["@from"], 
-				  "_secret_shared")) {
-		    packet += "<mechanism>DIGEST-MD5</mechanism>";
-		}
-#  endif
-		
 		// if the other side did present a client certificate
 		// and we have verified it as X509_V_OK (0)
 		// we offer SASL external (authentication via name
 		// presented in x509 certificate
 		P3(("gateway::certinfo %O\n", certinfo))
+#  ifndef DIALBACK_WITHOUT_DIAL_BACK
 		if (mappingp(certinfo) && certinfo[0] == 0) {
 		    // if from attribute is present we only offer
 		    // sasl external if we know that it will succeed
@@ -543,6 +496,7 @@ open_stream(XMLNode node) {
 			packet += "<mechanism>EXTERNAL</mechanism>";
 		    }
 		}
+#  endif
 		packet += "</mechanisms>";
 # endif
 	    }

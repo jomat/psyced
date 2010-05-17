@@ -192,18 +192,8 @@ handle_stream_features(XMLNode node) {
 		 encode_base64(_host_XMPP)
 		 + "</auth>");
 	    return;
-	} else
+	} 
 #endif
-	if (mechs["DIGEST-MD5"] 
-		   && config(XMPP + hostname, "_secret_shared")) { 
-	    PT(("jabber/active requesting to do digest md5\n"))
-	    emit("<auth mechanism='DIGEST-MD5' "
-		 "xmlns='" NS_XMPP "xmpp-sasl>" +
-		 encode_base64(_host_XMPP) +
-		 "</auth>");
-	    return;
-
-	}
     }
 #endif
 #ifdef SWITCH2PSYC
@@ -437,51 +427,6 @@ jabberMsg(XMLNode node) {
 		 "xml:lang='en' "
 		 "version='1.0'>");
 	    authenticated = 1;
-	}
-	break;
-    case "challenge":
-	PT(("%O got a sasl challenge\n", ME))
-	if (node["@xmlns"] == NS_XMPP "xmpp-sasl") {
-	    unless(t = node[Cdata]) {
-		// none given
-	    } else unless (t = to_string(decode_base64(t))) {
-		// base64 decode error?
-	    } else {
-		// this one is shared across all those digest md5's
-		mixed data;
-		string secret;
-		string response;
-		PT(("decoded challenge: %O\n", t))
-		data = sasl_parse(t);
-		PT(("extracted %O\n", data))
-
-		data["username"] = _host_XMPP;
-		secret = config(XMPP + hostname, "_secret_shared");
-		unless(secret) {
-		    // mh... this is a problem!
-		    // we only started doing this if we have a secret,
-		    // so this cant be empty
-		}
-		data["cnonce"] = RANDHEXSTRING;
-		data["nc"] = "00000001";
-		data["digest-uri"] = "xmpp/" _host_XMPP;
-
-		response = sasl_calculate_digestMD5(data, secret, 0);
-
-		// ok, the username is our hostname
-		// note: qop must not be quoted, as we are 'client'
-		t = "username=\"" _host_XMPP "\","
-		    "realm=\"" + data["realm"] + "\","
-		    "nonce=\"" + data["nonce"] + "\","
-		    "cnonce=\"" + data["cnonce"] + "\","
-		    "nc=" + data["nc"] + ",qop=auth,"
-		    "digest-uri=\"" + data["digest-uri"] + "\","
-		    "response=" + response + ",charset=utf-8";
-		PT(("%O sent rspauth %O\n", ME, response))
-		emit("<response xmlns='" NS_XMPP "xmpp-sasl'>"
-		     + encode_base64(t) + 
-		     "</response>");
-	    }
 	}
 	break;
     case "failure":
