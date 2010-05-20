@@ -947,7 +947,7 @@ _path_base = $BASE_DIR
 _path_configuration = $CONFIG_DIR
 
 ; Path leading to your private and public TLS keys
-; (absolute or relative to _path_base)
+; (absolute or relative to _path_configuration)
 _path_PEM_key = key.pem
 _path_PEM_certificate = cert.pem
 
