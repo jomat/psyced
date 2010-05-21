@@ -70,6 +70,7 @@ varargs mixed lookup_identification(mixed source, vamixed givenUNI) {
 #endif
 
 varargs string psyc_name(mixed source, vastring localpart) {
+	P3((">> psyc_name(%O, %O)\n", source, localpart))
 	string s;
 
 	if (s = obj2unl[source]) return s;
@@ -106,6 +107,7 @@ varargs string psyc_name(mixed source, vastring localpart) {
 	    // why store it with an ip? nobody uses that anyway!?
 	    // is it being used anywhere in the parser? naaah.
 	s = myUNL + s;
+	P3((">>> psyc_name for %O is %O\n", source, s))
 	unl2obj[s] = source;
 	return obj2unl[source] = s;
 }
