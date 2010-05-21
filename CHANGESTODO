@@ -114,38 +114,6 @@ ________________________________________________________________________
 
 ? should /load inform that errors go to the console?
 
-- the ~0 bug
-  i found a reliable way to reproduce this ~0 uni problem
-  - start psyced
-  - connect with a native psyc client
-  - kill psyced while the client is connected
-  - start psyced again
-  - connect with native psyc client
-  it will give you this ~0 uni then
-  until you connect with a telnet client
-  but it works again after you connect & disconnect w/ a telnet client
-________________________________________________________________________
-:_group psyc://psyced.org/@welcome
-:_source_identification psyc://xxx.no-ip.org/~xxx
-
-:_tag msg_406
-_request_do_message
-bug!
-.
-
-:_source_relay psyc://xxx.no-ip.org/~0
-:_context psyc://psyced.org/@welcome
-
-:_nick_place psyc://psyced.org/@welcome
-:_nick xxx
-:_time_INTERNAL 1245932297
-_message_echo_public
-bug!
-.
-
-In welcome spricht «psyc://xxx.no-ip.org/~0» xxx: the bug in the scratchpad. why psyced echoes packets to "~0" instead of my real account? the same thing is for echo_private
-In welcome spricht «psyc://xxx.no-ip.org/~0» xxx: it should either ignore first packet (if psyced is sure that i'm not authorized with password) or return echo to that account instead of misterious "0"
-
 ________________________________________________________________________
 == psyced 1.0 ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -3980,4 +3948,5 @@ net/circuit
 ?	raised size of queue from 123 to 3303 since i have seen errors
 	caused by queue being too short. not sure if this solves a problem
 	or postpones it to become a bigger problem later  ;)
-
+net/person
+-	tg fixes the ~0 bug!

@@ -664,9 +664,6 @@ sName2(a) {
 	availability = v("availability");
 #endif // _flag_disable_module_presence
 
-	if (v("locations")) linkCleanUp("_crash");
-	else vSet("locations", ([ ]));
-
 #ifdef _flag_enable_module_microblogging
 	unless (v("channels")) vSet("channels", ([]));
 #endif
@@ -701,6 +698,11 @@ sName2(a) {
 
 	// maybe use v("identification") here?
 	vSet("_source", psyc_name(ME));
+
+	// has to happen *after* psyc_name() ... fixes ~0 bug ... thx tg
+	if (v("locations")) linkCleanUp("_crash");
+	else vSet("locations", ([ ]));
+
 	return MYNICK; // means new name accepted
 }
 
