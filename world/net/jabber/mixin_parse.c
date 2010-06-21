@@ -214,7 +214,7 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 		vars["_nick_place"] = vars["_INTERNAL_identification"] || origin;
 
 #if __EFUN_DEFINED__(mktime)
-		if ((helper = getchild(node, "x", "jabber:x:delay")) || (helper = getchild(node, "x", "urn:xmpp:delay"))) {
+		if ((helper = getchild(node, "x", "jabber:x:delay")) || (helper = getchild(node, "delay", "urn:xmpp:delay"))) {
 		    string fmt = helper["@stamp"];
 		    int *time = allocate(TM_MAX);
 		    int res;
@@ -702,7 +702,7 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 		// jabber:x:delay namespace or the urm:xmpp:delay namespace 
 		// this is a _status_presence
 		o = summon_person(tu[UUser]);
-		if ((helper = getchild(node, "x", "jabber:x:delay")) || (helper = getchild(node, "x", "urn:xmpp:delay"))) {
+		if ((helper = getchild(node, "x", "jabber:x:delay")) || (helper = getchild(node, "delay", "urn:xmpp:delay"))) {
 		    isstatus = 1;
 		}
 //		if (!intp(isstatus)) {
