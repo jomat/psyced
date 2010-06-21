@@ -62,4 +62,7 @@ alias	cvsdeath 'find . -name CVS -print -prune -exec rm -r {} \;'
 alias	gdifR	'git diff master..\!:1/master |& difvu -'
 # to merge all the changes, use "gmergR <nick>"
 alias	gmergR	'git merge -s resolve \!:1/master'
+# to view the log of check-ins use this
+alias	glogR	'git log FETCH_HEAD'
+# then you can 'git cherry-pick' specific commit hashes
 

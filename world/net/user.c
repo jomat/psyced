@@ -1566,10 +1566,6 @@ logon() {
 	   0, ([ "_charset": v("charset") || SYSTEM_CHARSET ]));
 #endif
 	autojoin();
-	cmdchar = (v("commandcharacter") ||
-		   T("_MISC_character_command", "/"))[0..0];
-	cmdchar = cmdchar[0];
-
 	actchar = v("actioncharacter") || T("_MISC_character_action",":");
 	actchar = actchar == "off" ? 0 : actchar[0];
 
@@ -1590,6 +1586,8 @@ logon() {
 	::logon( query_ip_name(ME) ||
 		(this_interactive() && query_ip_name(this_interactive())) );
 
+	cmdchar = (v("commandcharacter") ||
+		   T("_MISC_character_command", "/"))[0..0];
 #ifndef _flag_disable_info_session
 	// greeting is only defined after ::logon has run
 	if (greeting) {
@@ -1600,6 +1598,7 @@ logon() {
 		    ([ "_command_character" : cmdchar ]) );
 	}
 #endif
+	cmdchar = cmdchar[0];
 }
 
 // net/jabber/user filters this call, so this is never executed for

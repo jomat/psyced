@@ -345,7 +345,7 @@ case "privmsg":
 		    rcpt = rcpt[0 .. <sizeof(IRCGATE_NICK)+2];
 # endif
 		PT(("the rcpt is %O for %O from %O\n", rcpt, text, joe_unl))
-		if (!rcpt || channel2place(rcpt)) pubmsg(text);
+		if (!rcpt || !stricmp(rcpt, qChatChannel()) pubmsg(text);
 		else {
 			unless (text = decode(text, rcpt, !notice)) break;
 			sendmsg(rcpt, notice? "_message_private_annotate":
@@ -353,7 +353,9 @@ case "privmsg":
 			    ([ "_nick" : joe_nick ]), joe_unl);
 		}
 #else
-		unless (rcpt && (rcpt = channel2place(rcpt))) rcpt = 0;
+		// was: unless (rcpt && (rcpt = channel2place(rcpt))) rcpt = 0;
+		if (rcpt && stricmp(rcpt, qChatChannel())) rcpt = 0;
+
 		unless (text = decode(text, rcpt, !notice)) break;
 		if (rcpt) {
 		    if (from) pubmsg(text);
@@ -402,8 +404,7 @@ case RPL_NAMREPLY:
 		break;
 case "join":
 		unless (rcpt) rcpt = text; // historic syntax bug in JOIN
-		if (rcpt && (rcpt = channel2place(rcpt))) {
-			if (stricmp(rcpt, qChatChannel())) {
+		if (rcpt && stricmp(rcpt, qChatChannel())) {
 				P0(("%O got autojoined into %O\n", ME, rcpt))
 				emit("PART #"+rcpt+
 				     " :looks like I was autojoined here\n");
@@ -420,7 +421,7 @@ case "part":
 		break;
 case "001":
 #ifndef SERVER
-		emit("JOIN #"+qChatChannel()+" "+CHAT_CHANNEL_MODE+"\n");
+		emit("JOIN "+qChatChannel()+" "+CHAT_CHANNEL_MODE+"\n");
 #endif
 #ifdef EXTRA_LOGON
 		emit(EXTRA_LOGON+"\n");
@@ -729,7 +730,7 @@ tellChannel(source, mc, vars, data) {
 #ifndef SERVER
 	data = irctext( T(mc, ""), vars, data, source );
 	PT(("tellChannel(%O) %O\n", mc, data))
-	send(source, "NOTICE #"+qChatChannel()+" :"+ data +"\n");
+	send(source, "NOTICE "+qChatChannel()+" :"+ data +"\n");
 #endif
 }
 
@@ -846,10 +847,10 @@ msg(source, mc, data, mapping vars, showingLog, target) {
 	if (abbrev("_message_public", mc)) {
 #ifdef SERVER
 //	    t = data || irctext( T(mca, 0), vars, data, source );
-//	    send(source, "PRIVMSG #"+qChatChannel()+" :"+ t);
+//	    send(source, "PRIVMSG "+qChatChannel()+" :"+ t);
 #else
 	    if (stringp(source)) vars["_nick"] = source;
-	    send(source, "PRIVMSG #"+qChatChannel()+" :"+
+	    send(source, "PRIVMSG "+qChatChannel()+" :"+
 		 irctext( T(mca, 0), vars, data, source ));
 #endif
 	}
@@ -863,7 +864,7 @@ msg(source, mc, data, mapping vars, showingLog, target) {
 static chanop(arg) {
 #ifndef SERVER
 	log_file("IRC_BOSS", "%O chops %O on %O\n", previous_object(), arg, ME);
-	emit("MODE #"+ qChatChannel()+ " +o "+arg+"\n");
+	emit("MODE "+ qChatChannel()+ " +o "+arg+"\n");
 #endif
 	return 1;
 }

@@ -10,6 +10,8 @@ vim:nosmarttab:syntax=diff
 ________________________________________________________________________
 == SERIOUS!!! ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
+- make polly use oauth - deadline: june
+
 - remote psycers do not always show up properly via jabber client + MUC
 
 - /m freenode:symlynx hey
