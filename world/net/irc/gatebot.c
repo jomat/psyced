@@ -405,11 +405,10 @@ case RPL_NAMREPLY:
 case "join":
 		unless (rcpt) rcpt = text; // historic syntax bug in JOIN
 		if (rcpt && stricmp(rcpt, qChatChannel())) {
-				P0(("%O got autojoined into %O\n", ME, rcpt))
-				emit("PART #"+rcpt+
-				     " :looks like I was autojoined here\n");
-				break;
-			}
+			P0(("%O got autojoined into %O\n", ME, rcpt))
+			emit("PART #"+rcpt+
+			     " :looks like I was autojoined here\n");
+			break;
 		} else rcpt = 0;
 		// fall thru
 case "quit":	// IRC QUIT is broken really
