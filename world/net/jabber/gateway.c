@@ -37,6 +37,7 @@ volatile string host;	// about time to remember which host we are talking to
 
 volatile string tag;
 volatile string streamid;
+volatile string streamfrom;
 volatile string resource;
 volatile mapping certinfo;
 
@@ -358,7 +359,11 @@ jabberMsg(XMLNode node) {
 	return;
 #ifdef WANT_S2S_SASL
     case "auth": 
-	t = to_string(decode_base64(node[Cdata]));
+	// if the authorization id is present, use that, else use streamfrom
+	// note that the standard says that streamfrom MUST be the same as the authorization id
+	// so we could save the base64 stuff and use streamfrom in all cases if we ignore the 
+	// standard
+	t = node[Cdata] ? to_string(decode_base64(node[Cdata])) : streamfrom; 
 	switch (node["@mechanism"]) {
 	case "EXTERNAL":
 	    if (tls_query_connection_state(ME) == 1
@@ -460,10 +465,12 @@ open_stream(XMLNode node) {
      * MUST generate an <invalid-namespace/> stream error condition 
      * and terminate both the XML stream and the underlying TCP connection.
      */
+	emit(packet + ">");
 	STREAM_ERROR("invalid-namespace", "")
 	QUIT
 	return;
     }
+    streamfrom = node["@from"];
 
     /* if stream version is >= "1.0" reply with stream version 
      * attribute and add a stream:feature tag
