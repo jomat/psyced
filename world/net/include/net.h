@@ -233,6 +233,7 @@
 #endif
 
 #ifdef EXPERIMENTAL
+# define XMPP_BIDI
 # define USE_AUTOALIAS
 	// fippo's brilliant single-user channel emulation for jabber MUCs
 	// unfortunately it provides no advantages over the old method, yet.

@@ -11,6 +11,10 @@
 #endif
 
 inherit NET_PATH "jabber/mixin_render";
+#ifdef XMPP_BIDI
+inherit NET_PATH "jabber/mixin_parse";
+#endif
+
 
 // a derivate of circuit which knows JABBER
 inherit NET_PATH "circuit";
@@ -155,6 +159,13 @@ handle_stream_features(XMLNode node) {
 	P0(("%O requires <starttls/> but we can't provide that\n", ME))
 	connect_failure("_encrypt_necessary", "Encryption required but unable to provide that");
 	return;
+    }
+#endif
+#ifdef XMPP_BIDI
+    if (node["/bidi"] && node["/bidi"]["@xmlns"] == "urn:xmpp:features:bidi") {
+	emitraw("<bidi xmlns='urn:xmpp:bidi'/>");
+	// we don't expect a reply
+	bidi = 1;
     }
 #endif
 #ifdef WANT_S2S_SASL
@@ -360,6 +371,9 @@ jabberMsg(XMLNode node) {
     P2(("%O jabber/active got %O\n", ME, node[Tag])) 
     object o;
     string t;
+#ifdef XMPP_BIDI
+    mixed su, tu;
+#endif
     switch (node[Tag]) {
     case "db:result":
 	/* 10: Receiving Server informs Originating Server of the result
@@ -374,6 +388,9 @@ jabberMsg(XMLNode node) {
 	    D0( log_file("XMPP_AUTH", "\n%O auth dialback", ME); )
 #endif 
 	    authenticated = 1;
+#ifdef XMPP_BIDI
+	    // sAuthenticated?
+#endif
 	    runQ();
 	} else {
 	    // else: queue failed
@@ -476,8 +493,57 @@ jabberMsg(XMLNode node) {
 	destruct(ME);
 	return;
 #endif
+#ifdef XMPP_BIDI
+    case "message":
+    case "presence":
+    case "iq":
+	if (!authenticated) {
+		// we have not authenticated with either sasl or dialback
+		P2(("xmpp bidi: we have not authenticated with either sasl or dialback\n"))
+		STREAM_ERROR("invalid-from", "")
+		return;
+	}
+	if (!bidi) {
+		P2(("xmpp bidi: we have not enabled bidi, so why...\n"))
+		STREAM_ERROR("invalid-from", "")
+		return;
+	}
+	// check from and to!
+	// for from: == hostname
+	P2(("xmpp bidi from %O to %O\n", node["@from"], node["@to"]))
+	su = parse_uniform(XMPP + node["@from"]);
+	unless (su) {
+		// jid-malformed?
+		P2(("xmpp bidi: could not parse su for %O", node["@from"]))
+		return;
+	}
+	// qAuthenticated(su[UHost]) ?
+	P2(("xmpp bidi: from host = %O, hostname = %O\n", su[UHost], hostname))
+	unless (su[UHost] == hostname) {
+		P2(("xmpp bidi: source host  %O != hostname %O\n", su[UHost], hostname))
+		STREAM_ERROR("invalid-from", "")
+		return;
+	}
+	
+	// for to: is_localhost
+	tu = parse_uniform(XMPP + node["@to"]);
+	unless (tu) {
+		// jid-malformed?
+		P2(("xmpp bidi: could not parse tu for %O", node["@to"]))
+		STREAM_ERROR("invalid-from", "")
+		return;
+	}
+	P2(("is_localhost(%O) = %O\n", tu[UHost], is_localhost(tu[UHost])))
+	if (!is_localhost(tu[UHost])) {
+		// ... ?
+		P2(("xmpp bidi: !is_localhost %O\n", node["@to"]))
+		STREAM_ERROR("invalid-from", "")
+		return;
+	}
+	return ::jabberMsg(node);
+#endif
     default:
-	P0(("%O: unexpected %O:%O\n", ME, node["@tag"], 
+	P0(("%O: unexpected %O:%O\n", ME, node[Tag], 
 	    node["@xmlns"]))
 	break;
     }

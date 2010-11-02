@@ -6,6 +6,10 @@
 
 volatile int flags = 0;
 
+#ifdef XMPP_BIDI
+volatile int bidi; // is this stream bidirectional?
+#endif
+
 reboot(reason, restart, pass) {
         if (pass == 0) {
 	    if (interactive(ME)) {

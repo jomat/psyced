@@ -18,6 +18,9 @@
 inherit NET_PATH "trust";
 
 inherit NET_PATH "jabber/mixin_parse";
+#ifdef XMPP_BIDI
+inherit NET_PATH "jabber/mixin_render";
+#endif
 
 //inherit NET_PATH "storage";
 volatile object active;	// currently unused, but you could send w() to it
@@ -40,6 +43,7 @@ volatile string streamid;
 volatile string streamfrom;
 volatile string resource;
 volatile mapping certinfo;
+
 
 v(a, b) {
     PT(("%O v(%O, %O)\n", ME, a, b))
@@ -139,6 +143,12 @@ verify_connection(string to, string from, string type) {
 	D0( log_file("XMPP_AUTH", "\n%O has authenticated %O via dialback", ME, from); )
 #endif 
 	sAuthenticated(from);
+#ifdef XMPP_BIDI
+	if (bidi) {
+		P0(("doing register target for xmpp bidi!!!!\n"))
+		register_target(XMPP + from);
+	}
+#endif
 	while (remove_call_out(#'quit) != -1);
     }
 }
@@ -203,6 +213,9 @@ jabberMsg(XMLNode node) {
 #ifdef SWITCH2PSYC
 		|| node[Tag] == "switching"
 #endif
+#ifdef XMPP_BIDI
+		|| node[Tag] == "bidi"
+#endif
 		|| node[Tag] == "starttls") ) {
 	// apparently we are the only jabber server to complain about it
 	if (node[Tag] == "stream:features") {
@@ -236,6 +249,14 @@ jabberMsg(XMLNode node) {
 	destruct(ME);
 	return;
 #endif
+#ifdef XMPP_BIDI
+    case "bidi":
+	if (node["@xmlns"] == "urn:xmpp:bidi") {
+		//emit("<success xmlns='urn:xmpp:bidi'/>");
+		bidi = 1;
+	}
+	return;
+#endif
     case "db:result":
 	target = NAMEPREP(target);
 	source = NAMEPREP(source);
@@ -263,7 +284,7 @@ jabberMsg(XMLNode node) {
 	// 	protect against stolen certificates
 	if (mappingp(certinfo) && certinfo[0] == 0 
 	    && node["@from"] && certificate_check_jabbername(node["@from"], certinfo)) {
-		P2(("dialback without dialback %O\n", certinfo))
+		P0(("dialback without dialback %O\n", certinfo))
 		verify_connection(node["@to"], node["@from"], "valid"); 
 	} else {
 		sendmsg(origin,
@@ -382,6 +403,13 @@ jabberMsg(XMLNode node) {
 		    P2(("successful sasl external authentication with "
 			"%O\n", t))
 		    sAuthenticated(t);
+		    while (remove_call_out(#'quit) != -1);
+#ifdef XMPP_BIDI
+		    if (bidi) {
+			    P0(("doing register target for xmpp bidi!!!!\n"))
+			    register_target(XMPP + t);
+		    }
+#endif
 # ifdef LOG_XMPP_AUTH
 		    D0( log_file("XMPP_AUTH", "\n%O has authenticated %O via SASL external", ME, t); )
 # endif 
@@ -491,7 +519,8 @@ open_stream(XMLNode node) {
 		// and we have verified it as X509_V_OK (0)
 		// we offer SASL external (authentication via name
 		// presented in x509 certificate
-		P3(("gateway::certinfo %O\n", certinfo))
+		PT(("gateway::certinfo %O\n", certinfo))
+		P0(("gateway::certinfo valid %d\n", certinfo[0]))
 #  ifndef DIALBACK_WITHOUT_DIAL_BACK
 		if (mappingp(certinfo) && certinfo[0] == 0) {
 		    // if from attribute is present we only offer
@@ -514,6 +543,9 @@ open_stream(XMLNode node) {
 			"<scheme>psyc</scheme>"
 		    "</switch>";
 #endif
+#ifdef XMPP_BIDI
+	packet += "<bidi xmlns='urn:xmpp:features:bidi'/>";
+#endif
 	packet += "</stream:features>";
     } else {
 	packet += ">";
@@ -533,3 +565,44 @@ w(string mc, string data, mapping vars, mixed source) {
     vars["_INTERNAL_source_jabber"] = objectp(source) ? mkjid(source) : _host_XMPP;
     sendmsg(origin, mc, data, vars); 
 }
+
+#ifdef XMPP_BIDI
+int msg(string source, string mc, string data,
+	    mapping vars, int showingLog, string target) {
+	// copy+paste stuff from active.c
+    vars = copy(vars);
+#ifdef DEFLANG
+    unless(vars["_language"]) vars["_language"] = DEFLANG;
+#else
+    unless(vars["_language"]) vars["_language"] = "en";
+#endif
+    /* another note:
+     * instead of queuing the msg()-calls we could simply queue
+     * the output from emit (use the new net/outputb ?)
+     * this avoids bugs with destructed objects
+     */
+#if 0 // !EXPERIMENTAL
+    /* currently, we want _status_person_absent
+     * this may change...
+     */
+    else if (abbrev("_status_person_absent", mc)) return 1;
+#endif
+    switch (mc){
+    case "_message_echo_private":
+	return 1;
+    }
+    // desperate hack
+    unless (vars["_INTERNAL_mood_jabber"])
+	    vars["_INTERNAL_mood_jabber"] = "neutral";
+    if (abbrev("_dialback", mc)) {
+	P0(("gateway got dialback method %O, this should not happen...\n", mc))
+	return 1;
+    }
+
+    determine_sourcejid(source, vars);
+    determine_targetjid(target, vars);
+    if (vars["_place"]) vars["_place"] = mkjid(vars["_place"]);
+    // end of copy+paste from active
+    return ::msg(source, mc, data, vars, showingLog, target);
+}
+#endif
