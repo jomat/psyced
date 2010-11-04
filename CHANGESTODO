@@ -10,7 +10,11 @@ vim:nosmarttab:syntax=diff
 ________________________________________________________________________
 == SERIOUS!!! ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-- make polly use oauth - deadline: june
+- check in user:input() if data is in utf8 (using RE_UTF8) in order to produce
+  proper error messages before it is processed further and may end up in
+  net/jabber's emit() where it is dropped silently (see CHARS_XMPP.log)
+
+- make polly use oauth
 
 - remote psycers do not always show up properly via jabber client + MUC
 

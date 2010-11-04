@@ -273,8 +273,16 @@ jabberMsg(XMLNode node) {
 	    monitor_report("_error_unknown_host", 
 	       sprintf("%O sent us a dialback packet believing we would be %O",
 		       source, target));
+	    emit(sprintf("<db:result from='%s' to='%s' type='error'>"
+			 "<error type='cancel'>"
+			 "<item-not-found xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/>"
+			 "</error>"
+			 "</db:result>",
+			 target, source));
+	    /* no more...
 	    STREAM_ERROR("host-unknown", "")
 	    remove_interactive(ME);
+	    */
 	    return;
 	}
 	// dialback without dial-back - if the certificate is valid and the sender 
@@ -342,8 +350,16 @@ jabberMsg(XMLNode node) {
 	     */
 	    // same as above...
 	    unless (is_localhost(lower_case(target))) {
+		emit(sprintf("<db:verify from='%s' to='%s' id='%s' type='error'>"
+			     "<error type='cancel'>"
+			     "<item-not-found xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/>"
+			     "</error>"
+			     "</db:result>",
+			     target, source, node["@id"]));
+		/*
 		STREAM_ERROR("host-unknown", "")
 		QUIT
+		*/
 	    }
 	    valid = node[Cdata] == DIALBACK_KEY(node["@id"], source, 
 						target);
@@ -546,6 +562,7 @@ open_stream(XMLNode node) {
 #ifdef XMPP_BIDI
 	packet += "<bidi xmlns='urn:xmpp:features:bidi'/>";
 #endif
+	packet += "<dialback xmlns='urn:xmpp:features:dialback'><errors/></dialback>"; 
 	packet += "</stream:features>";
     } else {
 	packet += ">";
