@@ -530,7 +530,6 @@ open_stream(XMLNode node) {
 		packet += "<starttls xmlns='" NS_XMPP "xmpp-tls'/>";
 	    } else unless (mappingp(authhosts)) {
 # ifdef WANT_S2S_SASL
-		packet += "<mechanisms xmlns='" NS_XMPP "xmpp-sasl'>";
 		// if the other side did present a client certificate
 		// and we have verified it as X509_V_OK (0)
 		// we offer SASL external (authentication via name
@@ -545,11 +544,12 @@ open_stream(XMLNode node) {
 		    if (node["@from"] &&
 			    certificate_check_jabbername(node["@from"],
 						     certinfo)) {
+			packet += "<mechanisms xmlns='" NS_XMPP "xmpp-sasl'>";
 			packet += "<mechanism>EXTERNAL</mechanism>";
+			packet += "</mechanisms>";
 		    }
 		}
 #  endif
-		packet += "</mechanisms>";
 # endif
 	    }
 	}
