@@ -19,11 +19,7 @@ virtual inherit NET_PATH "output"; // virtual: in case we get inherited..
 inherit NET_PATH "connect";
 //inherit NET_PATH "place/master";
 
-#ifdef NEW_QUEUE
-inherit NET_PATH "queue2";
-#else
 inherit NET_PATH "queue";
-#endif
 
 // additional headers. we keep them lower-case to ensure we have no
 // double items in there. HTTP ignores case by spec.

@@ -1,7 +1,7 @@
 #include <net.h>
 #include <services.h>
 inherit NET_PATH "connect";
-inherit NET_PATH "queue2";
+inherit NET_PATH "queue";
 
 /*
  * this connects to a nntp server as client and does some fancy things.

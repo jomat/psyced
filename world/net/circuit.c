@@ -44,11 +44,7 @@ volatile int retry;
 volatile int waitforme;
 volatile int time_of_connect_attempt;
 
-#ifdef NEW_QUEUE
-inherit NET_PATH "queue2";
-#else
 inherit NET_PATH "queue";
-#endif
 
 #if 0 //def PSYC_SYNCHRONIZE
 # define ISSYNC issync

@@ -25,11 +25,7 @@
 // }}}
 
 // {{{ queue-inherit
-#ifdef NEW_QUEUE
-inherit NET_PATH "queue2";                                           
-#else
 inherit NET_PATH "queue";
-#endif
 // }}}
 
 // {{{ variables

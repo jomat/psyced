@@ -206,7 +206,6 @@
 # define MEMBERS_BY_SOURCE
 # define TAGGING
 # define TAGS_ONLY
-# define NEW_QUEUE
 //# define CACHE_PRESENCE
 // gut gut.. dann testen wir diesen kram halt auch
 # define QUIET_REMOTE_MEMBERS

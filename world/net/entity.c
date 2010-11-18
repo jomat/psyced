@@ -35,11 +35,7 @@
 # define MAXIMUM_TRUST 10
 #endif
 
-#ifdef NEW_QUEUE
-inherit NET_PATH "queue2";
-#else
 inherit NET_PATH "queue";
-#endif
 inherit NET_PATH "name";
 inherit NET_PATH "storage";
 #ifdef ENTITY_STATE //{{{
@@ -530,9 +526,7 @@ create() {
     _memory = ([ ]);
     temp = ([]);
 #endif //}}}
-#ifdef NEW_QUEUE
     qCreate();
-#endif
 #ifdef TAGGING
     _tags = ([ ]);
 #endif
