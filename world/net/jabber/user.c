@@ -158,7 +158,8 @@ msg(source, mc, data, mapping vars, showingLog) {
 	ret = ::msg(source, mc, data, vars, showingLog);
 	buddy = objectp(source) ? source -> qName() : source;
 	jid = mkjid(source);
-	emit(sprintf("<iq type='set' id='%s'>"
+	if (mappingp(xbuddylist) && xbuddylist[buddy] && jid)
+	    emit(sprintf("<iq type='set' id='%s'>"
 		     "<query xmlns='jabber:iq:roster'>"
 		     "<item jid='%s' subscription='both'>%s"
 		     "</item></query></iq>", tag,
