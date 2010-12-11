@@ -400,6 +400,7 @@ certificate_check_jabbername(name, cert) {
      * id-on-xmppAddr/CN
      * API Note: name MUST be an utf8 string
      */
+    unless(name) return 0;
     name = NAMEPREP(name);
     unless(cert && mappingp(cert)) return 0;
     if ((t = cert["2.5.29.17:1.3.6.1.5.5.7.8.5"])) { // id-on-xmppAddr
@@ -408,7 +409,7 @@ certificate_check_jabbername(name, cert) {
 	D0( log_file("XMPP_AUTH", "\n%O try SASL external with id-on-xmppAddr", ME); )
 # endif 
 	if (pointerp(t)) {
-	    if (member(t, name)) return 1;
+	    if (member(t, name) != -1) return 1;
 	    foreach(string cn : t) {
 		if (NAMEPREP(cn) == name) return 1;
 	    }
@@ -439,7 +440,7 @@ certificate_check_jabbername(name, cert) {
 	D0( log_file("XMPP_AUTH", "\n%O try SASL external with CN", ME); )
 # endif 
 	if (pointerp(t)) { // does that happen?!
-	    if (member(t, name)) return 1;
+	    if (member(t, name) != -1) return 1;
 	    foreach(string cn : t) {
 		idn = NAMEPREP(idna_to_unicode(cn));
 		if (idn == name) return 1;
