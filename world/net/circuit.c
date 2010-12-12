@@ -60,7 +60,6 @@ srv_choose(mixed *hostlist, string transport) {
 	string srvhost; 
 	int srvport;
 
-	P3(("srv_choose: %O for %O\n", hostlist, ME))
 	unless (pointerp(hostlist)) {
 		return connect(hostname, port, transport);
 	}       
@@ -69,6 +68,12 @@ srv_choose(mixed *hostlist, string transport) {
 	// in a load balancing way
 	srvhost = hostlist[0][DNS_SRV_NAME];
 	srvport = hostlist[0][DNS_SRV_PORT];
+	if (srvhost == "") {
+		// no such service offered at this domain
+		// _xmpp-server._tcp.no.such.xmpptest.com. 1195 IN SRV 0 0 0 .
+		return connect_failure("_failure_unavailable_service",
+				       "No service offered by domain " + hostname);
+	}
 	return connect(srvhost, srvport, transport);
 }
 #else
