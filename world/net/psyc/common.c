@@ -14,6 +14,7 @@
 
 #ifndef __PIKE__
 virtual inherit NET_PATH "trust";
+#endif
 
 // protos.
 varargs mixed croak(string mc, string data, vamapping vars, vamixed source);
