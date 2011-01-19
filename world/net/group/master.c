@@ -93,13 +93,6 @@ castmsg(source, mc, data, vars) {
 	mixed route;
 	mixed noa;	// Nickname of local user Or Amount of people on route
 			// in TIDILY mode should be Mapping of people on route
-#ifdef FORK // {{{
-	string buf;
-
-	// as ldmud isn't a threading enviroment there shouldn't be a chance of
-	// psycd getting destructed while we're residing in this function.
-	// so we're ensuring its existence only once.
-#endif // }}}
 
 	P2(("%O castmsg(%O,%O,%O..) for %O\n", ME, source,mc,data, _routes))
 	D4(P2(("%O vars = %O\n", ME, vars)))
@@ -204,9 +197,6 @@ remove_member(source, origin) {
 	   stringp(t = origin) ||
 #endif
 	   t = origin->qOrigin())
-#ifdef FORK
-	   && t += "/$cslave"
-#endif
 	   && member(_routes, t)) {
 		RM(source, t);
 	} else if (member(_routes, source)) {
@@ -267,9 +257,6 @@ insert_member(source, origin) {
 #endif
     P2(("%O insert_member(%O, %O)\n", ME, source, origin))
     if (objectp(origin) && (t = origin->qOrigin())) {
-#ifdef FORK
-	t = t + "/$cslave";
-#endif
 #if defined(TIDILY) && defined(MEMBERS_BY_SOURCE)
 	unless (member(_routes, t)) _routes[t] = m_allocate(1, 0);
 	m_add(_routes[t], source);
@@ -277,9 +264,6 @@ insert_member(source, origin) {
 	_routes[t]++;
 #endif
     } else if (stringp(origin)) {
-#ifdef FORK
-	origin = origin + "/$cslave";
-#endif
 #if defined(TIDILY) && defined(MEMBERS_BY_SOURCE)
 	unless (member(_routes, origin)) _routes[origin] = m_allocate(1, 0);
 	m_add(_routes[origin], source);

@@ -221,11 +221,7 @@ runQ() {
 		// 0:source, 1:method, 2:data, 3:vars, 4:target
 		// revert to string source if the object has destructed
 		source = t[0] || t[3]["_source"];
-#ifdef FORK
-		msg(source, t[1], t[2], t[3], 0, t[4], t[5]);
-#else
 		msg(source, t[1], t[2], t[3], 0, t[4]);
-#endif
 #if 1
 		// <lynX> i need to know if this could ever happen, and if so
 		// if it is harmless anyhow. see below.

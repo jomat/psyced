@@ -5,12 +5,6 @@
 
 volatile mapping isRouting = shared_memory("routing");
 
-#ifdef FORK
-// these macros support state modifiers in varnames.. we'll need that later
-#define isRoutingVar(x) (stringp(x) && strlen(x) > 1 && member(isRouting, (x[0] == '_') ? x : x[1..]))
-#define mergeRoutingVar(x) (stringp(x) && strlen(x) > 1 && (isRouting[(x[0] == '_') ? x : x[1..]] & PSYC_ROUTING_MERGE)
-#endif
-
 volatile string rbuf, ebuf;  // pike has no pass-by-reference
 
 static int build_header(string key, mixed val, mapping vars) {
@@ -27,17 +21,11 @@ static int build_header(string key, mixed val, mapping vars) {
 	    monitor_report("_failure_invalid_variable_name", s);
 	    return -9;
 	}
-#ifndef FORK
 	routeMe = isRouting[key];
-# if 1 //def EXPERIMENTAL
 	P3(("isRouting[%O] = %O, render? %O\n",
 	    key, routeMe, routeMe & PSYC_ROUTING_RENDER))
 	if ((routeMe &&! (routeMe & PSYC_ROUTING_RENDER))
 	   || abbrev("_INTERNAL", key)) return -1;
-# else
-	if (routeMe || abbrev("_INTERNAL", key)) return -1;
-# endif
-#endif /* ! FORK */
 	P2(("build_header(%O, %O) into %s vars\n", key, val,
 	    routeMe ? "routing" : "entity"))
 	if (key[0] == '_') key = ":"+key;
@@ -289,31 +277,8 @@ static varargs string psyc_render(mixed source, string mc, mixed data,
 		    ebuf += "\n:_count\t" + vars["_count"];
 #endif
 #if __EFUN_DEFINED__(walk_mapping)
-#ifndef FORK // NO STATE
 		// walk_mapping could be rewritten into foreach, but thats work
 		walk_mapping(vars, #'build_header, vars);
-#else /* FORK {{{ */
-# if 0 //ndef EXPERIMENTAL
-		// At least the psyced needs _count first to handle that properly
-		m_delete(vars, "_count");
-# endif
-		foreach (string key, mixed value : vars) {
-                    // why does FORK weed out _INTERNAL in two places? ah nevermind
-		    if (abbrev("_INTERNAL_", key)) {
-			// equal on a line by itself to mean "clear all state"
-			if (key == "_INTERNAL_state_clear")
-			    ebuf = "\n="+ ebuf;
-			continue;
-		    }
-
-		    // CONTEXT_STATE and ENTITY_STATE here
-		    if (!isRoutingVar(key) && (!objectp(obj) 
-			    || obj->outstate(target, key, value, hascontext)))
-			build_header(key, value);
-		}
-		if (objectp(obj))
-		    walk_mapping(obj->state(target, hascontext), #'build_header);
-#endif /* FORK }}} */
 #else                            // PIKE, MudOS...
                 mixed key, val;
 
@@ -340,48 +305,6 @@ static varargs string psyc_render(mixed source, string mc, mixed data,
 		ebuf +"\n" S_GLYPH_PACKET_DELIMITER "\n";
 	return	ebuf +"\n" S_GLYPH_PACKET_DELIMITER "\n";
 }
-
-#ifdef FORK // {{{
-
-static varargs string mmp_make_header(mapping vars, object o) {
-	buf = "";
-	foreach (string key, mixed value : vars) {
-	    if (abbrev("_INTERNAL_", key)) continue;
-	    if (isRoutingVar(key) && (!objectp(o) || o->outstate(key, value)))
-		build_header(key, value);
-	}
-	if (objectp(o))
-	    walk_mapping(o->state(), #'build_header);
-	return buf;
-}
-
-varargs string make_mmp(string data, mapping vars, object o) {
-    // we could regreplace here and do some funny nntp-like encoding of
-    // leading dots.. but we should simply implement _length instead. one day.
-    if (data == "." || data[0..1] == ".\n" || strstr(data, "\n.\n") != -1) {
-# if 0 // one day we shall be able to parse that, too
-	    vars["_length"] = strlen(data);
-# else
-	    P1(("%O: %O tried to send %O via psyc. censored.\n",
-		previous_object() || ME, vars["_nick"] || vars, data))
-	    // this message makes some people feel like they missed out
-	    // on something..
-	    //data = "*** censored message ***";
-	    data = "";
-# endif
-    }
-    return mmp_make_header(vars, o) 
-	    + ((data && "" != data) ? "\n"+data+"\n.\n"  : "\n.\n");
-}
-
-varargs string make_psyc(string mc, string data, mapping vars, object o) {
-    unless (stringp(data))
-	data = "";
-    return psyc_make_header(vars, o, vars["_target"], member(vars, "_context")) 
-	    + ((mc) ? mc +"\n"+data : "");
-}
-
-#endif /* FORK }}} */
 
 // notice for completeness: the PSYC renderer does not convert_charset
 // from SYSTEM_CHARSET to UTF-8, so to produce correct PSYC you must not

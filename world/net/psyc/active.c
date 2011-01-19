@@ -58,18 +58,7 @@ int msg(string source, string method, string data,
 	P3(("active.c:msg(%O, %O, %O) in %O%s\n", source, method, data, ME,
 	    (interactive()) ? "(connected)" : "(not connected)"))
 
-	unless (interactive())
-#ifdef FORK // {{{
-	{
-	    if (!member(vars, "_source"))
-		vars["_source"] = UNIFORM(source);
-	    unless (super)
-		return enqueue(source, method, data, vars, showingLog, target);
-	    return super->msg(source, method, data, vars, showingLog, target);
-	}
-	return ::msg(source, method, data, vars, showingLog, target);
-#else // }}}
-	{
+	unless (interactive()) {
 	    P2(("%O is not interactive (no network connection)\n", ME))
 	    if (!member(vars, "_source"))
 		vars["_source"] = UNIFORM(source);
@@ -85,7 +74,6 @@ int msg(string source, string method, string data,
 //	    return super->msg(source, method, data, vars, showingLog, target);
 	}
 	return ::msg(source, method, data, vars, showingLog, target);
-#endif // !FORK
 }
 
 #if 0

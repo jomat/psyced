@@ -40,13 +40,6 @@ inherit PSYC_PATH "common";
 
 //volatile mapping namecache = ([]);
 
-#ifdef FORK
-volatile mapping _o, memory;
-// why do we need to do this, el?
-//psycName() { return ""; }
-#else
-//# define MMP_STATE
-#endif
 #ifdef MMP_STATE
 // first steps at making use of TCPs persistence
 volatile string lastSource;
@@ -60,11 +53,7 @@ volatile int flags = 0;
 
 #define PSYC_TCP
 // contains PSYC parser
-#ifdef FORK
-# include "routerparse.i"
-#else
-# include "parse.i"
-#endif
+#include "parse.i"
 
 int greet() {
 	string usingmods;
@@ -112,7 +101,7 @@ int greet() {
 #define UNDERMODS "_context"
 	usingmods = UNDERMODS;
 
-#if defined(__MCCP__) && !defined(FORK) 
+#if defined(__MCCP__)
 # define ZIPMOD ";_compress"
 	if (query_mccp(ME)) usingmods += ZIPMOD;
 #else
@@ -133,25 +122,6 @@ int greet() {
 // servers will just skip them..
 //
 // und eigentlich ist das alles nur eitelkeit, die vielen vars. sagt el.  ;)
-#ifdef FORK // {{{
-	emit(S_GLYPH_PACKET_DELIMITER "\n");
-	emit("\
-=_source	"+ SERVER_UNIFORM +"\n\
-=_target_peer	psyc://"+ peeraddr +"/\n\
-=_available_characters	UTF-8\n\
-=_available_protocols	" PROTS "\n\
-" SCHEMES "\
-=_understand_modules	" UNDERMODS TLSMOD "\n\
-=_using_characters	" SYSTEM_CHARSET "\n\
-=_using_protocols	" USINGPROTS "\n\
-=_using_modules	"+ usingmods +"\n\
-\n\
-:_implementation	" SERVER_VERSION " " DRIVER_VERSION " " OSTYPE " " MACHTYPE "\n\
-:_page_description	http://www.psyc.eu/\n\
-_notice_circuit_established\n\
-Circuit to [_source] running [_implementation] established.\n\
-Available protocols: [_available_protocols].\n" S_GLYPH_PACKET_DELIMITER "\n");
-#else // }}}
 	// should we rename _target into _target_raw here? maybe, then again
 	// all subsequent traffic still goes to this target unless the
 	// other side tells us her name
@@ -187,7 +157,6 @@ Circuit to [_source] running [_implementation] established.\n" S_GLYPH_PACKET_DE
 _status_circuit\n\
 " TSCHEMES "\
 Available protocols: [_available_protocols].\n" S_GLYPH_PACKET_DELIMITER "\n");
-#endif // !FORK
 #ifdef _flag_log_sockets_PSYC
 	log_file("RAW_PSYC", "« %O greeted.\n", ME);
 #endif
@@ -296,7 +265,7 @@ int logon(int neverfails) {
 	cvars = ([]);
 	pvars = ([ "_INTERNAL_origin" : ME ]);
 
-#if defined(MMP_STATE) && !defined(FORK)
+#if defined(MMP_STATE)
 	lastSource = lastTarget = lastContext = 0;
 #endif
 	next_input_to(#'startParse);
@@ -309,19 +278,6 @@ int logon(int neverfails) {
 	    // peerport value is positive for real listen() ports 
 	    if (peerport) peeraddr += ":"+peerport;
 //	}
-#ifdef FORK // {{{
-	// init the out-state. these will be sent by greet()
-	_o = ([
-		"_source" : SERVER_UNIFORM,
-		"_target" : "psyc:"+ peeraddr +"/",
-	     ]);
-	memory = copy(_o);
-#if 0
-	memory = ([ "_source" : SERVER_UNIFORM; 4,
-		    "_target" : "psyc:" + peeraddr +"/"; 4,
-		  ]);
-#endif
-#endif // }}}
 	if (cur = find_target_handler( "psyc://"+ peeraddr +"/" )) {
 	    unless (cur->isServer()) {
 		cur->takeover();
@@ -338,7 +294,6 @@ int logon(int neverfails) {
 	return 0;
 }
 
-#ifndef FORK // edit.i is included into the library. should be enough
 #include "edit.i"
 
 // called from sendmsg() either by registered target or psyc: scheme
@@ -480,59 +435,6 @@ varargs int msg(string source, string mc, string data,
 	//PT(("» %O\t%s\n", ME, buf))
 	return emit(buf);
 }
-#else /* FORK {{{ */
-
-varargs int msg(string source, string mc, string data,
-    mapping vars, int showingLog, mixed target) {
-	string buf;
-	mapping mvars = copy(vars);
-
-	P2(("TCP[%s] <= %s: %s\n", peeraddr || "error",
-		to_string(source), mc || "-"))
-		// to_string(vars["_source_relay"] || source)
-
-	// <lynX> yet another place where sources are rendered..
-	// but it is no longer compliant to the specs. don't use this.
-	vars["_source"] = UNIFORM(source);
-	unless (member(vars, "_context"))
-	    vars["_target"] = UNIFORM(target);
-
-	// do state only if source is an object.
-	if (objectp(source)) buf = make_psyc(mc, data, vars, source);
-	else buf = make_psyc(mc, data, vars);
-
-#ifdef _flag_log_sockets_PSYC
-	log_file("RAW_PSYC", "« %O\n%s\n", ME, buf);
-#endif
-	return emit(make_mmp(buf, vars, ME)); 
-}
-
-int send(string data, mapping vars) {
-#ifdef _flag_log_sockets_PSYC
-	log_file("RAW_PSYC", "« %O send(%O)\n", ME, data);
-#endif
-	return emit(make_mmp(data, vars, ME)); 
-}
-
-int outstate(string key, string value) {
-	if (member(_o, key)) {
-		m_delete(memory, key);
-		if (_o[key] == value) return 0;
-	}
-	return 1;
-}
-
-mapping state() {
-	mapping t = ([]);
-	string key;
-	
-	foreach (key : memory)
-	    t[key] = "";
-
-	memory = copy(_o);
-	return t;
-}
-#endif	// FORK }}}
 
 void reboot(string reason, int restart, int pass) {
 	P3(("reboot(%O, %O, %O) in %O\n", pass, restart, reason, ME))

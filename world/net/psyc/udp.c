@@ -28,21 +28,13 @@ volatile mapping namecache = ([]);
 
 // TODO? should keep caches of host:port per remote target somewhat like tcp
 
-#ifdef FORK
-# include "routerparse.i"
-#else
-# include "parse.i"
-#endif
+#include "parse.i"
 
 object load() { return ME; } // avoid a find_object call in obj/master
 
 parseUDP2(host, ip, port, msg) {
 	string *m;
-	int i, l
-#ifdef FORK
-		, parsed
-#endif
-			;
+	int i, l;
 
 	unless (stringp(host)) host = ip;
 
@@ -82,13 +74,8 @@ parseUDP2(host, ip, port, msg) {
 		// i'd like to know why no-mc has to be an empty string
 		// rather than NULL from now on.
 		// should you find out, pls tell me.. -lynX
-#ifdef FORK
-		if (parsed == 2) getdata(m[l]);
-		else unless (parsed = mmp_parse(m[l])) {
-#else
 		if (sizeof(mc)) getdata(m[l]);
 		else unless (parse(m[l])) {
-#endif
 			log_file("PSYCHACK", "Can't parseUDP(%s): %O in %O\n",
 			     peeraddr,m[l],msg );
 			return;

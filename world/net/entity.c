@@ -155,19 +155,6 @@ sendmsg(target, mc, data, vars, source, showingLog, callback) {
 	    target = t;
     }
 #endif //}}}
-#ifdef FORK //{{{
-# if 0
-    if (vars) { // shouldn't _count be set for msgs with empty vars, too?
-	// these are overwritten by source, target. maybe we should stop
-	// objects from reusing vars since that could easily be abused
-	// to broatcast junk.
-	m_delete(vars, "_source");
-	m_delete(vars, "_target");
-	// <lynX> why are you manually deleting some vars here which are also
-	// defined in isRouting and do not delete _context or _counter?
-    } else vars = ([ ]); 
-# endif
-#endif //}}}
     if (mappingp(vars)) {
 	    // uhm. better rename simul-efun-sendmsg and let sendmsg be defined in
 	    // each object, doing return real_sendmsg(...); .. agree, but have to

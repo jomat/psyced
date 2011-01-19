@@ -124,11 +124,7 @@ void remove_member(mixed member, mixed origin) {
 #endif
 }
 
-#ifdef FORK
-msg(source, method, data, mapping vars) {
-#else
 castmsg(source, method, data, mapping vars) {
-#endif
 	/*
 	 * implement group manager logic 
 	 * and fan out everything else?

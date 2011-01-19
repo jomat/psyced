@@ -117,7 +117,6 @@ object psyc_object(string uniform) {
 	return unl2obj[uniform];
 }
 
-#ifndef FORK
 object find_psyc_object(array(mixed) u) {
 	P3((">> find_psyc_object(%O)\n", u))
 	string t, r, svc, user;
@@ -227,7 +226,7 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 
 	// TODO: vars should be enforced system-wide
 	unless (mappingp(vars)) vars = ([  ]);
-#ifndef FORK
+
 	// seid ihr euch wirklich sicher, dass ihr diese zeile entfernen wollt?
 	vars["_target"] = target;
 	// <lynX> this could help protect against sources who destruct while
@@ -239,7 +238,7 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 	// rather adapt the other spots where it's used rather than here..
 	// after all it's mostly speed improvements.. no big thing.. TODO
 	vars["_source"] = sname;
-#endif
+
 	unless (port = u[UPort]) port = u[UTransport] == "s" ?
 					PSYCS_SERVICE : PSYC_SERVICE;
 	else {
@@ -334,7 +333,7 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 		    // this makes it look for host:port as its queue
 		    o = ("psyc:"+hopo) -> circuit($2, $3, u[UTransport],
 					    usesrv && "psyc", hopo, systemQ, psychopo);
-#endif
+#endif //__PIKE__
 		    // SRV tag "psyc" is actively being checked, but
 		    // don't rely on it.. just use it as a fallback if
 		    // nothing else is possible, but some clients may
@@ -350,11 +349,7 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 		return o->msg($5, $6, $7, $8, 0, $4);
 	    // ip=1  2     3       4      5     6    7      8    9
 	    :),
-#ifdef FORK
-		host, port, target, source, mc, data, vars, u[UPort]
-#else
 		host, port, target, sname, mc, data, vars, u[UPort]
-#endif
 	    );
 	    return 1;
 	}
@@ -434,7 +429,6 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 #endif /* _flag_enable_routing_UDP */
 #endif // PIKE
 }
-#endif
 
 /* this breaks /connect ...
 object createUser(string nick) {

@@ -13,11 +13,7 @@
 #endif
 
 #ifndef __PIKE__
-#ifdef FORK
-virtual inherit NET_PATH "state";
-#endif
 virtual inherit NET_PATH "trust";
-#endif
 
 // protos.
 varargs mixed croak(string mc, string data, vamapping vars, vamixed source);
@@ -267,61 +263,3 @@ void internalError() {
 #endif
 }
 
-#ifdef FORK // {{{
-void Assign(mixed source, string key, mixed value) {
-}
-void negotiate(mixed modules) {
-#ifdef __TLS__
-    unless (pointerp(modules))
-	modules = ({ modules });
-    foreach (string key : modules) {
-	if ("_encrypt" == key) {
-	    if (tls_query_connection_state(ME) == 0) {
-		
-		croak("", "", "", ([ "+_using_modules" : "_encrypt", "_target" : ""  ]));
-		
-		tls_init_connection(ME);
-	    }
-	    return;
-	}
-#ifdef __MCCP__
-	if ("_compress" == key) {
-	    P0(("%O is getting compressed from the other side."
-		"ouch! Closing Connection!\n", ME))
-	    croak("_error_compress_unavailable",
-	      "I don't want to receive compressed data.");
-	    destruct(ME);
-	    return;
-	}
-#endif
-    }
-#endif
-}
-
-void gotiate(mixed modules) {
-    unless (pointerp(modules))
-	modules = ({ modules });
-    foreach (string key : modules) {
-#ifdef __MCCP__
-	if ("_compress" == key) {
-	    if(query_mccp(ME) 
-#ifdef __TLS__
-	       || tls_query_connection_state(ME) > 0
-#endif
-	       ) break;				
-	    croak("", "", "", ([ "+_using_modules" : "_compress" ]));
-	    enable_telnet(0);
-	    start_mccp_compress(TELOPT_COMPRESS2);	
-	}
-	return;
-#endif
-    }
-}
-
-void Diminish(mixed source, string key, mixed value) {
-}
-void Reset() {
-    
-}
-
-#endif // FORK }}}

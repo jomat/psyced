@@ -1362,10 +1362,6 @@ msg(source, mc, data, mapping vars) {
 		}
 		P1(("no. he's local.\n"))
 #endif
-#ifdef FORK // {{{
-		if (member(vars, "_INTERNAL_origin")
-		    && !vars["_INTERNAL_origin"]) return;
-#endif // }}}
 		if (neu)    // mayEnter hook
 		    unless (enter(source, mc, data, vars)) return;
 		insert_member(source, mc, data, vars, ni, neu, again);

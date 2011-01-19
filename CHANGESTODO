@@ -1635,30 +1635,6 @@ http://www.holoweb.net/~liam/irc++/   http://achurch.org/irc3/    gale.org
 http://freshmeat.net/projects/boo/
 					http://www.oreillynet.com/pub/t/78
 
-== FORK ================================================================
-- _INTERNAL_trust einbauen
-- unique counters für contexte, ergo global packet ids unterstützen
-  see also http://about.psyc.eu/Routing 2.2
-
-- einmaliges rendern von psyc paketen ohne psycd realisieren,
-  idealerweise auch im sendmsg() statt in group/route, und zwar so:
-    // <lynX> new idea: for future use, psyc packets need to be cached
-    // according to their packet id anyway, so whenever the _count is
-    // the same as the one before, sendmsg() can optimize by using
-    // the last cached outgoing packet of this context. this way the
-    // render-only-once optimization can move down into sendmsg()
-
-* das problem der dangling delivers bei destructeten psyc servern.
-- die drittbeste lösung ist im begriff abgeschafft zu werden:
-  psycd ist allerdings noch nicht vollständig ausgemerzt
-: die zweitbeste lösung macht FORK derzeit mit psyc_deliver() in der lib
-+ die beste lösung wäre psyc/server und active.c wieder in ein
-  gemeinsames circuit.c zusammenzuführen. der versuch mal schnell active.c
-  zum neuen server zu machen ist gescheitert, da active.c schon eine weile
-  lang server.c gar nicht inheritet. letztlich ist diese operation nicht
-  überstürzenswert, lieber vorsichtig planen - etwa in dem wir für das neue
-  mixgerät aus active, server und circuit erstmal ein temporäres newct.c machen
-
 ________________________________________________________________________
 == UNDER CONSTRUCTION: (offene baustellen im LPC code) =================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
@@ -3956,3 +3932,6 @@ net/circuit
 	or postpones it to become a bigger problem later  ;)
 net/person
 -	tg fixes the ~0 bug!
+=== 201101 ============================================================
+*	removed interesting but unrecoverable FORK code
+

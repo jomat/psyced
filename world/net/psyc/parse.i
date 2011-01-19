@@ -1,8 +1,6 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
 // $Id: parse.i,v 1.358 2008/12/27 00:42:04 lynx Exp $
 //
-#ifndef FORK
-
 #ifndef __PIKE__
 # include <tls.h>
 #endif
@@ -1180,5 +1178,3 @@ vamixed startParse(string a) {
 string qOrigin() { return origin_unl; }
 
 void sOrigin(string origin) { unless (origin_unl) origin_unl = origin; }
-
-#endif /* !FORK */

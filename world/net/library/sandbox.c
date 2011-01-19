@@ -299,11 +299,7 @@ nomask mixed call_other(mixed obj, string func, varargs mixed * b) {
 		    int i;
 
 		    if ((i = index(s, '#')) == -1) i = strlen(s) - 1;
-		    unless (func == "qName"
-#ifdef FORK
-			    || func == "qOrigin"
-#endif
-			    ) switch (s[..i]) {
+		    unless (func == "qName") switch (s[..i]) {
 			case "net/person#":
 			case "net/user#":
 			    //if (func == "qName" || func == "msg") break;

@@ -84,9 +84,6 @@ perl:
 	[+]	non-blocking writes using buffers
 	[-]	tkperl client
 
-all:
-	[+]	start development of negotiations (see FORK)
-
 
 VERSION 2.0
 ===========
