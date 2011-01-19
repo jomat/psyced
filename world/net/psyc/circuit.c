@@ -474,9 +474,11 @@ int disconnected(string remaining) {
 #endif
 	// wow.. a sincerely expected disconnect!
 	if (flags & TCP_PENDING_DISCONNECT) return 1;
-#ifndef _flag_disable_report_failure_network_circuit_disconnect
+#ifdef _flag_enable_report_failure_network_circuit_disconnect
 	monitor_report("_failure_network_circuit_disconnect",
 	    object_name(ME) +" · lost PSYC circuit");
+#else
+	P1(("%O disconnected unexpectedly\n", ME))
 #endif
 	return 0;   // unexpected
 }

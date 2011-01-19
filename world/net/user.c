@@ -1760,16 +1760,23 @@ quit(immediate, variant) {
 	return ::quit(immediate, variant);
 }
 
+link_disconnected() {
+	P3(("link_disconnected in %O from %O\nlocations: %O\n", ME, previous_object(), v("locations")))
+	linkDel(0, previous_object());
+	// if there are any catch-all connections left don't quit,
+	// just delete link
+	if (member(v("locations"), 0) && sizeof(v("locations")[0])) return;
+	// unless we have a legacy client, let's get outta here
+	unless (interactive(ME)) disconnected();
+}
+
 // driver calls us here to tell us we lost the connection
 // if you don't like this default behaviour, override it
 //
 // we also call this manually from _request_unlink_disconnect
 disconnected(remainder) {
-	P2(("disconnected(%O) called in %O\nlocations: %O\n", remainder, ME, v("locations")))
-	// if there are any catch-all connections left don't quit, just delete link
-	if (member(v("locations"), 0) && sizeof(v("locations")[0]) > 1)
-	    return linkDel(0, previous_object());
-
+	P2(("disconnected(%O) in %O from %O\n",
+	    remainder, ME, previous_object()))
 	// user did not detach his client properly. we'll make a wild guess
 	// at how many messages he may have missed - enough to make the user
 	// check the lastlog if that's not enough.

@@ -15,7 +15,7 @@ inherit NET_PATH "spyc/circuit";
 // keep a list of objects to ->disconnected() when the driver tells us
 volatile array(object) disconnect_notifies;
 
-void do_notify_on_disconnect(object user) {
+void register_link(object user) {
         unless(disconnect_notifies)
 	   disconnect_notifies = ({ });
         disconnect_notifies += ({ user });
@@ -54,7 +54,7 @@ disconnected(remaining) {
 	// emulate disconnect() for net/psyc/user
 	if (disconnect_notifies) {
 	   foreach (object t : disconnect_notifies) 
-		if (t) t->disconnected();
+		if (t) t->link_disconnected();
 	}
 	rc = ::disconnected(remaining);
 	destruct(ME);

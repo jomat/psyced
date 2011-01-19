@@ -525,6 +525,15 @@ static linkSet(service, location, source) {
 	    v("locations")[service]  = ([ location ]);
 	}
 	register_location(location, ME);
+	// let me know if you lose the connection to my link!
+	object circuit = find_target_handler(location);
+	if (objectp(circuit)) {
+	    P3(("linkSet: registering disc notify for %O from %O.\n",
+		location, circuit))
+	    circuit -> register_link(ME);
+	}
+	// probably should go to the user instead
+	else P1(("Warning for %O: Location %O will ghost.\n", MYNICK, location))
 	if (service) sendmsg(source, "_notice_link_service", 0,
 			   ([ "_service" : service,
 			     "_location" : location,
@@ -551,22 +560,24 @@ static linkSet(service, location, source) {
 	}
 	P2(("locations after linkSet: %O\n", v("locations")))
 }
-static linkDel(service, source, variant) {
+linkDel(service, source, variant) {
         P3(("linkDel(%O, %O, %O) called in %O!\n", service, source, variant, ME))
 	string mc = "_notice_unlink";
 	service = service || 0;
 
 	unless (member(v("locations"), service)) {
-		P3(("linkDel(%O, %O) called in %O: no such candidate!\n",
+		P4(("linkDel(%O, %O) called in %O: no such candidate!\n",
 		    service, source, ME));
 		return 0;
 	}
 
 	int n = 0;
 	foreach(string candidate : v("locations")[service]) {
+	    P4(("linkDel(%O, %O) in %O: unlinking %O ? handler = %O\n",
+		service, source, ME, candidate, find_target_handler(candidate)));
 	    if ((objectp(source) && find_target_handler(candidate) != source) ||
 		(source && !objectp(source) && candidate != source)) continue;
-	    P2(("linkDel(%O, %O) called in %O: unlinking %O.\n",
+	    P2(("linkDel(%O, %O) in %O: unlinking %O.\n",
 		service, source, ME, candidate));
 	    // sLocation?
 	    register_location(candidate, 0);
@@ -1049,7 +1060,6 @@ case "_set_password":
 			if (checkPassword(vars["_password"], vars["_method"], nonce, vars))
 #endif
 			{
-				string scheme;
 				mixed *u;
 
 				// TODO? add support for integer _service means multiple
@@ -1084,8 +1094,11 @@ case "_set_password":
 					return display;
 				}
 #endif
-				scheme = v("scheme");
-#if 1
+#if 0
+// no new link should throw out interactives or other links!
+// this must be from the days when we had no disconnect notification
+// so it would remove ghosts of itself..
+// his should be unnecessary by now!  --lynX 2011
 				// <el> in other cases this is done by
 				// morph. this may not be the very best
 				// solution, but until person/user is rewritten
@@ -1108,13 +1121,13 @@ case "_set_password":
 				// allows two psyc clients to be logged in 
 				// concurrently and is very suspicious
 				if (query_once_interactive(ME)
-					|| (scheme && scheme != "psyc")) {
+					|| (v("scheme") && v("scheme") != "psyc")) {
 				    // temporary fix for initially created psyc
 				    // users. (they dont have a scheme)
 				    object o;
 				    save();
 				    if (interactive(ME)) {
-					    linkDel();
+					    // linkDel(); doesn't make sense here
 					    remove_interactive(ME);
 				    }
 				    o = named_clone(PSYC_PATH "user", MYNICK);
@@ -1172,7 +1185,7 @@ case "_set_password":
 				// language support for clients..
 				// done in w() instead.
 				vars["_INTERNAL_origin"]->sTextPath(v("layout"),
-                                    v("language"), scheme);
+                                    v("language"), v("scheme"));
 #endif
 				// yeah right..
 				//unless (interactive()) vSet("host", source);
@@ -2637,13 +2650,14 @@ quit(immediate, variant) {
 	int rc;
 
 	P3(("person:QUIT(%O,%O) in %O\n", immediate,variant, ME))
-	// keeping services running while logging out should be possible.. but
-	// we currently don't do that -- now we do
-	linkDel(0, previous_object());
-#if 0
+#if 1
+	// keeping services running while logging out should be possible..
+	// will this unlink all main clients? should it?
+	linkDel(0); // 0, previous_object()); <- this can be ME and will fail
+#else
 	if (sizeof(v("locations"))) { // this should only trigger at first pass
 		linkCleanUp();
-#if 1 //def PARANOID
+# if 1 //def PARANOID
 		if (sizeof(v("locations"))) {
 			P1(("%O * Hey, linkCleanUp left us with %O\n",
 			    ME, v("locations")))
@@ -2651,7 +2665,7 @@ quit(immediate, variant) {
 			// breaks when we do
 			vSet("locations", ([]));
 		}
-#endif
+# endif
 	}
 #endif
 	if (immediate == 1 || (immediate && find_call_out(#'quit) != -1)) { //'

@@ -19,7 +19,8 @@ inherit PSYC_PATH "circuit";
 // keep a list of objects to ->disconnected() when the driver tells us
 volatile array(object) disconnect_notifies;
 
-void do_notify_on_disconnect(object user) {
+void register_link(object user) {
+	P4(("disconnect_notifies for %O in %O\n", user, ME))
         unless(disconnect_notifies)
 	   disconnect_notifies = ({ });
         disconnect_notifies += ({ user });
@@ -54,11 +55,10 @@ protected quit() { QUIT }
 
 // self-destruct when the TCP link gets lost
 disconnected(remaining) { 
-	P2(( "%O got disconnected.\n", ME)) 
 	// emulate disconnected() for net/psyc/user
-	if (disconnect_notifies) {
-	   foreach (object t : disconnect_notifies) 
-		if (t) t->disconnected();
+	if (disconnect_notifies) foreach (object t : disconnect_notifies) {
+		P3(( "%O disconnecting %O\n", ME, t)) 
+		if (t) t->link_disconnected();
 	}
 	::disconnected(remaining);
 	QUIT // returns unexpected.. TODO
