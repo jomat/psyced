@@ -1037,6 +1037,7 @@ case "_request_location":
 			return 0;
 case "_request_link":
 case "_set_password":
+			PT(("_request_link for %O\n", ME))
 	// TODO: shouldn't we use some kind of observer pattern on the
 	// 	current_interactive to become aware of disconnects?
 	// 	at least if the current interactive is not a server2server
@@ -1067,7 +1068,8 @@ case "_set_password":
 						// we are a newbie. reject the
 						// kick-out request.
 						sendmsg(source,
-						    "_error_status_person_connected");
+						    "_error_status_person_connected", 0,
+						    ([ "_nick": MYNICK ]));
 						return 0;
 					}
 					// we are a legitimate new client.

@@ -635,7 +635,7 @@ _error_rejected_query_location
 |You're currently not permitted to request the location.
 
 _error_status_person_connected
-|This person is already connected.
+|Sorry. [_nick] is already connected. Please pick a different name.
 
 _failure_filter_strangers
 |[_nick] has not enabled messages from strangers.

@@ -164,8 +164,7 @@ authChecked(int result, ni, try, elm) {
             && user->vQuery("ip") != query_ip_number()
 #endif
             ) {
-		pr("_error_status_person_connected",
-		    "Sorry. %O is already connected.\n", nick);
+		w("_error_status_person_connected", 0, ([ "_nick": nick ]) );
 		QUIT
 	}
 #endif

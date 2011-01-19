@@ -43,9 +43,7 @@ connect(nick, pw) {
 		    return;
 		} 
 		if (user->online() && user->vQuery("ip") != query_ip_number()) {
-		    w("_error_status_person_connected",
-		      "Sorry. [_nick] is already here.\
-		      Please pick a different name.",
+		    w("_error_status_person_connected", 0,
 		      ([ "_nick": nick ]) );
 		    return;
 		}

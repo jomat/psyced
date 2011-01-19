@@ -875,6 +875,10 @@ varargs mixed sendmsg(mixed target, string mc, mixed data, vamapping vars,
 				o -> msg(source, mc, data, vars);
 				return 3;
 #endif
+#ifdef RTMP_PATH
+                        case "rtmp":
+                                return 0;  // unreachable
+#endif
 			}
 			if (schemes[u[UScheme]])
 			    return schemes[u[UScheme]]->msg(source,

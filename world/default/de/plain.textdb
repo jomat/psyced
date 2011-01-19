@@ -692,7 +692,7 @@ _error_status_place_chosen
 |Du bist bereits in einem Raum.
 
 _error_status_person_connected
-|Tut mir Leid, aber %O ist schon da. Wählen Sie bitte einen anderen Namen.
+|Tut mir Leid, aber [_nick] ist schon da. Wählen Sie bitte einen anderen Namen.
 
 _error_status_person_display_none
 |Das geht nicht. Du musst zuerst aufhören [_nick_target] zu ignorieren.
