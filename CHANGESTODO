@@ -77,9 +77,6 @@ ________________________________________________________________________
 - newbies are allowed to open new owned rooms
   fippo sagt: ergo brauchst du nen exit-hook der owner löscht wenn der n00b-owner aus dem raum geht
 
-- double _link does produce an _unlink to the old client, but not the proper
-  place enter events..?
-
 - jabber logout isn't announced or offline avail isn't processed
   ... apparently other side did not logout properly, as it doesn't happen always
 
@@ -114,9 +111,6 @@ ________________________________________________________________________
 	_message_private
 	halo
 	.
-
-- the linking blues...
-	tgX sagt: on reconnect i didn't get any _echo_place_enter_login's from this room, then no response for _request_do_enter, and after a _request_do_leave i get replies for enter/leave but instead of _echo_place_enter/leave i get _notice_place_enter/leave
 
 ? should /load inform that errors go to the console?
 
@@ -1480,9 +1474,6 @@ ________________________________________________________________________
     ich hab nen alias auf remote-el, vielleicht kommt es daher
     der ident sollte in jedem fall nur "el" sein
 	... ein sonderfall für den sonderfall? was änderts? wen kehrts?
-
-- apparently clients can _link multiply and even join rooms multiply,
-  but the side fx will not be nice
 
 - fippo meint es müsse ein replyvars-handling her. der eingriff wäre aber
   ziemlich dramatisch.. lynX vorschlag: die msg api müsste dann so aussehen
@@ -3934,4 +3925,4 @@ net/person
 -	tg fixes the ~0 bug!
 === 201101 ============================================================
 *	removed interesting but unrecoverable FORK code
-
+*	unlink detection rewrite and other fixes in client linking code

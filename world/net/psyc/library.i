@@ -193,7 +193,7 @@ object find_psyc_object(array(mixed) u) {
 
 #ifndef __PIKE__
 // library transmits udp packets itself
-#include "edit.i"
+#include "render.i"
 #endif
 
 // target is lowercased already

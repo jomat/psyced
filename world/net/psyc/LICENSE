@@ -4,7 +4,7 @@
 
   The files contained in this directory, that is precisely
 
-    active.c circuit.c common.c edit.i library.i parse.i server.c udp.c and user.c
+    active.c circuit.c common.c render.i library.i parse.i server.c udp.c and user.c
 
   and additionally the psyc.h file in ../include
 

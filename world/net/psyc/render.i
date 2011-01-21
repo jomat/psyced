@@ -1,5 +1,5 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
-// $Id: edit.i,v 1.111 2008/12/01 11:31:33 lynx Exp $
+// $Id: render.i,v 1.111 2008/12/01 11:31:33 lynx Exp $
 //
 // headermaker functions. we should call it render rather than edit.
 

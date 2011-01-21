@@ -294,7 +294,7 @@ int logon(int neverfails) {
 	return 0;
 }
 
-#include "edit.i"
+#include "render.i"
 
 // called from sendmsg() either by registered target or psyc: scheme
 //int delivermsg(string target, string mc, string data,

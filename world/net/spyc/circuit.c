@@ -21,7 +21,7 @@ volatile string netloc;
 #ifndef NEW_RENDER
 # define NEW_RENDER
 #endif
-#include "edit.i"
+#include "render.i"
 
 // this is completely anti-psyc. it should take mcs as arguments
 // and look up the actual message from textdb.. FIXME
