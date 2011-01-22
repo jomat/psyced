@@ -3926,3 +3926,5 @@ net/person
 === 201101 ============================================================
 *	removed interesting but unrecoverable FORK code
 *	unlink detection rewrite and other fixes in client linking code
+edit.i	now renamed into render.i because it renders psyc packets
+

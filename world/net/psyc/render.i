@@ -157,8 +157,10 @@ static varargs string psyc_render(mixed source, string mc, mixed data,
 		else {
 			data = T(mc, "") || "";
 			P3(("edit: fmt from textdb for %O: %O\n", mc, data))
+# ifndef NEW_LINE
 			if (strlen(data) && char_from_end(data, 1) == '\n')
 			    excessiveNewline = 1;
+# endif
 		}
 #else
 		PT(("non-string data: %O\n", data))

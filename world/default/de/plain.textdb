@@ -1005,6 +1005,9 @@ _notice_place_invitation
 _notice_place_enter
 |[_nick] betritt [_nick_place].
 
+_notice_place_enter_relinked
+|## request for no output
+
 _notice_place_masquerade
 |[_nick_local] ist eigentlich [_nick] in Verkleidung.
 

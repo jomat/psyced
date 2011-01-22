@@ -334,4 +334,7 @@ mixed isValidRelay(mixed x) { return x == ME || member(l, x); }
 
 #else
 # include "storic.c"
+
+// with cslaves we no longer keep extra track of "netppl"
+netsize() { return size(); }
 #endif

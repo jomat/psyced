@@ -2138,7 +2138,7 @@ names() { return m_values(_u); }	// used by irc/user, applet/user
 					// place/owned and place/storic
 objects() { return m_indices(_u); }	// used by place/owned
 
-size() { return sizeof(_u); }		// who needs this!?
+size() { return sizeof(_u); }		// netsize() uses this
 
 // this is overridden in more complex rooms to provide continous status output
 memberInfo() { return _u; }		// used by showRoom() in http/user
