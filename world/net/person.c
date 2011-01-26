@@ -1048,7 +1048,7 @@ case "_request_location":
 			return 0;
 case "_request_link":
 case "_set_password":
-			PT(("_request_link for %O\n", ME))
+			P3(("_request_link for %O. vars %O\n", ME, vars))
 	// TODO: shouldn't we use some kind of observer pattern on the
 	// 	current_interactive to become aware of disconnects?
 	// 	at least if the current interactive is not a server2server

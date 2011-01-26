@@ -1336,7 +1336,11 @@ w(string mc, string data, mapping vars, mixed source, int showingLog) {
 	    string nudata = data;
 	   
 	    // this little thing enables languages for psyc clients etc.
-	    if (template && strlen(template) && !abbrev("_message", mc))
+	    // but we really need to get rid of the special cases in the
+	    // protocol syntax
+	    if (template && strlen(template)
+		     && !abbrev("_message", mc)
+		     && !abbrev("_request", mc))
 		nudata = template;
 
 	    //PT(("%O user:w(%O,%O..%O) - %O\n", ME,mc,data,source, template))
