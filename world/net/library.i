@@ -458,8 +458,9 @@ varargs object summon_person(string nick, vamixed blueprint) {
 }
 
 // look up interface.h for a macro doing the same job
+// legal_url() is similar to this, too
 #ifndef is_formal
-string is_formal(string nicki) {
+string is_formal(string nicki) {    // formerly known as is_uniform()
 	// uniform does not check for objects, so you MUST do that
 	// yourself first.
 	//unless (stringp(nicki)) return 0;

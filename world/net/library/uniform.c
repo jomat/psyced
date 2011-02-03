@@ -12,6 +12,7 @@
 #include <net.h>
 #include <uniform.h>
 
+// is_formal is similar to this
 string legal_url(string url, string scheme) {
 	if (scheme &&! abbrev(scheme+":", url)) return 0;
 	if (index(url, '"') >= 0) return 0;

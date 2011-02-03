@@ -1917,13 +1917,13 @@ cmd(a, args, b, source, vars) {
                 return 1;
 #endif
 #ifdef PLACE_FILTERS
-	case "quiet": 
-	case "filter": 
-	case "silent": 
-                sendmsg(source, "_error_usage_quiet",
-	"The /quiet and /silent functions have been replaced by /silence.\n\
-See the manual for details.");
-                return 1;
+//	case "quiet": 
+//	case "filter": 
+//	case "silent": 
+//              sendmsg(source, "_error_usage_quiet",
+//	"The /quiet and /silent functions have been replaced by /silence.\n\
+//See the manual for details.");
+//              return 1;
 	case "silence": 
 		// thought about calling this /filter, but maybe we need that
 		// in the user as /filter <method> <flags> someday..
