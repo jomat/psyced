@@ -113,7 +113,9 @@ varargs string psyc_name(mixed source, vastring localpart) {
 }
 
 object psyc_object(string uniform) {
-	P3(("psyc_object(%O) in %O\n", uniform, unl2obj))
+        // unl2obj can become too big and cause a sprintf error here
+        // so you don't want this debug output on a production server!
+	//PT(("psyc_object(%O) in %O\n", uniform, unl2obj))
 	return unl2obj[uniform];
 }
 
