@@ -46,7 +46,7 @@ void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
     if ((t = vars["_target"])) {
         array(mixed) u;
         unless (u = parse_uniform(t)) {
-            DISPATCHERROR("target is not an uniform\n")
+            DISPATCHERROR("target is not a uniform\n")
         }
 	// FIXME relaying support here?
         if (!is_localhost(lower_case(u[UHost]))) {

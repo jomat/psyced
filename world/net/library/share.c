@@ -100,14 +100,14 @@ volatile mapping share = ([
 		0	:	"",		// unspecified mood
 		// any suggestions on these?
 		1	:	"_dead",
-		2	:	"_angry",
-		3	:	"_sad",
-		4	:	"_moody",
+		2	:	"_angry",   // tragic, enraged, sore, irate?
+		3	:	"_sad",	    // gloomy, miserable?
+		4	:	"_moody",   // pensive?
 		5	:	"_okay",
 		6	:	"_good",
 		7	:	"_happy",
-		8	:	"_bright",
-		9	:	"_nirvana",
+		8	:	"_bright",  // blissful? blessed? joyous?
+		9	:	"_nirvana", // enlightened? paradisiacal?
 	]),
 #endif // _flag_disable_module_presence
 #ifndef _flag_disable_module_friendship

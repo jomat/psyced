@@ -6,8 +6,46 @@
 #include <input_to.h>
 
 private string buffer;
-private string body_buffer;
 int state;
+
+#if __EFUN_DEFINED__(psyc_parse)
+# echo ___ using libpsyc!
+
+void parser_init() {
+    if (state != PSYCPARSE_STATE_BLOCKED)
+	state = PSYCPARSE_STATE_HEADER;
+    buffer = "";
+}
+
+// called when a complete packet has arrived
+void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
+    parser_init();
+}
+
+// input data to the buffer
+void feed(string data) {
+# ifdef _flag_log_sockets_SPYC
+    log_file("RAW_SPYC", "» %O\n%s\n", ME, data);
+# endif
+    buffer += data;
+
+    if (data == "|\n") {
+	mixed p = psyc_parse(buffer);
+	if (pointerp(p) && sizeof(p) == 4)
+	    dispatch(p[0], p[1], p[2], p[3]);
+	else {
+	    P1(("psyc_parse(%O) returned %O\n", buffer, p))
+	}
+    }
+}
+
+mixed list_parse(string val) {
+	return 0;   // TBD
+}
+
+#else /* !libpsyc */
+
+private string body_buffer;
 int body_len;
 int may_parse_more;
 
@@ -49,16 +87,6 @@ void parser_init() {
     buffer = "";
     parser_reset();
     state = PSYCPARSE_STATE_GREET; // AFTER reset
-}
-
-// it is sometimes useful to stop parsing
-void interrupt_parse() {
-    state = PSYCPARSE_STATE_BLOCKED;
-}
-
-// and resume after some blocking operation is done
-void resume_parse() {
-    state = PSYCPARSE_STATE_HEADER;
 }
 
 // input data to the buffer
@@ -408,3 +436,16 @@ test() {
     list_parse("5\tabcde|4\tabcd");
 }
 #endif
+
+#endif /* !libpsyc */
+
+// it is sometimes useful to stop parsing
+void interrupt_parse() {
+    state = PSYCPARSE_STATE_BLOCKED;
+}
+
+// and resume after some blocking operation is done
+void resume_parse() {
+    state = PSYCPARSE_STATE_HEADER;
+}
+
