@@ -17,7 +17,7 @@ virtual inherit NET_PATH "trust";
 
 volatile mixed is_connecting;
 
-connect(host, port, transport);
+connect(host, port, transport, srv, extra);
 
 protected int block() { destruct(ME); return 0; }
 
@@ -90,11 +90,19 @@ protected canonical_host(cane, ip, host) {
 	}
 }
 
-private connect2(ip, port, host) {
+private connect2(ip, port, host, extra) {
 	int rc;
 
 	P3(("%O connect2(%O, %O, %O) == %O\n", ME, ip, port, host, chost(ip)))
 	unless (stringp(ip)) {
+		if (sizeof(extra) && stringp(extra)) {
+			if (sscanf(extra, "%s:%d;%s", host, port, extra) == 3) {
+				P3(("fallback: %s:%d, other %O\n", host, port, extra))
+				is_connecting = 0;
+				call_out(#'connect, 10, host, port, 1, extra == "" ? 0 : extra);
+				return;
+			}
+		}
 		connect_failure("_resolve", host+" does not resolve");
 		return;
 	}
@@ -154,7 +162,7 @@ Driver does not provide net_connect()\n", ME, ip, port, host))
 	if (ME && !chost(ip)) dns_rresolve(ip, #'canonical_host, ip, host);
 }
 
-connect(host, port, transport) {
+connect(host, port, transport, extra) {
 	P4(("%O connect:connect(%O, %O, %O)\n", ME, host,port,transport))
 	if (interactive() || !host || !port || is_connecting) return -8;
 	is_connecting = transport || 1;
@@ -162,7 +170,7 @@ connect(host, port, transport) {
 	    host,port,transport))
 	// even on reconnect we don't cache the dns host data as it
 	// may be a dynamic dns host currently rebooting..
-	dns_resolve(host, #'connect2, port, host);
+	dns_resolve(host, #'connect2, port, host, extra);
 	return 0;
 }
 

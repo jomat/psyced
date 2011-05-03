@@ -74,7 +74,16 @@ srv_choose(mixed *hostlist, string transport) {
 		return connect_failure("_failure_unavailable_service",
 				       "No service offered by domain " + hostname);
 	}
-	return connect(srvhost, srvport, transport);
+
+	// we use other srv records for fallback..
+	// saga thinks we can use quote and pass an array into the lambda,
+	// but it works this way, too  -fippo
+	string extra = "";
+	for (int i = 1; i < sizeof(hostlist); i++) {
+		extra += hostlist[i][DNS_SRV_NAME] +":"+
+		     ((string) hostlist[i][DNS_SRV_PORT]) + ";";
+	}
+	return connect(srvhost, srvport, transport, 0, extra);
 }
 #else
 # echo Warning: No SRV enabled. Will not be able to talk to jabber.ccc.de etc.
@@ -234,7 +243,7 @@ runQ() {
 	waitforme = CONNECT_RETRY;
 }
 
-connect(ho, po, transport, srv) {
+connect(ho, po, transport, srv, extra) {
 	if (interactive()) return -8;
 	P3(("connect: %O, %O, %O, %O for %O\n", ho, po, transport, srv, ME))
 	if (time() < time_of_connect_attempt + waitforme) return -2;
@@ -256,7 +265,7 @@ connect(ho, po, transport, srv) {
 			transport == "s" ? "tls" : "tcp", #'srv_choose,
 		       	transport);
 #endif
-	if (::connect(host, port, transport) >= 0)
+	if (::connect(host, port, transport, extra) >= 0)
 	     time_of_connect_attempt = time();
 }
 
