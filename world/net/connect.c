@@ -99,6 +99,7 @@ private connect2(ip, port, host, extra) {
 			if (sscanf(extra, "%s:%d;%s", host, port, extra) == 3) {
 				P3(("fallback: %s:%d, other %O\n", host, port, extra))
 				is_connecting = 0;
+				// why 10 seconds here? this can be improved
 				call_out(#'connect, 10, host, port, 1, extra == "" ? 0 : extra);
 				return;
 			}

@@ -4,6 +4,10 @@
 // the thing that answers on port 4404 of psyced.
 
 #include "psyc.h"
+#include "../psyc/server.c"
+
+#if 0   // first we get the syntax running, then we'll think of new features:
+
 #include <net.h>
 #include <services.h>
 #define NO_INHERIT
@@ -189,3 +193,5 @@ void circuit_msg(string mc, mapping vars, string data) {
 	return ::circuit_msg(mc, vars, data);
     }
 }
+
+#endif // 0

@@ -5,7 +5,7 @@ vim:nosmarttab:syntax=diff
 | - marks bugs & fixes, + marks new features, ? marks issues, * marks big stuff
 |
 | This file is mostly being used by lynX. The public bug tracker for psyced
-| resides at https://projects.x-net.hu/projects/psyced/ and contains the
+| resides at https://projects.tgbit.net/projects/psyced/ and contains the
 | same stuff in a more multiuser accessible fashion.
 ________________________________________________________________________
 == SERIOUS!!! ==========================================================

@@ -2,6 +2,10 @@
 // $Id: circuit.c,v 1.38 2008/10/14 19:02:29 lynx Exp $
 
 #include "psyc.h"
+#include "../psyc/circuit.c"
+
+#if 0	// first we get the syntax running, then we'll think of new features:
+
 #include <net.h>
 #include <uniform.h>
 #include <tls.h>
@@ -324,3 +328,5 @@ varargs int msg(string source, string mc, string data,
 #endif
     return emit(buf);
 }
+
+#endif // 0

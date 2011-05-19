@@ -1,3 +1,5 @@
+#if 0   // first we get the syntax running, then we'll think of new features:
+
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
 // $Id: parse.c,v 1.30 2008/12/18 18:16:14 lynx Exp $
 //
@@ -449,3 +451,4 @@ void resume_parse() {
     state = PSYCPARSE_STATE_HEADER;
 }
 
+#endif // 0

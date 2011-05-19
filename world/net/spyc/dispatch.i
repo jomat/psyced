@@ -1,3 +1,5 @@
+#if 0   // first we get the syntax running, then we'll think of new features:
+
 // included by TCP circuit *and* UDP daemon     // vim:syntax=lpc
 
 void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
@@ -242,3 +244,4 @@ void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
     ::dispatch(header_vars, varops, method, body);
 }
 
+#endif // 0

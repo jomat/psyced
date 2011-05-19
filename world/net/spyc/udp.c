@@ -2,6 +2,10 @@
 // $Id: udp.c,v 1.7 2008/07/17 15:07:59 lynx Exp $
 
 #include "psyc.h"
+#include "../psyc/udp.c"
+
+#if 0   // first we get the syntax running, then we'll think of new features:
+
 #include <net.h>
 #include <uniform.h>
 #include <text.h>
@@ -36,3 +40,5 @@ parseUDP(ip, port, msg) {
 // ignoring the routing vars.. TODO FIXME
 #define PSYC_UDP
 #include "dispatch.i"
+
+#endif // 0
