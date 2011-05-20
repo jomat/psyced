@@ -589,6 +589,16 @@ X
 # CAUTION! This file has been generated using $0.
 # Don't edit unless you are no longer going to use the configuration tool.
 # Edit $conf instead, then run $0 again.
+#
+### BEGIN INIT INFO
+# Provides:          psyced
+# Required-Start:    \$local_fs \$remote_fs
+# Required-Stop:     \$local_fs \$remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      S 0 1 6
+# Short-Description: psyced
+# Description:       psyced, the Enhanced PSYC Daemon
+### END INIT INFO
 
 test -x $base/bin/psyced || exit 0
 
