@@ -423,11 +423,17 @@ msg(source, mc, data, mapping vars, showingLog) {
 //			ME, vars["_context"], mc, source, data));
 		    if ((sscanf(vars["_context"], "%s#%s", ctx, chan) == 2)
 		       	&& places[ctx]) { 
-			    P1(("got valid context %O with channel %O\n",
+			    P2(("got valid place context %O with channel %O\n",
+			       	ctx, chan))
+		    // a friendcast or status update
+		    } else if (member(ppl, ctx) &&
+			       ppl[ctx][PPL_NOTIFY] >= PPL_NOTIFY_FRIEND) {
+			    P2(("got friendcast from %O with channel %O\n",
 			       	ctx, chan))
 		    } else {
-     P1(("Invalid context: %O says %s(%O) with %O ... stack %O ... places %O\n",
-				source, to_string(mc), data, vars,
+			    P1(("Invalid context %O from source %O:\n\
+\t%s(%O) with %O ... stack %O ... places %O\n",
+				ctx, source, to_string(mc), data, vars,
 			       	caller_stack(1), places))
 			    return 0;
 		    }
