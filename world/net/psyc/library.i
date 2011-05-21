@@ -388,16 +388,11 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 		 "\n" S_GLYPH_PACKET_DELIMITER "\n");
 	else data="\n" S_GLYPH_PACKET_DELIMITER "\n"; // TODO? look up textdb.
 
-	// look! MMP-conformant support of the _context variable!
 	if (room = vars["_context"]) {
 		// this may have to change into a full psyc: URL
 		if (objectp(room)) room = psyc_name(room);
 		buf = S_GLYPH_PACKET_DELIMITER "\n"
-# ifdef PRE_SPEC
-		       	":_source\t"+ sname +"\n"
-# else
 		       	":_source_relay\t"+ sname +"\n"
-# endif
 		      + ":_context\t"+ room +"\n";
 	} else
 	    buf = S_GLYPH_PACKET_DELIMITER "\n"

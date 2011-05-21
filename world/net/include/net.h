@@ -246,7 +246,6 @@
 // the old nick code seems to introduce the remote-part bug
 // but if we don't use it, psyced will render [_nick] wrong in many places
 # define USE_THE_NICK
-//# define PRE_SPEC	    // things that changed during the spec process
 //# ifndef __PIKE__
 //#  define USE_LIVING
 //# endif

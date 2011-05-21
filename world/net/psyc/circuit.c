@@ -40,13 +40,6 @@ inherit PSYC_PATH "common";
 
 //volatile mapping namecache = ([]);
 
-#ifdef MMP_STATE
-// first steps at making use of TCPs persistence
-volatile string lastSource;
-volatile string lastTarget;
-volatile string lastContext;
-#endif
-
 int isServer() { return 0; }
 
 volatile int flags = 0;
@@ -93,8 +86,8 @@ int greet() {
 # define PROTS UNDERPROTS
 #endif
 
-// we only understand circuit-level (MMP) _state, the one that is so easy
-// that we can expect any TCP-MMP implementation to provide it, but PSYC
+// we only understand circuit-level routing _state, the one that is so easy
+// that we can expect any PSYC-TCP implementation to provide it, but PSYC
 // state which needs to be stored per logical source and target still needs
 // to be implemented. see also http://about.psyc.eu/State
 //#define UNDERMODS "_state;_context"
@@ -265,9 +258,6 @@ int logon(int neverfails) {
 	cvars = ([]);
 	pvars = ([ "_INTERNAL_origin" : ME ]);
 
-#if defined(MMP_STATE)
-	lastSource = lastTarget = lastContext = 0;
-#endif
 	next_input_to(#'startParse);
 	// even active connections want to time out to avoid lockups
 	// but quit() should check if there is a queue to return! TODO
@@ -365,7 +355,6 @@ varargs int msg(string source, string mc, string data,
 # else
 	context = vars["_context"];
 # endif
-# ifndef PRE_SPEC
 	if (context) {
 		buf+= ":_context\t"+ UNIFORM(context) +"\n";
 		if (source) buf += ":_source_relay\t"+ UNIFORM(source) +"\n";
@@ -375,29 +364,6 @@ varargs int msg(string source, string mc, string data,
 		if (source) buf += ":_source\t"+ UNIFORM(source) +"\n";
 		if (target) buf += ":_target\t"+ target +"\n";
 	}
-# else
-   // is MMP_STATE a relict of pre-FORK days?
-#  if defined(MMP_STATE)
-	if (source != lastSource) {
-		lastSource = source;
-		buf += "=_source\t"+ UNIFORM(source) +"\n";
-	}
-	if (target != lastTarget) {
-		lastTarget = target;
-		buf += "=_target\t"+ (target || "") +"\n";
-	}
-	if (context != lastContext) {
-		lastContext = context;
-		buf += "=_context\t"+ UNIFORM(context) +"\n";
-	}
-#  else
-	if (source) buf += ":_source\t"+ UNIFORM(source) +"\n";
-	if (target) buf += ":_target\t"+ target +"\n";
-	if (context) buf+= ":_context\t"+ UNIFORM(context) +"\n";
-	if (vars["_source_relay"])
-	    buf += "\n:_source_relay\t"+ UNIFORM(vars["_source_relay"]);
-#  endif /* MMP_STATE */
-# endif /* !PRE_SPEC */
 #endif /* !NEW_RENDER */
 	rc = psyc_render(source, mc, data, vars, showingLog, target);
 	unless (rc) return 0;

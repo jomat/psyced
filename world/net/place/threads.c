@@ -699,7 +699,7 @@ _request_iterator(source, mc, data, vars, b) {
 	    "[_iterator] blog entries have been requested "
 	    "since creation.", ([
 				 // i suppose this wasn't intentionally using
-				 // MMP _count so i rename it to _iterator
+				 // routing _count so i rename it to _iterator
 				 "_iterator" : v("iterator")
 				 ]) );
     return 1;

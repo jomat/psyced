@@ -246,7 +246,6 @@ static varargs string psyc_render(mixed source, string mc, mixed data,
 # else  
 	context = vars["_context"];
 # endif 
-# ifndef PRE_SPEC
 	if (context) {
 		rbuf += "\n:_context\t"+ UNIFORM(context);
 		t = source || vars["_source_relay"];
@@ -264,13 +263,6 @@ static varargs string psyc_render(mixed source, string mc, mixed data,
 		if (t = vars["_source_relay"])
 		    rbuf += "\n:_source_relay\t"+ UNIFORM(t);
 	}
-# else
-	if (source) rbuf += "\n:_source\t"+ UNIFORM(source);
-	if (target) rbuf += "\n:_target\t"+ target;
-	if (context) rbuf+= "\n:_context\t"+ UNIFORM(context);
-	if (t = vars["_source_relay"])
-	    rbuf += "\n:_source_relay\t"+ UNIFORM(t);
-# endif /* PRE_SPEC */
 #endif /* NEW_RENDER */
 
 	if (mappingp(vars)) {

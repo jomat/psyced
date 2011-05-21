@@ -96,7 +96,7 @@ castmsg(source, mc, data, vars) {
 
 	P2(("%O castmsg(%O,%O,%O..) for %O\n", ME, source,mc,data, _routes))
 	D4(P2(("%O vars = %O\n", ME, vars)))
-	// _context is an MMP variable, so we use it internally with objectp
+	// _context is a routing variable, so we use it internally with objectp
 	vars["_context"] = ME;
 
 #ifdef PERSISTENT_SLAVES

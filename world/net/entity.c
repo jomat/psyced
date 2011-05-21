@@ -7,7 +7,7 @@
 // * resolve UNLs and UNRs into UNIs and back, so higher level
 //   processing knows who they are dealing with, no matter which
 //   agent operated on this person's behalf
-// * state: handle the inter-entity MMP state variables, packet
+// * state: handle the inter-entity routing state variables, packet
 //   ids and message history
 // * trust network: figure out who we trust and who we can ask to find
 //   out if someone is trustworthy etc etc

@@ -5,7 +5,7 @@
 # include <tls.h>
 #endif
 
-// PSYC MESSAGE PARSER - parses both MMP and PSYC the old way
+// PSYC MESSAGE PARSER - parses PSYC the old way
 //
 // THIS IS THE ORIGINAL LYNXISH PSYC PARSER
 
