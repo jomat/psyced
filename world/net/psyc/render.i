@@ -138,10 +138,10 @@ static int build_header(string key, mixed val, mapping vars) {
 	return 0;
 }
 
-static varargs string psyc_render(mixed source, string mc, mixed data,
+static varargs string render_psyc(mixed source, string mc, mixed data,
 			      mapping vars, int showingLog, vastring target) {
 		  // vaobject obj, vastring target, vaint hascontext)
-	P4(("%O psyc_render %O for %O\n", ME, vars, previous_object()))
+	P4(("%O render_psyc %O for %O\n", ME, vars, previous_object()))
 	string t, context;
 	int needLen = 0;
 #ifndef NEW_LINE

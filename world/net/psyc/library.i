@@ -398,11 +398,11 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 	    buf = S_GLYPH_PACKET_DELIMITER "\n"
 		  ":_source\t"+ sname +"\n"
 		  ":_target\t"+ target +"\n";
-	t = psyc_render(source, mc, data, vars, showingLog, target);
+	t = render_psyc(source, mc, data, vars, showingLog, target);
 	unless (t) return 0;
 	buf += t;
 #else
-	buf = psyc_render(source, mc, data, vars, showingLog, target);
+	buf = render_psyc(source, mc, data, vars, showingLog, target);
 	unless (buf) return 0;
 #endif /* NEW_RENDER */
 

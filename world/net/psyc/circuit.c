@@ -365,10 +365,10 @@ varargs int msg(string source, string mc, string data,
 		if (target) buf += ":_target\t"+ target +"\n";
 	}
 #endif /* !NEW_RENDER */
-	rc = psyc_render(source, mc, data, vars, showingLog, target);
+	rc = render_psyc(source, mc, data, vars, showingLog, target);
 	unless (rc) return 0;
 	buf += rc;
-	P4(("psyc_render %O for %O\n", rc, buf))
+	P4(("render_psyc %O for %O\n", rc, buf))
 #if 0
 # ifdef NEW_LINE
 	buf += "\n" S_GLYPH_PACKET_DELIMITER "\n";
