@@ -113,7 +113,7 @@ object connect(int uid, int port, string service) {
 #endif
 
 #if HAS_PORT(SPYCS_PORT, SPYC_PATH)
-    case SPYCS_PORT:	// inofficial & temporary
+    case SPYCS_PORT:	// interim name for PSYC 1.0 according to SPEC
 # if __EFUN_DEFINED__(tls_want_peer_certificate)
         tls_want_peer_certificate(ME);
 # endif
@@ -125,6 +125,9 @@ object connect(int uid, int port, string service) {
     case SPYC_PORT:
 #endif
 #if HAS_PORT(SPYC_PORT, SPYC_PATH) || HAS_PORT(SPYCS_PORT, SPYC_PATH)
+# if __EFUN_DEFINED__(enable_binary)
+	enable_binary(ME);
+# endif
 # ifdef DRIVER_HAS_CALL_BY_REFERENCE
 	arg = ME;
 	query_ip_number(&arg);
