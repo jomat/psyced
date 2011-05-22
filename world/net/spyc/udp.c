@@ -2,9 +2,10 @@
 // $Id: udp.c,v 1.7 2008/07/17 15:07:59 lynx Exp $
 
 #include "psyc.h"
-#include "../psyc/udp.c"
 
-#if 0   // first we get the syntax running, then we'll think of new features:
+#ifdef USE_PSYC
+# include "../psyc/udp.c"
+#else
 
 #include <net.h>
 #include <uniform.h>
@@ -13,6 +14,7 @@
 inherit NET_PATH "spyc/parse";
 
 string netloc;
+mapping instate;
 
 object load() { return ME; } // avoid a find_object call in obj/master
 
@@ -41,4 +43,4 @@ parseUDP(ip, port, msg) {
 #define PSYC_UDP
 #include "dispatch.i"
 
-#endif // 0
+#endif // USE_PSYC

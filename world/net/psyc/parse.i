@@ -1113,6 +1113,19 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
 	return 1;
 }
 
+void peek(string data) {
+	P4((">> peek: %O\n", data));
+#ifdef USE_SPYC
+	if (data[0] == C_GLYPH_NEW_PACKET_DELIMITER) {
+# if __EFUN_DEFINED__(enable_binary)
+	    enable_binary(ME);
+# else
+	    raise_error("Driver compiled without enable_binary()");
+# endif
+	}
+#endif
+}
+
 #ifdef PSYC_TCP
 vamixed startParse(string a) {
 	if (a == ".") {		// old S_GLYPH_PACKET_DELIMITER
@@ -1121,7 +1134,7 @@ vamixed startParse(string a) {
 	}
 // new syntax is so broken, we should not pretend to support it yet FIXME
 # if defined(SPYC_PATH) && defined(USE_SPYC)
-	else if (a == "|") {	// new S_GLYPH_PACKET_DELIMITER
+	else if (a[0] == C_GLYPH_NEW_PACKET_DELIMITER) {
 		object o = clone_object(SPYC_PATH "server");
 		unless (o && exec(o, ME) && o->logon(0)) {
 			croak("_failure_object_creation_server",
@@ -1129,7 +1142,7 @@ vamixed startParse(string a) {
 			QUIT
 		}
 		// if (isServer()) o->greet();
-		o->feed("|\n");
+		o->feed(a);
 		return 1;
 	}
 # endif

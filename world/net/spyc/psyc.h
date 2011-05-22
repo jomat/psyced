@@ -23,15 +23,16 @@
  * the first byte.
  */
 
-#ifndef SPYC
-# define	SPYC
+#define SPYC
 
-# include <psyc.h>
+#include <psyc.h>
+
+#ifndef USE_PSYC
+
+#if __EFUN_DEFINED__(psyc_parse)
+# define LIBPSYC
+# include <sys/libpsyc.h>
 #endif
-
-// EOF
-
-#if 0   // first we get the syntax running, then we'll think of new features:
 
 #define PSYCPARSE_STATE_HEADER 0
 #define PSYCPARSE_STATE_CONTENT 1
@@ -45,4 +46,4 @@
     return;                                           \
 }
 
-#endif // 0
+#endif // USE_PSYC

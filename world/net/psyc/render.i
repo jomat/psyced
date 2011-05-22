@@ -26,6 +26,7 @@ static int build_header(string key, mixed val, mapping vars) {
 	    key, routeMe, routeMe & PSYC_ROUTING_RENDER))
 	if ((routeMe &&! (routeMe & PSYC_ROUTING_RENDER))
 	   || abbrev("_INTERNAL", key)) return -1;
+
 	P2(("build_header(%O, %O) into %s vars\n", key, val,
 	    routeMe ? "routing" : "entity"))
 	if (key[0] == '_') key = ":"+key;
@@ -143,7 +144,9 @@ static varargs string render_psyc(mixed source, string mc, mixed data,
 		  // vaobject obj, vastring target, vaint hascontext)
 	P4(("%O render_psyc %O for %O\n", ME, vars, previous_object()))
 	string t, context;
+	mapping rvars = ([ ]);
 	int needLen = 0;
+	mixed key, val;
 #ifndef NEW_LINE
 	int excessiveNewline = 0;
 #endif
@@ -247,41 +250,63 @@ static varargs string render_psyc(mixed source, string mc, mixed data,
 	context = vars["_context"];
 # endif 
 	if (context) {
-		rbuf += "\n:_context\t"+ UNIFORM(context);
+		rvars["_context"] = UNIFORM(context);
 		t = source || vars["_source_relay"];
-		if (t) rbuf += "\n:_source_relay\t"+ UNIFORM(t);
+		if (t) rvars["_source_relay"] = UNIFORM(t);
 		// resend of /history transmitted according to spec:
-		if (showingLog && target) rbuf += "\n:_target\t"+ target;
+		if (showingLog && target) rvars["_target"] = target;
 		// usually the same as context or a different channel of
 		// context or the actual recipient of a multicast
 		// ... not interesting in any case
 		//else if (target) rbuf += "\n:_target_relay\t"+ target;
 	} else {
-		if (source) rbuf += "\n:_source\t"+ UNIFORM(source);
-		if (target) rbuf += "\n:_target\t"+ target;
+		if (source) rvars["_source"] = UNIFORM(source);
+		if (target) rvars["_target"] = target;
 		// this is necessary for message forwarding ( /set id )
 		if (t = vars["_source_relay"])
-		    rbuf += "\n:_source_relay\t"+ UNIFORM(t);
+		    rvars["_source_relay"] = UNIFORM(t);
 	}
 #endif /* NEW_RENDER */
 
-	if (mappingp(vars)) {
+#ifdef LIBPSYC
+	int routeMe = 0;
+	mapping evars = ([ ]);
+
+	if (mappingp(vars))
+	    mapeach (key, val, vars) {
+		routeMe = isRouting[key];
+		if ((routeMe &&! (routeMe & PSYC_ROUTING_RENDER))
+		    || abbrev("_INTERNAL", key))
+		    continue;
+
+		if (routeMe)
+		    rvars[key] = val;
+		else
+		    evars[key] = val;
+	    }
+
+	return psyc_render(({ rvars, evars, mc, data }));
+#endif
+
+	if (mappingp(vars))
+		vars = vars + rvars;
+	else
+		vars = rvars;
+
 #if 0 //ndef EXPERIMENTAL
-		if (member(vars, "_count"))
-		    ebuf += "\n:_count\t" + vars["_count"];
+	if (member(vars, "_count"))
+	    ebuf += "\n:_count\t" + vars["_count"];
 #endif
 #if __EFUN_DEFINED__(walk_mapping)
-		// walk_mapping could be rewritten into foreach, but thats work
-		walk_mapping(vars, #'build_header, vars);
+	// walk_mapping could be rewritten into foreach, but thats work
+	walk_mapping(vars, #'build_header, vars);
 #else                            // PIKE, MudOS...
-                mixed key, val;
-
-		mapeach(key, val, vars) {
-                        build_header(key, val, vars);
-                }
-#endif
+	mapeach(key, val, vars) {
+		build_header(key, val, vars);
 	}
-        if (data == "") ebuf += "\n"+ mc;
+#endif
+
+	if (data == "") ebuf += "\n"+ mc;
 	else ebuf += "\n"+ mc + "\n"+ data;
 
 #ifdef SPYC 	// || MODULE_LENGTH

@@ -1,3 +1,3 @@
-#include "psyc.h"
-#include "../psyc/parse.i"
+//#include "psyc.h"
+//#include "../psyc/parse.i"
 

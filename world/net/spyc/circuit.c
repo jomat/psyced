@@ -2,9 +2,10 @@
 // $Id: circuit.c,v 1.38 2008/10/14 19:02:29 lynx Exp $
 
 #include "psyc.h"
-#include "../psyc/circuit.c"
 
-#if 0	// first we get the syntax running, then we'll think of new features:
+#ifdef USE_PSYC
+# include "../psyc/circuit.c"
+#else
 
 #include <net.h>
 #include <uniform.h>
@@ -35,7 +36,7 @@ volatile string netloc;
                              return 0;                                         \
                            }
                             
-mapping instate;
+mapping instate = ([ ]);
 mapping outstate;
 
 mapping legal_senders;
@@ -50,6 +51,14 @@ protected void quit();	// prototype
 void runQ();
 
 int isServer() { return 0; }
+
+void peek(string data) {
+#if __EFUN_DEFINED__(enable_binary)
+    enable_binary(ME);
+#else
+    raise_error("Driver compiled without enable_binary()");
+#endif
+}
 
 void feed(string data) {
     input_to(#'feed, INPUT_IGNORE_BANG);
@@ -91,7 +100,7 @@ void sender_verification(array(string) sourcehosts, array(string) targethosts)
 int logon(int failure) {
     sAuthHosts(([ ])); // reset authhosts 
     legal_senders = ([ ]);
-    instate = ([ "_INTERNAL_origin" : ME]);
+    instate = ([ "_INTERNAL_origin" : ME ]);
     outstate = ([ ]);
 #ifdef __TLS__
     mixed cert;
@@ -145,11 +154,6 @@ int logon(int failure) {
 
     peerip = query_ip_number(ME) || "127.0.0.1";
 
-#if __EFUN_DEFINED__(enable_binary)
-    enable_binary(ME);
-#else
-# echo Driver compiled without enable_binary() - PSYC functionality warning!
-#endif
     input_to(#'feed, INPUT_IGNORE_BANG);
     
     call_out(#'quit, 90);
@@ -200,37 +204,6 @@ int disconnected(string remaining) {
 // respond to the first empty packet
 first_response() {
     emit("|\n");
-}
-
-// processes routing header variable assignments
-// basic version does no state
-mapping process_header(mixed varops) {
-    mapping vars = ([ ]);
-    foreach(mixed vop : varops) {
-	string vname = vop[0];
-        switch(vop[1]) {
-	case C_GLYPH_MODIFIER_ASSIGN:
-            instate[vname] = vop[2];
-	    // fall thru
-	case C_GLYPH_MODIFIER_SET:
-            vars[vname] = vop[2];
-            break;
-	case C_GLYPH_MODIFIER_AUGMENT:
-	case C_GLYPH_MODIFIER_DIMINISH:
-	case C_GLYPH_MODIFIER_QUERY:
-            CIRCUITERROR("header modifier with glyph other than ':', this is not implemented")
-            break;
-	default:
-            CIRCUITERROR("header modifier with unknown glyph")
-	    break;
-        }
-	// FIXME: not every legal varname is a mmp varname
-	// 	look at shared_memory("routing")
-	if (!legal_keyword(vname) || abbrev("_INTERNAL", vname)) {
-	    CIRCUITERROR("illegal varname in header")
-	}
-    }
-    return vars;
 }
 
 #define PSYC_TCP
@@ -329,4 +302,4 @@ varargs int msg(string source, string mc, string data,
     return emit(buf);
 }
 
-#endif // 0
+#endif // USE_PSYC

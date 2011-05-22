@@ -15,6 +15,8 @@
 #else
 # define C_GLYPH_PACKET_DELIMITER	'.'
 # define S_GLYPH_PACKET_DELIMITER	"."
+# define C_GLYPH_NEW_PACKET_DELIMITER	'|'
+# define S_GLYPH_NEW_PACKET_DELIMITER	"|"
 #endif
 
 #define	C_GLYPH_SEPARATOR_KEYWORD	'_'

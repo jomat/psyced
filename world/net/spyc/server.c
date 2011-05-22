@@ -4,9 +4,10 @@
 // the thing that answers on port 4404 of psyced.
 
 #include "psyc.h"
-#include "../psyc/server.c"
 
-#if 0   // first we get the syntax running, then we'll think of new features:
+#ifdef USE_PSYC
+# include "../psyc/server.c"
+#else
 
 #include <net.h>
 #include <services.h>
@@ -194,4 +195,4 @@ void circuit_msg(string mc, mapping vars, string data) {
     }
 }
 
-#endif // 0
+#endif // USE_PSYC

@@ -1,59 +1,24 @@
-#if 0   // first we get the syntax running, then we'll think of new features:
-
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
 // $Id: parse.c,v 1.30 2008/12/18 18:16:14 lynx Exp $
-//
+
+#ifndef USE_PSYC
+
 #include "psyc.h"
 #include <net.h>
 #include <input_to.h>
 
 private string buffer;
 int state;
+int may_parse_more;
 
-#if __EFUN_DEFINED__(psyc_parse)
-# echo ___ using libpsyc!
-
-void parser_init() {
-    if (state != PSYCPARSE_STATE_BLOCKED)
-	state = PSYCPARSE_STATE_HEADER;
-    buffer = "";
-}
-
-// called when a complete packet has arrived
-void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
-    parser_init();
-}
-
-// input data to the buffer
-void feed(string data) {
-# ifdef _flag_log_sockets_SPYC
-    log_file("RAW_SPYC", "» %O\n%s\n", ME, data);
-# endif
-    buffer += data;
-
-    if (data == "|\n") {
-	mixed p = psyc_parse(buffer);
-	if (pointerp(p) && sizeof(p) == 4)
-	    dispatch(p[0], p[1], p[2], p[3]);
-	else {
-	    P1(("psyc_parse(%O) returned %O\n", buffer, p))
-	}
-    }
-}
-
-mixed list_parse(string val) {
-	return 0;   // TBD
-}
-
-#else /* !libpsyc */
-
+#ifndef LIBPSYC
 private string body_buffer;
 int body_len;
-int may_parse_more;
 
 // tempoary used to hold assigment lists vname -> ({ glyph, state, vvalue })
 array(mixed) tvars;
 mapping hvars;
+#endif
 
 // being faded out in favor of regular croak()
 #define PARSEERROR(reason) { \
@@ -73,6 +38,10 @@ mapping hvars;
 
 step(); // prototype
 
+// overload this as needed
+varargs mixed croak(string mc, string data, vamapping vars) { return 0; }
+
+#ifndef LIBPSYC
 // reset parser state
 void parser_reset() {
     if (state != PSYCPARSE_STATE_BLOCKED)
@@ -83,37 +52,81 @@ void parser_reset() {
     tvars = ({ });
     hvars = ([ ]);
 }
+#endif
 
 // initialize the parser
 void parser_init() {
-    buffer = "";
+# ifndef LIBPSYC
     parser_reset();
+# endif
+    buffer = "";
     state = PSYCPARSE_STATE_GREET; // AFTER reset
 }
 
 // input data to the buffer
 void feed(string data) {
+    P4((">> feed: %O\n", data));
 # ifdef _flag_log_sockets_SPYC
     log_file("RAW_SPYC", "» %O\n%s\n", ME, data);
 # endif
+
     buffer += data;
 
+# ifndef LIBPSYC
     do {
 	may_parse_more = 0;
 	step();
     } while (may_parse_more);
+
+# else
+    if (state != PSYCPARSE_STATE_HEADER)
+	step();
+
+    if (state == PSYCPARSE_STATE_HEADER) {
+	switch (psyc_parse(buffer)) {
+	    case 0: // success
+		break;
+	    case PSYC_PARSE_ERROR_AMOUNT:
+		croak("_error_invalid_amount");
+		QUIT
+	    case PSYC_PARSE_ERROR_DEGREE:
+		croak("_error_invalid_degree");
+		QUIT
+	    case PSYC_PARSE_ERROR_DATE:
+		croak("_error_invalid_date");
+		QUIT
+	    case PSYC_PARSE_ERROR_TIME:
+		croak("_error_invalid_time");
+		QUIT
+	    case PSYC_PARSE_ERROR_FLAG:
+		croak("_error_invalid_flag");
+		QUIT
+	    case PSYC_PARSE_ERROR_LIST:
+		croak("_error_invalid_list");
+		QUIT
+	    case PSYC_PARSE_ERROR_LIST_TOO_LARGE:
+		croak("_error_list_too_large");
+		QUIT
+	    default: // parse error
+		croak("_error_invalid_syntax");
+	}
+	buffer = "";
+    }
+# endif
 }
-
-
-// overload this as needed
-varargs mixed croak(string mc, string data, vamapping vars) { return 0; }
-
 
 // called when a complete packet has arrived
 void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
+#ifndef LIBPSYC
     parser_reset();
+#endif
 }
 
+void psyc_dispatch(mixed p) {
+    dispatch(p[PACKET_ROUTING], p[PACKET_ENTITY], p[PACKET_METHOD], p[PACKET_BODY]);
+}
+
+#ifndef LIBPSYC
 // processes routing header variable assignments
 // basic version does no state
 mapping process_header(mixed varops) {
@@ -121,7 +134,7 @@ mapping process_header(mixed varops) {
     // apply mmp state
     foreach(mixed vop : varops) {
 	string vname = vop[0];
-        switch(vop[1]) {
+	switch(vop[1]) {
 	case C_GLYPH_MODIFIER_SET:
             vars[vname] = vop[2];
             break;
@@ -360,6 +373,7 @@ void buffer_content() {
 	P4(("buffer_content: waiting for more plain data. buffer %O vs %O\n", to_array(buffer), to_array("\n" DELIM)))
     }
 }
+#endif // LIBPSYC
 
 // respond to the first empty packet
 void first_response() { 
@@ -372,12 +386,14 @@ void step() {
     if (!strlen(buffer))
 	return;
     switch(state) {
+#ifndef LIBPSYC
     case PSYCPARSE_STATE_HEADER:
 	parse_header();
 	break;
     case PSYCPARSE_STATE_CONTENT:
 	buffer_content();
 	break;
+#endif
     case PSYCPARSE_STATE_BLOCKED:
 	// someone requested to stop parsing - e.g. _request_features circuit 
 	// message
@@ -389,7 +405,9 @@ void step() {
 	    state = PSYCPARSE_STATE_HEADER;
 	    buffer = buffer[2 ..];
 	    first_response();
+#ifndef LIBPSYC
 	    step();
+#endif
 	} else {
 	    croak("_error_syntax_initialization");
 		// "The new protocol begins with a pipe and a line feed.");
@@ -400,6 +418,7 @@ void step() {
     }
 }
 
+#ifndef LIBPSYC
 // FIXME should be in a standalone module
 //#define PARSEERROR(args)	debug_message(sprintf("LIST PARSE ERROR: " args));
 #define LISTSEP '|'
@@ -432,14 +451,13 @@ mixed list_parse(string val) {
     return lv;
 }
 
-#ifdef SELFTESTS
+# ifdef SELFTESTS
 test() {
     list_parse("|psyc://example.symlynX.com/~jim|psyc://example.org/~judy");
     list_parse("5\tabcde|4\tabcd");
 }
-#endif
-
-#endif /* !libpsyc */
+# endif
+#endif // !LIBPSYC
 
 // it is sometimes useful to stop parsing
 void interrupt_parse() {
@@ -451,4 +469,4 @@ void resume_parse() {
     state = PSYCPARSE_STATE_HEADER;
 }
 
-#endif // 0
+#endif // USE_PSYC

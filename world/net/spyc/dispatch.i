@@ -1,34 +1,161 @@
-#if 0   // first we get the syntax running, then we'll think of new features:
-
 // included by TCP circuit *and* UDP daemon     // vim:syntax=lpc
 
-void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
+// processes routing header variable assignments
+// basic version does no state
+mixed process_routing_modifiers(mapping rvars, mapping vars) {
+    if (!mappingp(instate)) // no routing state for udp
+	return;
+
+    foreach (mixed vname : m_indices(rvars)) {
+	if (!isRouting[vname]) {
+	    CIRCUITERROR("illegal varname in routing header")
+	}
+
+	switch (rvars[vname, 1]) {
+	    case C_GLYPH_MODIFIER_ASSIGN:
+		// TODO: delete if empty?
+		instate[vname] = rvars[vname];
+		// fall thru
+	    case C_GLYPH_MODIFIER_SET:
+		vars[vname] = rvars[vname];
+		break;
+	    case C_GLYPH_MODIFIER_AUGMENT:
+	    case C_GLYPH_MODIFIER_DIMINISH:
+	    case C_GLYPH_MODIFIER_QUERY:
+		CIRCUITERROR("header modifier with glyph other than ':' or '=', this is not implemented")
+		break;
+	    default:
+		CIRCUITERROR("header modifier with unknown glyph")
+		break;
+        }
+    }
+
+    vars += instate;
+    return 1;
+}
+
+mixed process_entity_modifiers(mapping evars, mapping vars, mapping cstate) {
+    // apply evars to context state
+    foreach (mixed vname : m_indices(evars)) {
+	if (isRouting[vname] || abbrev("_INTERNAL", vname)
+#ifndef LIBPSYC
+	    || !legal_keyword(vname)
+#endif
+	    ) {
+	    DISPATCHERROR("illegal varname in entity header")
+	}
+
+	if (!mappingp(cstate) && evars[vname, 1] != C_GLYPH_MODIFIER_SET) {
+	    DISPATCHERROR("entity modifier with glyph other than ':' and there's no _context set")
+	}
+
+	switch (evars[vname, 1]) { // the glyph
+	    case C_GLYPH_MODIFIER_ASSIGN:
+		// TODO: delete if empty?
+		cstate[vname] = evars[vname];
+		// fall thru
+	    case C_GLYPH_MODIFIER_SET:
+		vars[vname] = evars[vname];
+		break;
+	    case C_GLYPH_MODIFIER_AUGMENT:
+		if (!abbrev("_list", vname)) {
+		    DISPATCHERROR("psyc modifier + with non-list arg")
+		}
+		// FIXME: duplicates?
+		cstate[vname] += evars[vname];
+		PT(("current state is %O, augment %O\n", cstate[vname], evars[vname]))
+		break;
+	    case C_GLYPH_MODIFIER_DIMINISH:
+		if (!abbrev("_list", vname)) {
+		    DISPATCHERROR("psyc modifier + with non-list arg")
+		}
+		PT(("current state is %O, diminish %O\n", cstate[vname], evars[vname]))
+		foreach(mixed item : evars[vname])
+		    cstate[vname] -= ({ item });
+		PT(("after dim: %O\n", cstate[vname]))
+		break;
+	    case C_GLYPH_MODIFIER_QUERY:
+		DISPATCHERROR("psyc modifier ? not implemented")
+	}
+    }
+
+    if (mappingp(cstate))
+	vars += cstate;
+    return 1;
+}
+
+mixed process_var_types(mapping evars) {
+    string family;
+    int glyph;
+
+    // FIXME: i dont like this block... maybe we decode each variable 
+    // 		when setting it?
+    // 		that would also fit with 0 as varname deletion
+    // 		below
+    foreach (mixed vname : m_indices(evars)) {
+	// psyc type conversion implementation ( http://about.psyc.eu/Type )
+	// this does not support register_type() yet, but it is feasible
+	PSYC_TRY(vname) {
+	case "_uniform":
+	case "_page":
+	case "_entity":
+	    if (!parse_uniform(evars[vname]))
+		croak("_error_illegal_uniform");
+	    break;
+	case "_nick":
+	    if (!legal_name(evars[vname]))
+		croak("_error_illegal_nick");
+	    break;
+#ifndef LIBPSYC
+	case "_degree":
+	    // only honour the first digit
+	    if (strlen(evars[vname]) && evars[vname][0] >= '0' && evars[vname][0] <= '9')
+		evars[vname] = evars[vname][0] - '0';
+	    else {
+		PT(("type parser _degree: could not handle value %O\n",
+		    evars[vname]))
+		evars[vname] = 0;
+	    }
+	    break;
+	case "_date":
+	    evars[vname] = to_int(evars[vname]) + PSYC_EPOCH;
+	    break;
+	case "_time":
+	case "_amount":
+	    evars[vname] = to_int(evars[vname]);
+	    break;
+	case "_list":
+	    mixed plist = list_parse(evars[vname]);
+	    if (plist == -1) {
+		DISPATCHERROR("could not parse list");
+	    }
+	    evars[vname] = plist;
+	    break;
+#endif
+	PSYC_SLICE_AND_REPEAT
+	}
+    }
+    return 1;
+}
+
+void dispatch(mapping rvars, mapping evars, mixed method, mixed body) {
     string vname;
     mixed vop; // value operation
     string t;
-    mapping vars;
-    string family;
-    int glyph;
+    mapping vars = ([ ]);
+
+    PT((">> dispatch(%O, %O, %O, %O)\n", rvars, evars, method, body))
 
     // check that method is a valid keyword
     if (method && !legal_keyword(method)) {
 	DISPATCHERROR("non legal method");
     }
-#ifdef PSYC_TCP
-    // copy() + occasional double modifier ops should be more
-    // efficient than merge at every packet --lynX
-    // no one cares about "efficiency" here. please proof your 
-    // bold statements with benchmarks anyway
-    vars = header_vars + instate;
-#else
-    vars = header_vars;
-#endif
 
     // FIXME: this can happen earlier, e.g. in parse.c after
     // 		process_header
     // check _source/_context
     // this check can be skipped if _source and _context are empty
-    if ((t = vars["_context"] || vars["_source"])) {
+    if ((t = rvars["_context"] || rvars["_source"])) {
         array(mixed) u;
         unless (u = parse_uniform(t)) {
             DISPATCHERROR("logical source is not a uniform\n")
@@ -43,8 +170,17 @@ void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
 # endif
 #endif
     }
+
+    if (!process_routing_modifiers(rvars, vars))
+	return;
+
+#ifndef LIBPSYC
+    if (!process_var_types(evars))t
+	return;
+#endif
+
     // check that _target is hosted by us
-    // this check can be skipped if _target is not set 
+    // this check can be skipped if _target is not set
     if ((t = vars["_target"])) {
         array(mixed) u;
         unless (u = parse_uniform(t)) {
@@ -55,51 +191,6 @@ void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
             DISPATCHERROR("target is not configured on this server\n")
 	}
     }
-    // FIXME: i dont like this block... maybe we decode each variable 
-    // 		when setting it?
-    // 		that would also fit with 0 as varname deletion
-    // 		below
-    foreach(vop : varops) {
-	vname = vop[0];
-
-	// psyc type conversion implementation ( http://about.psyc.eu/Type )
-	// this does not support register_type() yet, but it is feasible
-	PSYC_TRY(vname) {
-	case "_uniform":
-	case "_page":
-	case "_entity":
-	    // TODO: check legal uniform
-	    break;
-	case "_nick":
-	    // TODO: check legal nick
-	    break;
-	case "_degree":
-	    // only honour the first digit
-	    if (strlen(vop[2]) && vop[2][0] >= '0' && vop[2][0] <= '9')
-		vop[2] = vop[2][0] - '0';
-	    else {
-		PT(("type parser _degree: could not handle value %O\n",
-		    vop[2]))
-		vop[2] = 0;
-	    }
-	    break;
-	case "_date":
-	    vop[2] = to_int(vop[2]) + PSYC_EPOCH;
-	    break;
-	case "_time":
-	case "_amount":
-	    vop[2] = to_int(vop[2]);
-	    break;
-	case "_list":
-	    mixed plist = list_parse(vop[2]);
-	    if (plist == -1) {
-		DISPATCHERROR("could not parse list");
-	    }
-	    vop[2] = plist;
-	    break;
-	PSYC_SLICE_AND_REPEAT
-	}
-    }
 
     // FIXME deliver packet
     // this should be a separate function
@@ -108,7 +199,7 @@ void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
     // delivery rules as usual, but
     if (vars["_context"]) {
 	mixed context;
-	mixed context_state;
+	mixed cstate;
 	mixed source, target; 
 
 	if (vars["_source"]) {
@@ -122,48 +213,13 @@ void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
 	    P0(("context %O not found?!\n", vars["_context"]))
 	    return;
 	}
-	context_state = context->get_state();
 
-	// apply varops to context state
-	foreach(vop : varops) {
-	    vname = vop[0];
-	    if (!legal_keyword(vname) || abbrev("_INTERNAL", vname)) {
-		DISPATCHERROR("illegal varname in psyc")
-	    }
-
-	    switch(vop[1]) { // the glyph
-	    case C_GLYPH_MODIFIER_SET:
-		vars[vname] = vop[2];
-		break;
-	    case C_GLYPH_MODIFIER_ASSIGN:
-		vars[vname] = context_state[vname] = vop[2];
-		break;
-	    case C_GLYPH_MODIFIER_AUGMENT:
-		if (!abbrev("_list", vname)) {
-		    DISPATCHERROR("psyc modifier + with non-list arg")
-		}
-		// FIXME: duplicates?
-		context_state[vname] += vop[2];
-		PT(("current state is %O, augment %O\n", context_state[vname], vop[2]))
-		break;
-	    case C_GLYPH_MODIFIER_DIMINISH:
-		if (!abbrev("_list", vname)) {
-		    DISPATCHERROR("psyc modifier + with non-list arg")
-		}
-		PT(("current state is %O, diminish %O\n", context_state[vname], vop[2]))
-		foreach(mixed item : vop[2])
-		    context_state[vname] -= ({ item });
-		PT(("after dim: %O\n", context_state[vname]))
-		break;
-	    case C_GLYPH_MODIFIER_QUERY:
-		DISPATCHERROR("psyc modifier ? not implemented")
-		break;
-	    }
-	}
-	vars = vars + context_state;
+	cstate = context->get_state();
+	process_entity_modifiers(evars, vars, cstate);
 	// FIXME: is it legal to do this if this has _target?
 	// 	there should be no mods then anyway
-	context->commit_state(context_state);
+	// It can have only entity vars, so no _target.
+	context->commit_state(cstate);
 
 	if (vars["_target"]) {
 	    // FIXME: delivery copycat from below
@@ -200,6 +256,8 @@ void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
 	    }
 	}
     } else {
+	process_entity_modifiers(evars, vars, 0);
+
 	if (!vars["_target"] && !vars["_source"]) {
 #ifdef PSYC_TCP
 	    circuit_msg(method, vars, body); 
@@ -241,7 +299,5 @@ void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
 	    }
 	}
     }
-    ::dispatch(header_vars, varops, method, body);
+    ::dispatch(rvars, evars, method, body);
 }
-
-#endif // 0
