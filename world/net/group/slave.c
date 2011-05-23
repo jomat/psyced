@@ -29,9 +29,14 @@ private int _revision = -1;
 #endif
 
 #ifdef CONTEXT_STATE
+// cslaves should store their copy of state, so it shouldn't be volatile here
 private volatile mapping cast_state;
 private volatile mapping temp_state;
 inherit NET_PATH "state";
+#endif
+
+#ifdef USE_SPYC
+mapping _state; // should probably merge with ifdef CONTEXT_STATE..
 #endif
 
 private volatile mapping _members;
@@ -41,6 +46,9 @@ void create() {
 #ifdef CONTEXT_STATE
 	unless(mappingp(cast_state)) cast_state = ([ ]);
 	unless(mappingp(temp_state)) temp_state = ([ ]);
+#endif
+#ifdef USE_SPYC
+	unless(mappingp(_state)) _state = ([ ]);
 #endif
 }
 
@@ -264,3 +272,16 @@ void Diminish(mixed source, string key, mixed value) {
 }
 
 #endif // }}}
+
+#ifdef USE_SPYC
+get_state() {
+	PT(("cstate for %O picked up by %O: %O\n", ME,
+	    previous_object(), _state))
+	return _state;
+}
+commit_state() {
+	PT(("cstate for %O committed by %O: %O\n", ME,
+	    previous_object(), _state))
+	_state = ([ ]);
+}
+#endif
