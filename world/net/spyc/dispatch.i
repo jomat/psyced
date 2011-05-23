@@ -1,20 +1,20 @@
 // included by TCP circuit *and* UDP daemon     // vim:syntax=lpc
 
+volatile mapping routing = shared_memory("routing");
+
 // processes routing header variable assignments
 // basic version does no state
 mixed process_routing_modifiers(mapping rvars, mapping vars) {
-    if (!mappingp(instate)) // no routing state for udp
-	return;
-
     foreach (mixed vname : m_indices(rvars)) {
-	if (!isRouting[vname]) {
-	    CIRCUITERROR("illegal varname in routing header")
+	if (!routing[vname]) {
+	    DISPATCHERROR("illegal varname in routing header")
 	}
 
 	switch (rvars[vname, 1]) {
 	    case C_GLYPH_MODIFIER_ASSIGN:
 		// TODO: delete if empty?
-		instate[vname] = rvars[vname];
+		if (mappingp(instate))
+		    instate[vname] = rvars[vname];
 		// fall thru
 	    case C_GLYPH_MODIFIER_SET:
 		vars[vname] = rvars[vname];
@@ -22,22 +22,23 @@ mixed process_routing_modifiers(mapping rvars, mapping vars) {
 	    case C_GLYPH_MODIFIER_AUGMENT:
 	    case C_GLYPH_MODIFIER_DIMINISH:
 	    case C_GLYPH_MODIFIER_QUERY:
-		CIRCUITERROR("header modifier with glyph other than ':' or '=', this is not implemented")
+		DISPATCHERROR("header modifier with glyph other than ':' or '=', this is not implemented")
 		break;
 	    default:
-		CIRCUITERROR("header modifier with unknown glyph")
+		DISPATCHERROR("header modifier with unknown glyph")
 		break;
         }
     }
 
-    vars += instate;
+    if (mappingp(instate))
+	vars += instate;
     return 1;
 }
 
 mixed process_entity_modifiers(mapping evars, mapping vars, mapping cstate) {
     // apply evars to context state
     foreach (mixed vname : m_indices(evars)) {
-	if (isRouting[vname] || abbrev("_INTERNAL", vname)
+	if (routing[vname] || abbrev("_INTERNAL", vname)
 #ifndef LIBPSYC
 	    || !legal_keyword(vname)
 #endif
