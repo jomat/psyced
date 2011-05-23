@@ -13,10 +13,14 @@ int may_parse_more;
 private string body_buffer;
 int body_len;
 
-// tempoary used to hold assigment lists vname -> ({ glyph, state, vvalue })
+// temporary used to hold assigment lists vname -> ({ glyph, state, vvalue })
+// this won't work anymore, dispatch now expects two mappings: rvars & evars
 array(mixed) tvars;
 mapping hvars;
-#endif
+// prototypes
+parse_header();
+buffer_content();
+#endif // LIBPSYC
 
 // being faded out in favor of regular croak()
 #define PARSEERROR(reason) { \
@@ -59,6 +63,32 @@ void parser_init() {
 # endif
     buffer = "";
     state = PSYCPARSE_STATE_GREET; // AFTER reset
+}
+
+// it is sometimes useful to stop parsing
+void interrupt_parse() {
+    state = PSYCPARSE_STATE_BLOCKED;
+}
+
+// and resume after some blocking operation is done
+void resume_parse() {
+    state = PSYCPARSE_STATE_HEADER;
+}
+
+// called when a complete packet has arrived
+void dispatch(mapping rvars, mapping evars, mixed method, mixed body) {
+#ifndef LIBPSYC
+    parser_reset();
+#endif
+}
+
+void psyc_dispatch(mixed p) {
+    dispatch(p[PACKET_ROUTING], p[PACKET_ENTITY], p[PACKET_METHOD], p[PACKET_BODY]);
+}
+
+// respond to the first empty packet
+void first_response() {
+    P0(("parser::first_response called. overload this!"))
 }
 
 // input data to the buffer
@@ -113,16 +143,45 @@ void feed(string data) {
 # endif
 }
 
-// called when a complete packet has arrived
-void dispatch(mixed header_vars, mixed varops, mixed method, mixed body) {
+// parser stepping function
+void step() {
+    P3(("%O step: state %O, buffer %O\n", ME, state, buffer))
+    if (!strlen(buffer))
+	return;
+    switch(state) {
 #ifndef LIBPSYC
-    parser_reset();
+    case PSYCPARSE_STATE_HEADER:
+	parse_header();
+	break;
+    case PSYCPARSE_STATE_CONTENT:
+	buffer_content();
+	break;
 #endif
+    case PSYCPARSE_STATE_BLOCKED:
+	// someone requested to stop parsing - e.g. _request_features circuit
+	// message
+	break;
+    case PSYCPARSE_STATE_GREET: // wait for greeting
+	if (strlen(buffer) < 2)
+	    return;
+	if (buffer[0..1] == DELIM) {
+	    state = PSYCPARSE_STATE_HEADER;
+	    buffer = buffer[2 ..];
+	    first_response();
+#ifndef LIBPSYC
+	    step();
+#endif
+	} else {
+	    croak("_error_syntax_initialization");
+		// "The new protocol begins with a pipe and a line feed.");
+	}
+	break;
+    default: // uhm... if we ever get here this is the programmers fault
+	break;
+    }
 }
 
-void psyc_dispatch(mixed p) {
-    dispatch(p[PACKET_ROUTING], p[PACKET_ENTITY], p[PACKET_METHOD], p[PACKET_BODY]);
-}
+// EOF for LIBPSYC
 
 #ifndef LIBPSYC
 // processes routing header variable assignments
@@ -371,52 +430,7 @@ void buffer_content() {
 	P4(("buffer_content: waiting for more plain data. buffer %O vs %O\n", to_array(buffer), to_array("\n" DELIM)))
     }
 }
-#endif // LIBPSYC
 
-// respond to the first empty packet
-void first_response() { 
-    P0(("parser::first_response called. overload this!")) 
-}
-
-// parser stepping function
-void step() {
-    P3(("%O step: state %O, buffer %O\n", ME, state, buffer))
-    if (!strlen(buffer))
-	return;
-    switch(state) {
-#ifndef LIBPSYC
-    case PSYCPARSE_STATE_HEADER:
-	parse_header();
-	break;
-    case PSYCPARSE_STATE_CONTENT:
-	buffer_content();
-	break;
-#endif
-    case PSYCPARSE_STATE_BLOCKED:
-	// someone requested to stop parsing - e.g. _request_features circuit 
-	// message
-	break;
-    case PSYCPARSE_STATE_GREET: // wait for greeting
-	if (strlen(buffer) < 2)
-	    return;
-	if (buffer[0..1] == DELIM) {
-	    state = PSYCPARSE_STATE_HEADER;
-	    buffer = buffer[2 ..];
-	    first_response();
-#ifndef LIBPSYC
-	    step();
-#endif
-	} else {
-	    croak("_error_syntax_initialization");
-		// "The new protocol begins with a pipe and a line feed.");
-	}
-	break;
-    default: // uhm... if we ever get here this is the programmers fault
-	break;
-    }
-}
-
-#ifndef LIBPSYC
 // FIXME should be in a standalone module
 //#define PARSEERROR(args)	debug_message(sprintf("LIST PARSE ERROR: " args));
 #define LISTSEP '|'
@@ -456,13 +470,3 @@ test() {
 }
 # endif
 #endif // !LIBPSYC
-
-// it is sometimes useful to stop parsing
-void interrupt_parse() {
-    state = PSYCPARSE_STATE_BLOCKED;
-}
-
-// and resume after some blocking operation is done
-void resume_parse() {
-    state = PSYCPARSE_STATE_HEADER;
-}

@@ -176,7 +176,7 @@ void dispatch(mapping rvars, mapping evars, mixed method, mixed body) {
 	return;
 
 #ifndef LIBPSYC
-    if (!process_var_types(evars))t
+    if (!process_var_types(evars))
 	return;
 #endif
 
