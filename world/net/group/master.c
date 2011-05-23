@@ -55,6 +55,7 @@ volatile mapping _routes, _u;
 #endif
 
 #ifdef CONTEXT_STATE // {{{
+// why volatile.. that breaks the whole meaning of state
 volatile mapping _costate, _cmemory;
 volatile mapping ctemp, cunused;
 #endif // }}}

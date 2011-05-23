@@ -1,8 +1,6 @@
 // vim:foldmethod=marker:syntax=lpc:noexpandtab
 // $Id: parse.c,v 1.30 2008/12/18 18:16:14 lynx Exp $
 
-#ifndef USE_PSYC
-
 #include "psyc.h"
 #include <net.h>
 #include <input_to.h>
@@ -468,5 +466,3 @@ void interrupt_parse() {
 void resume_parse() {
     state = PSYCPARSE_STATE_HEADER;
 }
-
-#endif // USE_PSYC
