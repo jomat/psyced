@@ -1113,13 +1113,18 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
 	return 1;
 }
 
-void peek(string data) {
+// temporary new "lfun" called from driver's comm.c to peek into new connection
+void connection_peek(string data) {
 	P4((">> peek: %O\n", data));
 #ifdef USE_SPYC
+# if !__EFUN_DEFINED__(psyc_parse)
+#  echo New PSYC syntax will not work: Driver compiled without libpsyc!
+# endif
 	if (data[0] == C_GLYPH_NEW_PACKET_DELIMITER) {
 # if __EFUN_DEFINED__(enable_binary)
 	    enable_binary(ME);
 # else
+#  echo New PSYC syntax will not work: Driver compiled without enable_binary!
 	    raise_error("Driver compiled without enable_binary()");
 # endif
 	}

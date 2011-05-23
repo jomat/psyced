@@ -23,11 +23,10 @@
  * the first byte.
  */
 
+#ifndef SPYC
 #define SPYC
 
 #include <psyc.h>
-
-#ifndef USE_PSYC
 
 #if __EFUN_DEFINED__(psyc_parse)
 # define LIBPSYC
@@ -46,4 +45,4 @@
     return;                                           \
 }
 
-#endif // USE_PSYC
+#endif // SPYC

@@ -3,10 +3,6 @@
 
 #include "psyc.h"
 
-#ifdef USE_PSYC
-# include "../psyc/circuit.c"
-#else
-
 #include <net.h>
 #include <uniform.h>
 #include <tls.h>
@@ -302,4 +298,3 @@ varargs int msg(string source, string mc, string data,
     return emit(buf);
 }
 
-#endif // USE_PSYC

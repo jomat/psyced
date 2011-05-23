@@ -274,6 +274,7 @@ static varargs string render_psyc(mixed source, string mc, mixed data,
 
 	if (mappingp(vars))
 	    mapeach (key, val, vars) {
+		// psyc_isRoutingVar() would be faster here I presume
 		routeMe = isRouting[key];
 		if ((routeMe &&! (routeMe & PSYC_ROUTING_RENDER))
 		    || abbrev("_INTERNAL", key))
@@ -286,8 +287,7 @@ static varargs string render_psyc(mixed source, string mc, mixed data,
 	    }
 
 	return psyc_render(({ rvars, evars, mc, data }));
-#endif
-
+#else
 	if (mappingp(vars))
 		vars = vars + rvars;
 	else
@@ -323,6 +323,7 @@ static varargs string render_psyc(mixed source, string mc, mixed data,
 	if (strlen(rbuf)) return rbuf[1 ..] +"\n"+
 		ebuf +"\n" S_GLYPH_PACKET_DELIMITER "\n";
 	return	ebuf +"\n" S_GLYPH_PACKET_DELIMITER "\n";
+#endif
 }
 
 // notice for completeness: the PSYC renderer does not convert_charset

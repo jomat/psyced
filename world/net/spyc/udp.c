@@ -3,10 +3,6 @@
 
 #include "psyc.h"
 
-#ifdef USE_PSYC
-# include "../psyc/udp.c"
-#else
-
 #include <net.h>
 #include <uniform.h>
 #include <text.h>
@@ -42,5 +38,3 @@ parseUDP(ip, port, msg) {
 // ignoring the routing vars.. TODO FIXME
 #define PSYC_UDP
 #include "dispatch.i"
-
-#endif // USE_PSYC

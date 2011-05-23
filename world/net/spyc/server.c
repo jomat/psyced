@@ -5,10 +5,6 @@
 
 #include "psyc.h"
 
-#ifdef USE_PSYC
-# include "../psyc/server.c"
-#else
-
 #include <net.h>
 #include <services.h>
 #define NO_INHERIT
@@ -195,4 +191,3 @@ void circuit_msg(string mc, mapping vars, string data) {
     }
 }
 
-#endif // USE_PSYC

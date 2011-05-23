@@ -55,9 +55,14 @@ volatile mapping _routes, _u;
 #endif
 
 #ifdef CONTEXT_STATE // {{{
+// why volatile.. that breaks the whole meaning of state
 volatile mapping _costate, _cmemory;
 volatile mapping ctemp, cunused;
 #endif // }}}
+
+#ifdef USE_SPYC
+mapping _state; // an alternative to ifdef CONTEXT_STATE ?
+#endif
 
 #ifdef PERSISTENT_SLAVES
 int revision; // persistent revision counter
@@ -85,6 +90,9 @@ create() {
 	ctemp = ([ ]);
 	_cmemory = m_allocate(0, 2);
 #endif // }}}
+#ifdef USE_SPYC
+	_state = ([ ]);
+#endif
 	::create();
 }
 
@@ -285,6 +293,19 @@ insert_member(source, origin) {
 #endif
     P3(("%O -> _routes = %O\n", ME, _routes))
 }
+
+#ifdef USE_SPYC
+get_state() {
+	PT(("cstate for %O picked up by %O: %O\n", ME,
+	    previous_object(), _state))
+	return _state;
+}
+commit_state() {
+	PT(("cstate for %O committed by %O: %O\n", ME,
+	    previous_object(), _state))
+	_state = ([ ]);
+}
+#endif
 
 // code duplicaton is faster than others
 #ifdef CONTEXT_STATE // {{{
