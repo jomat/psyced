@@ -48,7 +48,7 @@ void runQ();
 
 int isServer() { return 0; }
 
-void peek(string data) {
+void connection_peek(string data) {
 #if __EFUN_DEFINED__(enable_binary)
     enable_binary(ME);
 #else
