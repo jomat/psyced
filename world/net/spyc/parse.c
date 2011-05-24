@@ -86,7 +86,7 @@ void dispatch(mapping rvars, mapping evars, mixed method, mixed body) {
 }
 
 void psyc_dispatch(mixed p) {
-    if (p[PACKET_METHOD][0] != '_') {
+    if (p[PACKET_METHOD] && p[PACKET_METHOD][0] != '_') {
 	    log_file("SPYC", "%O SYNTAX %O\n", query_ip_name(), p);
 	    croak("_error_invalid_method_compact",
 		    "Compact methods undefined as yet.");
