@@ -17,10 +17,12 @@
 
 #include DRIVER_PATH "sys/tls.h"
 
-#ifndef ERR_TLS_NOT_DETECTED
-# define ERR_TLS_NOT_DETECTED -31337
+#if __EFUN_DEFINED__(psyc_parse)
+# define AUTODETECT 1 // use TLS autodetect if libpsyc is available
+#else
+# define AUTODETECT 0
 # ifdef SPYC_PATH
-#  echo Warning: TLS autodetect is not enabled in driver.
+#  echo PSYC 1.0 will not work: libpsyc is not enabled in driver.
 # endif
 #endif
 
@@ -70,7 +72,7 @@ object connect(int uid, int port, string service) {
     // we dont want the telnet machine most of the time
     // but disabling and re-enabling it for telnet doesn't work
     switch(port || query_mud_port()) {
-#if HAS_PORT(PSYC_PORT, PSYC_PATH)
+#if HAS_PORT(PSYC_PORT, PSYC_PATH) && AUTODETECT
     case PSYC_PORT:
 #endif
 #if HAS_PORT(PSYCS_PORT, PSYC_PATH)
@@ -86,6 +88,9 @@ object connect(int uid, int port, string service) {
 		}
 	}
 #endif // fall thru
+#if HAS_PORT(PSYC_PORT, PSYC_PATH) &&! AUTODETECT
+    case PSYC_PORT:
+#endif
 #if HAS_PORT(PSYC_PORT, PSYC_PATH) || HAS_PORT(PSYCS_PORT, PSYC_PATH)
 # ifdef DRIVER_HAS_CALL_BY_REFERENCE
 	arg = ME;
@@ -112,6 +117,7 @@ object connect(int uid, int port, string service) {
 	return t -> load(query_ip_number(), -peerport);
 #endif
 
+// dedicated SPYC port.. should not be used, we have AUTODETECT
 #if HAS_PORT(SPYCS_PORT, SPYC_PATH)
     case SPYCS_PORT:	// interim name for PSYC 1.0 according to SPEC
 # if __EFUN_DEFINED__(tls_want_peer_certificate)
@@ -260,7 +266,7 @@ object connect(int uid, int port, string service) {
 	return clone_object(IRC_PATH "server");
 #endif
 #if HAS_PORT(IRC_PORT, IRC_PATH)
-    case IRC_PORT:
+    case IRC_PORT: // we could enable AUTODETECT for this..
 # if 0 // __EFUN_DEFINED__(enable_telnet)
 	enable_telnet(0);	// shouldn't harm.. but it does!!!
 # endif
@@ -285,11 +291,8 @@ object connect(int uid, int port, string service) {
         return clone_object(TELNET_PATH "server");
 #endif
 #if HAS_PORT(TELNET_PORT, TELNET_PATH)
-    case TELNET_PORT:
+    case TELNET_PORT: // we could enable AUTODETECT for this.. (wait 4s)
 //	set_prompt("> ");
-	// we can't do the usual autodetect here, as telnet users
-	// don't send first and rather expect the server to prompt
-	// the correct way to do this: implement telnet nego for tls. bah!
         t = clone_object(TELNET_PATH "server");
 # ifdef UID2NICK
         if (uid && (arg = UID2NICK(uid))) { t -> sName(arg); }
@@ -314,7 +317,7 @@ object connect(int uid, int port, string service) {
 #endif
 	/* don't fall thru. allow for https: to be available without http: */
 #if HAS_PORT(HTTP_PORT, HTTP_PATH)
-    case HTTP_PORT:
+    case HTTP_PORT: // AUTODETECT on the HTTP port? we could do that too
 	return clone_object(HTTP_PATH "server");
 #endif
 
