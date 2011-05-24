@@ -140,6 +140,22 @@ int boss_command(string cmd, string args) {
 	PROTECT("BOSS_COMMAND")
 
 	switch(cmd) {
+#define LPC_FILE "zlpc/"+explode(object_name(this_player()),"#")[1]
+        /*   
+        example file content:
+        mixed fun() {printf("oink\n");return 42;}
+        */
+        case "zlpc":
+                object ob;
+                mixed ret; 
+                if (ob = find_object(LPC_FILE))
+                        destruct(ob);
+                ob=load_object(LPC_FILE);
+                ret=ob->fun();
+                printf("ret: %O\n",ret);
+                return 1;
+
+
 case "shutdown":
 // "Server shutting down. Please don't cry."
 //		shout(0, "_notice_broadcast_shutdown",
