@@ -2,6 +2,9 @@
 // $Id: parse.c,v 1.30 2008/12/18 18:16:14 lynx Exp $
 
 #include "psyc.h"
+#ifdef LIBPSYC	// net/spyc currently doesn't work without libpsyc
+		// and probably never will.. will delete the old code soon
+
 #include <net.h>
 #include <input_to.h>
 
@@ -470,3 +473,5 @@ test() {
 }
 # endif
 #endif // !LIBPSYC
+
+#endif // LIBPSYC

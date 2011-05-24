@@ -4,6 +4,7 @@
 // the thing that answers on port 4404 of psyced.
 
 #include "psyc.h"
+#ifdef LIBPSYC
 
 #include <net.h>
 #include <services.h>
@@ -191,3 +192,4 @@ void circuit_msg(string mc, mapping vars, string data) {
     }
 }
 
+#endif // LIBPSYC
