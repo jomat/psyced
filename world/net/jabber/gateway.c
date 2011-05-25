@@ -535,7 +535,6 @@ open_stream(XMLNode node) {
 		// we offer SASL external (authentication via name
 		// presented in x509 certificate
 		PT(("gateway::certinfo %O\n", certinfo))
-		P0(("gateway::certinfo valid %d\n", certinfo[0]))
 #  ifndef DIALBACK_WITHOUT_DIAL_BACK
 		if (mappingp(certinfo) && certinfo[0] == 0) {
 		    // if from attribute is present we only offer
