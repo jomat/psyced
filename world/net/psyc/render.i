@@ -7,7 +7,7 @@ volatile mapping isRouting = shared_memory("routing");
 
 volatile string rbuf, ebuf;  // pike has no pass-by-reference
 
-static int build_header(string key, mixed val, mapping vars) {
+static int build_header(string key, mixed val, mapping vars, int checkRouting) {
         string s, klopp;
 	int routeMe = 0;
 #ifdef SPYC
@@ -24,7 +24,7 @@ static int build_header(string key, mixed val, mapping vars) {
 	routeMe = isRouting[key];
 	P3(("isRouting[%O] = %O, render? %O\n",
 	    key, routeMe, routeMe & PSYC_ROUTING_RENDER))
-	if ((routeMe &&! (routeMe & PSYC_ROUTING_RENDER))
+	if ((routeMe && checkRouting && !(routeMe & PSYC_ROUTING_RENDER))
 	   || abbrev("_INTERNAL", key)) return -1;
 
 	P2(("build_header(%O, %O) into %s vars\n", key, val,
@@ -288,23 +288,30 @@ static varargs string render_psyc(mixed source, string mc, mixed data,
 
 	return psyc_render(({ rvars, evars, mc, data }));
 #else
-	if (mappingp(vars))
-		vars = vars + rvars;
-	else
-		vars = rvars;
 
-#if 0 //ndef EXPERIMENTAL
-	if (member(vars, "_count"))
-	    ebuf += "\n:_count\t" + vars["_count"];
-#endif
 #if __EFUN_DEFINED__(walk_mapping)
 	// walk_mapping could be rewritten into foreach, but thats work
-	walk_mapping(vars, #'build_header, vars);
+	walk_mapping(rvars, #'build_header, rvars, 0);
 #else                            // PIKE, MudOS...
-	mapeach(key, val, vars) {
-		build_header(key, val, vars);
+	mapeach(key, val, rvars) {
+	    build_header(key, val, rvars, 0);
 	}
 #endif
+
+	if (mappingp(vars)) {
+#if 0 //ndef EXPERIMENTAL
+	    if (member(vars, "_count"))
+		ebuf += "\n:_count\t" + vars["_count"];
+#endif
+#if __EFUN_DEFINED__(walk_mapping)
+	    // walk_mapping could be rewritten into foreach, but thats work
+	    walk_mapping(vars, #'build_header, vars, 1);
+#else                            // PIKE, MudOS...
+	    mapeach(key, val, vars) {
+		build_header(key, val, vars, 1);
+	    }
+#endif
+	}
 
 	if (data == "") ebuf += "\n"+ mc;
 	else ebuf += "\n"+ mc + "\n"+ data;

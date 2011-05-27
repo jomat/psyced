@@ -205,13 +205,6 @@ void disconnect(object ob, string remaining) {
 	      " with "+ strlen(remaining) +" bytes remaining" : ""))
 }
 
-// even though the name of the function is weird, this is the
-// place where UDP messages arrive
-//
-// how to multiplex InterMUD and PSYC on the same udp port:
-// PSYC UDP packets always start with ".\n", just forward them to
-// the PSYC UDP server daemon.
-//
 volatile object psycd;
 #ifdef SPYC_PATH
 volatile object spycd;
@@ -223,6 +216,9 @@ volatile object sipd;
 void receive_udp(string host, string msg, int port) {
 	if (strlen(msg) > 1 && msg[1] == '\n') switch(msg[0]) {
 #ifdef SPYC_PATH
+# if !__EFUN_DEFINED__(psyc_parse)
+#  echo New PSYC syntax will not work: Driver compiled without libpsyc!
+# else
 	case '|':
 		unless (spycd) {
 			spycd = SPYC_PATH "udp" -> load();
@@ -231,6 +227,7 @@ void receive_udp(string host, string msg, int port) {
 		}
 		spycd -> parseUDP(host, port, msg);
 		return;
+# endif
 #endif
 	case '.':
 		unless (psycd) {

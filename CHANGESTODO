@@ -118,10 +118,10 @@ ________________________________________________________________________
 == psyced 1.0 ==========================================================
 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
 > SPYC
-- net/spyc is buggy and incomplete
-  (implementation of http://about.psyc.eu/Specification)
-_ to activate spyc support, defined USE_SPYC
-  it will attempt to use new syntax on outgoing links by default
+- net/spyc depends on libpsyc being compiled into the driver
+  if it is available, it will be activated passively
+- #define USE_SPYC if you want outgoing connections to require libpsyc
+
 _ to debug verification, define USE_VERIFICATION
 _ to spend an extra round trip time negotiating, define USE_FEATURES
 
@@ -3927,4 +3927,6 @@ net/person
 *	removed interesting but unrecoverable FORK code
 *	unlink detection rewrite and other fixes in client linking code
 edit.i	now renamed into render.i because it renders psyc packets
-
+=== 201105 ============================================================
+net/spyc net/psyc
+	tg added support for libpsyc aka PSYC syntax according to spec!

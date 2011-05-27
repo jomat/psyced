@@ -35,7 +35,7 @@ private volatile mapping temp_state;
 inherit NET_PATH "state";
 #endif
 
-#ifdef USE_SPYC
+#if __EFUN_DEFINED__(psyc_parse)
 mapping _state; // should probably merge with ifdef CONTEXT_STATE..
 #endif
 
@@ -47,7 +47,7 @@ void create() {
 	unless(mappingp(cast_state)) cast_state = ([ ]);
 	unless(mappingp(temp_state)) temp_state = ([ ]);
 #endif
-#ifdef USE_SPYC
+#if __EFUN_DEFINED__(psyc_parse)
 	unless(mappingp(_state)) _state = ([ ]);
 #endif
 }
@@ -273,7 +273,7 @@ void Diminish(mixed source, string key, mixed value) {
 
 #endif // }}}
 
-#ifdef USE_SPYC
+#if __EFUN_DEFINED__(psyc_parse)
 get_state() {
 	PT(("cstate for %O picked up by %O: %O\n", ME,
 	    previous_object(), _state))

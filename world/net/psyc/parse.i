@@ -1113,23 +1113,17 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
 	return 1;
 }
 
+#if __EFUN_DEFINED__(psyc_parse)
 // temporary new "lfun" called from driver's comm.c to peek into new connection
+// only exists if libpsyc is provided
 void connection_peek(string data) {
 	P4((">> peek: %O\n", data));
-#ifdef USE_SPYC
-# if !__EFUN_DEFINED__(psyc_parse)
-#  echo New PSYC syntax will not work: Driver compiled without libpsyc!
-# endif
+
 	if (data[0] == C_GLYPH_NEW_PACKET_DELIMITER) {
-# if __EFUN_DEFINED__(enable_binary)
-	    enable_binary(ME);
-# else
-#  echo New PSYC syntax will not work: Driver compiled without enable_binary!
-	    raise_error("Driver compiled without enable_binary()");
-# endif
+		enable_binary(ME);
 	}
-#endif
 }
+#endif
 
 #ifdef PSYC_TCP
 vamixed startParse(string a) {
@@ -1137,8 +1131,7 @@ vamixed startParse(string a) {
 		restart();
 		if (isServer()) greet();
 	}
-// new syntax is so broken, we should not pretend to support it yet FIXME
-# if defined(SPYC_PATH) && defined(USE_SPYC)
+# if defined(SPYC_PATH) && __EFUN_DEFINED__(psyc_parse)
 	else if (a[0] == C_GLYPH_NEW_PACKET_DELIMITER) {
 		object o = clone_object(SPYC_PATH "server");
 		unless (o && exec(o, ME) && o->logon(0)) {
