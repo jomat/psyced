@@ -12,7 +12,7 @@ logon() {
 	// first check limits and authlocal, then show banner
 	if (::logon()) {
 //		unless (nick) {
-			cat(TELNET_PATH "clear.vt");
+//			cat(TELNET_PATH "clear.vt");
 			cat("/local/banner.txt");
 //		}
 		// takes a little tweaking to use T() here
