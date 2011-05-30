@@ -1,0 +1,4 @@
+mixed fun() {
+  printf("tp: %O\n",this_player());
+  return 40;
+}
