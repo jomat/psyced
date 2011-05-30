@@ -25,7 +25,7 @@
 # configure will strip this part from the script.
 
 cp $0 settings/psyced-current
-exec ./configure --prefix=/opt/psyced --bindir=/opt/psyced/bin --libdir=/opt/psyced/world --libexec=/opt/psyced/run --with-setting=psyced-current $*
+exec ./configure --enable-use-psyc --prefix=/opt/psyced --bindir=/opt/psyced/bin-linux --libdir=/opt/psyced/world --libexec=/opt/psyced/run --with-setting=psyced-current $*
 exit
 
 #-- PSYCLPC EXTENSIONS
@@ -83,8 +83,8 @@ enable_use_tls=ssl
 # SQL storage not implemented. Maybe PSYC synchronization is good enough?
 # see http://about.psyc.eu/storage for info. 
 enable_use_mysql=no
-enable_use_pgsql=no
-enable_use_sqlite=no
+enable_use_pgsql=yes
+enable_use_sqlite=yes
 
 # maximum permitted tcp connections
 with_max_players=900
@@ -109,7 +109,7 @@ with_set_buffer_size_max=262144
 with_udp_port=4404
 
 # Enable support for IPv6 (this should better be autodetected!!)
-#enable_use_ipv6=no
+enable_use_ipv6=no
 
 # Enable the use of pthreads for background socket IO.
 enable_use_pthreads=no
@@ -237,7 +237,7 @@ enable_share_variables=no
 enable_use_system_crypt=no
 
 # Define this to enable LPC structs.
-enable_use_structs=no
+enable_use_structs=yes
 
 # new inline closure and function syntax, see doc/LPC/inline-closures
 # ... We don't want to use them as yet, but current
