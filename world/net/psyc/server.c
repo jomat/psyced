@@ -186,6 +186,13 @@ static void resolved(mixed host) {
 int logon(int nothing) {
 	P2(("%O accepted TCP from %O (%s:%O)\n", ME,
 	    query_ip_name(), query_ip_number(), peerport))
+        if(query_mud_port() == PSYCS_PORT && !tls_query_connection_info(this_object()))
+        {
+            emit("This is TLS, you don't use TLS\n");
+            QUIT
+            return 0;
+        }
+
 	// we could set the next_input_to and reply with _failure until
 	// hostname is resolved  .. TODO  ... no, we need some form
 	// of queuing for the scripts which do not wait.. why? don't we
