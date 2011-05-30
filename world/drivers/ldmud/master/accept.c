@@ -82,10 +82,10 @@ object connect(int uid, int port, string service) {
 # if __EFUN_DEFINED__(tls_want_peer_certificate)
 		tls_want_peer_certificate(ME);
 # endif
-		t = tls_init_connection(this_object());
-		if (t < 0 && t != ERR_TLS_NOT_DETECTED) {
-			PP(( "TLS on %O: %O\n", query_mud_port(), tls_error(t) ));
-		}
+        if ((t = tls_init_connection()) < 0) {
+            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
+            return 0;
+        }
 	}
 #endif // fall thru
 #if HAS_PORT(PSYC_PORT, PSYC_PATH) &&! AUTODETECT
@@ -123,9 +123,10 @@ object connect(int uid, int port, string service) {
 # if __EFUN_DEFINED__(tls_want_peer_certificate)
         tls_want_peer_certificate(ME);
 # endif
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			   query_mud_port(), tls_error(t) ));
+        if ((t = tls_init_connection()) < 0) {
+            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
+            return 0;
+        }
 #endif // fall thru
 #if HAS_PORT(SPYC_PORT, SPYC_PATH)
     case SPYC_PORT:
@@ -160,9 +161,10 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(POP3S_PORT, POP3_PATH)
     case POP3S_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			   query_mud_port(), tls_error(t) ));
+        if ((t = tls_init_connection()) < 0) {
+            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
+            return 0;
+        }
 	return clone_object(POP3_PATH "server");
 #endif
 #if HAS_PORT(POP3_PORT, POP3_PATH)
@@ -172,9 +174,10 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(SMTPS_PORT, NNTP_PATH)
     case SMTPS_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			   query_mud_port(), tls_error(t) ));
+        if ((t = tls_init_connection()) < 0) {
+            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
+            return 0;
+        }
 	return clone_object(SMTP_PATH "server");
 #endif
 #if HAS_PORT(SMTP_PORT, SMTP_PATH)
@@ -190,9 +193,10 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(NNTPS_PORT, NNTP_PATH)
     case NNTPS_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			   query_mud_port(), tls_error(t) ));
+        if ((t = tls_init_connection()) < 0) {
+            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
+            return 0;
+        }
 	return clone_object(NNTP_PATH "server");
 #endif
 #if HAS_PORT(NNTP_PORT, NNTP_PATH)
@@ -202,9 +206,10 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(JABBERS_PORT, JABBER_PATH)
     case JABBERS_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			     query_mud_port(), tls_error(t) ));
+        if ((t = tls_init_connection()) < 0) {
+            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
+            return 0;
+        }
 	return clone_object(JABBER_PATH "server");
 #endif
 #if HAS_PORT(JABBER_PORT, JABBER_PATH)
@@ -260,9 +265,10 @@ object connect(int uid, int port, string service) {
 #endif
 #if HAS_PORT(IRCS_PORT, IRC_PATH)
     case IRCS_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			     query_mud_port(), tls_error(t) ));
+        if ((t = tls_init_connection()) < 0) {
+            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
+            return 0;
+        }
 	return clone_object(IRC_PATH "server");
 #endif
 #if HAS_PORT(IRC_PORT, IRC_PATH)
@@ -283,9 +289,10 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(TELNETS_PORT, TELNET_PATH)
     case TELNETS_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			     query_mud_port(), tls_error(t) ));
+        if ((t = tls_init_connection()) < 0) {
+            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
+            return 0;
+        }
 	// we could do the UID2NICK thing here, too, but why should we?
 	// what do you need tls for on a localhost tcp link?
         return clone_object(TELNET_PATH "server");
@@ -302,17 +309,10 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(HTTPS_PORT, HTTP_PATH)
     case HTTPS_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0) {
-		D1( if (t != ERR_TLS_NOT_DETECTED) PP(( "TLS(%O) on %O: %O\n",
-					t, query_mud_port(), tls_error(t) )); )
-#if !HAS_PORT(HTTP_PORT, HTTP_PATH)
-		// if we have no http port, it may be intentional
-                return (object)0;
-#endif
-	}
-	D2( else if (t > 0) PP(( "Setting up TLS connection in the background.\n" )); )
-	D2( else PP(( "Oh yeah, I'm initializing an https session!\n" )); )
+        if ((t = tls_init_connection()) < 0) {
+            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
+            return 0;
+        }
 	return clone_object(HTTP_PATH "server");
 #endif
 	/* don't fall thru. allow for https: to be available without http: */
@@ -323,9 +323,10 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(MUDS_PORT, MUD_PATH)
     case MUDS_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			     query_mud_port(), tls_error(t) ));
+        if ((t = tls_init_connection()) < 0) {
+            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
+            return 0;
+        }
 	return clone_object(MUD_PATH "login");
 #endif
 #if HAS_PORT(MUD_PORT, MUD_PATH)
