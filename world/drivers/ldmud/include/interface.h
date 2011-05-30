@@ -12,9 +12,9 @@
 # define DRIVER_VERSION  "ldmud/" __VERSION__
 #else
 # define DRIVER_VERSION  "psyclpc/" __VERSION__
+#endif
 
 # define hex2int(HEX)	to_int("0x"+ HEX)
-#endif
 
 // driver abstraction kit -- abstraction layer from driver details
 
