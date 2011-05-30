@@ -72,23 +72,14 @@ object connect(int uid, int port, string service) {
     // we dont want the telnet machine most of the time
     // but disabling and re-enabling it for telnet doesn't work
     switch(port || query_mud_port()) {
-#if HAS_PORT(PSYC_PORT, PSYC_PATH) && AUTODETECT
-    case PSYC_PORT:
-#endif
 #if HAS_PORT(PSYCS_PORT, PSYC_PATH)
-    case PSYCS_PORT:	// inofficial & temporary
-	// make TLS available even on the default psyc port using the autodetection feature
-	if (tls_available()) {
-# if __EFUN_DEFINED__(tls_want_peer_certificate)
-		tls_want_peer_certificate(ME);
-# endif
+    case PSYCS_PORT:
         if ((t = tls_init_connection()) < 0) {
             PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
             return 0;
         }
-	}
-#endif // fall thru
-#if HAS_PORT(PSYC_PORT, PSYC_PATH) &&! AUTODETECT
+#endif
+#if HAS_PORT(PSYCS_PORT, PSYC_PATH)
     case PSYC_PORT:
 #endif
 #if HAS_PORT(PSYC_PORT, PSYC_PATH) || HAS_PORT(PSYCS_PORT, PSYC_PATH)
