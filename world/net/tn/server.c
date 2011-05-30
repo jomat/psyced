@@ -9,6 +9,13 @@
 qScheme() { return "tn"; }
 
 logon() {
+        if(query_mud_port() == TELNETS_PORT && !tls_query_connection_info(this_object()))
+        {
+            emit("This is TLS, you don't use TLS\n");
+            QUIT
+            return;
+        }
+
 	// first check limits and authlocal, then show banner
 	if (::logon()) {
 //		unless (nick) {
