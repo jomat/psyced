@@ -25,3 +25,4 @@ INSTALL.txt
 *.h-*
 *.fmt-*
 data
+world/zlpc/*.c
