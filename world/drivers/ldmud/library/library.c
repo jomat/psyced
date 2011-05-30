@@ -11,6 +11,8 @@
 
 #include <driver.h>
 
+inherit NET_PATH "library/deprecated";
+
 #ifdef PRO_PATH
 inherit PRO_PATH "library2";
 inherit PRO_PATH "http/library2";
