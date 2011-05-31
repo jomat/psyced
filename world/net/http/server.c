@@ -27,6 +27,22 @@ qScheme() { return "html"; }
 
 logon() {
     D2(D("»»» New SmallHTTP user\n");)
+    if(query_mud_port() == HTTPS_PORT && !tls_query_connection_info(this_object()))
+    {   
+        emit(
+          "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">"
+          "<html><head>"
+          "<title>400 Bad Request</title>"
+          "</head><body>"
+          "<h1>Bad Request</h1>"
+          "<p>Your browser sent a request that this server could not understand.<br />"
+          "Reason: You're speaking plain HTTP to an SSL-enabled server port.<br />"
+          "Instead use the HTTPS scheme to access this URL, please.<br />"
+          "</body></html>"
+        );
+        QUIT
+        return;
+    }
 
     // bigger buffer (for psyc logo)
     set_buffer_size(32768);
