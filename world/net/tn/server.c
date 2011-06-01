@@ -108,5 +108,22 @@ morph() {
 	   emit("\nSorry, no unregistered users currently.\n\n");
        else return ::morph();
 }
-#endif
+#else /* BRAIN */
+really_morph(string a) {
+  if ('y'==a[0]||'Y'==a[0]) {
+    ::morph();
+  } else {
+    QUIT
+  }
+}
 
+morph() {
+  if (interactive(user)) {
+    binary_message(({255, 252, 1}));
+    emit(sprintf("\nYou are already logged in from %s as %O\nDo you want to overtake? [yN] ",query_ip_number(user),user));
+    input_to(#'really_morph);
+    return 0;
+  }
+  return ::morph();
+}
+#endif /* BRAIN */
