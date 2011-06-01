@@ -120,6 +120,11 @@ really_morph(string a) {
 morph() {
   if (interactive(user)) {
     binary_message(({255, 252, 1}));
+    if (user->isNewbie()) {
+      emit("\nBad luck, this username is already in use.\n");
+      QUIT
+      return 0;
+    }
     emit(sprintf("\nYou are already logged in from %s as %O\nDo you want to overtake? [yN] ",query_ip_number(user),user));
     input_to(#'really_morph);
     return 0;
