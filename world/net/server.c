@@ -190,6 +190,15 @@ authChecked(int result, ni, try, elm) {
 
 password(try, method, salt) {
 	mixed authCb;
+        string master_nick;
+        object master_user;
+
+        if (nick)
+          master_nick=explode(nick,"+")[0]
+          ,master_user=find_person(master_nick); 
+        else
+          master_user=user;
+
 	unless (user) {
 		w("_failure_object_destructed",	    // never happens
 		    "Huh? Your (master)user object has disappeared!");
@@ -208,7 +217,7 @@ password(try, method, salt) {
 		}
 		return morph();
 	    });
-	user -> checkPassword(try, method, salt, 0, authCb);
+	master_user -> checkPassword(try, method, salt, 0, authCb);
 }
 
 // supercede this in inheriting server class
