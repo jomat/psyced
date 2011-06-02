@@ -53,6 +53,8 @@ createUser(nick) {
 // returns 1 if password prompt is necessary  - who needs that?
 // see also morph.i
 hello(ni, elm, try, method, salt) {
+        string master_nick;
+        object master_user;
 #ifdef LOGIN_BY_EMAIL
 	if (nick = legal_mailto(ni)) {
 		elm = 0;
@@ -77,7 +79,13 @@ hello(ni, elm, try, method, salt) {
 			QUIT
 		}
 	}
-	return user -> checkPassword(try, method, salt, 0, #'authChecked, 
+        if (nick)
+          master_nick=explode(nick,"+")[0]
+          ,master_user=find_person(master_nick); 
+        else
+          master_user=user;
+
+	return master_user -> checkPassword(try, method, salt, 0, #'authChecked, 
 				     ni, try, elm);
 }
 
@@ -176,7 +184,7 @@ password(try, method, salt) {
 	mixed authCb;
 	unless (user) {
 		w("_failure_object_destructed",	    // never happens
-		    "Huh? Your user object has disappeared!");
+		    "Huh? Your (master)user object has disappeared!");
 		QUIT
 	}
 	// nick, guesses needed?
