@@ -85,12 +85,7 @@ hello(ni, elm, try, method, salt) {
         else
           master_user=user;
         if (!master_user||(!interactive(master_user)&&nick!=master_nick)) {
-          // by now we need an already existing unaliased object of the user
-          // which isn't created on the fly yet
-          // TODO: either: notify the client about the problem
-          //       recommended or: spawn a non-interactive user-object which
-          //                       relays the messages to the aliases
-          QUIT
+          master_user=summon_person(master_nick);
         }
 	return master_user -> checkPassword(try, method, salt, 0, #'authChecked, 
 				     ni, try, elm);
