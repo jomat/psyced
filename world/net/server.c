@@ -84,8 +84,7 @@ hello(ni, elm, try, method, salt) {
           ,master_user=find_person(master_nick); 
         else
           master_user=user;
-
-        if (!master_user) {
+        if (!master_user||(!interactive(master_user)&&nick!=master_nick)) {
           // by now we need an already existing unaliased object of the user
           // which isn't created on the fly yet
           // TODO: either: notify the client about the problem
