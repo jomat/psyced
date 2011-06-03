@@ -23,6 +23,9 @@ volatile string nick;
 volatile object user;
 volatile int guesses;
 
+string master_nick;
+object master_user;
+
 // just a clean-up to avoid ugly warnings when net/server and
 // net/jabber/* use differing flags in input_to calls.
 volatile int input_to_settings = INPUT_IGNORE_BANG;
@@ -53,8 +56,6 @@ createUser(nick) {
 // returns 1 if password prompt is necessary  - who needs that?
 // see also morph.i
 hello(ni, elm, try, method, salt) {
-        string master_nick;
-        object master_user;
 #ifdef LOGIN_BY_EMAIL
 	if (nick = legal_mailto(ni)) {
 		elm = 0;
@@ -184,8 +185,6 @@ authChecked(int result, ni, try, elm) {
 
 password(try, method, salt) {
 	mixed authCb;
-        string master_nick;
-        object master_user;
 
         if (nick)
           master_nick=explode(nick,"+")[0]
