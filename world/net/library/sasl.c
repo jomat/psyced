@@ -1,6 +1,7 @@
 // $Id: sasl.c,v 1.17 2006/10/18 17:52:15 fippo Exp $ // vim:syntax=lpc
 
 #include <net.h>
+#include <sys/tls.h>
 
 mapping sasl_parse(string t) {
     string vname, vvalue;
@@ -44,7 +45,7 @@ varargs string sasl_calculate_digestMD5(mapping data, string secret, int calcres
 	 */
 	t = prehash;
     } else {
-	t = md5(data["username"] + ":" + data["realm"] + ":" + secret);
+	t = hash(TLS_HASH_MD5, data["username"] + ":" + data["realm"] + ":" + secret);
     }
     t2 = "";
 
@@ -53,14 +54,14 @@ varargs string sasl_calculate_digestMD5(mapping data, string secret, int calcres
     for (int i = 0; i < 32; i += 2)
 	t2 += sprintf("%c", to_int("0x" + t[i..i+1]));
 
-    HA1 = md5(t2 + ":" + data["nonce"] + ":" + data["cnonce"]);
+    HA1 = hash(TLS_HASH_MD5, t2 + ":" + data["nonce"] + ":" + data["cnonce"]);
     if (calcresponse)
 	t = ":";
     else
 	t = "AUTHENTICATE:";
     t += data["digest-uri"];
     // TODO: qop == "auth-int"
-    HA2 = md5(t);
+    HA2 = hash(TLS_HASH_MD5, t);
     P2(("sasl: t is %O, t2 is %O\n", t, t2))
     P2(("sasl: HA1 is %O, HA2 is %O\n", HA1, HA2))
 
@@ -70,7 +71,7 @@ varargs string sasl_calculate_digestMD5(mapping data, string secret, int calcres
 		HA1, data["nonce"], data["nc"],
 		data["cnonce"], data["qop"], HA2);
     P2(("sasl: response will be md5(%O)\n", t))
-    return md5(t);
+    return hash(TLS_HASH_MD5, t);
 }
 
 /* this is testing the behaviour with the example data from RFC 2831
