@@ -68,6 +68,16 @@ msg(mixed source, mc, data, mapping vars, showingLog);
 // also, should _request_input be permitted to pass the object here instead,
 // since it has already looked it up with psyc_object() ? TODO
 input(a, dest) {
+        if (ME&&ME->vQuery("master_user")&&ME->vQuery("master_user")!=ME) switch(a) {
+          case "/quit":
+          case "/bye":
+          case "/signoff":
+          case "/exit":
+            break;
+          default:
+            return ME->vQuery("master_user")->input(a,dest);
+        }
+
 	P2(("»»> input(%O, %O) in %O\n", a, dest, ME))
 #ifdef USER_PROGRAM
 	vSet("aliveTime", time());
@@ -3487,6 +3497,8 @@ static placeRequest(where, mc, leave, quiet, morevars) {
 #ifdef USER_PROGRAM
 teleport(where, mcv, quiet, stay, morevars) {
 	mixed t;
+        if (ME&&ME->vQuery("master_user")&&ME->vQuery("master_user")!=ME)
+          return ME->vQuery("master_user")->teleport(where,mcv,quiet,stay,morevars);
 
 	P3(("teleport(%O,%O,%O,%O,%O)\n", where, mcv, quiet, stay, morevars))
 	if (where) {
