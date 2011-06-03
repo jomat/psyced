@@ -44,12 +44,13 @@ object add_alias_connection(string name, object user) {
   if (-1!=strstr(MYNICK,"+"))
     return find_person(explode(MYNICK,"+")[0])->add_alias_connection(name,user);
   if (user==ME)
-    return ME;
+    return vSet("master_user",ME),ME;
   
   if (alias_connections[name]&&living(alias_connections[name]))
     return alias_connections[name];
   alias_connections[name]=user;
   user->vSet("password",v("password"));
+  user->vSet("master_user",ME);
   P2(("added alias connection %O = %O\n\n",name,user));
   return 0;
 }
