@@ -761,27 +761,22 @@ checkPassword(try, method, salt, args, cb, varargs cbargs) {
 #endif
 	if (!try || try == "") ARETURN(0)
 	switch(method) {
-#if __EFUN_DEFINED__(sha1)
 case "SHA1":
 case "sha1":
 		P3(("SHA1 given %O vs calculated %O\n",
-		    try, sha1(salt + v("password"))));
-		rc = try == sha1(salt + v("password"));
+		    try, hash(TLS_HASH_SHA1, salt + v("password"))));
+		rc = try == hash(TLS_HASH_SHA1, salt + v("password"));
 		ARETURN(rc)
-#else
-# echo Driver is missing SHA1 support (needed for jabber)
-#endif
-#if __EFUN_DEFINED__(md5)
 case "MD5":
 case "md5":
-		rc = try == md5(salt + v("password"));
+		rc = try == hash(TLS_HASH_MD5, salt + v("password"));
 		ARETURN(rc)
 case "http-digest": // see RFC 2617
 		unless(mappingp(args)) ARETURN(0)
 		// v("name") == args["username"] ???
-		HA1 = md5(args["_username"] + ":" + args["_realm"] + ":" + v("password"));
-		HA2 = md5(args["_method"] + ":" + args["_uri"]);
-		rc = try == md5(HA1 + ":" + salt + ":" + HA2);
+		HA1 = hash(TLS_HASH_MD5, args["_username"] + ":" + args["_realm"] + ":" + v("password"));
+		HA2 = hash(TLS_HASH_MD5, args["_method"] + ":" + args["_uri"]);
+		rc = try == hash(TLS_HASH_MD5, HA1 + ":" + salt + ":" + HA2);
 		ARETURN(rc)
 // SASL digest-md5. fippo hotzenplotzt: digest-md5 ist ein sasl bastard
 //					den sogar die ietf abschaffen will
@@ -795,7 +790,6 @@ case "digest-md5":
 		    rc = sasl_calculate_digestMD5(args, v("password"), 1, v("prehash"));
 		    ARETURN(rc)
 		} else ARETURN(0)
-#endif
 default:
 		P4(("plain text pw %O == %O?\n", try, v("password")))
 #ifdef PASSWORDCHECK
@@ -1246,13 +1240,7 @@ case "_set_password":
 				     "_nonce" : nonce,
 // fippo thinks it is much more natural to show them here				    
 #if 1
-				     "_available_hashes": ""
-#if __EFUN_DEFINED__(sha1)
-                                         "sha1;"
-#endif
-#if __EFUN_DEFINED__(md5)
-                                         "md5;http-digest;digest-md5"
-#endif
+				     "_available_hashes": "sha1;md5;http-digest;digest-md5"
 #endif
 				]) );
 			    }
