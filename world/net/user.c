@@ -29,6 +29,55 @@ volatile mapping tags;
 volatile int showEcho;
 volatile mixed beQuiet;
 
+
+// TODO: find a better place for this
+// TODO: simplify if (-1!=strstr(MYNICK,"+")) return find_person(explode(MYNICK,"+")[0])->…
+mapping alias_connections=([]);
+
+object add_alias_connection(string name, object user) {
+  P2(( "%O (%O) trying to add alias connection %O -> %O\n",ME,MYNICK,name,user));
+
+  // the correct order of these two ifs is important!
+  // first check if I'm a slave user (and delegate the fun to the master)
+  //   and then check if the slave to be added is me (i. e. not a slave,
+  //   i. e. the master) (and just don't do anything)
+  if (-1!=strstr(MYNICK,"+"))
+    return find_person(explode(MYNICK,"+")[0])->add_alias_connection(name,user);
+  if (user==ME)
+    return ME;
+  
+  if (alias_connections[name]&&living(alias_connections[name]))
+    return alias_connections[name];
+  alias_connections[name]=user;
+  P2(("added alias connection %O = %O\n\n",name,user));
+  return 0;
+}
+
+void map_alias_connections(closure f) {
+  if (-1!=strstr(MYNICK,"+"))
+    return find_person(explode(MYNICK,"+")[0])->map_alias_connections(f);
+
+  alias_connections=filter(alias_connections,function int(string k,object o) { 
+    if (!o) 
+      return 0;
+    funcall(f,k,o);
+    return 1;
+  });
+}
+
+mapping query_alias_connections() {
+  if (-1!=strstr(MYNICK,"+"))
+    return find_person(explode(MYNICK,"+")[0])->query_alias_connections();
+
+  return deep_copy(alias_connections);
+}
+void delete_alias_connection(string name) {
+  if (-1!=strstr(MYNICK,"+"))
+    return find_person(explode(MYNICK,"+")[0])->delete_alias_connection(name);
+
+  m_delete(alias_connections,name);
+}
+
 // my nickspace. used by psyctext(). could be passed as closure, but then
 // it wouldn't be available for *any* psyctext call in user objects.
 uni2nick(source, vars) {
@@ -1555,6 +1604,8 @@ logon() {
 		return remove_interactive(ME);
 		// and the object will deteriorate when user gives up..
 	}
+        add_alias_connection(implode(explode(MYNICK,"+")[1..],"+"),ME);
+
 	// shouldn't this be qScheme() instead? little paranoid TODO
 	// but then we would have to move qScheme() from the server.c's
 	// into the common.c's .. well, we could do that some day

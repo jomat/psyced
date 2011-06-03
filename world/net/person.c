@@ -913,6 +913,11 @@ msg(mixed source, mc, data, mapping vars, showingLog) {
 	string k, display, profile, family;
 	mixed t, t2, psource;
 
+        ME->map_alias_connections(function void(string k,object o) {
+          if (""!=k&&o!=ME)
+            o->msg(source, mc, data, vars, showingLog);
+        });
+
 	// wrong to initialize here.. TODO
 	mixed rvars = ([ "_nick" : MYNICK ]); // replyvars
 
