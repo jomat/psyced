@@ -283,6 +283,8 @@ echo "[binary directory is $ARCH_DIR]"
 ## uname -m returns "Power Macintosh" on macosx. very unuseful.
 ##get ARCH_DIR "$BASE_DIR/bin-`uname -m`"
 ## why did we call uname twice anyway? uname -s returns such a nice "darwin"
+## on linux it returns the actual processor type (i686, x86_64, etc)
+## which these days needs to be considered.. FIXME
 ##
 #get ARCH_DIR "$BASE_DIR/bin-$arch"
 #ask "Binary installation directory" ARCH_DIR
