@@ -474,7 +474,7 @@ mixed list_parse(string val) {
 
 # ifdef SELFTESTS
 test() {
-    list_parse("|psyc://example.symlynX.com/~jim|psyc://example.org/~judy");
+    list_parse("|psyc://example.net/~jim|psyc://example.org/~judy");
     list_parse("5\tabcde|4\tabcd");
 }
 # endif
