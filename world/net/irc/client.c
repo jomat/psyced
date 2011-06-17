@@ -37,10 +37,27 @@
  *   ; For definition of the authority part see RFC 2396. The authority part should
  *   ; be a host of the IRC network or some other authority which allows you to reach the destination
  *
- * client.c will register a scheme. Incoming psyc messages are passed to
+ *
+ *
+ * Some notes:
+ * 
+ * How this thing is constructed:
+ * client.c will register the irc: scheme. Incoming psyc messages are passed to
  * client_user.c#username for each user
  * client_user.c#username manages a bunch of client_connection.c, each one of them logs in as
  * user to the irc server
+ *
+ * Some TODOs and what won't work:
+ *  Interface to manage IRC connections
+ *  a lot of messages (QUIT, NOTICE, PART, …)
+ *  entering place
+ *  nick lists
+ *
+ * How this thing is used:
+ *  set up your servers in the servers array
+ *  either/or
+ *   join a room like irc:*roomname@serverid (replace the # of #roomname by a *)
+ *   query some user like irc:~username@serverid
  */
 #include <debug.h>
 #pragma no_clone
