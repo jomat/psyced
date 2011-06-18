@@ -53,7 +53,7 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
         "--------mc\n%O\n--------data\n%O\n--------vars\n%O"
         "\n--------showingLog\n%O\n--------target\n%O\n--------\n"
         ,source,mc,data,vars,showingLog,target));
-  string id=explode(target,"@")[1];
+  string id=explode(target?target:vars["_nick_place"],"@")[1];
   if (!servers[id]) {  // TODO: I could try to parse the URI better to add servers automatically or whatever...
     sendmsg(source, "_error_unknown_name_user",    // TODO: should i think of something else?
       "Server ID [_nick_target] unknown.",

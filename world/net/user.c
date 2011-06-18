@@ -411,7 +411,7 @@ msg(source, mc, data, mapping vars, showingLog) {
 		vars["_INTERNAL_context"] = vars["_context"];
 		m_delete(vars, "_context");
 	//	unless (source) source = vars["_source_relay"];
-#if DEBUG > 0
+#if DEBUG > 3
 	    } else if (!objectp(vars["_context"]) &&
 		!places[vars["_context"]] &&
 	       	// !psyc_object(vars["_context"]) &&

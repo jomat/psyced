@@ -63,7 +63,7 @@ varargs int irc_join(string channel, string tag, string key) {
   // Makes the client join the channels in the comma-separated list <channels>, specifying the passwords, if needed, in the comma-separated list <keys>. If the channel(s) do not exist then they will be created.
   // Defined in RFC 1459
   if (1>server->connected) {
-    call_out(#'irc_join,1,channel,key);
+    call_out(#'irc_join,1,channel,tag,key);
     P2(("not connected to %s, not joining the channel\n",server->host));
     return 2;
   }
@@ -165,9 +165,14 @@ int parse_answer(string s) {
         where[0]='*';
 
       P2(("trying to enter %s\n", "irc:"+where+"@"+server->id));
-      sendmsg(find_person(server->owner),"_echo_place_enter","welcome to this room"
+      // sendmsg(target, mc, data, vars, source, showingLog, callback)
+      sendmsg
+        (find_person(server->owner) /*server->master*/
+        ,"_echo_place_enter"
+        ,"welcome to this room"
         ,(["_nick_place": "irc:"+where+"@"+server->id
-          ,"_nick":"irc:~"+server->nick+"@"+server->id
+          ,"_context": "irc:"+where+"@"+server->id
+          ,"_nick":server->owner  //"irc:~"+server->nick+"@"+server->id
           ,"_tag":tag
       ]));
       return 0;
@@ -266,21 +271,21 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
 // ])
 // showingLog 0
 // target "irc:*jomat@blafasel"
-
   switch (mc) {
+    case "_message_private":
     case "_message_public_question":
     case "_message_public":
-    case "_message_private":
       string destination=parse_destination(target);
       if (""==destination) // msg to the server
         emit(data+"\n");
       else
         irc_privmsg(destination,data);
+      source->msg(this_object(),regreplace(mc,"(_message_)(.*)","\\1echo_\\2",0),data,vars);
       return 0;
     case "_request_enter":
     case "_request_enter_join":
     case "_request_enter_subscribe":
-      irc_join(parse_destination(target));
+      irc_join(parse_destination(target),vars["_tag"],0 /* TODO: add key foo */);
     break;
   }
   return 1;
