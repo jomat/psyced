@@ -169,12 +169,13 @@ varargs void show_members(mixed whom,string room,mixed vars) {
     // TODO: think if this can happen and if it'd be useful to ask for the names
     return;
   }
-  string *unis=({});
+  string *members=({});
   string *nicks=({});
-  map(channels[room]->users,function void(string nick,struct user_s user,string *unis,string *nicks) {
-    unis+=({"irc:~"+nick+"@"+server->id});
+  map(channels[room]->users,function void(string nick,struct user_s user,string *members,string *nicks) {
+    //members+=({"irc:~"+nick+"@"+server->id});   // TODO: configure user display
+    members+=({user->prefix?sprintf("%c%s",user->prefix,nick):nick});
     nicks+=({nick});
-  },&unis,&nicks);
+  },&members,&nicks);
   if ('#'==room[0])
     room[0]='*';
   sendmsg
@@ -183,12 +184,13 @@ varargs void show_members(mixed whom,string room,mixed vars) {
     ,"In [_nick_place]: [_list_members_nicks]."
     ,(["_nick_place":"irc:"+room+"@"+server->id
       ,"_target":"irc:"+room+"@"+server->id
-      ,"_list_members":unis
+      ,"_list_members":members
       ,"_list_members_nicks":nicks
   ]));
 }
 
 int parse_answer(string s) {
+  P2(("Parsing: %O\n",s));
   if (s[0..4] == "PING ") {
     emit("PONG "+s[5..]+"\n");
     return 0;
@@ -244,15 +246,19 @@ int parse_answer(string s) {
 
       // :jomat!~jomat@lethe.jmt.gr PRIVMSG #jomat :alarmowitsch
       // :irc:*maeh@foo.bar!*@* PRIVMSG #irc:~oha@foo.bar :#jomat :aaaaaaaaaaaaaa
-      string where,msg,from_nick;
+      string where,where_o,msg,from_nick;
       sscanf(s,":%s!%~s %~s %s :%s",from_nick,where,msg);
-      if ('#'==where[0])
+      if ('#'==(where_o=where)[0])
         where[0]='*';
 
       if (where==server->nick)
         sendmsg(find_person(server->owner),"_message_private",msg,([ "_nick": "irc:~"+from_nick+"@"+server->id ]));
       else
-        sendmsg(find_person(server->owner),"_message_public",msg,([ "_nick_place": "irc:"+where+"@"+server->id,"_nick":"irc:~"+from_nick+"@"+server->id ]));
+        //sendmsg(find_person(server->owner),"_message_public",msg,([ "_nick_place": "irc:"+where+"@"+server->id,"_nick":"irc:~"+from_nick+"@"+server->id ]));  // TODO: make it configurable
+        sendmsg(find_person(server->owner),"_message_public",msg,
+          (["_nick_place":"irc:"+where+"@"+server->id
+           ,"_nick":channels[where_o]->users[from_nick]->prefix?sprintf("%c%s",channels[where_o]->users[from_nick]->prefix,from_nick):from_nick
+        ]));
       return 0;
     // http://www.alien.net.au/irc/irc2numerics.html
     case "001":
