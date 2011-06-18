@@ -417,6 +417,8 @@ void register_person(string name, object o) {
 // .... the lowercazed optimization actually doesn't
 // help, there is hardly a use for it.. so it may disappear again.
 varargs object find_person(string name, vaint lowercazed) {
+        if (!stringp(name))
+          return 0;
         if (!lowercazed) name = lower_case(name);
         return people[name];
 }
