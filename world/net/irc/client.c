@@ -67,11 +67,25 @@ void create() {
 }
 
 varargs int msg(string source, string mc, string data, mapping vars, int showingLog, mixed target) {
-  object client=find_object(object_name()+"_user.c#"+vars["_nick"]);
+    P2(("IRC client.c %O got a message----------------------\nsource %O\n"                                                               
+        "--------mc %O\n--------data %O\n--------vars %O"    
+        "\n--------showingLog %O\n--------target %O\n--------\n"
+        ,this_object(),source,mc,data,vars,showingLog,target)); 
+
+  string nick=vars["_nick"];
+  if (!nick)
+    if (source)
+      sscanf(sprintf("%O",source),"%~s#%s",nick);
+    else {
+     P1(("%O unknown nick in msg\n"));
+     return 0;
+   }
+
+  object client=find_object(object_name()+"_user.c#"+nick);
   if (!client) {
-    named_clone("/net/irc/client_user.c",vars["_nick"]);
-    client=find_object(object_name()+"_user.c#"+vars["_nick"]);
-    client->set_parameters((["owner":vars["_nick"]]));
+    named_clone("/net/irc/client_user.c",nick);
+    client=find_object(object_name()+"_user.c#"+nick);
+    client->set_parameters((["owner":nick]));
   }
   client->msg(source,mc,data,vars,showingLog,target);
   return 0;

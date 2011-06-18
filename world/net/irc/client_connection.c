@@ -21,9 +21,21 @@ struct server_s {
   string owner;
 };
 
+struct channel_s {
+  mapping users; /* ([ "foo":(<struct user_s>) ]) */
+  string tag;
+  string key;  // TODO: yeah, these keys have to be set and perhaps even saved,
+               //       nothing implemented right now, but if they are set, it could work
+};
+
+struct user_s {
+  int prefix;
+  // TODO: modes, …
+};
+
 int last_message_timestamp;
 struct server_s server;
-mapping joins_pending=([]);
+mapping channels=([]);  /* ([ "#foo":(<struct channel_s>) ]) */
 
 /*
 int emit(string m) {
@@ -31,6 +43,16 @@ int emit(string m) {
   return ::emit(m);
 }
 */
+
+void update_nick(string nick, string chan) {
+  if (!structp(channels[chan]))
+    channels[chan]=(<channel_s>);
+  if ('+'==nick[0]||'@'==nick[0])
+    channels[chan]->users[nick[1..]]=(<user_s>prefix:nick[0]);
+  else
+    channels[chan]->users[nick]=(<user_s>);
+  //P2(("channels after nickupdate %O\n",channels));
+}
 
 void set_owner(string s) {
   server->owner=s;
@@ -57,7 +79,7 @@ int irc_privmsg(string msgtarget, string message) {
   return 0;
 }
 
-// try to join _one_ channel with a optional key
+// try to join _one_ channel with an optional key
 varargs int irc_join(string channel, string tag, string key) {
   // JOIN <channels> [<keys>]
   // Makes the client join the channels in the comma-separated list <channels>, specifying the passwords, if needed, in the comma-separated list <keys>. If the channel(s) do not exist then they will be created.
@@ -78,7 +100,10 @@ varargs int irc_join(string channel, string tag, string key) {
     emit(sprintf("JOIN %s %s\n",channel,key));
   else
     emit(sprintf("JOIN %s\n",channel));
-  joins_pending[channel]=tag;
+  if (structp(channels[channel]))
+    channels[channel]->tag=tag;
+  else
+    channels[channel]=(<channel_s> tag:tag,users:([]));
   return 0;
 } 
 
@@ -127,6 +152,42 @@ int connect() {
   }
 }
 
+varargs void show_members(mixed whom,string room,mixed vars) {
+  if (vars&&"W"==vars["_tag"]) {
+    // BIG FAT TODO:
+    // if a client sends a WHO the _tag will be set to "W"
+    // if a _status_place_members is sent like here, a RPL_NAMREPLY
+    // is sent to the client, but the correct answer would be a RPL_WHOREPLY
+    //
+    // some clients (like weechat) periodically issue WHOs, and RPL_NAMREPLY
+    // are scrolling live in the chanwindow and are quite annoying
+    return;
+  }
+  
+  if (!structp(channels[room])) {
+    // no data available for the channel
+    // TODO: think if this can happen and if it'd be useful to ask for the names
+    return;
+  }
+  string *unis=({});
+  string *nicks=({});
+  map(channels[room]->users,function void(string nick,struct user_s user,string *unis,string *nicks) {
+    unis+=({"irc:~"+nick+"@"+server->id});
+    nicks+=({nick});
+  },&unis,&nicks);
+  if ('#'==room[0])
+    room[0]='*';
+  sendmsg
+    (whom
+    ,"_status_place_members"
+    ,"In [_nick_place]: [_list_members_nicks]."
+    ,(["_nick_place":"irc:"+room+"@"+server->id
+      ,"_target":"irc:"+room+"@"+server->id
+      ,"_list_members":unis
+      ,"_list_members_nicks":nicks
+  ]));
+}
+
 int parse_answer(string s) {
   if (s[0..4] == "PING ") {
     emit("PONG "+s[5..]+"\n");
@@ -159,7 +220,7 @@ int parse_answer(string s) {
       if(!where||!from_nick)
         return 1;
 
-      string tag=joins_pending[where];
+      string tag=structp(channels[where])?channels[where]->tag:"";;
 
       if ('#'==where[0])
         where[0]='*';
@@ -199,6 +260,36 @@ int parse_answer(string s) {
       // :Welcome to the Internet Relay Network <nick>!<user>@<host>
       // The first message sent after client registration. The text used varies widely 
       server->connected=1;
+      // channel tag key
+      map(channels,function void(string id, struct channel_s channel) {
+        irc_join(id,channel->tag,channel->key);
+      });
+      return 0;
+    case "353":
+      /*
+       * 353     RPL_NAMREPLY
+       *                 "<channel> :[[@|+]<nick> [[@|+]<nick> [...]]]"
+       *                 :ray.blafasel.de 353 jnick = #jchan :jnick @jmt
+       * 366     RPL_ENDOFNAMES
+       *                 "<channel> :End of /NAMES list"
+       *                 :space.blafasel.de 366 jmt #ccc :End of /NAMES list.
+       *
+       *         - To reply to a NAMES message, a reply pair consisting
+       *           of RPL_NAMREPLY and RPL_ENDOFNAMES is sent by the
+       *           server back to the client.  If there is no channel
+       *           found as in the query, then only RPL_ENDOFNAMES is
+       *           returned.  The exception to this is when a NAMES
+       *           message is sent with no parameters and all visible
+       *           channels and contents are sent back in a series of
+       *           RPL_NAMEREPLY messages with a RPL_ENDOFNAMES to mark
+       *           the end.
+       */
+      string chan,nicks;
+      sscanf(s,":%~s %~s %~s %~s %s :%s",chan,nicks);
+      map(explode(nicks," "),#'update_nick,chan);
+      return 0;
+    case "366":
+      show_members(find_person(server->owner),explode(s," ")[3]);
       return 0;
     case "433":
       // ERR_NICKNAMEINUSE   RFC1459
@@ -272,6 +363,11 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
 // showingLog 0
 // target "irc:*jomat@blafasel"
   switch (mc) {
+    case "_request_members":  /* user wants to see the nicks of a room */
+      string chan;
+      sscanf(vars["_target"]?vars["_target"]:target,"irc:%s@%~s",chan);
+      show_members(source,chan,vars);
+      return 0;
     case "_message_private":
     case "_message_public_question":
     case "_message_public":
