@@ -6,6 +6,7 @@
 #include <interface.h>
 #include <input_to.h>
 #include "/local/config.h"
+#include "/net/ident/ident.h"
 
 virtual inherit NET_PATH "output";
 
@@ -149,6 +150,7 @@ int connect() {
   if (net_connect(server->host,server->port)) {
     P3(( "couldn't connect to server, reconnecting in 10 seconds...\n"));  // TODO...
     call_out(#'connect,10);
+    return 1;
   }
 }
 
@@ -399,6 +401,7 @@ int logon() {
     call_out(#'connect,10);
     return 0;
   }
+  IDENT_MASTER->update_connection(server->port,server->owner);
   server->connected=-1;
   irc_nick(server->nick);
   irc_user(server->nick,"*",server->nick);
