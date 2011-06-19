@@ -211,6 +211,8 @@ X
 #define	NTTP_PORT	$c{_protocols_port_NNTP}
 #define	NNTPS_PORT	$c{_protocols_port_NNTP_encrypted}
 
+#define IDENT_PORT $c{_protocols_port_ident}
+
 // experimental PSYC 1.0 implementation
 #define	SPYC_PORT	$c{_protocols_port_SPYC}
 
@@ -219,7 +221,7 @@ X
 	close O;
 	chmod 0644, $t;
 
-	my $ports="$c{_protocols_port_PSYC} $c{_protocols_port_jabber_S2S} $c{_protocols_port_applet} $c{_protocols_port_telnet} $c{_protocols_port_HTTP} $c{_protocols_port_IRC} $c{_protocols_port_jabber_clients} $c{_protocols_port_SMTP} $c{_protocols_port_NNTP} $c{_protocols_port_SPYC}";
+	my $ports="$c{_protocols_port_PSYC} $c{_protocols_port_jabber_S2S} $c{_protocols_port_applet} $c{_protocols_port_telnet} $c{_protocols_port_HTTP} $c{_protocols_port_IRC} $c{_protocols_port_jabber_clients} $c{_protocols_port_SMTP} $c{_protocols_port_NNTP} $c{_protocols_port_SPYC} $c{_protocols_port_ident}";
 	$ports .= " $c{_protocols_port_PSYC_encrypted} $c{_protocols_port_telnet_encrypted} $c{_protocols_port_HTTP_encrypted} $c{_protocols_port_IRC_encrypted} $c{_protocols_port_jabber_clients_encrypted} $c{_protocols_port_SMTP_encrypted} $c{_protocols_port_NNTP_encrypted}" if $c{_protocols_use_encryption};
 
 	my @adm;

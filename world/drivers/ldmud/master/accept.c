@@ -176,7 +176,7 @@ object connect(int uid, int port, string service) {
 	return clone_object(SMTP_PATH "server");
 #endif
 
-    case 113: /* identd, TODO: define-stuff
+    case IDENT_PORT: /* identd, TODO: define-stuff
                * to allow ldmud to listen on this port, run sth. like
                * sudo setcap 'cap_net_bind_service=+ep' /opt/psyced/bin-linux/ldmud
                */
