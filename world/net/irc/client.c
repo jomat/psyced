@@ -40,6 +40,10 @@
  *
  *
  * Some notes:
+ * I'm testing with irssi and weechat as psyced client mostly, so if you want to try out this stuff
+ * it'd be a good idea to use an irc client at least at first. Telnet could work sometimes, too.
+ * I know that it's a little bit unusable with psi as xmpp client, because you can't add irc:~nick@server
+ * jids with it... TODO
  * 
  * How this thing is constructed:
  * client.c will register the irc: scheme. Incoming psyc messages are passed to
@@ -48,13 +52,12 @@
  * user to the irc server
  *
  * Some TODOs and what won't work:
- *  Interface to manage IRC connections
  *  a lot of messages (QUIT, NOTICE, PART, …)
- *  entering place
- *  nick lists
  *
  * How this thing is used:
- *  set up your servers in the servers array
+ *  set up your servers: /query irc: help
+ *  save your servers: /query irc: save
+ *  reconnect the connections: /query irc: reconnect
  *  either/or
  *   join a room like irc:*roomname@serverid (replace the # of #roomname by a *)
  *   query some user like irc:~username@serverid
