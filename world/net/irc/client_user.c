@@ -17,17 +17,7 @@ mapping servers = ([]);
 mapping server_connections = ([]);
 string owner;
 
-void create() {
-  if (!clonep()) // we _must_ be a named clone for each user
-    return;
-  sscanf((string)this_player(),"%~s#%s",owner);
-
-  if (catch(servers=restore_value(find_person(owner)->vQuery("_irc_servers")))) {
-    P1(("couldn't load irc servers\n"));
-    servers=([]);
-  }
-
-  // create connections to all known servers
+varargs void create_connections(status connect) {
   map(servers, function void(string id, struct server_s server) {
     server_connections[id] = clone_object("/net/irc/client_connection.c");
     server_connections[id]->set_parameters(
@@ -37,7 +27,24 @@ void create() {
       ,"master":this_object()
       ,"id":id
     ]));
+    server_connections[id]->set_owner(owner);
+    connect&&server_connections[id]->connect();
   });
+}
+
+void create() {
+  if (!clonep()) // we _must_ be a named clone for each user
+    return;
+  sscanf((string)this_player(),"%~s#%s",owner);
+
+  P2(("owner of %O is %O\n",this_object(),owner));
+  if (catch(servers=restore_value(find_person(owner)->vQuery("_irc_servers")))) {
+    P1(("couldn't load irc servers\n"));
+    servers=([]);
+  }
+
+  // create connections to all known servers
+  create_connections();
 }
 
 void set_parameters(mapping m) {
@@ -133,6 +140,13 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
         break;
       case "show":
         IRC_SCHEME_ANSWER("hint: show <server>");
+        break;
+      case "reconnect":
+        //TODO: hmm... don't be so cruel:
+        map(server_connections,function void(string id,object o) {
+          destruct /* see the sad smiley? → */    (o);
+        });  /* ← anotherone */
+        create_connections(1);
         break;
       default:
         if ("show "==data[0..4]) {
