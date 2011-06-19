@@ -22,7 +22,10 @@ void create() {
     return;
   sscanf((string)this_player(),"%~s#%s",owner);
 
-  servers=restore_value(find_person(owner)->vQuery("_irc_servers"));
+  if (catch(servers=restore_value(find_person(owner)->vQuery("_irc_servers")))) {
+    P1(("couldn't load irc servers\n"));
+    servers=([]);
+  }
 
   // create connections to all known servers
   map(servers, function void(string id, struct server_s server) {
@@ -122,8 +125,11 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
         IRC_SCHEME_ANSWER("servers saved");
         break;
       case "load":
-        servers=restore_value(find_person(owner)->vQuery("_irc_servers"));
-        IRC_SCHEME_ANSWER("servers loaded");
+        if (catch(servers=restore_value(find_person(owner)->vQuery("_irc_servers")))) {
+          IRC_SCHEME_ANSWER("servers not loaded, try to save some first");
+        } else {
+          IRC_SCHEME_ANSWER("servers loaded");
+        }
         break;
       case "show":
         IRC_SCHEME_ANSWER("hint: show <server>");
