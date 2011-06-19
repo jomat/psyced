@@ -173,7 +173,7 @@ varargs void show_members(mixed whom,string room,mixed vars) {
   string *nicks=({});
   map(channels[room]->users,function void(string nick,struct user_s user,string *members,string *nicks) {
     //members+=({"irc:~"+nick+"@"+server->id});   // TODO: configure user display
-    members+=({user->prefix?sprintf("%c%s",user->prefix,nick):nick});
+    members+=({user->prefix?sprintf("%c%s",user->prefix,nick):nick /* TODO: i think it would be nicer in RPL_WHOREPLY or so … */});
     nicks+=({nick});
   },&members,&nicks);
   if ('#'==room[0])
