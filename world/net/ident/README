@@ -1,0 +1,12 @@
+server.c - receives ident connections and answers them
+master.c - holds the connection data and provides an api to it
+ident.h  - defines for the ident system
+
+usage:
+ * include ident.h
+ * register new connections:
+   put this i. e. to logon()
+   IDENT_MASTER->update_connection(server->port,server->owner,query_mud_port(this_object()));
+   not directly after net_connect() because query_mud_port() won't answer the correct
+   port if the connection isn't established yet
+   
