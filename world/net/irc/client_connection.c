@@ -45,14 +45,15 @@ int emit(string m) {
 }
 */
 
-void update_nick(string nick, string chan) {
+void update_nick(string nick, static string chan) {
+  if (!chan)
+    return;
   if (!structp(channels[chan]))
-    channels[chan]=(<channel_s>);
+    channels[chan]=(<channel_s>users:([]));
   if ('+'==nick[0]||'@'==nick[0])
     channels[chan]->users[nick[1..]]=(<user_s>prefix:nick[0]);
   else
     channels[chan]->users[nick]=(<user_s>);
-  //P2(("channels after nickupdate %O\n",channels));
 }
 
 void set_owner(string s) {
