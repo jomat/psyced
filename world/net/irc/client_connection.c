@@ -421,3 +421,7 @@ int logon() {
 void irc_quote(string id,string what) {
   emit(what);
 }
+
+int query_connected() {
+  return server->connected;
+}

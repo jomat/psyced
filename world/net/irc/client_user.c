@@ -17,8 +17,7 @@ mapping servers = ([]);
 mapping server_connections = ([]);
 string owner;
 
-varargs void create_connections(status connect) {
-  map(servers, function void(string id, struct server_s server) {
+void create_connection(string id,struct server_s server,status connect) {
     server_connections[id] = clone_object("/net/irc/client_connection.c");
     server_connections[id]->set_parameters(
     (["host":server->host
@@ -29,7 +28,10 @@ varargs void create_connections(status connect) {
     ]));
     server_connections[id]->set_owner(owner);
     connect&&server_connections[id]->connect();
-  });
+}
+
+varargs void create_connections(status connect) {
+  map(servers,#'create_connection,connect);
 }
 
 void create() {
@@ -63,17 +65,21 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
   if ("irc:"==target||"irc:"==vars["_nick_target"]) { // TODO: the scheme...
     object owner_o=find_person(owner);
 #   define IRC_SCHEME_ANSWER(s) sendmsg(owner_o,"_message_private",s,([ "_nick": "irc:" ]));
-#   define IRC_SCHEME_SHOW_SERVER(s) \
-          map(explode(sprintf("%O",s),"\n")[1..<2] \
+#   define IRC_SCHEME_SHOW_SERVER(s,s_s) \
+          map(explode(sprintf("%O",s_s),"\n")[1..<2] \
             ,function void(string e) { \
-              IRC_SCHEME_ANSWER(sprintf("%O\n",e)); \
-            });
+              IRC_SCHEME_ANSWER(sprintf("%s",e)); \
+            }); \
+          IRC_SCHEME_ANSWER("  / current state:"); \
+          IRC_SCHEME_ANSWER(sprintf("  / object: %O",server_connections[s]));\
+          IRC_SCHEME_ANSWER("  / interactive: "+(server_connections[s]?interactive(server_connections[s]):"no connection")); \
+          IRC_SCHEME_ANSWER("  / logged in: "+(server_connections[s]?server_connections[s]->query_connected()+" (0: disconnected, <0: pending, >0 connected)":"no connection")); \
+
     /*
      * I want a interface to configure the irc: scheme like servers and so on...
      */
 #    define IRC_SCHEME_HELPTEXT \
     ({" help"\
-     ," ?"\
      ,"        shows this help"\
      ,""\
      ," list"\
@@ -109,10 +115,7 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
       case "_message_private":
         sendmsg(source,"_message_echo_private",data,vars);
         switch (data) {
-          case "jomat":
-            return 1;
           case "help":
-          case "?":
             map(IRC_SCHEME_HELPTEXT,function void(string s) {
               IRC_SCHEME_ANSWER(s);
             });
@@ -127,7 +130,7 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
             IRC_SCHEME_ANSWER("Your servers en detail:");
             map(servers,function void(string s,struct server_s s_s) {
               IRC_SCHEME_ANSWER("ID "+s);
-              IRC_SCHEME_SHOW_SERVER(s_s);
+              IRC_SCHEME_SHOW_SERVER(s,s_s);
             });
             break;
           case "save":
@@ -145,6 +148,9 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
             IRC_SCHEME_ANSWER("hint: show <server>");
             break;
           case "reconnect":
+            IRC_SCHEME_ANSWER("if you really want to reconnect *all* your connections, type reconnect -f");
+            break;
+          case "reconnect -f":
             //TODO: hmm... don't be so cruel:
             map(server_connections,function void(string id,object o) {
               destruct /* see the sad smiley? → */    (o);
@@ -157,17 +163,20 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
                 IRC_SCHEME_ANSWER("no such server: "+data[5..]);
                 return 1;
               }
-              IRC_SCHEME_SHOW_SERVER(servers[data[5..]]);
+              IRC_SCHEME_SHOW_SERVER(data[5..],servers[data[5..]]);
+              return 1;
             } else if ("add "==data[0..3]) {
               if (servers[data[4..]]) {
                 IRC_SCHEME_ANSWER("sawwry, this serverid already exists: "+data[4..]);
                 return 1;
               }
-              servers[data[4..]]=(<server_s>port:6667,nick:owner);
+              servers[data[4..]]=(<server_s>port:6667,nick:owner,host:data[4..]);
               IRC_SCHEME_ANSWER(data[4..]+" added");
+              return 1;
             } else if ("del "==data[0..3]) {
               m_delete(servers,data[4..]);
               IRC_SCHEME_ANSWER("if "+data[4..]+" was there, now it's gone");
+              return 1;
             } else if ("set "==data[0..3]) {
               string *sa=explode(data," ");
               if (sizeof(sa)<3) {
@@ -179,8 +188,11 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
                 return 1;
               }
               switch (sa[2]) {
-                case "host":
                 case "port":
+                  IRC_SCHEME_ANSWER(sa[2]+" for "+sa[1]+" is now: "+(int)sa[3]+" was: "+servers[sa[1]]->(sa[2])); 
+                  servers[sa[1]]->(sa[2])=(int)sa[3];
+                  break;
+                case "host":
                 case "nick":
                   IRC_SCHEME_ANSWER(sa[2]+" for "+sa[1]+" is now: "+sa[3]+" was: "+servers[sa[1]]->(sa[2])); 
                   servers[sa[1]]->(sa[2])=sa[3];
@@ -188,7 +200,24 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
                 default:
                   IRC_SCHEME_ANSWER(sa[2]+" is currently not a writeable setting");
               }
+              return 1;
+            } else if ("reconnect "==data[0..9]) {
+              IRC_SCHEME_ANSWER("trying to reconnect "+data[10..]);
+              if (objectp(server_connections[data[10..]])) {
+                IRC_SCHEME_ANSWER(sprintf("destructing %O",server_connections[data[10..]]));
+                destruct(server_connections[data[10..]]);
+                IRC_SCHEME_ANSWER(sprintf("connection foo is %O\n",server_connections[data[10..]]));
+              }
+              if (!servers[data[10..]]) {
+                IRC_SCHEME_ANSWER(data[10..]+" does not exist");
+                return 1;
+              }
+              create_connection(data[10..],servers[data[10..]],1);
+
+              return 1;
             }
+            IRC_SCHEME_ANSWER("What?");
+            return 0;
         }
         break;
       case "_request_friendship":
