@@ -107,6 +107,7 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
     })
     switch (mc) {
       case "_message_private":
+        sendmsg(source,"_message_echo_private",data,vars);
         switch (data) {
           case "jomat":
             return 1;
@@ -196,16 +197,21 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
     }
     return 1;
   }
+
+  if ("_message_echo_private"==mc && "irc:"==vars["_nick"]) {
+    return 1;
+  }
+
   string id;
   if (catch(id=explode(target?target:vars["_nick_place"],"@")[1])) {
     sendmsg(source, "_error_unknown_name_user",    // TODO: should i think of something else?
-      "Server ID [_nick_target] unknown.",
+      "Server ID [_nick_target] unknown to irc scheme.",
       ([ "_nick_target" : target?target:vars["_nick_place"] ]));
     return 1;
   }
   if (!servers[id]) {  // TODO: I could try to parse the URI better to add servers automatically or whatever...
     sendmsg(source, "_error_unknown_name_user",    // TODO: should i think of something else?
-      "Server ID [_nick_target] unknown.",
+      "Server ID [_nick_target] unknown to irc scheme.",
       ([ "_nick_target" : id ]));
     return 1;
   }
