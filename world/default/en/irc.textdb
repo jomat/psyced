@@ -341,10 +341,10 @@ _status_place_topic_only
 |#332 [_INTERNAL_nick_me] #[_nick_place] :[_topic]
 
 _status_place_topic_author
-|#333 [_INTERNAL_nick_me] #[_nick_place] [_nick] [_INTERNAL_time_topic] :{_status_place_topic_author}
+|#333 [_INTERNAL_nick_me] #[_nick_place] [_nick] [_INTERNAL_time_topic]
 
 _status_place_topic_none
-|#331 [_INTERNAL_nick_me] :{_status_place_topic_none}
+|#331 [_INTERNAL_nick_me] #[_nick_place] :[_info]
 
 _status_place_topic_official
 |#332 [_INTERNAL_nick_me] #[_nick_place] :[_topic]

@@ -387,10 +387,13 @@ w(string mc, string data, mapping vars, mixed source) {
 		vars["_INTERNAL_source_IRC"] = to_string(source);
 # else // EXPERIMENTAL
 	    nick2 = vars["_INTERNAL_nick_plain"] || vars["_nick"];
-	    vars["_INTERNAL_source_IRC"] = nick2 ? nick2
-		  +"!"+ (vars["_nick_long"] || vars["_INTERNAL_nick_plain"]
-					    || vars["_nick"]) +"@" SERVER_HOST
-		    : to_string(source); // should never happen
+      if (vars["_INTERNAL_source"])
+        vars["_INTERNAL_source_IRC"] = vars["_INTERNAL_source"];
+      else
+	      vars["_INTERNAL_source_IRC"] = nick2 ? nick2
+		    +"!"+ (vars["_nick_long"] || vars["_INTERNAL_nick_plain"]
+			  		    || vars["_nick"]) +"@" SERVER_HOST
+		      : to_string(source); // should never happen
 # endif
 	} else if (abbrev("_echo_place_enter", mc)) {
 	    vars["_INTERNAL_source_IRC"] = MYNICK + "!" + MYNICK + "@" SERVER_HOST;

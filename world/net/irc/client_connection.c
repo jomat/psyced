@@ -30,6 +30,10 @@ struct channel_s {
   string tag;
   string key;  // TODO: yeah, these keys have to be set and perhaps even saved,
                //       nothing implemented right now, but if they are set, it could work
+  string topic;
+  string topic_author;
+  int topic_time;
+  int topic_set;
 };
 
 struct user_s {
@@ -55,12 +59,16 @@ int emit(string m) {
 }
 */
 
+int is_letter(int c) {
+  return ('A'<=c && 'Z'>=c) || ('a'<=c && 'z'>=c);
+}
+
 void update_nick(string nick, static string chan) {
   if (!chan||!nick)
     return;
   if (!structp(channels[chan]))
-    channels[chan]=(<channel_s>users:([]));
-  if (('A'<=nick[0] && 'Z'>=nick[0]) || ('a'<=nick[0] && 'z'>=nick[0]))
+    channels[chan]=(<channel_s>users:([]),topic:"No topic is set.",topic_set:0);
+  if (is_letter(nick[0]))
     channels[chan]->users[nick]=(<user_s>);
   else {
     channels[chan]->users[nick[1..]]=(<user_s>chanop:nick[0],);
@@ -117,7 +125,7 @@ varargs int irc_join(string channel, string tag, string key) {
   if (structp(channels[channel]))
     channels[channel]->tag=tag;
   else
-    channels[channel]=(<channel_s> tag:tag,users:([]));
+    channels[channel]=(<channel_s> tag:tag,users:([]),topic:"No topic is set.",topic_set:0);
   return 0;
 } 
 
@@ -224,6 +232,56 @@ varargs void show_members(mixed whom,string room,mixed vars) {
   }
 }
 
+void show_topic_author(string where) {
+  // see TODO for show_topic()
+  string wherehash=CHAN_STAR2HASH(where);
+  string wherestar=CHAN_HASH2STAR(where);
+  if (!channels[wherehash])
+    return;
+
+  if (!channels[wherehash]->topic_time&&!channels[wherehash]->topic_author) {
+    return;
+  }
+
+  sendmsg
+    (find_person(server->owner)
+     ,"_status_place_topic_author"
+     ,0
+     ,(["_INTERNAL_time_topic":channels[wherehash]->topic_time
+       ,"_nick":channels[wherehash]->topic_author
+       ,"_nick_place":"irc:"+wherestar+"@"+server->id
+     ]));
+}
+
+void show_topic(string where) {
+  // TODO: the topic is sent twice somehow (at least for irc users)
+  //       though this doesn't seem to be a problem here as it also happens
+  //       for psyc rooms
+  string wherehash=CHAN_STAR2HASH(where);
+  string wherestar=CHAN_HASH2STAR(where);
+  if (!channels[wherehash]) {
+    emit("TOPIC "+wherehash+"\n");
+    return;
+  }
+  P2(("showing topic for "+where+"\n"));
+  if (channels[wherehash]->topic_set)
+    sendmsg
+      (find_person(server->owner)
+      ,"_status_place_topic_only"
+      ,0
+      ,(["_topic":channels[wherehash]->topic
+        ,"_nick_place":"irc:"+wherestar+"@"+server->id
+      ]));
+  else
+    sendmsg
+      (find_person(server->owner)
+      ,"_status_place_topic_none"
+      ,0
+      ,(["_nick_place":"irc:"+wherestar+"@"+server->id
+        ,"_info":channels[wherehash]->topic
+      ]));
+}
+
 void enter_room(struct server_s server, string where, string tag) {
   if (!where||!server)
     return;
@@ -258,6 +316,9 @@ void enter_room(struct server_s server, string where, string tag) {
           ,"_list_members":nicklist
           ,"_tag":tag
   ]));
+  // no need here because the irc server will send the topic to us which will trigger
+  // us to send the topic to the client
+  //show_topic(wherehash);
 }
 
 int parse_answer(string s) {
@@ -333,6 +394,23 @@ int parse_answer(string s) {
       }
       return 0;
     // http://www.alien.net.au/irc/irc2numerics.html
+    case "TOPIC": //:schwester!~schwester@2001::28. TOPIC #schwester :Now playing "Flytta Dig" 
+      string topic,chanhash,who;
+      sscanf(s,":%s %~s %s :%s",who,chanhash,topic);
+      string starchan=CHAN_HASH2STAR(chanhash);
+      sendmsg(find_person(server->owner),"_notice_place_topic",0
+        ,(["_nick_place":"irc:"+starchan+"@"+server->id
+          ,"_topic":topic
+          ,"_INTERNAL_source":who
+      ]));
+      if (!channels[chanhash])
+        channels[chanhash]=(<channel_s>topic:topic,topic_set:1,topic_author:who);
+      else {
+        channels[chanhash]->topic=topic;
+        channels[chanhash]->topic_set=1;
+        channels[chanhash]->topic_author=who;
+      }
+      break;
     case "001":
       // RPL_WELCOME   RFC2812
       // :Welcome to the Internet Relay Network <nick>!<user>@<host>
@@ -343,6 +421,32 @@ int parse_answer(string s) {
         irc_join(id,channel->tag,channel->key);
       });
       return 0;
+    case "315": //:ray.blafasel.de 315 episkevis #jmtest22 :End of /WHO list.
+      return 0;
+    case "331":   //:ray.blafasel.de 331 j #jmtest666 :No topic is set.
+    case "332":   //:ray.blafasel.de 332 j #schwester :Now playing "Love Shelter" by Sundial Aeon on psybient Tag Radio.
+      string chanhash,topic;
+      sscanf(s,":%~s %~s %~s %s :%s",chanhash,topic);
+      if (!channels[chanhash])
+        channels[chanhash]=(<channel_s>topic:topic,topic_set:'2'==command[2]);
+       else {
+         channels[chanhash]->topic_set='2'==command[2];
+         channels[chanhash]->topic=topic;
+       }
+       call_out(#'show_topic,0,chanhash);
+       break;
+    case "333": //:ray.blafasel.de 333 j #schwester schwester!~schwester@2001:7f0:3003:beef:218:39ff:fe2c:28ba. 1308849233
+      string chanhash,author;
+      int timestamp;
+      sscanf(s,":%~s %~s %~s %s %s %d",chanhash,author,timestamp);
+      if (!channels[chanhash])
+        channels[chanhash]=(<channel_s>topic_time:timestamp,topic_author:author);
+       else {
+         channels[chanhash]->topic_time=timestamp;
+         channels[chanhash]->topic_author=author;
+       }
+       call_out(#'show_topic_author,0,chanhash);
+       break;
     case "352":
       // :space.blafasel.de 352 jomat #chan1 fnord fxxxxxx.xx ray.blafasel.de fxxx H+ :1 franz nord
       // :space.blafasel.de 352 jomat #chan1 ~dxxx cxxxxx.yy irc.blafasel.de d G@ :1 me
@@ -360,7 +464,7 @@ int parse_answer(string s) {
       channels[chan]->users[nick]->username=username;
       channels[chan]->users[nick]->ircserver=server;
       channels[chan]->users[nick]->hops=hops;
-      if (('A'<loginandpref[0] && 'Z'>loginandpref[0]) || ('a'<loginandpref[0] && 'z'>loginandpref[0])) {
+      if (is_letter(loginandpref[0])) {
         channels[chan]->users[nick]->prefix=0;
         channels[chan]->users[nick]->login=loginandpref;
       } else {
@@ -465,6 +569,8 @@ string parse_destination(string target) {
   return destination;
 }
 
+#define TARGET2CHAN(t,c) sscanf(t,"irc:%s@%~s",c)
+
 // the user want's to say something to the irc:
 varargs int msg(string source, string mc, string data, mapping vars, int showingLog, mixed target) {
   P2(("IRC client connection got a message----------------------\nsource %O\n"                                           
@@ -483,9 +589,15 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
 // showingLog 0
 // target "irc:*jomat@blafasel"
   switch (mc) {
+    case "_query_topic": /* user wants to see the topic */
+      string chan;
+      TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
+      show_topic(chan);
+      show_topic_author(chan);
+      return 0;
     case "_request_members":  /* user wants to see the nicks of a room */
       string chan;
-      sscanf(vars["_target"]?vars["_target"]:target,"irc:%s@%~s",chan);
+      TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
       show_members(source,chan,vars);
       return 0;
     case "_message_private":
