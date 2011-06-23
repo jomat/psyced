@@ -348,6 +348,7 @@ int parse_answer(string s) {
       // :space.blafasel.de 352 jomat #chan1 ~dxxx cxxxxx.yy irc.blafasel.de d G@ :1 me
       // :space.blafasel.de 352 jomat #chan1 ~gxxx chxxxxxxx.zz irc.blafasel.de gxxx H@ :1 Kxxxx Mxxxx
       // :space.blafasel.de 352 jomat #chan2 rxxx fefe:ccc::5:23. ray.blafasel.de rxxx H*@ :1 *Unknown*
+      // :space.blafasel.de 352 jomat #chanc rxxx fefe:ccc::5:23. ray.blafasel.de rxxx H* :1 *Unknown*
       // "<channel> <user> <host> <server> <nick> <H|G>[*][@|+] :<hopcount> <real name>"
       string chan,loginandpref,uhost,server,nick,flags,username;
       int hops;
@@ -374,7 +375,10 @@ int parse_answer(string s) {
           break;
         case 2:
           channels[chan]->users[nick]->ircop=0;
-          channels[chan]->users[nick]->chanop=flags[1];
+          if ('*'==flags[1])
+            channels[chan]->users[nick]->ircop=flags[1];
+          else
+            channels[chan]->users[nick]->chanop=flags[1];
           break;
         default:
       }
