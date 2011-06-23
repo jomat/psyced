@@ -8,6 +8,9 @@
 #include "/local/config.h"
 #include "/net/ident/ident.h"
 
+#define CHAN_HASH2STAR(s) (s&&('#'==s[0]?("*"+s[1..]):(s)))
+#define CHAN_STAR2HASH(s) (s&&('*'==s[0]?("#"+s[1..]):(s)))
+
 virtual inherit NET_PATH "output";
 
 struct server_s { 
@@ -31,7 +34,14 @@ struct channel_s {
 
 struct user_s {
   int prefix;
-  // TODO: modes, …
+  string login;
+  string host;
+  int here;
+  int ircop;
+  int hops;
+  int chanop;
+  string username;
+  string ircserver;
 };
 
 int last_message_timestamp;
@@ -50,10 +60,10 @@ void update_nick(string nick, static string chan) {
     return;
   if (!structp(channels[chan]))
     channels[chan]=(<channel_s>users:([]));
-  if ('+'==nick[0]||'@'==nick[0])
-    channels[chan]->users[nick[1..]]=(<user_s>prefix:nick[0]);
-  else
+  if (('A'<nick[0] && 'Z'>nick[0]) || ('a'<nick[0] && 'z'>nick[0]))
     channels[chan]->users[nick]=(<user_s>);
+  else
+    channels[chan]->users[nick[1..]]=(<user_s>chanop:nick[0],);
 }
 
 void set_owner(string s) {
@@ -155,40 +165,96 @@ int connect() {
   }
 }
 
+string *make_nicklist(mapping users) {
+  return m_values(map(users,function string(string nick,struct user_s user) {
+    // show your psyc nick instead of your irc nick:
+    //if (nick==server->nick)
+    //  nick=server->owner;
+    return user->chanop?sprintf("%c%s",user->chanop,nick):nick;
+  }));
+}
+
 varargs void show_members(mixed whom,string room,mixed vars) {
-  if (vars&&"W"==vars["_tag"]) {
-    // BIG FAT TODO:
-    // if a client sends a WHO the _tag will be set to "W"
-    // if a _status_place_members is sent like here, a RPL_NAMREPLY
-    // is sent to the client, but the correct answer would be a RPL_WHOREPLY
-    //
-    // some clients (like weechat) periodically issue WHOs, and RPL_NAMREPLY
-    // are scrolling live in the chanwindow and are quite annoying
-    return;
-  }
-  
-  if (!structp(channels[room])) {
+ // who #irc:*schwester@blafasel
+ // :episkevis.jmt.gr 352 jomat #irc:*schwester@blafasel ~jlogin evil.net episkevis.jmt.gr jomat Hv :23 jident jname
+ // :space.blafasel.de 352 jomat #chan2 rxxx fefe:ccc::5:23. ray.blafasel.de rxxx H*@ :1 *Unknown*
+ // psyctext("#352 [_INTERNAL_nick_me] #[_nick_place] [_IRC_identified][_nick_login] [_identification_host] episkevis.jmt.gr [_nick] [_IRC_away][_IRC_operator] :[_IRC_hops] [_identification] [_name]
+  string hashchan=CHAN_STAR2HASH(room);
+  string starchan=CHAN_HASH2STAR(room);
+
+  P2(("showing members in %O for %O with vars %O\n",whom,room,vars));
+  if (!structp(channels[hashchan])) {
     // no data available for the channel
     // TODO: think if this can happen and if it'd be useful to ask for the names
+    // TODO: and to notify about the fact that there are no members
     return;
   }
-  string *members=({});
-  string *nicks=({});
-  map(channels[room]->users,function void(string nick,struct user_s user,string *members,string *nicks) {
-    //members+=({"irc:~"+nick+"@"+server->id});   // TODO: configure user display
-    members+=({user->prefix?sprintf("%c%s",user->prefix,nick):nick /* TODO: i think it would be nicer in RPL_WHOREPLY or so … */});
-    nicks+=({nick});
-  },&members,&nicks);
-  if ('#'==room[0])
-    room[0]='*';
+
+  P4(( "users to show: "+implode(m_indices(channels[hashchan]->users),", ")+"\n"));
+  if (vars&&"W"==vars["_tag"]) {
+    map(channels[hashchan]->users,function void(string nick,struct user_s user) {
+      sendmsg(whom,"_status_place_members_each",0,([ "_nick_place" : "irc:"+starchan+"@"+server->id
+        ,"_IRC_identified":user->prefix?sprintf("%c",user->prefix):""
+        ,"_nick_login":user->login
+        ,"_identification_host":user->host
+        ,"_IRC_away":user->here?sprintf("%c",user->here):""
+        ,"_IRC_operator":(user->ircop?sprintf("%c",user->ircop):"")+(user->chanop?sprintf("%c",user->chanop):"") // TODO: dirty hack
+        ,"_IRC_hops":user->hops
+        ,"_identification":""
+        ,"_name":user->username
+        ,"_nick":nick
+        ]));
+    });
+
+  } else {
+  
+    string *nicklist=make_nicklist(channels[hashchan]->users);
+    sendmsg
+      (whom
+      ,"_status_place_members"
+      ,"In [_nick_place]: [_list_members_nicks]."
+      ,(["_nick_place":"irc:"+starchan+"@"+server->id
+        ,"_target":"irc:"+starchan+"@"+server->id
+        ,"_list_members":nicklist
+        ,"_list_members_nicks":nicklist
+
+    ]));
+  }
+}
+
+void enter_room(struct server_s server, string where, string tag) {
+  if (!where||!server)
+    return;
+  string wherehash=CHAN_STAR2HASH(where);
+
+  P2(("entering room with "+sizeof(channels[CHAN_STAR2HASH(where)]->users)+" members and tag "+tag+"\n"));
+
+  if (!sizeof(channels[CHAN_STAR2HASH(where)]->users)) {
+    call_out(#'enter_room,1,server,where,tag);
+    P3(("waiting to join the room because of !sizeof(channels[CHAN_STAR2HASH(where)]->users)\n"));
+    return;
+  }
+
+  if (!channels[CHAN_STAR2HASH(where)]->users[m_indices(channels[CHAN_STAR2HASH(where)]->users)[0]]->here) {
+    // here is not set if the user structure hasn't been filled by a whoreply
+    // TODO: send WHO request perhaps?
+    call_out(#'enter_room,1,server,where,tag);
+    P3(("waiting to join the room because of !channels[CHAN_STAR2HASH(where)]->users[m_indices(channels[CHAN_STAR2HASH(where)]->users)[0]]->here\n"));
+    return;
+  }
+
+  string *nicklist=make_nicklist(channels[wherehash]->users);
+  P4((sprintf("nicklist to %O(%O) in %O: %O\n",find_person(server->owner),server->owner,"irc:"+where+"@"+server->id,implode(nicklist,", "))));
+
   sendmsg
-    (whom
-    ,"_status_place_members"
-    ,"In [_nick_place]: [_list_members_nicks]."
-    ,(["_nick_place":"irc:"+room+"@"+server->id
-      ,"_target":"irc:"+room+"@"+server->id
-      ,"_list_members":members
-      ,"_list_members_nicks":nicks
+        (find_person(server->owner) /*server->master*/
+        ,"_echo_place_enter"
+        ,"welcome to this room"
+        ,(["_nick_place": "irc:"+where+"@"+server->id
+          ,"_context": "irc:"+where+"@"+server->id
+          ,"_nick":server->owner  //"irc:~"+server->nick+"@"+server->id
+          ,"_list_members":nicklist
+          ,"_tag":tag
   ]));
 }
 
@@ -199,7 +265,6 @@ int parse_answer(string s) {
     return 0;
   }
 
-  P2(("owner ist %O\n",server->owner));
   string origin, command;
   sscanf(s,"%s %s %~s",origin,command);
   switch (command&&upper_case(command)) {
@@ -207,7 +272,6 @@ int parse_answer(string s) {
       return 0;
     case "JOIN":
       // :ehlo!ehlo@dionisos.jmt.gr JOIN :#jomat
-      P2(("irc server wants us to join a room\n"));
       // TODO: sanity checks
       // :_target psyc://host1/~user
       // :_context  psyc://host2/@place
@@ -221,26 +285,21 @@ int parse_answer(string s) {
       // .
       string where,msg,from_nick;
       sscanf(s,":%s!%~s %~s :%s",from_nick,where);
+      P2(("irc server wants us "+from_nick+" to join a room: "+where+"\n"));
 
       if(!where||!from_nick)
         return 1;
 
       string tag=structp(channels[where])?channels[where]->tag:"";;
 
+      emit("WHO "+where+"\n");
+
       if ('#'==where[0])
         where[0]='*';
 
       P2(("trying to enter %s\n", "irc:"+where+"@"+server->id));
       // sendmsg(target, mc, data, vars, source, showingLog, callback)
-      sendmsg
-        (find_person(server->owner) /*server->master*/
-        ,"_echo_place_enter"
-        ,"welcome to this room"
-        ,(["_nick_place": "irc:"+where+"@"+server->id
-          ,"_context": "irc:"+where+"@"+server->id
-          ,"_nick":server->owner  //"irc:~"+server->nick+"@"+server->id
-          ,"_tag":tag
-      ]));
+      call_out(#'enter_room,0,server,where,tag);
       return 0;
     case "PRIVMSG":
       //varargs mixed sendmsg(mixed target, string mc, mixed data, mapping vars,
@@ -282,6 +341,44 @@ int parse_answer(string s) {
         irc_join(id,channel->tag,channel->key);
       });
       return 0;
+    case "352":
+      // :space.blafasel.de 352 jomat #chan1 fnord fxxxxxx.xx ray.blafasel.de fxxx H+ :1 franz nord
+      // :space.blafasel.de 352 jomat #chan1 ~dxxx cxxxxx.yy irc.blafasel.de d G@ :1 me
+      // :space.blafasel.de 352 jomat #chan1 ~gxxx chxxxxxxx.zz irc.blafasel.de gxxx H@ :1 Kxxxx Mxxxx
+      // :space.blafasel.de 352 jomat #chan2 rxxx fefe:ccc::5:23. ray.blafasel.de rxxx H*@ :1 *Unknown*
+      // "<channel> <user> <host> <server> <nick> <H|G>[*][@|+] :<hopcount> <real name>"
+      string chan,loginandpref,uhost,server,nick,flags,username;
+      int hops;
+      // (origin) (command) (destination) channel login … 
+      // :ray.blafasel.de 352 episkevis #schwester jomat episkevis.jmt.gr ray.blafasel.de episkevis H :0 episkevis
+      sscanf(s,":%~s %~s %~s %s %s %s %s %s %s :%d %s",chan,loginandpref,uhost,server,nick,flags,hops,username);
+      update_nick(nick,chan);
+      ((struct user_s)(channels[chan]->users[nick]))->host=uhost;
+      channels[chan]->users[nick]->username=username;
+      channels[chan]->users[nick]->ircserver=server;
+      channels[chan]->users[nick]->hops=hops;
+      if (('A'<loginandpref[0] && 'Z'>loginandpref[0]) || ('a'<loginandpref[0] && 'z'>loginandpref[0])) {
+        channels[chan]->users[nick]->prefix=0;
+        channels[chan]->users[nick]->login=loginandpref;
+      } else {
+        channels[chan]->users[nick]->prefix=loginandpref[0];
+        channels[chan]->users[nick]->login=loginandpref[1..];
+      }
+      channels[chan]->users[nick]->here=flags[0];
+      switch (strlen(flags)) {
+        case 3:
+          channels[chan]->users[nick]->ircop=flags[1];
+          channels[chan]->users[nick]->chanop=flags[2];
+          break;
+        case 2:
+          channels[chan]->users[nick]->ircop=0;
+          channels[chan]->users[nick]->chanop=flags[1];
+          break;
+        default:
+      }
+      P4(( sprintf("user made of WHOREPLY: %O\n",channels[chan]->users[nick]) ));
+
+      return 0;
     case "353":
       /*
        * 353     RPL_NAMREPLY
@@ -305,8 +402,8 @@ int parse_answer(string s) {
       sscanf(s,":%~s %~s %~s %~s %s :%s",chan,nicks);
       map(explode(nicks," "),#'update_nick,chan);
       return 0;
-    case "366":
-      show_members(find_person(server->owner),explode(s," ")[3]);
+    case "366": // RPL_ENDOFNAMES
+      // why? show_members(find_person(server->owner),explode(s," ")[3]);
       return 0;
     case "433":
       // ERR_NICKNAMEINUSE   RFC1459
