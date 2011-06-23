@@ -56,14 +56,16 @@ int emit(string m) {
 */
 
 void update_nick(string nick, static string chan) {
-  if (!chan)
+  if (!chan||!nick)
     return;
   if (!structp(channels[chan]))
     channels[chan]=(<channel_s>users:([]));
   if (('A'<nick[0] && 'Z'>nick[0]) || ('a'<nick[0] && 'z'>nick[0]))
     channels[chan]->users[nick]=(<user_s>);
-  else
+  else {
     channels[chan]->users[nick[1..]]=(<user_s>chanop:nick[0],);
+    nick=nick[1..];
+  }
 }
 
 void set_owner(string s) {
@@ -352,7 +354,7 @@ int parse_answer(string s) {
       // (origin) (command) (destination) channel login … 
       // :ray.blafasel.de 352 episkevis #schwester jomat episkevis.jmt.gr ray.blafasel.de episkevis H :0 episkevis
       sscanf(s,":%~s %~s %~s %s %s %s %s %s %s :%d %s",chan,loginandpref,uhost,server,nick,flags,hops,username);
-      update_nick(nick,chan);
+      update_nick(&nick,chan);
       ((struct user_s)(channels[chan]->users[nick]))->host=uhost;
       channels[chan]->users[nick]->username=username;
       channels[chan]->users[nick]->ircserver=server;
