@@ -60,7 +60,7 @@ void update_nick(string nick, static string chan) {
     return;
   if (!structp(channels[chan]))
     channels[chan]=(<channel_s>users:([]));
-  if (('A'<nick[0] && 'Z'>nick[0]) || ('a'<nick[0] && 'z'>nick[0]))
+  if (('A'<=nick[0] && 'Z'>=nick[0]) || ('a'<=nick[0] && 'z'>=nick[0]))
     channels[chan]->users[nick]=(<user_s>);
   else {
     channels[chan]->users[nick[1..]]=(<user_s>chanop:nick[0],);
