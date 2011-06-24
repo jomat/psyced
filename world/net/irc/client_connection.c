@@ -34,6 +34,7 @@ struct channel_s {
   string topic_author;
   int topic_time;
   int topic_set;
+  status subscribed;  // do not leav subscribed channels on quit
 };
 
 struct user_s {
@@ -64,10 +65,14 @@ int is_letter(int c) {
 }
 
 void update_nick(string nick, static string chan) {
+  P2((sprintf("update nick called nick %O chan %O\n",nick,chan)));
   if (!chan||!nick)
     return;
+  chan=CHAN_STAR2HASH(chan);
   if (!structp(channels[chan]))
     channels[chan]=(<channel_s>users:([]),topic:"No topic is set.",topic_set:0);
+  if (!mappingp(channels[chan]->users))
+    channels[chan]->users=([]);
   if (is_letter(nick[0]))
     channels[chan]->users[nick]=(<user_s>);
   else {
@@ -91,12 +96,21 @@ void set_parameters(mapping m) {
   );
 }
 
+void irc_part(string chan) {
+  chan=CHAN_STAR2HASH(chan);
+  emit("PART "+chan+"\n");
+}
+
 int irc_privmsg(string msgtarget, string message) {
   // PRIVMSG <msgtarget> <message>
   // Sends <message> to <msgtarget>, which is usually a user or channel.[28]
   // Defined in RFC 1459
   // TODO: sanity checks
 
+  if ('~'==msgtarget[0])
+    msgtarget=msgtarget[1..];
+  else
+    msgtarget=CHAN_STAR2HASH(msgtarget);
   emit("PRIVMSG "+msgtarget+" :"+message+"\n");
   return 0;
 }
@@ -117,6 +131,8 @@ varargs int irc_join(string channel, string tag, string key) {
     P2(("no channel specified\n"));
     return 1;
   }
+
+  channel=CHAN_STAR2HASH(channel);
 
   if (key)
     emit(sprintf("JOIN %s %s\n",channel,key));
@@ -282,23 +298,24 @@ void show_topic(string where) {
       ]));
 }
 
-void enter_room(struct server_s server, string where, string tag) {
+void enter_room(string where, string tag) {
   if (!where||!server)
     return;
   string wherehash=CHAN_STAR2HASH(where);
+  string wherestar=CHAN_HASH2STAR(where);
 
-  P2(("entering room with "+sizeof(channels[CHAN_STAR2HASH(where)]->users)+" members and tag "+tag+"\n"));
+  P2(("entering room with "+sizeof(channels[wherehash]->users)+" members and tag "+tag+"\n"));
 
-  if (!sizeof(channels[CHAN_STAR2HASH(where)]->users)) {
-    call_out(#'enter_room,1,server,where,tag);
+  if (!sizeof(channels[wherehash]->users)) {
+    call_out(#'enter_room,1,where,tag);
     P3(("waiting to join the room because of !sizeof(channels[CHAN_STAR2HASH(where)]->users)\n"));
     return;
   }
 
-  if (!channels[CHAN_STAR2HASH(where)]->users[m_indices(channels[CHAN_STAR2HASH(where)]->users)[0]]->here) {
+  if (!channels[wherehash]->users[m_indices(channels[wherehash]->users)[0]]->here) {
     // here is not set if the user structure hasn't been filled by a whoreply
     // TODO: send WHO request perhaps?
-    call_out(#'enter_room,1,server,where,tag);
+    call_out(#'enter_room,1,where,tag);
     P3(("waiting to join the room because of !channels[CHAN_STAR2HASH(where)]->users[m_indices(channels[CHAN_STAR2HASH(where)]->users)[0]]->here\n"));
     return;
   }
@@ -310,8 +327,8 @@ void enter_room(struct server_s server, string where, string tag) {
         (find_person(server->owner) /*server->master*/
         ,"_echo_place_enter"
         ,"welcome to this room"
-        ,(["_nick_place": "irc:"+where+"@"+server->id
-          ,"_context": "irc:"+where+"@"+server->id
+        ,(["_nick_place": "irc:"+wherestar+"@"+server->id
+          ,"_context": "irc:"+wherestar+"@"+server->id
           ,"_nick":server->owner  //"irc:~"+server->nick+"@"+server->id
           ,"_list_members":nicklist
           ,"_tag":tag
@@ -334,35 +351,48 @@ int parse_answer(string s) {
     case 0:
       return 0;
     case "JOIN":
-      // :ehlo!ehlo@dionisos.jmt.gr JOIN :#jomat
       // TODO: sanity checks
-      // :_target psyc://host1/~user
-      // :_context  psyc://host2/@place
-      //
-      // :_tag  somethingwicked
-      // :_nick user
-      // =_nick_place place
-      // =_description   This is a great place to be.
-      // _echo_place_enter
-      // You have entered [_nick_place], [_nick]. [_description]
-      // .
-      string where,msg,from_nick;
-      sscanf(s,":%s!%~s %~s :%s",from_nick,where);
-      P2(("irc server wants us "+from_nick+" to join a room: "+where+"\n"));
+      // We join: (and are named episkevis)
+      // :episkevis!jomat@episkevis.jmt.gr JOIN :#jmtest7
+      // Someone joins:
+      // :j!~j@episkevis.jmt.gr JOIN :#jmtest7
+      string where,msg,from_nick,loginandpref;
+      sscanf(s,":%s!%s %~s :%s",from_nick,loginandpref,where);
 
       if(!where||!from_nick)
         return 1;
+
+      if (from_nick!=server->nick) {
+        // someone joined the room
+        update_nick(from_nick,where);
+        if (is_letter(loginandpref[0])) {
+          channels[where]->users[from_nick]->prefix=0;
+          channels[where]->users[from_nick]->login=loginandpref;
+        } else {
+          channels[where]->users[from_nick]->prefix=loginandpref[0];
+          channels[where]->users[from_nick]->login=loginandpref[1..];
+        }
+        string wherestar=CHAN_HASH2STAR(where);
+        sendmsg
+        (find_person(server->owner)
+        ,"_notice_place_enter"
+        ,0
+        ,(["_nick_place": "irc:"+wherestar+"@"+server->id
+          ,"_context": "irc:"+wherestar+"@"+server->id
+          ,"_INTERNAL_source":from_nick+"!"+loginandpref
+         ]));
+        return 0;
+      }
+
+      P2(("irc server wants us "+from_nick+" to join a room: "+where+"\n"));
 
       string tag=structp(channels[where])?channels[where]->tag:"";;
 
       emit("WHO "+where+"\n");
 
-      if ('#'==where[0])
-        where[0]='*';
-
       P2(("trying to enter %s\n", "irc:"+where+"@"+server->id));
       // sendmsg(target, mc, data, vars, source, showingLog, callback)
-      call_out(#'enter_room,0,server,where,tag);
+      call_out(#'enter_room,0,where,tag);
       return 0;
     case "PRIVMSG":
       //varargs mixed sendmsg(mixed target, string mc, mixed data, mapping vars,
@@ -555,66 +585,67 @@ void create() {
     return;
 }
 
-string parse_destination(string target) {
-  if (!target)
-    return 0;
-
-  string destination;
-  sscanf(target,"irc:%s@%+~s",destination);
-  // Remember: "Note: The prefix "*" is mapped to the irc channel prefix "#""
-  if ('*'==destination[0])
-    destination[0]='#';
-  else if ('~'==destination[0])
-    destination=destination[1..];
-  return destination;
-}
-
 #define TARGET2CHAN(t,c) sscanf(t,"irc:%s@%~s",c)
 
 // the user want's to say something to the irc:
 varargs int msg(string source, string mc, string data, mapping vars, int showingLog, mixed target) {
-  P2(("IRC client connection got a message----------------------\nsource %O\n"                                           
-        "--------mc %O\n--------data %O\n--------vars %O"     
-        "\n--------showingLog %O\n--------target %O\n--------\n"
-        ,source,mc,data,vars,showingLog,target)); 
-// source net/irc/user#jomat
-// mc "_request_enter_join"
-// data 0
-// vars ([ /* #1 */
-//   "_group": "irc:*jomat@blafasel",
-//   "_nick": "jomat",
-//   "_flag": "_quiet",
-//   "_tag": "40f7eed0dfbf2800"
-// ])
-// showingLog 0
-// target "irc:*jomat@blafasel"
+  P2(("%O msg mc: %O\n",this_object(),mc));
+  string chan;
   switch (mc) {
     case "_query_topic": /* user wants to see the topic */
-      string chan;
       TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
       show_topic(chan);
       show_topic_author(chan);
       return 0;
     case "_request_members":  /* user wants to see the nicks of a room */
-      string chan;
       TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
       show_members(source,chan,vars);
       return 0;
     case "_message_private":
     case "_message_public_question":
     case "_message_public":
-      string destination=parse_destination(target);
-      if (""==destination) // msg to the server
+      TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
+      if (""==chan) // msg to the server
         emit(data+"\n");
       else
-        irc_privmsg(destination,data);
+        irc_privmsg(chan,data);
       source->msg(this_object(),regreplace(mc,"(_message_)(.*)","\\1echo_\\2",0),data,vars);
       return 0;
+    case "_request_enter_subscribe":
+    case "_request_enter_automatic_subscription":
+      TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
+      string hashchan=CHAN_STAR2HASH(chan);
+      if (channels[hashchan])
+        channels[hashchan]->subscribed=1;
+      else
+        channels[hashchan]=(<channel_s>subscribed:1);
     case "_request_enter":
     case "_request_enter_join":
-    case "_request_enter_subscribe":
-      irc_join(parse_destination(target),vars["_tag"],0 /* TODO: add key foo */);
+      TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
+      if (channels[CHAN_STAR2HASH(chan)])
+        enter_room(chan,vars["_tag"]);
+      irc_join(chan,vars["_tag"],0 /* TODO: add key foo */);
     break;
+    case "_request_leave":            // IRC: PART #irc:*bla@fasel
+    case "_request_leave_subscribe":  // unsub irc:*bla@fasel
+      TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
+      irc_part(chan);
+      break;
+    case "_request_leave_logout":     // IRC: QUIT
+    case "_request_leave_disconnect": // close connection
+      TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
+      string hashchan=CHAN_STAR2HASH(chan);
+      if (channels[hashchan]&&!channels[hashchan]->subscribed)
+        irc_part(chan);
+
+    break;
+    case "_message_echo_private":  // echo for the things the irc-server says to us …not!
+    default:
+      P2(("IRC client connection got an unhandled message----------------------\nsource %O\n"
+        "--------mc %O\n--------data %O\n--------vars %O"
+        "\n--------showingLog %O\n--------target %O\n--------\n"
+        ,source,mc,data,vars,showingLog,target)); 
+      break;
   }
   return 1;
 }
