@@ -118,7 +118,9 @@ int irc_privmsg(string msgtarget, string message) {
 // try to join _one_ channel with an optional key
 varargs int irc_join(string channel, string tag, string key) {
   // JOIN <channels> [<keys>]
-  // Makes the client join the channels in the comma-separated list <channels>, specifying the passwords, if needed, in the comma-separated list <keys>. If the channel(s) do not exist then they will be created.
+  // Makes the client join the channels in the comma-separated list <channels>,
+  // specifying the passwords, if needed, in the comma-separated list <keys>. If
+  // the channel(s) do not exist then they will be created.
   // Defined in RFC 1459
   if (1>server->connected) {
     call_out(#'irc_join,1,channel,tag,key);
@@ -148,7 +150,8 @@ varargs int irc_join(string channel, string tag, string key) {
 int irc_nick(string nick) {
   // NICK <nickname> [<hopcount>] (RFC 1459)
   // NICK <nickname> (RFC 2812)
-  // Allows a client to change their IRC nickname. Hopcount is for use between servers to specify how far away a nickname is from its home server.[20][21]
+  // Allows a client to change their IRC nickname. Hopcount is for use between
+  // servers to specify how far away a nickname is from its home server.[20][21]
   // Defined in RFC 1459; the optional <hopcount> parameter was removed in RFC 2812
   if (!interactive()) {
     call_out(#'irc_nick,1,nick);
@@ -166,7 +169,10 @@ int irc_nick(string nick) {
 int irc_user(string user, string mode, string realname) {
   // USER <username> <hostname> <servername> <realname> (RFC 1459)
   // USER <user> <mode> <unused> <realname> (RFC 2812)
-  // This command is used at the beginning of a connection to specify the username, hostname, real name and initial user modes of the connecting client.[43][44] <realname> may contain spaces, and thus must be prefixed with a colon.
+  // This command is used at the beginning of a connection to specify
+  // the username, hostname, real name and initial user modes of the
+  // connecting client.[43][44] <realname> may contain spaces, and thus
+  // must be prefixed with a colon.
   // Defined in RFC 1459, modified in RFC 2812
   if (!interactive()) {
     call_out(#'irc_user,1,user,mode,realname);
@@ -201,10 +207,6 @@ string *make_nicklist(mapping users) {
 }
 
 varargs void show_members(mixed whom,string room,mixed vars) {
- // who #irc:*schwester@blafasel
- // :episkevis.jmt.gr 352 jomat #irc:*schwester@blafasel ~jlogin evil.net episkevis.jmt.gr jomat Hv :23 jident jname
- // :space.blafasel.de 352 jomat #chan2 rxxx fefe:ccc::5:23. ray.blafasel.de rxxx H*@ :1 *Unknown*
- // psyctext("#352 [_INTERNAL_nick_me] #[_nick_place] [_IRC_identified][_nick_login] [_identification_host] episkevis.jmt.gr [_nick] [_IRC_away][_IRC_operator] :[_IRC_hops] [_identification] [_name]
   string hashchan=CHAN_STAR2HASH(room);
   string starchan=CHAN_HASH2STAR(room);
 
@@ -224,7 +226,8 @@ varargs void show_members(mixed whom,string room,mixed vars) {
         ,"_nick_login":user->login
         ,"_identification_host":user->host
         ,"_IRC_away":user->here?sprintf("%c",user->here):""
-        ,"_IRC_operator":(user->ircop?sprintf("%c",user->ircop):"")+(user->chanop?sprintf("%c",user->chanop):"") // TODO: dirty hack
+        ,"_IRC_operator":(user->ircop?sprintf("%c",user->ircop):"")
+          +(user->chanop?sprintf("%c",user->chanop):"") // TODO: dirty hack because chanop should go in an exta field
         ,"_IRC_hops":user->hops
         ,"_identification":""
         ,"_name":user->username
@@ -315,13 +318,20 @@ void enter_room(string where, string tag) {
   if (!channels[wherehash]->users[m_indices(channels[wherehash]->users)[0]]->here) {
     // here is not set if the user structure hasn't been filled by a whoreply
     // TODO: send WHO request perhaps?
-    call_out(#'enter_room,1,where,tag);
-    P3(("waiting to join the room because of !channels[CHAN_STAR2HASH(where)]->users[m_indices(channels[CHAN_STAR2HASH(where)]->users)[0]]->here\n"));
+    //       → don't hammer server forever on occasionally happening fnords
+    call_out(function void() {
+      if (!channels[wherehash]->users[m_indices(channels[wherehash]->users)[0]]->here)
+        emit("WHO "+wherehash+"\n"); },2);
+    call_out(#'enter_room,2,where,tag);
+    P3(("waiting to join the room because of !channels[CHAN_STAR2HASH(where)]->users"
+        "[m_indices(channels[CHAN_STAR2HASH(where)]->users)[0]]->here\n"));
     return;
   }
 
   string *nicklist=make_nicklist(channels[wherehash]->users);
-  P4((sprintf("nicklist to %O(%O) in %O: %O\n",find_person(server->owner),server->owner,"irc:"+where+"@"+server->id,implode(nicklist,", "))));
+  P4((sprintf("nicklist to %O(%O) in %O: %O\n"
+    ,find_person(server->owner),server->owner
+    ,"irc:"+where+"@"+server->id,implode(nicklist,", "))));
 
   sendmsg
         (find_person(server->owner) /*server->master*/
@@ -340,7 +350,7 @@ void enter_room(string where, string tag) {
 
 int parse_answer(string s) {
   P2(("Parsing: %O\n",s));
-  if (s[0..4] == "PING ") {
+  if ("PING "==s[0..4]) {
     emit("PONG "+s[5..]+"\n");
     return 0;
   }
@@ -353,7 +363,7 @@ int parse_answer(string s) {
     case "QUIT": // :foo!bar@abc.example.net QUIT :Ping timeout: 360 seconds
       string info;
       sscanf(s,":%~s %~s :%s",info);
-      sendmsg   // TODO: _notice_place_leave_disconnect generates PART in irc, shouldn't it be one QUIT?
+      sendmsg
         (find_person(server->owner)
         ,"_notice_place_leave_disconnect"
         ,0
