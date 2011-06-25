@@ -342,18 +342,20 @@ w(string mc, string data, mapping vars, mixed source) {
 	D2(
 	   if (vars["_INTERNAL_nick_me"] && source)
 		D(S("COLLISION: msg arrived in irc:w had _INTERNAL_nick_me with "
-		    "value: %O\n", vars["_INTERNAL_nick_me"]));
+		    "value: %O (if you use irc/client.c this is ok)\n", vars["_INTERNAL_nick_me"]));
 	  )
-#if !defined(PRO_PATH) && defined(ALIASES)
-	// heldensaga thinks nickspaces are perfect only when you can
-	// give away your own nickname. i think that is unnecessary geek pride.
-	// so be it!
-	vars["_INTERNAL_nick_me"] = aliases[MYLOWERNICK]
+  if (!vars["_INTERNAL_nick_me"]) {
+#   if !defined(PRO_PATH) && defined(ALIASES)
+	    // heldensaga thinks nickspaces are perfect only when you can
+	    // give away your own nickname. i think that is unnecessary geek pride.
+	    // so be it!
+      vars["_INTERNAL_nick_me"] = aliases[MYLOWERNICK]
 				? SERVER_UNIFORM +"~"+ MYNICK
 				: MYNICK;
-#else
-	vars["_INTERNAL_nick_me"] = MYNICK;
-#endif
+#   else
+  	  vars["_INTERNAL_nick_me"] = MYNICK;
+#   endif
+  }
 	if (vars["_nick"] && places[source] && vars["_time_place"]) {
 		P3(("%O glaubt dem _relay von %O jetz mal, gell?\n",
 		    ME, source))

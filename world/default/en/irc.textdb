@@ -202,7 +202,7 @@ _message_private_action_action
 |:[_INTERNAL_source_IRC] PRIVMSG [_INTERNAL_nick_me] :%ACTION [_action].%
 
 _notice_switch_identity
-|:[_INTERNAL_nick_me] NICK [_nick_next]
+|:[_INTERNAL_nick_me] NICK :[_nick_next]
 
 _notice_login
 |## shut up

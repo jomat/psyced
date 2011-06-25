@@ -359,10 +359,25 @@ int parse_answer(string s) {
         ,0
         ,(["_INTERNAL_source":origin,"_info":info]));
       sscanf(origin,"%s!%~s",origin);
-      map(channels,function void(string k,struct channel_s c ) {
+      map(channels,function void(string k,struct channel_s c) {
         m_delete(c->users,origin);
       });
       return 0;
+    case "NICK":
+      string nick_prev,nick_next;
+      sscanf(s,":%s!%~s %~s :%s",nick_prev,nick_next);
+      sendmsg
+        (find_person(server->owner)
+        ,"_notice_switch_identity"
+        ,0
+        ,(["_INTERNAL_nick_me":origin,"_nick_next":nick_next,"_nick":origin]));
+      map(channels,function void(string k,struct channel_s c) {
+        if (c->users[nick_prev]) {
+          c->users[nick_next]=c->users[nick_prev];
+          m_delete(c->users,nick_prev);
+        }
+      });
+      break;
     case "JOIN":
       // TODO: sanity checks
       // We join: (and are named episkevis)
