@@ -277,7 +277,7 @@ _notice_place_leave_home
 |:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
 
 _notice_place_leave_disconnect
-|:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
+|:[_INTERNAL_source_IRC] QUIT :{_info}{_VAR_method}
 
 _notice_place_leave_netburp
 |:[_INTERNAL_source_IRC] PART #[_nick_place] :{_VAR_method}
@@ -341,10 +341,10 @@ _status_place_topic_only
 |#332 [_INTERNAL_nick_me] #[_nick_place] :[_topic]
 
 _status_place_topic_author
-|#333 [_INTERNAL_nick_me] #[_nick_place] [_nick] [_INTERNAL_time_topic]
+|#333 [_INTERNAL_nick_me] #[_nick_place] [_nick] [_INTERNAL_time_topic] :{_status_place_topic_author}
 
 _status_place_topic_none
-|#331 [_INTERNAL_nick_me] #[_nick_place] :[_info]
+|#331 [_INTERNAL_nick_me] #{_nick_place} :{_info}{_status_place_topic_none}
 
 _status_place_topic_official
 |#332 [_INTERNAL_nick_me] #[_nick_place] :[_topic]

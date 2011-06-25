@@ -346,9 +346,22 @@ int parse_answer(string s) {
   }
 
   string origin, command;
-  sscanf(s,"%s %s %~s",origin,command);
+  sscanf(s,":%s %s %~s",origin,command);
   switch (command&&upper_case(command)) {
     case 0:
+      return 0;
+    case "QUIT": // :foo!bar@abc.example.net QUIT :Ping timeout: 360 seconds
+      string info;
+      sscanf(s,":%~s %~s :%s",info);
+      sendmsg   // TODO: _notice_place_leave_disconnect generates PART in irc, shouldn't it be one QUIT?
+        (find_person(server->owner)
+        ,"_notice_place_leave_disconnect"
+        ,0
+        ,(["_INTERNAL_source":origin,"_info":info]));
+      sscanf(origin,"%s!%~s",origin);
+      map(channels,function void(string k,struct channel_s c ) {
+        m_delete(c->users,origin);
+      });
       return 0;
     case "JOIN":
       // TODO: sanity checks

@@ -265,7 +265,7 @@ w(string mc, string data, mapping vars, mixed source) {
 #ifndef SAFE_IRC
 	} else if (abbrev("_notice_place_enter", mc)) {
 	    mc = "_notice_place_enter";
-	} else if(abbrev("_notice_place_leave", mc)) {
+	} else if("_notice_place_leave_disconnect"!=mc&&abbrev("_notice_place_leave", mc)) {
 	    mc = "_notice_place_leave";
 #endif
 	}
