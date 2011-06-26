@@ -105,12 +105,12 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
      ,""\
      ," set <server> <property> <values>"\
      ,"        changes settings for the given keywords"\
-     ,"        set bla autocmds 1 privmsg nickserv identfy mysecret"\
+     ,"        set bla autocmds 1 privmsg nickserv :identfy mysecret"\
      ,"        set foo host foo.example.com"\
      ,""\
      ," add <server> <property> <key> <values>"\
      ,"        currently just adds a autocmd, i. e. to identify after 3 s"\
-     ,"        add bla autocmds 3 privmsg nickserv identify foo"\
+     ,"        add bla autocmds 3 privmsg nickserv :identify foo"\
      ,"        note: you can't add two commands in the same second"\
      ,""\
      ," del <server> <property> <key>"\
@@ -280,7 +280,6 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
               if (objectp(server_connections[data[10..]])) {
                 IRC_SCHEME_ANSWER(sprintf("destructing %O",server_connections[data[10..]]));
                 destruct(server_connections[data[10..]]);
-                IRC_SCHEME_ANSWER(sprintf("connection foo is %O\n",server_connections[data[10..]]));
               }
               if (!servers[data[10..]]) {
                 IRC_SCHEME_ANSWER(data[10..]+" does not exist");
