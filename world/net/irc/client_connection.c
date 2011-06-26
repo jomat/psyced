@@ -23,6 +23,7 @@ struct server_s {
   int connected;  // < 0 connecting, 0 not connected, >0 connected
                   // not to be confused with interactive() for the socket, this is the irc layer
   string owner;
+  mapping autocmds;
 };
 
 struct channel_s {
@@ -93,6 +94,7 @@ void set_parameters(mapping m) {
     ,id:m["id"]
     ,master:m["master"]
     ,owner:m["owner"]
+    ,autocmds:m["autocmds"]
   );
 }
 
@@ -483,6 +485,9 @@ int parse_answer(string s) {
       // RPL_WELCOME   RFC2812
       // :Welcome to the Internet Relay Network <nick>!<user>@<host>
       // The first message sent after client registration. The text used varies widely 
+      server->autocmds&&map(server->autocmds,function void(int t,string cmd) {
+        call_out(function void(){emit(cmd+"\n");},t);
+      });
       server->connected=1;
       // channel tag key
       map(channels,function void(string id, struct channel_s channel) {

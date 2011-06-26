@@ -11,6 +11,7 @@ struct server_s {
   int port;
   string nick;
   // TODO: ssl, ipv6, password, username
+  mapping autocmds;
 };
 
 mapping servers = ([]);
@@ -23,6 +24,7 @@ void create_connection(string id,struct server_s server,status connect) {
     (["host":server->host
       ,"port":server->port
       ,"nick":server->nick
+      ,"autocmds":server->autocmds
       ,"master":this_object()
       ,"id":id
     ]));
@@ -64,7 +66,7 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
         ,source,mc,data,vars,showingLog,target));
   if ("irc:"==target||"irc:"==vars["_nick_target"]) { // TODO: the scheme...
     object owner_o=find_person(owner);
-#   define IRC_SCHEME_ANSWER(s) sendmsg(owner_o,"_message_private",s,([ "_nick": "irc:" ]));
+#   define IRC_SCHEME_ANSWER(s) do { sendmsg(owner_o,"_message_private",(s),([ "_nick": "irc:" ])); } while (0)
 #   define IRC_SCHEME_SHOW_SERVER(s,s_s) \
           map(explode(sprintf("%O",s_s),"\n")[1..<2] \
             ,function void(string e) { \
@@ -101,8 +103,18 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
      ," del <server>"\
      ,"        deletes the server with all the settings"\
      ,""\
-     ," set <server> <property> <value>"\
+     ," set <server> <property> <values>"\
      ,"        changes settings for the given keywords"\
+     ,"        set bla autocmds 1 privmsg nickserv identfy mysecret"\
+     ,"        set foo host foo.example.com"\
+     ,""\
+     ," add <server> <property> <key> <values>"\
+     ,"        currently just adds a autocmd, i. e. to identify after 3 s"\
+     ,"        add bla autocmds 3 privmsg nickserv identify foo"\
+     ,"        note: you can't add two commands in the same second"\
+     ,""\
+     ," del <server> <property> <key>"\
+     ,"        currently just delete the autocmd at the given second"\
      ,""\
      ," save"\
      ,"        saves your server settings permanently"\
@@ -166,16 +178,68 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
               IRC_SCHEME_SHOW_SERVER(data[5..],servers[data[5..]]);
               return 1;
             } else if ("add "==data[0..3]) {
-              if (servers[data[4..]]) {
-                IRC_SCHEME_ANSWER("sawwry, this serverid already exists: "+data[4..]);
+              string *sa=explode(data," ");
+              int sas=sizeof(sa);
+              if (2==sas) {
+                if (servers[data[4..]]) {
+                  IRC_SCHEME_ANSWER("sawwry, this serverid already exists: "+data[4..]);
+                  return 0;
+                }
+                servers[data[4..]]=(<server_s>port:6667,nick:owner,host:data[4..]);
+                IRC_SCHEME_ANSWER(data[4..]+" added");
+                return 1;
+              } else if (4<sas) {
+                switch (sa[2]) {
+                  case "autocmds":
+                    int key=to_int(sa[3]);
+                    if (1>key) {
+                      IRC_SCHEME_ANSWER("1 has to be greater than "+sa[3]);
+                      return 1;
+                    }
+                    if (servers[sa[1]]->autocmds) {
+                      if (servers[sa[1]]->autocmds[key])
+                        IRC_SCHEME_ANSWER("overwritten "+key+" with "+servers[sa[1]]->autocmds[key]);
+                      else
+                        IRC_SCHEME_ANSWER("added autocmd");
+                      servers[sa[1]]->autocmds+=([key:implode(sa[4..]," ")]);
+                    } else {
+                      servers[sa[1]]->autocmds=([key:implode(sa[4..]," ")]);
+                      IRC_SCHEME_ANSWER("set autocmd");
+                    }
+                    break;
+                  default:
+                    IRC_SCHEME_ANSWER(sa[2]+" is currently not a writeable setting");
+                }
+                return 1;
+              } else {
+                IRC_SCHEME_ANSWER("hint: add <server> <property> <key> <values>");
+                IRC_SCHEME_ANSWER("or:   add <server>");
                 return 1;
               }
-              servers[data[4..]]=(<server_s>port:6667,nick:owner,host:data[4..]);
-              IRC_SCHEME_ANSWER(data[4..]+" added");
-              return 1;
             } else if ("del "==data[0..3]) {
-              m_delete(servers,data[4..]);
-              IRC_SCHEME_ANSWER("if "+data[4..]+" was there, now it's gone");
+              string *sa=explode(data," ");
+              int sas=sizeof(sa);
+              if (!servers[sa[1]]) {
+                IRC_SCHEME_ANSWER(sa[1]+" does not exits, add it for example or try again in a minute");
+                return 1;
+              }
+              if (1==sas) {
+                m_delete(servers,data[4..]);
+                IRC_SCHEME_ANSWER("if "+data[4..]+" was there, now it's gone");
+                return 1;
+              } else if (4==sas) {
+                int key=to_int(sa[3]);
+                if (servers[sa[1]]->autocmds && servers[sa[1]]->autocmds[key]) {
+                  m_delete(servers[sa[1]]->autocmds,key);
+                  IRC_SCHEME_ANSWER("deleted key");
+                } else {
+                  IRC_SCHEME_ANSWER("couldn't find key");
+                  return 1;
+                }
+              } else {
+                IRC_SCHEME_ANSWER("hint: del <server> <property> <key>");
+                IRC_SCHEME_ANSWER("or:   del <server>");
+              }
               return 1;
             } else if ("set "==data[0..3]) {
               string *sa=explode(data," ");
@@ -197,10 +261,20 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
                   IRC_SCHEME_ANSWER(sa[2]+" for "+sa[1]+" is now: "+sa[3]+" was: "+servers[sa[1]]->(sa[2])); 
                   servers[sa[1]]->(sa[2])=sa[3];
                   break;
-                default:
+                case "autocmds":
+                  int key=to_int(sa[3]);
+                  if (1>key) {
+                    IRC_SCHEME_ANSWER("1 has to be greater than "+sa[3]);
+                    return 1;
+                  }
+                  servers[sa[1]]->autocmds=([key:implode(sa[4..]," ")]);
+                  break;
+              default:
                   IRC_SCHEME_ANSWER(sa[2]+" is currently not a writeable setting");
               }
               return 1;
+            } else if ("app "==data[0..3]||"append "==data[0..6]) {
+            } else if ("del "==data[0..3]) {
             } else if ("reconnect "==data[0..9]) {
               IRC_SCHEME_ANSWER("trying to reconnect "+data[10..]);
               if (objectp(server_connections[data[10..]])) {
