@@ -375,6 +375,16 @@ int parse_answer(string s) {
         m_delete(c->users,origin);
       });
       return 0;
+    case "PART": // TODO: PART more than one channel at once
+      string nick,chanhash;
+      sscanf(s,":%s!%~s %~s %s",nick,chanhash);
+      m_delete(channels[chanhash]->users,nick);
+      sendmsg
+        (find_person(server->owner)
+        ,"_notice_place_leave"
+        ,0
+        ,(["_INTERNAL_source":origin,"_nick_place": "irc:"+CHAN_HASH2STAR(chanhash)+"@"+server->id ]));
+     return 0;
     case "NICK":
       string nick_prev,nick_next;
       sscanf(s,":%s!%~s %~s :%s",nick_prev,nick_next);
