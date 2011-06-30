@@ -371,13 +371,18 @@ int parse_answer(string s) {
         ,0
         ,(["_INTERNAL_source":origin,"_info":info]));
       sscanf(origin,"%s!%~s",origin);
+      if ('~'==origin[0])
+        origin=origin[1..];
       map(channels,function void(string k,struct channel_s c) {
         m_delete(c->users,origin);
       });
       return 0;
     case "PART": // TODO: PART more than one channel at once
+                 // TODO: check what happens if we (are) PART(ed)
       string nick,chanhash;
       sscanf(s,":%s!%~s %~s %s",nick,chanhash);
+      if ('~'==nick[0])
+        nick=nick[1..];
       m_delete(channels[chanhash]->users,nick);
       sendmsg
         (find_person(server->owner)
