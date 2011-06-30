@@ -420,7 +420,7 @@ int parse_answer(string s) {
       if (from_nick!=server->nick) {
         // someone joined the room
         update_nick(from_nick,where);
-        if (is_letter(loginandpref[0])) {
+        if ('~'==loginandpref[0]) {
           channels[where]->users[from_nick]->prefix=0;
           channels[where]->users[from_nick]->login=loginandpref;
         } else {
@@ -552,7 +552,7 @@ int parse_answer(string s) {
       channels[chan]->users[nick]->username=username;
       channels[chan]->users[nick]->ircserver=server;
       channels[chan]->users[nick]->hops=hops;
-      if (is_letter(loginandpref[0])) {
+      if ('~'==loginandpref[0]) {
         channels[chan]->users[nick]->prefix=0;
         channels[chan]->users[nick]->login=loginandpref;
       } else {
