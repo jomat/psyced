@@ -70,7 +70,7 @@ void create() {
 }
 
 varargs int msg(string source, string mc, string data, mapping vars, int showingLog, mixed target) {
-    P2(("IRC client.c %O got a message----------------------\nsource %O\n"                                                               
+  P4(("IRC client.c %O got a message----------------------\nsource %O\n"                                                               
         "--------mc %O\n--------data %O\n--------vars %O"    
         "\n--------showingLog %O\n--------target %O\n--------\n"
         ,this_object(),source,mc,data,vars,showingLog,target)); 
@@ -80,8 +80,8 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
     if (source)
       sscanf(sprintf("%O",source),"%~s#%s",nick);
     else {
-     P1(("%O unknown nick in msg\n"));
-     return 0;
+      P1(("%O unknown nick in msg\n"));
+      return 0;
    }
 
   object client=find_object(object_name()+"_user.c#"+nick);
