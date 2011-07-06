@@ -74,11 +74,11 @@ void update_nick(string nick, static string chan) {
     channels[chan]=(<channel_s>users:([]),topic:"No topic is set.",topic_set:0);
   if (!mappingp(channels[chan]->users))
     channels[chan]->users=([]);
-  if (is_letter(nick[0]))
-    channels[chan]->users[nick]=(<user_s>);
-  else {
+  if ('@'==nick[0]||'+'==nick[0]) {   // TODO: get the usermodes from 005 RPL_ISUPPORT http://www.irc.org/tech_docs/005.html
     channels[chan]->users[nick[1..]]=(<user_s>chanop:nick[0],);
     nick=nick[1..];
+  } else {
+    channels[chan]->users[nick]=(<user_s>);
   }
 }
 
@@ -380,10 +380,17 @@ int parse_answer(string s) {
     case "PART": // TODO: PART more than one channel at once
                  // TODO: check what happens if we (are) PART(ed)
       string nick,chanhash;
-      sscanf(s,":%s!%~s %~s %s",nick,chanhash);
+      sscanf(s,":%s!%~s %~s %s ",nick,chanhash);
+      if (!chanhash)
+        sscanf(s,":%~s!%~s %~s %s",chanhash);
+
       if ('~'==nick[0])
         nick=nick[1..];
-      m_delete(channels[chanhash]->users,nick);
+
+      if (channels[chanhash] && channels[chanhash]->users)
+        m_delete(channels[chanhash]->users,nick);
+      else
+        P2((sprintf("%O couldn't PART %O from %O\n",this_object(),nick,chanhash)));
       sendmsg
         (find_person(server->owner)
         ,"_notice_place_leave"
@@ -420,7 +427,7 @@ int parse_answer(string s) {
       if (from_nick!=server->nick) {
         // someone joined the room
         update_nick(from_nick,where);
-        if ('~'==loginandpref[0]) {
+        if ('~'!=loginandpref[0]) {
           channels[where]->users[from_nick]->prefix=0;
           channels[where]->users[from_nick]->login=loginandpref;
         } else {
