@@ -10,8 +10,9 @@ struct server_s {
   string host;
   int port;
   string nick;
-  // TODO: ssl, ipv6, password, username
+  // TODO: ipv6, password, username
   mapping autocmds;
+  int tls;
 };
 
 mapping servers = ([]);
@@ -27,6 +28,7 @@ void create_connection(string id,struct server_s server,status connect) {
       ,"autocmds":server->autocmds
       ,"master":this_object()
       ,"id":id
+      ,"tls":server->tls
     ]));
     server_connections[id]->set_owner(owner);
     connect&&server_connections[id]->connect();
@@ -70,12 +72,13 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
 #   define IRC_SCHEME_SHOW_SERVER(s,s_s) \
           map(explode(sprintf("%O",s_s),"\n")[1..<2] \
             ,function void(string e) { \
-              IRC_SCHEME_ANSWER(sprintf("%s",e)); \
-            }); \
+              IRC_SCHEME_ANSWER(sprintf("%O",e)[1..<2]); \
+          }); \
           IRC_SCHEME_ANSWER("  / current state:"); \
           IRC_SCHEME_ANSWER(sprintf("  / object: %O",server_connections[s]));\
           IRC_SCHEME_ANSWER("  / interactive: "+(server_connections[s]?interactive(server_connections[s]):"no connection")); \
           IRC_SCHEME_ANSWER("  / logged in: "+(server_connections[s]?server_connections[s]->query_connected()+" (0: disconnected, <0: pending, >0 connected)":"no connection")); \
+          IRC_SCHEME_ANSWER("  / tls_query_connection_state: "+(server_connections[s]?tls_query_connection_state(server_connections[s]):"no connection"));
 
     /*
      * I want a interface to configure the irc: scheme like servers and so on...
@@ -185,7 +188,7 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
                   IRC_SCHEME_ANSWER("sawwry, this serverid already exists: "+data[4..]);
                   return 0;
                 }
-                servers[data[4..]]=(<server_s>port:6667,nick:owner,host:data[4..]);
+                servers[data[4..]]=(<server_s>tls:1,port:6697,nick:owner,host:data[4..]);
                 IRC_SCHEME_ANSWER(data[4..]+" added");
                 return 1;
               } else if (4<sas) {
@@ -252,6 +255,7 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
                 return 1;
               }
               switch (sa[2]) {
+                case "tls":
                 case "port":
                   IRC_SCHEME_ANSWER(sa[2]+" for "+sa[1]+" is now: "+(int)sa[3]+" was: "+servers[sa[1]]->(sa[2])); 
                   servers[sa[1]]->(sa[2])=(int)sa[3];

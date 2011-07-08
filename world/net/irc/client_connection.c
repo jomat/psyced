@@ -19,11 +19,12 @@ struct server_s {
   int port; 
   string nick; 
   object master;  // this points to the master (named clone of client_user.c)
-  // TODO: ssl, ipv6, password, username 
+  // TODO: ipv6, password, username 
   int connected;  // < 0 connecting, 0 not connected, >0 connected
                   // not to be confused with interactive() for the socket, this is the irc layer
   string owner;
   mapping autocmds;
+  int tls;
 };
 
 struct channel_s {
@@ -95,6 +96,7 @@ void set_parameters(mapping m) {
     ,master:m["master"]
     ,owner:m["owner"]
     ,autocmds:m["autocmds"]
+    ,tls:m["tls"]
   );
 }
 
@@ -709,6 +711,8 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
 }
 
 int logon() {
+  if (server->tls && !tls_query_connection_state(this_object()))
+    tls_init_connection(this_object());
   if (!interactive()) {
     P3(("connection in background failed, will try to reconnect in 10 seconds\n"));  // TODO...
     call_out(#'connect,10);
