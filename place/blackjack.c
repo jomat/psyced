@@ -84,6 +84,8 @@ end_game() {
     if (winner == -1 || draw) {
 	castmsg(ME, "_notice_place_game_end_draw", "Game over. It's a draw.", ([ ]));
     } else {
+	// This is an example of how you should NOT do it.. please put _nick_player
+	// into the variables or how is anyone supposed to add translations to this?
 	castmsg(ME, "_notice_place_game_end", 
 		"Game over. " + PLAYER(players[winner]) + " gewinnt mit " + winner_sum + " Punkten.",
 		([ ]));
@@ -129,7 +131,7 @@ start_game() {
     }
     // no one can lose currently
     currentplayer = 0;
-    castmsg(ME, "_notice_place_game_player_next", PLAYER(players[currentplayer]) + " ist am Zug", ([ ]));
+    castmsg(ME, "_notice_place_game_player_next", PLAYER(players[currentplayer]) + " ist am Zug.", ([ ]));
 }
 
 take_card(object theplayer) {
@@ -144,7 +146,7 @@ take_card(object theplayer) {
 	if (players) {
 	    currentplayer = next_player();
 	    if (currentplayer != -1) 
-		castmsg(ME, "_notice_place_game_player_next", PLAYER(players[currentplayer]) + " ist am Zug", ([ ]));
+		castmsg(ME, "_notice_place_game_player_next", PLAYER(players[currentplayer]) + " ist am Zug.", ([ ]));
 	    else
 		end_game();
 	}
@@ -161,7 +163,7 @@ deny_card(object theplayer) {
 	castmsg(ME, "_notice_place_game_deny", PLAYER(players[currentplayer]) + " zieht keine Karte.", ([ ]));
 	currentplayer = next_player();
 	if (currentplayer != -1) 
-	    castmsg(ME, "_notice_place_game_player_next", PLAYER(players[currentplayer]) + " ist am Zug", ([ ]));
+	    castmsg(ME, "_notice_place_game_player_next", PLAYER(players[currentplayer]) + " ist am Zug.", ([ ]));
 	else
 	    end_game();
     } else {
