@@ -1,6 +1,6 @@
 #include <net.h> // vim syntax=lpc
 mapping tls_certificate(object who, int longnames) {
-    mixed *extra, extensions;
+    mixed *extra, extensions, insecure;
     mapping cert;
     int i, j;
 
@@ -11,10 +11,10 @@ mapping tls_certificate(object who, int longnames) {
 #   if __EFUN_DEFINED__(enable_binary) // happens to be committed at the same time
     extra = tls_check_certificate(who, 2);
 #   else
-    extra = tls_check_certificate(who, 1);
+    insecure=catch(extra = tls_check_certificate(who, 1));
 #   endif
 #  else
-    extra = tls_check_certificate(who);
+    insecure=catch(extra = tls_check_certificate(who,1));
 #  endif
     unless (extra && sizeof(extra) > 2) return 0;
     cert[0] = extra[0];
