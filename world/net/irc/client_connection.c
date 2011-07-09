@@ -371,7 +371,7 @@ int parse_answer(string s) {
         (find_person(server->owner)
         ,"_notice_place_leave_disconnect"
         ,0
-        ,(["_INTERNAL_source":origin,"_info":info]));
+        ,(["_INTERNAL_source_irc_client":origin,"_info":info]));
       sscanf(origin,"%s!%~s",origin);
       if ('~'==origin[0])
         origin=origin[1..];
@@ -397,7 +397,7 @@ int parse_answer(string s) {
         (find_person(server->owner)
         ,"_notice_place_leave"
         ,0
-        ,(["_INTERNAL_source":origin,"_nick_place": "irc:"+CHAN_HASH2STAR(chanhash)+"@"+server->id ]));
+        ,(["_INTERNAL_source_irc_client":origin,"_nick_place": "irc:"+CHAN_HASH2STAR(chanhash)+"@"+server->id ]));
      return 0;
     case "NICK":
       string nick_prev,nick_next;
@@ -443,7 +443,7 @@ int parse_answer(string s) {
         ,0
         ,(["_nick_place": "irc:"+wherestar+"@"+server->id
           ,"_context": "irc:"+wherestar+"@"+server->id
-          ,"_INTERNAL_source":from_nick+"!"+loginandpref
+          ,"_INTERNAL_source_irc_client":from_nick+"!"+loginandpref
          ]));
         return 0;
       }
@@ -495,7 +495,7 @@ int parse_answer(string s) {
       sendmsg(find_person(server->owner),"_notice_place_topic",0
         ,(["_nick_place":"irc:"+starchan+"@"+server->id
           ,"_topic":topic
-          ,"_INTERNAL_source":who
+          ,"_INTERNAL_source_irc_client":who
       ]));
       if (!channels[chanhash])
         channels[chanhash]=(<channel_s>topic:topic,topic_set:1,topic_author:who);

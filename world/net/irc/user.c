@@ -389,8 +389,8 @@ w(string mc, string data, mapping vars, mixed source) {
 		vars["_INTERNAL_source_IRC"] = to_string(source);
 # else // EXPERIMENTAL
 	    nick2 = vars["_INTERNAL_nick_plain"] || vars["_nick"];
-      if (vars["_INTERNAL_source"])
-        vars["_INTERNAL_source_IRC"] = vars["_INTERNAL_source"];
+      if (vars["_INTERNAL_source_irc_client"])
+        vars["_INTERNAL_source_IRC"] = vars["_INTERNAL_source_irc_client"];
       else
 	      vars["_INTERNAL_source_IRC"] = nick2 ? nick2
 		    +"!"+ (vars["_nick_long"] || vars["_INTERNAL_nick_plain"]
