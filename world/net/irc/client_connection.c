@@ -403,7 +403,7 @@ int parse_answer(string s) {
         (find_person(server->owner)
         ,"_notice_place_leave"
         ,0
-        ,(["_INTERNAL_source_irc_client":origin,"_nick_place": "irc:"+CHAN_HASH2STAR(chanhash)+"@"+server->id ]));
+        ,(["_INTERNAL_source_irc_client":origin,"_nick_place": SCHEME+CHAN_HASH2STAR(chanhash)+"@"+server->id ]));
      return 0;
     case "NICK":
       string nick_prev,nick_next;
