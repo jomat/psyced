@@ -561,7 +561,7 @@ int parse_answer(string s) {
       channels[chan]->users[nick]->username=username;
       channels[chan]->users[nick]->ircserver=server;
       channels[chan]->users[nick]->hops=hops;
-      if ('~'==loginandpref[0]) {
+      if ('~'!=loginandpref[0]) {
         channels[chan]->users[nick]->prefix=0;
         channels[chan]->users[nick]->login=loginandpref;
       } else {
