@@ -63,10 +63,14 @@
  *   query some user like irc:~username@serverid
  */
 #include <debug.h>
+#include "client.h"
 #pragma no_clone
 
 void create() {
   register_scheme("irc");
+# if ENABLE_SILC
+  register_scheme("silc");
+# endif /* if ENABLE_SILC */
 }
 
 varargs int msg(string source, string mc, string data, mapping vars, int showingLog, mixed target) {

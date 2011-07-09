@@ -2,6 +2,7 @@
  * see net/irc/client.c for details
  */
 #include <debug.h>
+#include "client.h"
 
 // all the known servers for this user are stored in the servers mapping.
 // The key is the server id (usually it's hostname and eventually port) and
@@ -13,6 +14,7 @@ struct server_s {
   // TODO: ipv6, password, username
   mapping autocmds;
   int tls;
+  int type;  /* type of server, current values: 0: irc, 's': silc */
 };
 
 mapping servers = ([]);
@@ -29,6 +31,7 @@ void create_connection(string id,struct server_s server,status connect) {
       ,"master":this_object()
       ,"id":id
       ,"tls":server->tls
+      ,"type":server->type
     ]));
     server_connections[id]->set_owner(owner);
     connect&&server_connections[id]->connect();
@@ -66,7 +69,8 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
         "--------mc\n%O\n--------data\n%O\n--------vars\n%O"
         "\n--------showingLog\n%O\n--------target\n%O\n--------\n"
         ,source,mc,data,vars,showingLog,target));
-  if ("irc:"==target||"irc:"==vars["_nick_target"]) { // TODO: the scheme...
+  if ( /*"silc:"==target||"silc:"==vars["_nick_target"]    // TODO: do we want to handle these schemes by their own?
+      ||*/"irc:"==target||"irc:"==vars["_nick_target"]) { // TODO: the scheme...
     object owner_o=find_person(owner);
 #   define IRC_SCHEME_ANSWER(s) do { sendmsg(owner_o,"_message_private",(s),([ "_nick": "irc:" ])); } while (0)
 #   define IRC_SCHEME_SHOW_SERVER(s,s_s) \
@@ -264,6 +268,10 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
                 case "nick":
                   IRC_SCHEME_ANSWER(sa[2]+" for "+sa[1]+" is now: "+sa[3]+" was: "+servers[sa[1]]->(sa[2])); 
                   servers[sa[1]]->(sa[2])=sa[3];
+                  break;
+                case "type":
+                  IRC_SCHEME_ANSWER(sa[2]+" for "+sa[1]+" is now: "+sa[3]+" was: "+servers[sa[1]]->(sa[2]));
+                  servers[sa[1]]->(sa[2])=sa[3][0];
                   break;
                 case "autocmds":
                   int key=to_int(sa[3]);

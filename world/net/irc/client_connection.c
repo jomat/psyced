@@ -10,6 +10,7 @@
 
 #define CHAN_HASH2STAR(s) (s&&('#'==s[0]?("*"+s[1..]):(s)))
 #define CHAN_STAR2HASH(s) (s&&('*'==s[0]?("#"+s[1..]):(s)))
+#define SCHEME ('s'==server->type?"silc:":"irc:")
 
 virtual inherit NET_PATH "output";
 
@@ -25,6 +26,7 @@ struct server_s {
   string owner;
   mapping autocmds;
   int tls;
+  int type;
 };
 
 struct channel_s {
@@ -76,10 +78,12 @@ void update_nick(string nick, static string chan) {
   if (!mappingp(channels[chan]->users))
     channels[chan]->users=([]);
   if ('@'==nick[0]||'+'==nick[0]) {   // TODO: get the usermodes from 005 RPL_ISUPPORT http://www.irc.org/tech_docs/005.html
-    channels[chan]->users[nick[1..]]=(<user_s>chanop:nick[0],);
+    if (!channels[chan]->users[nick[1..]])
+      channels[chan]->users[nick[1..]]=(<user_s>chanop:nick[0],);
     nick=nick[1..];
   } else {
-    channels[chan]->users[nick]=(<user_s>);
+    if (!channels[chan]->users[nick])
+      channels[chan]->users[nick]=(<user_s>);
   }
 }
 
@@ -97,6 +101,7 @@ void set_parameters(mapping m) {
     ,owner:m["owner"]
     ,autocmds:m["autocmds"]
     ,tls:m["tls"]
+    ,type:m["type"]
   );
 }
 
@@ -131,7 +136,7 @@ varargs int irc_join(string channel, string tag, string key) {
     P2(("not connected to %s, not joining the channel\n",server->host));
     return 2;
   }
-  P2(("join irc channel %s on %s\n",channel,server->host));
+  P2(("join irc channel %O on %O\n",channel,server->host));
  
   if (!channel) {
     P2(("no channel specified\n"));
@@ -194,7 +199,9 @@ int irc_user(string user, string mode, string realname) {
 int connect() {
   while (remove_call_out(#'connect) != -1);
 
-  if (net_connect(server->host,server->port)) {
+  if ('s'==server->type
+      ?net_connect("localhost",7067)
+      :net_connect(server->host,server->port)) {
     P3(( "couldn't connect to server, reconnecting in 10 seconds...\n"));  // TODO...
     call_out(#'connect,10);
     return 1;
@@ -225,7 +232,7 @@ varargs void show_members(mixed whom,string room,mixed vars) {
   P4(( "users to show: "+implode(m_indices(channels[hashchan]->users),", ")+"\n"));
   if (vars&&"W"==vars["_tag"]) {
     map(channels[hashchan]->users,function void(string nick,struct user_s user) {
-      sendmsg(whom,"_status_place_members_each",0,([ "_nick_place" : "irc:"+starchan+"@"+server->id
+      sendmsg(whom,"_status_place_members_each",0,([ "_nick_place" : SCHEME+starchan+"@"+server->id
         ,"_IRC_identified":user->prefix?sprintf("%c",user->prefix):""
         ,"_nick_login":user->login
         ,"_identification_host":user->host
@@ -246,8 +253,8 @@ varargs void show_members(mixed whom,string room,mixed vars) {
       (whom
       ,"_status_place_members"
       ,"In [_nick_place]: [_list_members_nicks]."
-      ,(["_nick_place":"irc:"+starchan+"@"+server->id
-        ,"_target":"irc:"+starchan+"@"+server->id
+      ,(["_nick_place":SCHEME+starchan+"@"+server->id
+        ,"_target":SCHEME+starchan+"@"+server->id
         ,"_list_members":nicklist
         ,"_list_members_nicks":nicklist
 
@@ -272,7 +279,7 @@ void show_topic_author(string where) {
      ,0
      ,(["_INTERNAL_time_topic":channels[wherehash]->topic_time
        ,"_nick":channels[wherehash]->topic_author
-       ,"_nick_place":"irc:"+wherestar+"@"+server->id
+       ,"_nick_place":SCHEME+wherestar+"@"+server->id
      ]));
 }
 
@@ -293,14 +300,14 @@ void show_topic(string where) {
       ,"_status_place_topic_only"
       ,0
       ,(["_topic":channels[wherehash]->topic
-        ,"_nick_place":"irc:"+wherestar+"@"+server->id
+        ,"_nick_place":SCHEME+wherestar+"@"+server->id
       ]));
   else
     sendmsg
       (find_person(server->owner)
       ,"_status_place_topic_none"
       ,0
-      ,(["_nick_place":"irc:"+wherestar+"@"+server->id
+      ,(["_nick_place":SCHEME+wherestar+"@"+server->id
         ,"_info":channels[wherehash]->topic
       ]));
 }
@@ -311,14 +318,13 @@ void enter_room(string where, string tag) {
   string wherehash=CHAN_STAR2HASH(where);
   string wherestar=CHAN_HASH2STAR(where);
 
-  P2(("entering room with "+sizeof(channels[wherehash]->users)+" members and tag "+tag+"\n"));
+  P2(("entering room "+wherehash+" with "+sizeof(channels[wherehash]->users)+" members and tag "+tag+"\n"));
 
   if (!sizeof(channels[wherehash]->users)) {
     call_out(#'enter_room,1,where,tag);
     P3(("waiting to join the room because of !sizeof(channels[CHAN_STAR2HASH(where)]->users)\n"));
     return;
   }
-
   if (!channels[wherehash]->users[m_indices(channels[wherehash]->users)[0]]->here) {
     // here is not set if the user structure hasn't been filled by a whoreply
     // TODO: send WHO request perhaps?
@@ -335,14 +341,14 @@ void enter_room(string where, string tag) {
   string *nicklist=make_nicklist(channels[wherehash]->users);
   P4((sprintf("nicklist to %O(%O) in %O: %O\n"
     ,find_person(server->owner),server->owner
-    ,"irc:"+where+"@"+server->id,implode(nicklist,", "))));
+    ,SCHEME+where+"@"+server->id,implode(nicklist,", "))));
 
   sendmsg
         (find_person(server->owner) /*server->master*/
         ,"_echo_place_enter"
         ,"welcome to this room"
-        ,(["_nick_place": "irc:"+wherestar+"@"+server->id
-          ,"_context": "irc:"+wherestar+"@"+server->id
+        ,(["_nick_place": SCHEME+wherestar+"@"+server->id
+          ,"_context": SCHEME+wherestar+"@"+server->id
           ,"_nick":server->owner  //"irc:~"+server->nick+"@"+server->id
           ,"_list_members":nicklist
           ,"_tag":tag
@@ -397,7 +403,7 @@ int parse_answer(string s) {
         (find_person(server->owner)
         ,"_notice_place_leave"
         ,0
-        ,(["_INTERNAL_source":origin,"_nick_place": "irc:"+CHAN_HASH2STAR(chanhash)+"@"+server->id ]));
+        ,(["_INTERNAL_source":origin,"_nick_place": SCHEME+CHAN_HASH2STAR(chanhash)+"@"+server->id ]));
      return 0;
     case "NICK":
       string nick_prev,nick_next;
@@ -441,8 +447,8 @@ int parse_answer(string s) {
         (find_person(server->owner)
         ,"_notice_place_enter"
         ,0
-        ,(["_nick_place": "irc:"+wherestar+"@"+server->id
-          ,"_context": "irc:"+wherestar+"@"+server->id
+        ,(["_nick_place": SCHEME+wherestar+"@"+server->id
+          ,"_context": SCHEME+wherestar+"@"+server->id
           ,"_INTERNAL_source":from_nick+"!"+loginandpref
          ]));
         return 0;
@@ -454,7 +460,7 @@ int parse_answer(string s) {
 
       emit("WHO "+where+"\n");
 
-      P2(("trying to enter %s\n", "irc:"+where+"@"+server->id));
+      P2(("trying to enter %s\n", SCHEME+where+"@"+server->id));
       // sendmsg(target, mc, data, vars, source, showingLog, callback)
       call_out(#'enter_room,0,where,tag);
       return 0;
@@ -474,13 +480,13 @@ int parse_answer(string s) {
         sendmsg(find_person(server->owner),"_message_private",msg,([ "_nick": "irc:~"+from_nick+"@"+server->id ]));
       else {
         sendmsg(find_person(server->owner),"_message_public",msg
-          ,([ "_nick_place": "irc:"+where+"@"+server->id
+          ,([ "_nick_place": SCHEME+where+"@"+server->id
           ,"_nick":from_nick ]));
         //sendmsg(find_person(server->owner),"_message_public",msg
-        //  ,([ "_nick_place": "irc:"+where+"@"+server->id
-        //  ,"_nick":"irc:~"+from_nick+"@"+server->id ]));  // TODO: make it configurable
+        //  ,([ "_nick_place": SCHEME+where+"@"+server->id
+        //  ,"_nick":SCHEME+"~"+from_nick+"@"+server->id ]));  // TODO: make it configurable
         //sendmsg(find_person(server->owner),"_message_public",msg,
-        //  (["_nick_place":"irc:"+where+"@"+server->id
+        //  (["_nick_place":SCHEME+where+"@"+server->id
         //   ,"_nick":channels[where_o]->users[from_nick]->prefix
         //     ?sprintf("%c%s",channels[where_o]->users[from_nick]->prefix,from_nick)
         //     :from_nick
@@ -493,7 +499,7 @@ int parse_answer(string s) {
       sscanf(s,":%s %~s %s :%s",who,chanhash,topic);
       string starchan=CHAN_HASH2STAR(chanhash);
       sendmsg(find_person(server->owner),"_notice_place_topic",0
-        ,(["_nick_place":"irc:"+starchan+"@"+server->id
+        ,(["_nick_place":SCHEME+starchan+"@"+server->id
           ,"_topic":topic
           ,"_INTERNAL_source":who
       ]));
@@ -509,6 +515,8 @@ int parse_answer(string s) {
       // RPL_WELCOME   RFC2812
       // :Welcome to the Internet Relay Network <nick>!<user>@<host>
       // The first message sent after client registration. The text used varies widely 
+      if ('s'==server->type)
+        emit("SERVER "+server->host+" "+server->port+"\n");
       server->autocmds&&map(server->autocmds,function void(int t,string cmd) {
         call_out(function void(){emit(cmd+"\n");},t);
       });
@@ -545,6 +553,7 @@ int parse_answer(string s) {
        call_out(#'show_topic_author,0,chanhash);
        break;
     case "352":
+      // :scis              352 jomat #schjr xupeh singa.silc blaarzwurst.de jomat_0 H :0 jomat
       // :space.blafasel.de 352 jomat #chan1 fnord fxxxxxx.xx ray.blafasel.de fxxx H+ :1 franz nord
       // :space.blafasel.de 352 jomat #chan1 ~dxxx cxxxxx.yy irc.blafasel.de d G@ :1 me
       // :space.blafasel.de 352 jomat #chan1 ~gxxx chxxxxxxx.zz irc.blafasel.de gxxx H@ :1 Kxxxx Mxxxx
@@ -561,7 +570,7 @@ int parse_answer(string s) {
       channels[chan]->users[nick]->username=username;
       channels[chan]->users[nick]->ircserver=server;
       channels[chan]->users[nick]->hops=hops;
-      if ('~'==loginandpref[0]) {
+      if ('~'!=loginandpref[0]) {
         channels[chan]->users[nick]->prefix=0;
         channels[chan]->users[nick]->login=loginandpref;
       } else {
@@ -583,7 +592,7 @@ int parse_answer(string s) {
           break;
         default:
       }
-      P4(( sprintf("user made of WHOREPLY: %O\n",channels[chan]->users[nick]) ));
+      P2(( sprintf("user made of WHOREPLY channel[%s] user[%s]: %O\n",chan,nick,channels[chan]->users[nick]) ));
 
       return 0;
     case "353":
@@ -652,7 +661,7 @@ void create() {
     return;
 }
 
-#define TARGET2CHAN(t,c) sscanf(t,"irc:%s@%~s",c)
+#define TARGET2CHAN(t,c) sscanf(t,"%~s:%s@%~s",c)
 
 // the user want's to say something to the irc:
 varargs int msg(string source, string mc, string data, mapping vars, int showingLog, mixed target) {
