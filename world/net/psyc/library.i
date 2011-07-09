@@ -299,13 +299,13 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 	// also all localhost traffic should be handled by udp TODO
 #ifdef _flag_enable_routing_UDP
 	if (u[UTransport] == "c" ||
-# ifdef _flag_enable_routing_TLS
+# ifndef _flag_disable_routing_TLS
 	    u[UTransport] == "s" ||
 # endif
 	   (!u[UTransport] && !abbrev("_notice", mc)))
 #else
 	if (!u[UTransport] || u[UTransport] == "c"
-# ifdef _flag_enable_routing_TLS
+# ifndef _flag_disable_routing_TLS
 			   || u[UTransport] == "s"
 # endif
 	)
