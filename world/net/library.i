@@ -661,7 +661,7 @@ int xmpp_sendmsg(mixed target, string mc, mixed data, mapping vars,
 		otarget, o ))
 	// in XMPP this is sufficient since other servers on the same IP
 	// need to have a different domain name
-	} else if (is_localhost(lower_case(u[UHost]))) {
+	} else if (is_localhost(u[UHost])) {
 	    unless (u[UUser]) {
 		P0(("Intercepted %O to %O from %O\n", mc, target, source))
 		// 0 makes sendmsg try to relay via xmpp.scheme.psyced.org

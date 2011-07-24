@@ -338,7 +338,7 @@ jabberMsg(XMLNode node) {
 		    }
 		    // lets see if its one of our users
 		    sscanf(deco, "%s@%s", u, ho);
-		    unless (is_localhost(lower_case(ho))) {
+		    unless (is_localhost(ho)) {
 			// wrong host
 			SASL_ERROR("invalid-authzid")
 			QUIT

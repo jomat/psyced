@@ -550,15 +550,15 @@ void dns_rresolve(string ip, closure callback, varargs array(mixed) extra) {
 
 // {{{ function: is_localhost
 #if 1
-// take care to always pass a lowercased (virtual) hostname
 int is_localhost(string host) {
     // async discovery of virtual hosts is not necessary 
     // we should know all of our hostnames in advance for
     // security anyway
-    return member(localhosts, host);
+    return member(localhosts, lower_case(host));
 }
 #else
 int is_localhost(string host, closure callback, varargs array(mixed) extra) {
+    host = lower_case(host);
     if (member(localhosts, host)) {
 	funcall(callback, 1, extra);
 	return;

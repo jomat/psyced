@@ -188,7 +188,7 @@ void dispatch(mapping rvars, mapping evars, mixed method, mixed body) {
             DISPATCHERROR("target is not a uniform\n")
         }
 	// FIXME relaying support here?
-        if (!is_localhost(lower_case(u[UHost]))) {
+        if (!is_localhost(u[UHost])) {
             DISPATCHERROR("target is not configured on this server\n")
 	}
     }

@@ -107,7 +107,7 @@ parseUDP(ip, port, msg) {
 		send_udp(ip, port, reply);
 		return;
 	}
-	islocaltarget = is_localhost(lower_case(tu[UHost]));
+	islocaltarget = is_localhost(tu[UHost]);
 	// TODO this may be either local or remote users
 	if (islocaltarget && tu[UUser]) target = find_person(tu[UUser]); 
 	// TODO works only for online users
@@ -156,7 +156,7 @@ parseUDP(ip, port, msg) {
 		su = parse_uniform(source);
 		source = 0;
 #if 0
-		if (is_localhost(lower_case(su[UHost]))) {
+		if (is_localhost(su[UHost])) {
 			object o;
 			o = find_person(su[UUser]);
 			// TODO: check that source is coming from

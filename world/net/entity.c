@@ -409,7 +409,7 @@ msg(source, mc, data, vars) {
 		// and have it replaced by object.. but that's not the case
 		// we _could_ however do that by using _uniform_trustee
 		// and doing is_localhost on all _uniform's at parsing time
-		if (is_localhost(lower_case(u[UHost]))) trustee_nick = u[UNick];
+		if (is_localhost(u[UHost])) trustee_nick = u[UNick];
 	    }
 	    if (get_trust(trustee_nick, 0) < MINIMUM_TRUST) return 1;
 	    // entweder trustee ist ein local nick, dann kriegen wir den

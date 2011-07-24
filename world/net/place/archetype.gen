@@ -2678,7 +2678,7 @@ sAide(whom) {
 #if 0
     // change local uniform to nick ... isn't really correct like this
     array(mixed) u = parse_uniform(whom);
-    if (u && is_localhost(lower_case(u[UHost]))) whom = u[UResource];
+    if (u && is_localhost(u[UHost])) whom = u[UResource];
 #else
     object o = psyc_object(whom);
     if (o) whom = o->qName();

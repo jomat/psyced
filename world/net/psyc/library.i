@@ -260,7 +260,7 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 		return 0;
 	    }
 	}
-	host = lower_case(u[UHost]);
+	host = lower_case(u[UHost]); // lower_case not necessary.. right?
 	if (query_udp_port() == port && is_localhost(host)) {
 	    // this happens when a psyc client sends to a local
 	    // target that hasn't been incarnated yet...
@@ -408,7 +408,7 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 	unless (buf) return 0;
 #endif /* NEW_RENDER */
 
-	// host seems to already be in lower_case
+	// we could store the result of the is_localhost above, right?
 	if (is_localhost(host)) return send_udp(host, port, buf);
 	PT(("dns_resolve + send_udp %O:%O packet:\n%s", host,port,buf))
 	dns_resolve(host, (: if (stringp($1))
