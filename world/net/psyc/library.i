@@ -112,6 +112,7 @@ varargs string psyc_name(mixed source, vastring localpart) {
 	return obj2unl[source] = s;
 }
 
+// in most situtation this is correct function to find local psyc objects
 object psyc_object(string uniform) {
         // unl2obj can become too big and cause a sprintf error here
         // so you don't want this debug output on a production server!
@@ -119,6 +120,7 @@ object psyc_object(string uniform) {
 	return unl2obj[uniform];
 }
 
+// you probably want to use the much simpler psyc_object() above
 object find_psyc_object(array(mixed) u) {
 	P3((">> find_psyc_object(%O)\n", u))
 	string t, r, svc, user;

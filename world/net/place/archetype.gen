@@ -2675,9 +2675,14 @@ sAide(whom) {
     int ret;
     mapping aides = v("aides") || ([]);
 
-    // change local uniform to nick
+#if 0
+    // change local uniform to nick ... isn't really correct like this
     array(mixed) u = parse_uniform(whom);
     if (u && is_localhost(lower_case(u[UHost]))) whom = u[UResource];
+#else
+    object o = psyc_object(whom);
+    if (o) whom = o->qName();
+#endif
 
     t = lower_case(whom);
     if (aides[t]) {

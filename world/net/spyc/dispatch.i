@@ -225,7 +225,9 @@ void dispatch(mapping rvars, mapping evars, mixed method, mixed body) {
 	if (vars["_target"]) {
 	    // FIXME: delivery copycat from below
 	    // beware: source is set to 0 here as it may not be present
-	    target = find_psyc_object(parse_uniform(vars["_target"]));
+	    unless (target = psyc_object(vars["_target"]))
+              // FIXME: this doesn't handle remote objects properly!
+              target = find_psyc_object(parse_uniform(vars["_target"]));
 	    PT(("target is %O\n", target))
 	    // FIXME: net/entity can not yet deal with 0 method
 	    //
@@ -288,7 +290,9 @@ void dispatch(mapping rvars, mapping evars, mixed method, mixed body) {
 	    if (!vars["_target"]) {
 		target = find_object(NET_PATH "root");
 	    } else {
-		target = find_psyc_object(parse_uniform(vars["_target"]));
+                unless (target = psyc_object(vars["_target"]))
+                  // FIXME: this doesn't handle remote objects properly!
+                  target = find_psyc_object(parse_uniform(vars["_target"]));
 	    }
 	    PT(("target is %O\n", target))
 	    // FIXME: net/entity can not yet deal with 0 method
