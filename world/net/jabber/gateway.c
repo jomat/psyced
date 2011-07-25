@@ -481,7 +481,7 @@ open_stream(XMLNode node) {
     string packet;
     float version;
 
-    ASSERT("open_stream: node[@xmlns]", stringp(node["@xmlns"]))
+    ASSERT("open_stream: node[@xmlns]", stringp(node["@xmlns"]), node)
     // make a loooong random string and hash it not to expose our random numbers
     streamid = sha1(RANDHEXSTRING + RANDHEXSTRING + RANDHEXSTRING + RANDHEXSTRING);
     version = to_float(node["@version"]);
