@@ -481,16 +481,15 @@ open_stream(XMLNode node) {
     string packet;
     float version;
 
-    ASSERT("open_stream: node[@xmlns]", stringp(node["@xmlns"]), node)
     // make a loooong random string and hash it not to expose our random numbers
     streamid = sha1(RANDHEXSTRING + RANDHEXSTRING + RANDHEXSTRING + RANDHEXSTRING);
     version = to_float(node["@version"]);
     packet = sprintf("<?xml version='1.0' encoding='UTF-8' ?>"
 		     "<stream:stream "
-		     "xmlns='%s' "
+		     "xmlns='jabber:server' "
 		     "xmlns:db='jabber:server:dialback' "
 		     "xmlns:stream='http://etherx.jabber.org/streams' "
-		     "xml:lang='en' id='%s' ", node["@xmlns"], streamid);
+		     "xml:lang='en' id='%s' ", streamid);
     if (node["@to"]) {
 	packet += "from='" + node["@to"] + "' ";
     } else {

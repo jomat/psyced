@@ -1752,6 +1752,11 @@ cmd(a, args, b, source, vars) {
 	if (call_signature(source, "_request_"+a, args, vars, b)) return 1;
 #endif
 	switch(a) {
+	case "mode":	// irc legacy compatibility interface
+			// not implemented as "sig" since we don't need it
+			// for psyc clients
+		PT(("MODE(%O %O %O %O %O)\n", a, args, b, source, vars))
+		return 1;
 #ifndef SIGS
 #ifdef PLACE_MASQUERADE
 	case "nickname":
