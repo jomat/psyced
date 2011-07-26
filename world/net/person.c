@@ -768,12 +768,15 @@ case "sha1":
 		    try, sha1(salt + v("password"))));
 		rc = try == sha1(salt + v("password"));
 		ARETURN(rc)
+# ifdef TLS_HASH_SHA1
 case "HMAC-SHA1":
 case "hmac-sha1":
 		ARETURN(try == hmac(TLS_HASH_SHA1, v("password"), salt))
-#ifdef AUTH_HMAC_SECRET
+#  ifdef AUTH_HMAC_SECRET
 case "hmac-sha1-shared":
 		ARETURN(try == hmac(TLS_HASH_SHA1, AUTH_HMAC_SECRET, salt + MYNICK))
+#  endif
+# endif
 #else
 # echo Driver is missing SHA1 support (needed for jabber)
 #endif
