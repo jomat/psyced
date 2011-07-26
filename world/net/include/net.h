@@ -135,7 +135,7 @@
 #endif
 
 #ifdef MUD
-# define	NO_NEWBIES
+# define	_flag_disable_authorization
 #endif
 
 #ifdef REGISTERED_USERS_ONLY
@@ -144,8 +144,7 @@
 #endif
 
 #ifdef RELAY
-# define	NO_NEWBIES	// same as _flag_disable_unauthenticated_users ?
-				// anyway, chance for some ifdef optimizations TODO
+# define	_flag_disable_authorization
 # define	IRCGATE_NICK		"PSYC.EU"
 # undef		DEFAULT_USER_OBJECT
 # define	DEFAULT_USER_OBJECT	IRC_PATH "ghost"

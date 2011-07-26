@@ -39,7 +39,7 @@
 # define ONLINE	(ME && (interactive(ME) || (member(v("locations"), 0) && sizeof(v("locations")[0]))))
 #endif
 
-#ifdef NO_NEWBIES
+#ifdef _flag_disable_authorization
 # define IS_NEWBIE	0
 #else
 # define IS_NEWBIE	(!v("password"))
