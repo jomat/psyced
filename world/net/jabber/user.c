@@ -626,7 +626,7 @@ iq(XMLNode node) {
 	    break;
 	}
 	break;
-#if !defined(REGISTERED_USERS_ONLY) && !defined(_flag_disable_registration_XMPP)
+#if !defined(REGISTERED_USERS_ONLY) && !defined(_flag_disable_registration) && !defined(_flag_disable_registration_XMPP)
     case "jabber:iq:register":
 	switch(node["@type"]) {
 	case "get":

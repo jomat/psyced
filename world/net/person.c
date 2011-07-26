@@ -778,15 +778,15 @@ case "HMAC-SHA1":
 case "hmac-sha1":
 		ARETURN(try == hmac(TLS_HASH_SHA1, v("password"), salt))
 #  ifdef AUTH_HMAC_SECRET
-#   define REGISTER_DISABLED
+#   define _flag_disable_registration
 case "hmac-sha1-shared":
 		if (try == hmac(TLS_HASH_SHA1, AUTH_HMAC_SECRET, salt + MYNICK)) {
 		    if (IS_NEWBIE) {
 			vSet("password", "");
 			save();
 		    }
-		    ARETURN(1);
-		} else ARETURN(0);
+		    ARETURN(1)
+		} else ARETURN(0)
 #  endif
 # endif
 #else

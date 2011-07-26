@@ -19,8 +19,10 @@ disco_info_root(vars) {
     string featurelist;
     featurelist = "<feature var='http://jabber.org/protocol/muc'/>"
 #ifndef REGISTERED_USERS_ONLY
-# ifndef _flag_disable_registration_XMPP
+# ifndef _flag_disable_registration
+#  ifndef _flag_disable_registration_XMPP
 		"<feature var='jabber:iq:register'/>"
+#  endif
 # endif
 #endif
 #ifndef VOLATILE

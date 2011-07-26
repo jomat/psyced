@@ -1,6 +1,12 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
 ## Check utf-8: Praise Atatürk!
 
+_failure_disabled_function_register
+|Registration disabled on this server.
+
+_failure_disabled_function_register_URI
+|Registration disabled here. You can register at [_page_register].
+
 _failure_unavailable_state
 |State module is not available as yet.
 

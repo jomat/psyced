@@ -187,7 +187,7 @@ jabberMsg(XMLNode node) {
 	    case "jabber:iq:register":
 		if (node["@type"] == "get"){
 		    string packet;
-#if defined(REGISTERED_USERS_ONLY) || defined(_flag_disable_registration_XMPP)
+#if defined(REGISTERED_USERS_ONLY) || defined(_flag_disable_registration) || defined(_flag_disable_registration_XMPP)
 		    // super dirty.. this should all be in textdb
 		    packet = sprintf("<iq type='result' id='%s'>"
 				     "<query xmlns='jabber:iq:register'/>"
@@ -234,7 +234,7 @@ jabberMsg(XMLNode node) {
 			emit(packet);
 			// QUIT
 		    } else {
-#if defined(REGISTERED_USERS_ONLY) || defined(_flag_disable_registration_XMPP)
+#if defined(REGISTERED_USERS_ONLY) || defined(_flag_disable_registration) || defined(_flag_disable_registration_XMPP)
 			// TODO: generate some error as above
 #else
 			user -> vSet("password", t[Cdata]);

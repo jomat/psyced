@@ -71,8 +71,10 @@ volatile mapping share = ([
 			    "private"		: "muc_hidden",
 			    "persistent"	: "muc_persistent",
 			    "temporary"		: "muc_temporary",
-#ifndef _flag_disable_registration_XMPP
+#ifndef _flag_disable_registration
+# ifndef _flag_disable_registration_XMPP
 			    "registration"	: "jabber:iq:register",
+# endif
 #endif
 			    "offlinestorage"	: "msgoffline",
 			    "version"		: "jabber:iq:version",
