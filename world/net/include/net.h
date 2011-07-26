@@ -138,8 +138,13 @@
 # define	NO_NEWBIES
 #endif
 
+#ifdef REGISTERED_USERS_ONLY
+# echo Please fix your #define REGISTERED_USERS_ONLY
+# define _flag_disable_unauthenticated_users
+#endif
+
 #ifdef RELAY
-# define	NO_NEWBIES	// same as REGISTERED_USERS_ONLY ?
+# define	NO_NEWBIES	// same as _flag_disable_unauthenticated_users ?
 				// anyway, chance for some ifdef optimizations TODO
 # define	IRCGATE_NICK		"PSYC.EU"
 # undef		DEFAULT_USER_OBJECT
