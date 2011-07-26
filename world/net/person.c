@@ -757,9 +757,14 @@ checkPassword(try, method, salt, args, cb, varargs cbargs) {
 	// why here?
 	//while (remove_call_out(#'quit) != -1);
 #ifndef REGISTERED_USERS_ONLY
+# ifdef AUTH_HMAC_SECRET
+        if (IS_NEWBIE && method != "hmac-sha1-shared") ARETURN(1)
+# else
 	if (IS_NEWBIE) ARETURN(1) // could auto-register here..
+# endif
 #endif
-	if (!try || try == "") ARETURN(0)
+	if (!try || try == "" || v("password") == "") ARETURN(0)
+
 	switch(method) {
 #if __EFUN_DEFINED__(sha1)
 case "SHA1":
@@ -773,8 +778,15 @@ case "HMAC-SHA1":
 case "hmac-sha1":
 		ARETURN(try == hmac(TLS_HASH_SHA1, v("password"), salt))
 #  ifdef AUTH_HMAC_SECRET
+#   define REGISTER_DISABLED
 case "hmac-sha1-shared":
-		ARETURN(try == hmac(TLS_HASH_SHA1, AUTH_HMAC_SECRET, salt + MYNICK))
+		if (try == hmac(TLS_HASH_SHA1, AUTH_HMAC_SECRET, salt + MYNICK)) {
+		    if (IS_NEWBIE) {
+			vSet("password", "");
+			save();
+		    }
+		    ARETURN(1);
+		} else ARETURN(0);
 #  endif
 # endif
 #else
@@ -809,7 +821,7 @@ default:
 		P4(("plain text pw %O == %O?\n", try, v("password")))
 #ifdef PASSWORDCHECK
 		PASSWORDCHECK(v("password"), try)
-#else 
+#else
 		if (try == v("password")) ARETURN(1);
 #endif
 	}
