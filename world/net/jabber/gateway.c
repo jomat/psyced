@@ -269,7 +269,7 @@ jabberMsg(XMLNode node) {
 	// if we dont know the host, complain
 	// put NAMEPREP(_host_XMPP) into the localhost mapping pleeeease
 	//if (target != NAMEPREP(_host_XMPP)) {	
-	unless (is_localhost(lower_case(target))) {
+	unless (is_localhost(target)) {
 	    monitor_report("_error_unknown_host", 
 	       sprintf("%O sent us a dialback packet believing we would be %O",
 		       source, target));
@@ -349,7 +349,7 @@ jabberMsg(XMLNode node) {
 	     * then croak with a host-unknown and commit suicide
 	     */
 	    // same as above...
-	    unless (is_localhost(lower_case(target))) {
+	    unless (is_localhost(target)) {
 		emit(sprintf("<db:verify from='%s' to='%s' id='%s' type='error'>"
 			     "<error type='cancel'>"
 			     "<item-not-found xmlns='urn:ietf:params:xml:ns:xmpp-stanzas'/>"
@@ -486,10 +486,10 @@ open_stream(XMLNode node) {
     version = to_float(node["@version"]);
     packet = sprintf("<?xml version='1.0' encoding='UTF-8' ?>"
 		     "<stream:stream "
-		     "xmlns='%s' "
+		     "xmlns='jabber:server' "
 		     "xmlns:db='jabber:server:dialback' "
 		     "xmlns:stream='http://etherx.jabber.org/streams' "
-		     "xml:lang='en' id='%s' ", node["@xmlns"], streamid);
+		     "xml:lang='en' id='%s' ", streamid);
     if (node["@to"]) {
 	packet += "from='" + node["@to"] + "' ";
     } else {
@@ -498,7 +498,7 @@ open_stream(XMLNode node) {
     if (node["@from"]) {
 	packet += "to='" + node["@from"] + "' ";
     }
-    if (node["@to"] && !(is_localhost(lower_case(node["@to"])))) {
+    if (node["@to"] && !(is_localhost(node["@to"]))) {
 	emit(packet + ">");
 	STREAM_ERROR("host-unknown", "")
 	QUIT

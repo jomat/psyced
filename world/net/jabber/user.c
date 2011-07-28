@@ -449,7 +449,7 @@ message(XMLNode node) {
     unless (u = parse_uniform(XMPP + node["@to"])) { D("impossible!\n"); }
     isplacemsg = ISPLACEMSG(node["@to"]); 
 
-    if (is_localhost(lower_case(node["@to"]))) { 
+    if (is_localhost(node["@to"])) { 
 	// it's too unusual to have commands without cmdchar
 	// so let's use input() instead of cmd() here
 	// IMHO this should check if input is a cmd
@@ -626,7 +626,7 @@ iq(XMLNode node) {
 	    break;
 	}
 	break;
-#if !defined(REGISTERED_USERS_ONLY) && !defined(_flag_disable_registration_XMPP)
+#if !defined(_flag_disable_unauthenticated_users) && !defined(_flag_disable_registration) && !defined(_flag_disable_registration_XMPP)
     case "jabber:iq:register":
 	switch(node["@type"]) {
 	case "get":
@@ -828,7 +828,7 @@ iq(XMLNode node) {
 	case "get":
 	    if (!node["@to"])
 		sendmsg(ME, "_request_list_feature", 0, vars);
-	    else if (is_localhost(lower_case(node["@to"]))) 
+	    else if (is_localhost(node["@to"])) 
 		sendmsg("/", "_request_list_feature", 0, vars);
 	    /* else... TODO */
 	    break;
@@ -847,7 +847,7 @@ iq(XMLNode node) {
 	    if (!node["@to"]) 
 		// "my" places - let person.c handle this
 		sendmsg(ME, "_request_list_item", 0, vars);
-	    else if (is_localhost(lower_case(node["@to"]))) 
+	    else if (is_localhost(node["@to"])) 
 		// server's places - let root.c handle this
 		sendmsg("/", "_request_list_item", 0, vars);
 	    /* else... TODO */
@@ -1114,7 +1114,7 @@ string jid2ppl(string jid) {
 //  }
     sscanf(host, "%s/%s", host, resource);
 #if 1 // wieso 0??? sendmsg() hätte das hinkriegen sollen.. war der gedanke
-    if (is_localhost(lower_case(host))) { // local user
+    if (is_localhost(host)) { // local user
 	P4(("is_localhost? %O, YES, then use %O\n", host, node))
 	// TODO: what about returning objects?
 	if (strlen(node) && ISPLACEMSG(node)) return PREFIXFREE(node);

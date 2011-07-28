@@ -146,18 +146,23 @@ inherit NET_PATH "place/mailcast";
 #           ifdef PUBLIC
 inherit NET_PATH "place/public";
 #           else
-	     // special case in the archetype options logic, see also psyconf
-#	     ifndef PLACE_HISTORY
-#	      ifdef PLACE_HISTORY_EXPORT
-#	       define PLACE_HISTORY
+#            ifdef ON_UNKNOWN
+// special place type that supports unknownmsg()
+inherit NET_PATH "place/intercept";
+#            else
+	      // special case in the archetype options logic, see also psyconf
+#	      ifndef PLACE_HISTORY
+#	       ifdef PLACE_HISTORY_EXPORT
+#	        define PLACE_HISTORY
+#	       endif
 #	      endif
-#	     endif
-#	     include "place.i"	    // archetype model generator code 2007
-#	     ifdef PLACE_HISTORY
-#	      define HISTORY		    // compatibility
-#	     endif
-#	     ifdef PLACE_OWNED
-#	      define OWNED PLACE_OWNED	    // compatibility
+#	      include "place.i"	    // archetype model generator code 2007
+#	      ifdef PLACE_HISTORY
+#	       define HISTORY		    // compatibility
+#	      endif
+#	      ifdef PLACE_OWNED
+#	       define OWNED PLACE_OWNED	    // compatibility
+#	      endif
 #	     endif
 #           endif
 #          endif
@@ -580,6 +585,14 @@ msg(source, mc, data, vars) {
 # else
 	::msg(source, mc, data, vars);
 # endif
+}
+#endif
+
+// this hook only works in archetypes that support it
+#ifdef ON_UNKNOWN
+unknownmsg(source, mc, data, vars) {
+	ON_UNKNOWN
+	::unknownmsg(source, mc, data, vars);
 }
 #endif
 

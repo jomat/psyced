@@ -172,7 +172,7 @@ echo ""
 echo ""
 echo "${hi}PSYCED INSTALLATION WIZARD${lo}"
 
-if ! test -e data.tar
+if ! test -e data.tar && ! test -d .git
 then
     cat <<X
 This installation script is designed to work with an image of the current
@@ -186,7 +186,10 @@ fi
 #get WITHOUT_DRIVER "n"
 WITHOUT_DRIVER="n"
 echo ""
-if test `ls -1 ${driver}-*tar.${zip} 2>/dev/null |wc -l` -gt 1
+if test -d .git
+then
+    :
+elif test `ls -1 ${driver}-*tar.${zip} 2>/dev/null |wc -l` -gt 1
 then
     echo "${hi}ATTENTION:${lo} you've got more than one ${driver}-*tar.${zip}"
     echo "in this directory. Please tidy up before continuing!"
@@ -283,6 +286,8 @@ echo "[binary directory is $ARCH_DIR]"
 ## uname -m returns "Power Macintosh" on macosx. very unuseful.
 ##get ARCH_DIR "$BASE_DIR/bin-`uname -m`"
 ## why did we call uname twice anyway? uname -s returns such a nice "darwin"
+## on linux it returns the actual processor type (i686, x86_64, etc)
+## which these days needs to be considered.. FIXME
 ##
 #get ARCH_DIR "$BASE_DIR/bin-$arch"
 #ask "Binary installation directory" ARCH_DIR
@@ -1122,7 +1127,19 @@ fi
 
 echo "Extracting psyced data..."
 
-if tar xf data.tar -C $BASE_DIR
+if test -d .git
+then
+    if ! test `realpath .` = $BASE_DIR
+    then
+        if git clone . $BASE_DIR && cp -a .git/config $BASE_DIR/.git
+	then
+	    :
+	else
+	    echo "Could not git clone. abort."
+	    $exit
+	fi
+    fi
+elif tar xf data.tar -C $BASE_DIR
 then
     :
 else
@@ -1153,7 +1170,10 @@ then
 	    echo ""
 	    echo "${hi}COMPILING ${driver}${lo}"
 	    echo ""
-	    if test `ls -d1 */src 2>/dev/null |wc -l` -lt 1; then
+	    if test -d .git; then
+		git submodule init
+		git submodule update
+	    elif test `ls -d1 */src 2>/dev/null |wc -l` -lt 1; then
 		echo ""
 		echo "Extracting $driver source..."
 		echo ""
@@ -1345,4 +1365,3 @@ then
 		echo ""
 	fi
 fi
-

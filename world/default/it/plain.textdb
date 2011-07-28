@@ -1,6 +1,12 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
 ## tradotto al 30% ... cerca /TODO/ per continuare
 
+_failure_disabled_function_register
+|Registrazione di nuovi utenti disabilitata su questo server.
+
+_failure_disabled_function_register_URI
+|Per la registrazione vada alla pagina [_page_register] per favore.
+
 _failure_unavailable_alias
 |niente alias per [_uniform_new]: [_nick_old] appartiene a [_uniform_old].
 

@@ -55,7 +55,7 @@ msg(source, mc, data, vars, showingLog, target) {
 				       	"version",    // _tab
 					"time", "lasttime"
 #endif
-#if !defined(REGISTERED_USERS_ONLY) && !defined(_flag_disable_registration_XMPP)
+#if !defined(_flag_disable_unauthenticated_users) && !defined(_flag_disable_registration) &&!defined(_flag_disable_registration_XMPP)
 					"registration",
 #endif
 #ifndef VOLATILE

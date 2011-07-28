@@ -1,6 +1,12 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
 ## Check utf-8: Praise Atatürk!
 
+_failure_disabled_function_register
+|Registrierung ist auf diesem Server deaktiviert.
+
+_failure_disabled_function_register_URI
+|Registrierung deaktiviert. Bitte registriere Dich auf [_page_register].
+
 _error_necessary_nick_local
 |Dieser Befehl akzeptiert nur lokale Spitznamen.
 

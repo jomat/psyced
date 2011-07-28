@@ -981,8 +981,8 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
 			    cvars["_INTERNAL_nick_target"] = u[UNick];
 #endif
 			P3(("DEBUG: is_localhost is %O for %O of %O\n",
-			    is_localhost(lower_case(u[UHost])), u[UHost], u))
-			unless (is_localhost(lower_case(u[UHost]))) {
+			    is_localhost(u[UHost]), u[UHost], u))
+			unless (is_localhost(u[UHost])) {
                             if (trustworthy > 7) {
                                 P1(("RELAYING permitted for %O to %O (%O)\n",
                                     source, t, ME))

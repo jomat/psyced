@@ -3056,6 +3056,14 @@ set(key, value) {
 		w("_echo_set_default", 
 	  "Setting [_key_set] has been reset to its default state.",
 		    ([ "_key_set" : key ]) );
+#ifdef _flag_disable_registration
+	} else if (key == "password" && IS_NEWBIE) {
+# ifdef REGISTER_URL
+		w("_failure_disabled_function_register_URI", 0, ([ "_page_register": REGISTER_URL ]));
+# else
+		w("_failure_disabled_function_register");
+# endif
+#endif
 	} else {
 		vSet(key, value);
 		if (key == "password") w("_echo_set_password",

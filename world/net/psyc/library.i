@@ -112,6 +112,7 @@ varargs string psyc_name(mixed source, vastring localpart) {
 	return obj2unl[source] = s;
 }
 
+// in most situtation this is correct function to find local psyc objects
 object psyc_object(string uniform) {
         // unl2obj can become too big and cause a sprintf error here
         // so you don't want this debug output on a production server!
@@ -119,6 +120,7 @@ object psyc_object(string uniform) {
 	return unl2obj[uniform];
 }
 
+// you probably want to use the much simpler psyc_object() above
 object find_psyc_object(array(mixed) u) {
 	P3((">> find_psyc_object(%O)\n", u))
 	string t, r, svc, user;
@@ -258,7 +260,7 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 		return 0;
 	    }
 	}
-	host = lower_case(u[UHost]);
+	host = lower_case(u[UHost]); // lower_case not necessary.. right?
 	if (query_udp_port() == port && is_localhost(host)) {
 	    // this happens when a psyc client sends to a local
 	    // target that hasn't been incarnated yet...
@@ -406,7 +408,7 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 	unless (buf) return 0;
 #endif /* NEW_RENDER */
 
-	// host seems to already be in lower_case
+	// we could store the result of the is_localhost above, right?
 	if (is_localhost(host)) return send_udp(host, port, buf);
 	PT(("dns_resolve + send_udp %O:%O packet:\n%s", host,port,buf))
 	dns_resolve(host, (: if (stringp($1))

@@ -756,10 +756,15 @@ checkPassword(try, method, salt, args, cb, varargs cbargs) {
 #endif
 	// why here?
 	//while (remove_call_out(#'quit) != -1);
-#ifndef REGISTERED_USERS_ONLY
+#ifndef _flag_disable_unauthenticated_users
+# ifdef AUTH_HMAC_SECRET
+        if (IS_NEWBIE && method != "hmac-sha1-shared") ARETURN(1)
+# else
 	if (IS_NEWBIE) ARETURN(1) // could auto-register here..
+# endif
 #endif
-	if (!try || try == "") ARETURN(0)
+	if (!try || try == "" || v("password") == "") ARETURN(0)
+
 	switch(method) {
 case "SHA1":
 case "sha1":
@@ -767,6 +772,26 @@ case "sha1":
 		    try, hash(TLS_HASH_SHA1, salt + v("password"))));
 		rc = try == hash(TLS_HASH_SHA1, salt + v("password"));
 		ARETURN(rc)
+# ifdef TLS_HASH_SHA1
+case "HMAC-SHA1":
+case "hmac-sha1":
+		ARETURN(try == hmac(TLS_HASH_SHA1, v("password"), salt))
+#  ifdef AUTH_HMAC_SECRET
+#   define _flag_disable_registration
+case "hmac-sha1-shared":
+		if (try == hmac(TLS_HASH_SHA1, AUTH_HMAC_SECRET, salt + MYNICK)) {
+		    if (IS_NEWBIE) {
+			vSet("password", "");
+			save();
+		    }
+		    ARETURN(1)
+		} else ARETURN(0)
+#  endif
+# endif
+#else
+# echo Driver is missing SHA1 support (needed for jabber)
+#endif
+#if __EFUN_DEFINED__(md5)
 case "MD5":
 case "md5":
 		rc = try == hash(TLS_HASH_MD5, salt + v("password"));
@@ -794,7 +819,7 @@ default:
 		P4(("plain text pw %O == %O?\n", try, v("password")))
 #ifdef PASSWORDCHECK
 		PASSWORDCHECK(v("password"), try)
-#else 
+#else
 		if (try == v("password")) ARETURN(1);
 #endif
 	}
@@ -2532,7 +2557,7 @@ logon(host) {
 		    && mode[PPL_NOTIFY] >= PPL_NOTIFY_FRIEND) continue;
 	    if (u = parse_uniform(ni)) {
 		// <lynX> first we change the ppl, then we need this code
-//		if (is_localhost(lower_case(u[UHost]))) {
+//		if (is_localhost(u[UHost])) {
 //		    o = summon_person(u[UNick]);
 //		    insert_member(o);
 //		} else {

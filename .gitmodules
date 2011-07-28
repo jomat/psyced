@@ -1,0 +1,3 @@
+[submodule "psyclpc"]
+	path = psyclpc
+	url = git://git.tgbit.net/psyclpc

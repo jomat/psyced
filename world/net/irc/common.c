@@ -336,7 +336,11 @@ emit(string output) {
 		}
 		foreach(line : outlines) if (strlen(line)) {
 			while (strlen(line) > cut) {
-#if 1
+#if 0 //{{{
+		// this is supposed to be the more elegant
+		// message continuation strategy but it
+		// breaks OTR over IRC!  thx alice
+		//
 	// we shall look for last whitespace instead
 			    t = rindex(line, ' ', cut);
 			    if (t > 9) {
@@ -364,7 +368,7 @@ emit(string output) {
 				// we might aswell use the old
 				// backslash splitting code below here
 			    }
-#else //{{{
+#else //}}}
 				t = line[cut] == '\r' ? cut-1 : cut;
 
 				// msa's CTCP character
@@ -382,7 +386,7 @@ emit(string output) {
 					       + "\\\r\n");
 					line = line[cut+1..];
 				}
-#endif //}}}
+#endif
 			}
 			P4(("irc:emit each %O\n", line))
 			EMIT(split_prefix + line +"\r\n");

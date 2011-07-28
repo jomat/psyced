@@ -868,7 +868,7 @@ jabberMsg(XMLNode node, mixed origin, mixed *su, array(mixed) tu) {
 	case "jabber:iq:last":
 	    switch(t) {
 	    case "get":
-		if (isplacemsg || is_localhost(lower_case(target))) 
+		if (isplacemsg || is_localhost(target)) 
 		    o = "/" + (tu[UResource] || "");
 		else 
 		    o = summon_person(tu[UUser]);

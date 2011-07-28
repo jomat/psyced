@@ -84,8 +84,8 @@ virtual inherit JABBER_PATH "common";
 # define _host_XMPP SERVER_HOST
 #endif
 
-// this is not ready for is_localhost
-#define is_localhost(a) (a) == _host_XMPP
+// net/jabber is not ready for regular is_localhost
+#define is_localhost(a) (lower_case(a)) == _host_XMPP
 
 
 #define JABSOURCE "_INTERNAL_source_jabber"

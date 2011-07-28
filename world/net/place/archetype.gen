@@ -38,6 +38,7 @@
 # define PLACE_TOPIC			// [+] provide a topic function
 # define PLACE_TOPIC_COMMAND		// [+] provide a /topic command
 //# define PLACE_TOPIC_FOR_ALL		//     allow anybody to set the topic
+//# define PLACE_UNKNOWN_HOOK		//     provide a handler for ON_UNKNOWN
 #endif
 
 // things that every archetype auto-model gets.
@@ -1448,8 +1449,13 @@ msg(source, mc, data, mapping vars) {
 		if (mc == "_message_private") mc = "_message_public";
 		// vorsicht mit _message_public_question und _message_video
 	}
+#ifdef PLACE_UNKNOWN_HOOK
+	unknownmsg(source, mc, data, vars);
+}
+unknownmsg(source, mc, data, vars) {
+#endif
 	/* if the source is not a member of the room and was allowed 
-	 * because of qAllowExternal* we probably should use the rooms
+	 * because of qAllowExternal* we probably should use the room's
 	 * psycName instead of the source
 	 * yes, I admit it, afaik this only fixes bugs in net/jabber!
 	 */
@@ -1746,6 +1752,11 @@ cmd(a, args, b, source, vars) {
 	if (call_signature(source, "_request_"+a, args, vars, b)) return 1;
 #endif
 	switch(a) {
+	case "mode":	// irc legacy compatibility interface
+			// not implemented as "sig" since we don't need it
+			// for psyc clients
+		PT(("MODE(%O %O %O %O %O)\n", a, args, b, source, vars))
+		return 1;
 #ifndef SIGS
 #ifdef PLACE_MASQUERADE
 	case "nickname":
@@ -2669,9 +2680,14 @@ sAide(whom) {
     int ret;
     mapping aides = v("aides") || ([]);
 
-    // change local uniform to nick
+#if 0
+    // change local uniform to nick ... isn't really correct like this
     array(mixed) u = parse_uniform(whom);
-    if (u && is_localhost(lower_case(u[UHost]))) whom = u[UResource];
+    if (u && is_localhost(u[UHost])) whom = u[UResource];
+#else
+    object o = psyc_object(whom);
+    if (o) whom = o->qName();
+#endif
 
     t = lower_case(whom);
     if (aides[t]) {
