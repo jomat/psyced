@@ -766,6 +766,7 @@ checkPassword(try, method, salt, args, cb, varargs cbargs) {
 	if (!try || try == "" || v("password") == "") ARETURN(0)
 
 	switch(method) {
+#if __EFUN_DEFINED__(sha1)
 case "SHA1":
 case "sha1":
 		P3(("SHA1 given %O vs calculated %O\n",
@@ -815,6 +816,7 @@ case "digest-md5":
 		    rc = sasl_calculate_digestMD5(args, v("password"), 1, v("prehash"));
 		    ARETURN(rc)
 		} else ARETURN(0)
+#endif
 default:
 		P4(("plain text pw %O == %O?\n", try, v("password")))
 #ifdef PASSWORDCHECK
