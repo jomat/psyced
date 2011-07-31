@@ -277,6 +277,7 @@ logon() {
 #endif
     nodeHandler = #'jabberMsg;
     set_prompt("");
+    // we shouldn't have to NAMEPREP our SERVER_HOST for each new user.. FIXME
     myjid = NODEPREP(MYLOWERNICK) +"@" + NAMEPREP(SERVER_HOST);
     myjidresource = myjid +"/"+ RESOURCEPREP(resource);
     P2(("%O ready to rumble (%O)\n", myjidresource, ME))

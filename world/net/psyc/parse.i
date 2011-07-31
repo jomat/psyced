@@ -598,7 +598,7 @@ vamixed getdata(string a) {
 #else
 # ifdef PSYC_TCP
 		// Authenticated
-		} else if (qAuthenticated(NAMEPREP(u[UHost]))) {
+		} else if (qAuthenticated(u[UHost])) {
 			if (u[UTransport] && (u[UTransport] !=
 #  if __EFUN_DEFINED__(tls_query_connection_state)
 			    tls_query_connection_state() ? "s" :

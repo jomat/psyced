@@ -225,8 +225,8 @@ int logon(int neverfails) {
 		P1(("%O believing dNSName %O\n", ME, m))
 		// probably also: register_target?
 		// but be careful never to register_target wildcards
-		if (stringp(m)) sAuthenticated(NAMEPREP(m));
-		else foreach(t : m) sAuthenticated(NAMEPREP(t));
+		if (stringp(m)) sAuthenticated(m);
+		else foreach(t : m) sAuthenticated(t);
 	    }
 //#ifdef _flag_allow_certificate_name_common	// to be switched this year
 # ifndef _flag_disallow_certificate_name_common
@@ -235,7 +235,7 @@ int logon(int neverfails) {
 	    // note: CN is deprecated for good reasons.
 	    else if (t = cert["2.5.4.3"]) {
 		P1(("%O believing CN %O\n", ME, t))
-		sAuthenticated(NAMEPREP(t));
+		sAuthenticated(t);
 	    }
 # endif
 	    if (m = tls_query_connection_info(ME)) {

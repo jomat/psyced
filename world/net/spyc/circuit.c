@@ -120,10 +120,10 @@ int logon(int failure) {
 	    // probably also: register_target?
 	    // but be careful never to register_target wildcards
 	    if (stringp(m)) 
-		sAuthenticated(NAMEPREP(m));
+		sAuthenticated(m);
 	    else 
 		foreach(t : m) 
-		    sAuthenticated(NAMEPREP(t));
+		    sAuthenticated(t);
 	}
 //#ifdef _flag_allow_certificate_name_common	// to be switched this year
 #ifndef _flag_disallow_certificate_name_common
@@ -132,7 +132,7 @@ int logon(int failure) {
 	// note: CN is deprecated for good reasons.
 	else if (t = cert["2.5.4.3"]) {
 	    P1(("%O believing CN %O\n", ME, t))
-	    sAuthenticated(NAMEPREP(t));
+	    sAuthenticated(t);
 	}
 #endif
 	if (m = tls_query_connection_info(ME)) {
@@ -224,7 +224,7 @@ void circuit_msg(string mc, mapping vars, string data) {
 		return;
 	}
 	u = parse_uniform(vars["_uniform_source"]);
-	u[UHost] = NAMEPREP(u[UHost]);
+	// qAuthenticated does that:u[UHost] = NAMEPREP(u[UHost]);
 	if (qAuthenticated(u[UHost])) {
 		// possibly different _uniform_target only
 		if (flags & TCP_PENDING_TIMEOUT) {

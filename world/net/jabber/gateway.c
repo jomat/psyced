@@ -298,6 +298,7 @@ jabberMsg(XMLNode node) {
 		sendmsg(origin,
 			"_dialback_request_verify", 0,
 			([ "_INTERNAL_target_jabber" : source,
+		// we shouldnt have to NAMEPREP a static string.. FIXME
 			   "_INTERNAL_source_jabber" : NAMEPREP(_host_XMPP),
 			   "_dialback_key" : node[Cdata],
 			   "_tag" : streamid

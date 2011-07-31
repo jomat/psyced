@@ -163,7 +163,7 @@ void dispatch(mapping rvars, mapping evars, mixed method, mixed body) {
         }
 #ifdef USE_VERIFICATION
 # ifdef PSYC_TCP
-        unless (qAuthenticated(NAMEPREP(u[UHost]))) {
+        unless (qAuthenticated(u[UHost])) {
             DISPATCHERROR("non-authenticated host\n")
         }
 # else
