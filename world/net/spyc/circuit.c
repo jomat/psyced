@@ -38,6 +38,7 @@ mapping outstate;
 
 mapping legal_senders;
 
+array(mixed) verify_queue = ({ });
 
 volatile int flags = 0;
 
@@ -74,24 +75,26 @@ varargs mixed croak(string mc, string data, vamapping vars, vamixed source) {
     return 0;
 }
 
-#ifdef USE_VERIFICATION
 // request sender authentication and/or target acknowledgement 
 // from the remote side
-void sender_verification(array(string) sourcehosts, array(string) targethosts)
+void sender_verification(string sourcehost, mixed targethost)
 {
-    // FIXME: wrong variables here
-    mapping vars = ([ "_list_sources_hosts" : sourcehosts,
-		    "_list_targets_hosts" : targethosts,
-		    "_tag" : RANDHEXSTRING ]);
-    // assumption: we have already resolved all targethosts and 
-    // they point to the remote ip
-    foreach(string ho : targethosts) {
-	sAuthenticated(ho);
+    unless(interactive()) {
+	    verify_queue += ({ ({ sourcehost, targethost }) });
+	    return;
     }
-
-    msg(0, "_request_verification", 0, vars);
+    mapping vars = ([ "_uniform_source" : sourcehost,
+		    "_uniform_target" : targethost,
+		    "_tag" : RANDHEXSTRING ]);
+    P0(("sender_verification(%O, %O)\n", sourcehost, targethost))
+    // since we send packets to them we should trust them to
+    // send packets to us, eh?
+    if (stringp(targethost)) {
+	    targethost = parse_uniform(targethost);
+    }
+    sAuthenticated(targethost[UHost]);
+    msg(0, "_request_authorization", 0, vars);
 }
-#endif
 
 // gets called during socket logon
 int logon(int failure) {
@@ -161,20 +164,12 @@ int logon(int failure) {
     // FIXME
     unless(isServer()) {
 	emit("|\n"); // initial greeting
-#ifdef USE_FEATURES
-	// we have no features to request or offer
-	msg(0, "_request_features", 0);
-#else
-# ifdef USE_VERIFICATION
-	// start hostname verification
-	// rather: look at Q and look for the hostnames we need
-	sender_verification(({ SERVER_HOST }), ({ peerhost }));
-# else
-	if (function_exists("runQ")) {
-	    runQ();
+	if (sizeof(verify_queue)) {
+	    foreach(mixed t : verify_queue) {
+		sender_verification(t[0], t[1]);
+	    }
+	    verify_queue = ({ });
 	}
-# endif
-#endif
     }
     return 1;
 }
@@ -209,74 +204,66 @@ first_response() {
 // receives a msg from the remote side
 // note: this is circuit-messaging
 void circuit_msg(string mc, mapping vars, string data) {
+    mapping rv = ([ ]);
+    mixed *u;
     switch(mc) {
-    case "_request_verification":
-	if (tls_query_connection_state(ME) == 0) {
-	    array(string) targethosts = ({ });
-	    foreach(string ho : vars["_list_targets_hosts"]) {
-		if (is_localhost(ho)) {
-		    targethosts += ({ ho });
-		}
-	    }
-	    if (sizeof(vars["_list_sources_hosts"]) == 1) {
-		// doing multiple resolutions in parallel is more complicated
-		string ho = vars["_list_sources_hosts"][0];
-		if (qAuthenticated(ho)) {
-		    P0(("warning: trying to reverify authenticated host %O",ho))
-		} else {
-		    dns_resolve(ho, (: 
-			// FIXME: psyc/parse::deliver is much better here
-			mixed rv = (["_list_targets_accepted_hosts":targethosts]);
+    case "_request_authorization":
+	if (vars["_tag"]) {
+		rv["_tag_relay"] = vars["_tag"];
+	}
+	if (!vars["_uniform_source"] && vars["_uniform_target"]) {
+		CIRCUITERROR("_request_authorization without uniform source and/or target?!");
+	}
 
-			if (vars["_tag"]) rv["_tag_reply"] = vars["_tag"];
-			if ($1 == peerip) {
-			    sAuthenticated(NAMEPREP(ho));
-			    rv["_list_sources_verified_hosts"] = ({ ho });
-			} else {
-			    rv["_list_sources_rejected_hosts"] = ({ ho });
-			}
-			msg(0, "_notice_verification", 0, rv);
-			return;
-		    :));
+	rv["_uniform_target"] = vars["_uniform_target"];
+	rv["_uniform_source"] = vars["_uniform_source"];
+
+	u = parse_uniform(vars["_uniform_target"]);
+	if (!(u && is_localhost(u[UHost]))) {
+		msg(0, "_error_invalid_uniform_target", "[_uniform_target] is not hosted here.", rv);
+		return;
+	}
+	u = parse_uniform(vars["_uniform_source"]);
+	u[UHost] = NAMEPREP(u[UHost]);
+	if (qAuthenticated(u[UHost])) {
+		// possibly different _uniform_target only
+		if (flags & TCP_PENDING_TIMEOUT) {
+			P0(("removing call out\n"))
+					remove_call_out(#'quit);
+			flags -= TCP_PENDING_TIMEOUT;
 		}
-	    } else {
-		// FIXME!!!!
-		CIRCUITERROR("sorry, no more than one element in _list_sources_hosts currently");
-		P0(("more than one element in _list_sources_hosts: %O\n", vars["_list_sources_hosts"]))
-	    }
-	    // keep tag if present!!!
-	    // resolve all of _list_sources_hosts
-	    // look at _list_targets_hosts and determine localhostiness
+		msg(0, "_status_authorization", 0, rv);
+	// } else if (tls_query_connection_state(ME) == 1 && ...) {
+	// FIXME
 	} else {
-	    CIRCUITERROR("_request_verification is not allowed on TLS circuits.");
+		string ho = u[UHost];
+		// FIXME: this actually needs to consider srv, too...
+		dns_resolve(ho, (: 
+				 // FIXME: psyc/parse::deliver is much better here
+				 P0(("resolved %O to %O, expecting %O\n", ho, $1, peerip))
+				 if ($1 == peerip) {
+					sAuthenticated(ho);
+					if (flags & TCP_PENDING_TIMEOUT) {
+						P0(("removing call out\n"))
+						remove_call_out(#'quit);
+						flags -= TCP_PENDING_TIMEOUT;
+					}
+					msg(0, "_status_authorization", 0, rv);
+				 } else {
+				 	msg(0, "_error_invalid_uniform_source", 0, rv);
+				 }
+				 return;
+				 :));
 	}
 	break;
-    case "_notice_features":
-	// FIXME: watch for _list_using_modules
-	if (flags & TCP_PENDING_TIMEOUT) {
-	    P0(("removing call out\n"))
-	    remove_call_out(#'quit);
-	    flags -= TCP_PENDING_TIMEOUT;
-	}
-	sTextPath();
-#ifdef USE_FEATURES
-	if (tls_query_connection_state(ME) == 0) {
-# ifdef USE_VERIFICATION
-	    // start hostname verification
-	    // rather: look at Q and look for the hostnames we need
-	    sender_verification(({ SERVER_HOST }), ({ peerhost }));
-# endif
-	} else {
-	    if (function_exists("runQ")) {
-		runQ();
-	    }
-	}
-#endif
-	break;
-    case "_notice_verification":	
-	P0(("_notice verification with %O\n", vars))
+    case "_status_authorization":	
+	P0(("_status authorization with %O\n", vars))
+	// this means we can send from _uniform_source to _uniform_target
+	// we already did sAuthenticated _uniform_target before so we can't get
+	// tricked into it here
 	if (function_exists("runQ")) {
-	    runQ();
+	    runQ(); 
+	    // actually runQ(_uniform_source, _uniform_target)
 	}
 	break;
     default:
@@ -290,6 +277,7 @@ varargs int msg(string source, string mc, string data,
     mapping vars, int showingLog, mixed target) {
 
     string buf = "";
+    mixed u;
 
     unless(vars) vars = ([ ]);
     buf = render_psyc(source, mc, data, vars, showingLog, target);

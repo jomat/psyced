@@ -69,6 +69,7 @@ void greet() {
 	// should be sharing code with net/psyc and do a proper greeting
 	// three separate packets follow (thus three emits)
 	//emit(S_GLYPH_PACKET_DELIMITER "\n");
+	/*
 	emit("\
 :_source\t"+ SERVER_UNIFORM +"\n\
 :_target_peer\tpsyc://"+ peeraddr +"/\n\
@@ -81,6 +82,7 @@ _status_circuit\n" S_GLYPH_PACKET_DELIMITER "\n");
 #ifdef _flag_log_sockets_SPYC
 	log_file("RAW_SPYC", "« %O greeted.\n", ME);
 #endif
+	*/
 }
 
 static void resolved(mixed host, mixed tag) {
@@ -176,20 +178,27 @@ static void resolved(mixed host, mixed tag) {
 	sTextPath();
 	greet();
 
-	// FIXME: determine response to greeting
-	// 	instead of this dummy
-	msg(0, "_notice_features", 0, tag ? ([ "_tag_reply" : tag ]) : 0);
+	//msg(0, "_notice_features", 0, tag ? ([ "_tag_reply" : tag ]) : 0);
 }
 
-void circuit_msg(string mc, mapping vars, string data) {
-    switch(mc) {
-    case "_request_features": // only servers handle _request_features
-	interrupt_parse();
-	dns_rresolve(peerip, #'resolved, vars && vars["_tag"]);
-	break;
-    default:
-	return ::circuit_msg(mc, vars, data);
-    }
+int logon(int nothing) {
+	P2(("%O accepted TCP from %O (%s:%O)\n", ME,
+	    query_ip_name(), query_ip_number(), peerport))
+	// we could set the next_input_to and reply with _failure until
+	// hostname is resolved  .. TODO  ... no, we need some form
+	// of queuing for the scripts which do not wait.. why? don't we
+	// squeeze received packets thru dns-lambdas anyway?
+	// peerport has either positive or negative value
+	//peeraddr = peerip+":"+peerport;
+	::logon(0);
+#if 0 //def EXPERIMENTAL
+	// added this because greet() happens after dns resolution and
+	// some quick clients may not be waiting that long.. then again
+	// if they do, they deserve other treatment
+	sTextPath();
+#endif
+	dns_rresolve(peerip, #'resolved);
+	return 1;   // success
 }
 
 #endif // LIBPSYC
