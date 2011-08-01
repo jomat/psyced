@@ -485,6 +485,8 @@ open_stream(XMLNode node) {
 		    // sasl anonymous
 		      "<mechanism>ANONYMOUS</mechanism>";
 #endif
+		// here it makes sense to use check_jabbername 
+		// but that is currently unused anyway
 #if __EFUN_DEFINED__(tls_available)
 		if (tls_available() && tls_query_connection_state(ME) > 0
 			&& mappingp(certinfo) && certinfo[0] == 0
