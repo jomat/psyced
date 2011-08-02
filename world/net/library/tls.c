@@ -111,6 +111,8 @@ int certificate_check_name(string name, mixed cert, string scheme) {
 
     // subjectAlternativeName - SRV ID - FIXME
     // unfortunately, the only ones I have encountered so far were ... unusable
+    // what they should like is "_psyc.name" - i.e. "_" + scheme + "." + name
+    // no wildcards probably
     if ((t = cert["2.5.29.17:1.3.6.1.5.5.7.8.7"])) {
 	    P2(("encountered SRVName, please tell fippo: %O\n", t))
     }
