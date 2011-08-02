@@ -756,7 +756,7 @@ checkPassword(try, method, salt, args, cb, varargs cbargs) {
 #endif
 	// why here?
 	//while (remove_call_out(#'quit) != -1);
-#ifndef REGISTERED_USERS_ONLY
+#ifndef _flag_disable_unauthenticated_users
 # ifdef AUTH_HMAC_SECRET
         if (IS_NEWBIE && method != "hmac-sha1-shared") ARETURN(1)
 # else

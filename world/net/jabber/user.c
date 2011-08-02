@@ -277,6 +277,7 @@ logon() {
 #endif
     nodeHandler = #'jabberMsg;
     set_prompt("");
+    // we shouldn't have to NAMEPREP our SERVER_HOST for each new user.. FIXME
     myjid = NODEPREP(MYLOWERNICK) +"@" + NAMEPREP(SERVER_HOST);
     myjidresource = myjid +"/"+ RESOURCEPREP(resource);
     P2(("%O ready to rumble (%O)\n", myjidresource, ME))
@@ -626,7 +627,7 @@ iq(XMLNode node) {
 	    break;
 	}
 	break;
-#if !defined(REGISTERED_USERS_ONLY) && !defined(_flag_disable_registration) && !defined(_flag_disable_registration_XMPP)
+#if !defined(_flag_disable_unauthenticated_users) && !defined(_flag_disable_registration) && !defined(_flag_disable_registration_XMPP)
     case "jabber:iq:register":
 	switch(node["@type"]) {
 	case "get":

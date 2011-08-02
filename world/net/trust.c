@@ -29,12 +29,14 @@ volatile mapping authhosts;
 void sAuthenticated(string hostname) { 
     P3(("sAuthenticated: %O\n", hostname))
     unless(authhosts && mappingp(authhosts)) authhosts = ([ ]);
+    hostname = NAMEPREP(hostname);
     authhosts[hostname] = 1;
 } 
 
 int qAuthenticated(mixed hostname) {
     P3(("qAuthenticated %O, %O\n", hostname, authhosts))
     unless (authhosts && mappingp(authhosts)) return 0;
+    hostname = NAMEPREP(hostname);
     return member(authhosts, hostname);
 }
 

@@ -187,7 +187,7 @@ jabberMsg(XMLNode node) {
 	    case "jabber:iq:register":
 		if (node["@type"] == "get"){
 		    string packet;
-#if defined(REGISTERED_USERS_ONLY) || defined(_flag_disable_registration) || defined(_flag_disable_registration_XMPP)
+#if defined(_flag_disable_unauthenticated_users) || defined(_flag_disable_registration) || defined(_flag_disable_registration_XMPP)
 		    // super dirty.. this should all be in textdb
 		    packet = sprintf("<iq type='result' id='%s'>"
 				     "<query xmlns='jabber:iq:register'/>"
@@ -234,7 +234,7 @@ jabberMsg(XMLNode node) {
 			emit(packet);
 			// QUIT
 		    } else {
-#if defined(REGISTERED_USERS_ONLY) || defined(_flag_disable_registration) || defined(_flag_disable_registration_XMPP)
+#if defined(_flag_disable_unauthenticated_users) || defined(_flag_disable_registration) || defined(_flag_disable_registration_XMPP)
 			// TODO: generate some error as above
 #else
 			user -> vSet("password", t[Cdata]);
@@ -358,7 +358,7 @@ jabberMsg(XMLNode node) {
 # endif
 		break;
 #endif
-#ifndef REGISTERED_USERS_ONLY
+#ifndef _flag_disable_unauthenticated_users
 	    case "ANONYMOUS":
 		unless(node[Cdata]) {
 		    SASL_ERROR("incorrect-encoding")
@@ -481,10 +481,12 @@ open_stream(XMLNode node) {
 		      "<mechanism>DIGEST-MD5</mechanism>"
 #endif
 		      "<mechanism>PLAIN</mechanism>";
-#ifndef REGISTERED_USERS_ONLY
+#ifndef _flag_disable_unauthenticated_users
 		    // sasl anonymous
 		      "<mechanism>ANONYMOUS</mechanism>";
 #endif
+		// here it makes sense to use check_jabbername 
+		// but that is currently unused anyway
 #if __EFUN_DEFINED__(tls_available)
 		if (tls_available() && tls_query_connection_state(ME) > 0
 			&& mappingp(certinfo) && certinfo[0] == 0
@@ -494,7 +496,7 @@ open_stream(XMLNode node) {
 #endif
 		features += "</mechanisms>";
 		features += "<auth xmlns='http://jabber.org/features/iq-auth'/>";
-#ifndef REGISTERED_USERS_ONLY
+#ifndef _flag_disable_unauthenticated_users
 		features += "<register xmlns='http://jabber.org/features/iq-register'/>";
 #endif
 	    }

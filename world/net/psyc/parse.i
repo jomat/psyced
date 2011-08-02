@@ -598,7 +598,7 @@ vamixed getdata(string a) {
 #else
 # ifdef PSYC_TCP
 		// Authenticated
-		} else if (qAuthenticated(NAMEPREP(u[UHost]))) {
+		} else if (qAuthenticated(u[UHost])) {
 			if (u[UTransport] && (u[UTransport] !=
 #  if __EFUN_DEFINED__(tls_query_connection_state)
 			    tls_query_connection_state() ? "s" :
@@ -997,17 +997,34 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
                             }
                             P1(("RELAYING denied from %O to %O (%O)\n",
                                 source, t, ME))
-#if 0
 			    monitor_report("_warning_unsupported_relay",
 				  S("%O is trying to find %O here. Relaying denied.\n", ME, t));
 			    croak("_failure_unsupported_relay",
 				//"Well done mate, you crashed me.");
 				"Relaying denied: [_host] is not a hostname of ours.",
 				    ([ "_host": u[UHost] ]));
+#if 0
 			    // TODO: we quit here to not do the same hash-lookup
 			    // in rootmsg again.
 			    // (didn't get it? nevermind.. it's just el's sick humor)
 			    QUIT
+#else
+			    // we do not QUIT here as an evil attacker may
+			    // CNAME his evil.com to us and try to disrupt
+			    // our communications with some popular server
+			    // by making us drop an otherwise very popular
+			    // circuit. then again, what if a sender SHOULD
+			    // not send to us with any other hostname but
+			    // the one we announced ourselves as _source
+			    // when we sent our first greeting() ? then we
+			    // could just dump "illegal" transmissions.
+			    // well, we don't need to be so harsh against
+			    // multi domain hosters really: relaying is
+			    // denied by default so the attacker needs to
+			    // be a user on the sending server. in the end
+			    // it's a question of trust: don't let zero
+			    // trust users send funny amounts of data.
+			    return 1;
 #endif
 			}
 			// .. yes.. add is_localhost check here, but without callback

@@ -132,6 +132,8 @@ static varargs void ready_freddie(vamixed ip) {
 
 static void create() {
 	PROTECT("CREATE")
+	string t;
+
 #ifndef __PIKE__
         master = previous_object();
 	restore_object(DATA_PATH "library");
@@ -194,7 +196,7 @@ static void create() {
 #ifdef VOLATILE
 	D("VOLATILE flag set: Server will not save any data.\n");
 #endif
-	myLowerCaseHost = lower_case(SERVER_HOST);
+	myLowerCaseHost = NAMEPREP(SERVER_HOST);
 	register_localhost(myLowerCaseHost);
 #ifdef __PIKE__
         //debug_write("Creating psyced library in Pike.\n");
@@ -259,9 +261,10 @@ static void create() {
 #ifdef JABBER_PATH
 	register_target("xmpp:"+ myLowerCaseHost);
 # ifdef _host_XMPP
-        register_localhost(lower_case(_host_XMPP));
-	register_target(lower_case(_host_XMPP));
-	register_target("xmpp:"+ lower_case(_host_XMPP));
+	t = NAMEPREP(_host_XMPP);
+        register_localhost(t);
+	register_target(t);
+	register_target("xmpp:"+ t);
 # endif
 #endif
 	// base64decode("test2000");

@@ -81,7 +81,7 @@ hello(ni, elm, try, method, salt) {
 				     ni, try, elm);
 }
 
-#ifdef REGISTERED_USERS_ONLY	// TODO: rename into a _flag
+#ifdef _flag_disable_unauthenticated_users
 ohYeah(whatever) {
 	input_to(#'ohYeah, input_to_settings);
 	// input ignore warning? inverting mc's is really a good idea!
@@ -120,7 +120,7 @@ authChecked(int result, ni, try, elm) {
 //			    return;
 //		    }
 		}
-#ifdef REGISTERED_USERS_ONLY
+#ifdef _flag_disable_unauthenticated_users
 		else {
 			if (user -> isNewbie()) {
 #ifdef PSYC_SYNCHRONIZE
@@ -157,7 +157,7 @@ authChecked(int result, ni, try, elm) {
 		return promptForPassword(user);
 #endif
 	}
-#ifndef REGISTERED_USERS_ONLY
+#ifndef _flag_disable_unauthenticated_users
 	// added user->isNewbie() check for ircers
 	if (user->online() && user->isNewbie()
 #ifdef _flag_log_hosts

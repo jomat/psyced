@@ -343,6 +343,9 @@ int psyc_sendmsg(mixed target, string mc, mixed data, mapping vars,
 		    // nothing else is possible, but some clients may
 		    // no longer be able to connect to you...
 		}
+#ifdef USE_SPYC
+		o -> sender_verification(SERVER_UNIFORM, u[URoot]);
+#endif
 		register_target($4, o);
 		register_target(psychopo, o);
 		register_target(psycippo, o);
