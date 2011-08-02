@@ -1,6 +1,15 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
 ## tradotto al 30% ... cerca /TODO/ per continuare
 
+_status_circuit_encryption_cipher
+|Muy bueno! La tua connessione è crittata senza conseguenze.
+
+_warning_circuit_encryption_cipher
+|La tua connessione non è crittata senza conseguenze.
+
+_error_circuit_encryption_cipher
+|Purtroppo la tua connessione non è crittata senza conseguenze.
+
 _failure_disabled_function_register
 |Registrazione di nuovi utenti disabilitata su questo server.
 

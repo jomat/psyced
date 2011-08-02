@@ -1555,6 +1555,16 @@ logon() {
 		return remove_interactive(ME);
 		// and the object will deteriorate when user gives up..
 	}
+#ifdef __TLS__
+	if (tls_query_connection_state(ME) == 1) {
+	    if (tls_check_cipher(ME, v("scheme"))) {
+                w("_status_circuit_encryption_cipher");
+	    } else {
+                w("_warning_circuit_encryption_cipher");
+		//return remove_interactive(ME);
+	    }
+	}
+#endif
 	// shouldn't this be qScheme() instead? little paranoid TODO
 	// but then we would have to move qScheme() from the server.c's
 	// into the common.c's .. well, we could do that some day

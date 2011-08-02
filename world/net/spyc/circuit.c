@@ -117,6 +117,12 @@ int logon(int failure) {
 	    } else if (tls_query_connection_state(ME) == 1) {
 		    certinfo = tls_certificate(ME, 0);
 		    P0(("certinfo: %O\n", certinfo))
+		    unless (tls_check_cipher(ME, "psyc")) {
+			    croak("_error_circuit_encryption_cipher",
+	      "Your cipher choice does not provide forward secrecy.");
+			    //destruct(ME);
+		    }
+
 	    }
     }
 #endif
@@ -207,7 +213,7 @@ void circuit_msg(string mc, mapping vars, string data) {
 	} else if (tls_query_connection_state(ME) == 1 
 		   && mappingp(certinfo)
 		   && certinfo[0] == 0
-		   && certificate_check_name(su[UHost], certinfo, "psyc") == 1) {
+		   && tls_check_certificate_data(certinfo, su[UHost], "psyc") == 1) {
 		sAuthenticated(su[UHost]);
 		if (flags & TCP_PENDING_TIMEOUT) {
 			P0(("removing call out\n"))

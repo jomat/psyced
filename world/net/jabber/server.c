@@ -490,6 +490,7 @@ open_stream(XMLNode node) {
 #if __EFUN_DEFINED__(tls_available)
 		if (tls_available() && tls_query_connection_state(ME) > 0
 			&& mappingp(certinfo) && certinfo[0] == 0
+			// why do we use the old one here?
 			&& certificate_check_jabbername(0, certinfo)) {
 		    features += "<mechanism>EXTERNAL</mechanism>";
 		}

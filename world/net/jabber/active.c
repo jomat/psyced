@@ -315,7 +315,7 @@ tls_logon(result) {
 	mixed cert = tls_certificate(ME, 0);
 	P3(("active::certinfo %O\n", cert))
 	if (mappingp(cert)) {
-	    unless (certificate_check_name(hostname, cert, "xmpp-server")) {
+	    unless (tls_check_certificate_data(cert, hostname, "xmpp-server")) {
 #ifdef _flag_report_bogus_certificates
 		monitor_report("_error_invalid_certificate_identity",
 			       sprintf("%O presented a certificate that "

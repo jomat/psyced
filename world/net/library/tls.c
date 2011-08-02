@@ -1,4 +1,7 @@
 #include <net.h> // vim syntax=lpc
+#include <proto.h>
+#include <sys/tls.h>
+
 mapping tls_certificate(object who, int longnames) {
     mixed *extra, extensions;
     mapping cert;
@@ -85,7 +88,7 @@ mapping tls_certificate(object who, int longnames) {
 
 // generalized variant of the old certificate_check_jabbername
 // RFC 6125 describes the process in more detail
-int certificate_check_name(string name, mixed cert, string scheme) {
+int tls_check_certificate_data(mixed cert, string name, string scheme) {
     mixed t;
     string idn;
     // FIXME: should probably be more careful about internationalized
@@ -159,3 +162,20 @@ int certificate_check_name(string name, mixed cert, string scheme) {
     }
     return 0;
 }
+
+int tls_check_cipher(object sock, string scheme) {
+    string t;
+    mixed m = tls_query_connection_info(sock);
+
+    P3(("%O is using the %O cipher.\n", sock, m[TLS_CIPHER]))
+    // shouldn't our negotiation have ensured we have PFS?
+
+    if (stringp(t = m[TLS_CIPHER]) &&! abbrev("DHE", t)) {
+	monitor_report("_warning_circuit_encryption_cipher_details",
+	    object_name(sock) +" · using "+ t +" cipher");
+	// we can't expect that degree of privacy from jabber, for now
+	if (scheme != "xmpp") return 0;
+    }
+    return 1;
+}
+
