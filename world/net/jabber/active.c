@@ -31,6 +31,7 @@ inherit NET_PATH "name";
 
 volatile mixed gateways;
 volatile mixed *dialback_queue;
+volatile mapping certinfo;
 
 volatile string streamid;
 volatile float streamversion;
@@ -312,10 +313,10 @@ tls_logon(result) {
 	//
 	// if the cert is ok, we can set authenticated to 1
 	// to skip dialback
-	mixed cert = tls_certificate(ME, 0);
-	P3(("active::certinfo %O\n", cert))
-	if (mappingp(cert)) {
-	    unless (tls_check_certificate_data(cert, hostname, "xmpp-server")) {
+	certinfo = tls_certificate(ME, 0);
+	P3(("active::certinfo %O\n", certinfo))
+	if (mappingp(certinfo)) {
+	    unless (tls_check_service_identity(hostname, certinfo, "xmpp-server")) {
 #ifdef _flag_report_bogus_certificates
 		monitor_report("_error_invalid_certificate_identity",
 			       sprintf("%O presented a certificate that "
@@ -334,7 +335,7 @@ tls_logon(result) {
 		return 1;
 #endif
 	    } 
-	    else if (cert[0] != 0) {
+	    else if (certinfo[0] != 0) {
 #ifdef _flag_report_bogus_certificates
 		monitor_report("_error_untrusted_certificate",
 			       sprintf("%O certificate could not be verified",

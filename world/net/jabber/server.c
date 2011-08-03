@@ -513,5 +513,6 @@ certificate_check_jabbername(name, certinfo) {
     // plan: prefer subjectAltName:id-on-xmppAddr, 
     // 		but allow email (1.2.840.113549.1.9.1)
     // 		and subjectAltName:rfc822Name
+    // 	FIXME: do something useful here...
     return 0;
 }

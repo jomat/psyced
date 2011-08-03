@@ -88,7 +88,7 @@ mapping tls_certificate(object who, int longnames) {
 
 // generalized variant of the old certificate_check_jabbername
 // RFC 6125 describes the process in more detail
-int tls_check_certificate_data(mixed cert, string name, string scheme) {
+int tls_check_service_identity(string name, mixed cert, string scheme) {
     mixed t;
     string idn;
     // FIXME: should probably be more careful about internationalized
@@ -126,6 +126,7 @@ int tls_check_certificate_data(mixed cert, string name, string scheme) {
 #if 0
     // id-on-xmppAddr - have not seen them issued by anyone but 
     // startcom and those usually include dnsname, too
+    // utf8-encoded
     if ((t = cert["2.5.29.17:1.3.6.1.5.5.7.8.5"])) { 
 	if (pointerp(t)) {
 	    if (member(t, name) != -1) return 1;
@@ -147,7 +148,11 @@ int tls_check_certificate_data(mixed cert, string name, string scheme) {
 
 	    // look for idn encoded stuff
 	    foreach(string cn : t) {
+#ifdef __IDNA__
 		idn = NAMEPREP(idna_to_unicode(cn));
+#else
+		idn = NAMEPREP(cn);
+#endif
 		if (idn == name) return 1;
 	    }
 	    return 0;

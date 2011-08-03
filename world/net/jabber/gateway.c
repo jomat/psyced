@@ -291,7 +291,7 @@ jabberMsg(XMLNode node) {
 	// paranoia note: as with XEP 0178 we might want to check dns anyway to
 	// 	protect against stolen certificates
 	if (mappingp(certinfo) && certinfo[0] == 0 
-	    && node["@from"] && tls_check_certificate_data(certinfo, node["@from"], "xmpp-server")) {
+	    && node["@from"] && tls_check_service_identity(node["@from"], certinfo, "xmpp-server")) {
 		P2(("dialback without dialback %O\n", certinfo))
 		verify_connection(node["@to"], node["@from"], "valid"); 
 	} else {
@@ -414,7 +414,7 @@ jabberMsg(XMLNode node) {
 		 */
 		int success = 0;
 
-		success = tls_check_certificate_data(certinfo, t, "xmpp-server");
+		success = tls_check_service_identity(t, certinfo, "xmpp-server");
 		if (success) {
 		    emitraw("<success xmlns='" NS_XMPP "xmpp-sasl'/>");
 		    P2(("successful sasl external authentication with "
@@ -542,7 +542,7 @@ open_stream(XMLNode node) {
 		    // sasl external if we know that it will succeed
 		    // later on
 		    if (node["@from"] &&
-			    tls_check_certificate_data(certinfo, node["@from"],
+			    tls_check_service_identity(node["@from"], certinfo
 						     "xmpp-server")) {
 			packet += "<mechanisms xmlns='" NS_XMPP "xmpp-sasl'>";
 			packet += "<mechanism>EXTERNAL</mechanism>";
