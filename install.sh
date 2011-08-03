@@ -955,6 +955,7 @@ _path_configuration = $CONFIG_DIR
 ; (absolute or relative to _path_configuration)
 _path_PEM_key = key.pem
 _path_PEM_certificate = cert.pem
+; You can run 'make' in the 'utility/gencert' folder to create a pair
 
 ; Path to the TLS trust directory where certs are kept.
 ; If unset this will default to your system installation's defaults.
