@@ -542,7 +542,7 @@ open_stream(XMLNode node) {
 		    // sasl external if we know that it will succeed
 		    // later on
 		    if (node["@from"] &&
-			    tls_check_service_identity(node["@from"], certinfo
+			    tls_check_service_identity(node["@from"], certinfo,
 						     "xmpp-server")) {
 			packet += "<mechanisms xmlns='" NS_XMPP "xmpp-sasl'>";
 			packet += "<mechanism>EXTERNAL</mechanism>";
