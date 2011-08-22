@@ -321,14 +321,14 @@ tls_logon(result) {
 		monitor_report("_error_invalid_certificate_identity",
 			       sprintf("%O presented a certificate that "
 				       "contains %O/%O",
-				       hostname, cert["2.5.4.3"],
-				       cert["2.5.29.17:1.3.6.1.5.5.7.8.5"]));
+				       hostname, certinfo["2.5.4.3"],
+				       certinfo["2.5.29.17:1.3.6.1.5.5.7.8.5"]));
 #endif
 #ifdef _flag_log_bogus_certificates
-		log_file("CERTS", S("%O %O %O id?\n", ME, hostname, cert));
+		log_file("CERTS", S("%O %O %O id?\n", ME, hostname, certinfo));
 #else
 		P1(("TLS: %s presented a certificate with unexpected identity.\n", hostname))
-		P2(("%O\n", cert))
+		P2(("%O\n", certinfo))
 #endif
 #if 0 //def _flag_reject_bogus_certificates
 		QUIT
@@ -342,10 +342,10 @@ tls_logon(result) {
 				       hostname));
 #endif
 #ifdef _flag_log_bogus_certificates
-		log_file("CERTS", S("%O %O %O\n", ME, hostname, cert));
+		log_file("CERTS", S("%O %O %O\n", ME, hostname, certinfo));
 #else
 		P1(("TLS: %s presented untrusted certificate.\n", hostname))
-		P2(("%O\n", cert))
+		P2(("%O\n", certinfo))
 #endif
 #if 0 //def _flag_reject_bogus_certificates
 		// QUIT is wrong...
