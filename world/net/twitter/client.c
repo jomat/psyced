@@ -34,7 +34,7 @@ object load(object usr, string key, string secret, string request, string access
 void parse_status_update(string body, string headers, int http_status) {
     P3(("twitter/client:parse_status_update(%O, %O, %O)\n", body, headers, http_status))
     if (http_status != R_OK)
-	sendmsg(user, "_error_"+name+"_status_update", "Error: failed to post status update on [_name].", (["_name": display_name]));
+	sendmsg(user, "_failure_update_"+ name, "Unable to post status update on [_name].", (["_name": display_name]));
 }
 
 void status_update(string text) {

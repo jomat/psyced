@@ -46,16 +46,22 @@ void notify_shutdown_first(int progress) {
  * input_to() can't be called from here.
  *
  * uid is only passed if USE_AUTHLOCAL is built into the driver.
+ *
+ * strange how int port and string service came into existence here
+ * since the driver isn't passing such arguments and there is no
+ * reason to call this from anywhere else. i presume they are a
+ * mistake!
  */
 object connect(int uid, int port, string service) {
     int peerport;
     mixed arg, t;
 
+    unless (port) port = query_mud_port();
     // now that's a bit of preprocessor magic you don't need to understand..  ;)
-    D2( if (uid) D("master:connected on port "+ query_mud_port() +" by uid "
-		   + uid +"\n");
+    D2( if (uid) D("master:connected on port "+ port +" by uid "
+		   + uid +"("+ service + ")\n");
 	else) {
-	    D3(D("master:connected on port "+query_mud_port()
+	    D3(D("master:connected on port "+port
 		   +" by "+query_ip_name()+"\n");)
     }
 #ifndef H_DEFAULT_PROMPT
@@ -71,7 +77,7 @@ object connect(int uid, int port, string service) {
 
     // we dont want the telnet machine most of the time
     // but disabling and re-enabling it for telnet doesn't work
-    switch(port || query_mud_port()) {
+    switch(port) {
 #if HAS_PORT(PSYC_PORT, PSYC_PATH) && AUTODETECT
     case PSYC_PORT:
 #endif
@@ -84,7 +90,7 @@ object connect(int uid, int port, string service) {
 # endif
 		t = tls_init_connection(this_object());
 		if (t < 0 && t != ERR_TLS_NOT_DETECTED) {
-			PP(( "TLS on %O: %O\n", query_mud_port(), tls_error(t) ));
+			PP(( "TLS on %O: %O\n", port, tls_error(t) ));
 		}
 	}
 #endif // fall thru
@@ -125,7 +131,7 @@ object connect(int uid, int port, string service) {
 # endif
 	t = tls_init_connection(this_object());
 	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			   query_mud_port(), tls_error(t) ));
+			   port, tls_error(t) ));
 #endif // fall thru
 #if HAS_PORT(SPYC_PORT, SPYC_PATH)
     case SPYC_PORT:
@@ -162,7 +168,7 @@ object connect(int uid, int port, string service) {
     case POP3S_PORT:
 	t = tls_init_connection(this_object());
 	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			   query_mud_port(), tls_error(t) ));
+			   port, tls_error(t) ));
 	return clone_object(POP3_PATH "server");
 #endif
 #if HAS_PORT(POP3_PORT, POP3_PATH)
@@ -174,7 +180,7 @@ object connect(int uid, int port, string service) {
     case SMTPS_PORT:
 	t = tls_init_connection(this_object());
 	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			   query_mud_port(), tls_error(t) ));
+			   port, tls_error(t) ));
 	return clone_object(SMTP_PATH "server");
 #endif
 #if HAS_PORT(SMTP_PORT, SMTP_PATH)
@@ -192,7 +198,7 @@ object connect(int uid, int port, string service) {
     case NNTPS_PORT:
 	t = tls_init_connection(this_object());
 	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			   query_mud_port(), tls_error(t) ));
+			   port, tls_error(t) ));
 	return clone_object(NNTP_PATH "server");
 #endif
 #if HAS_PORT(NNTP_PORT, NNTP_PATH)
@@ -204,7 +210,7 @@ object connect(int uid, int port, string service) {
     case JABBERS_PORT:
 	t = tls_init_connection(this_object());
 	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			     query_mud_port(), tls_error(t) ));
+			     port, tls_error(t) ));
 	return clone_object(JABBER_PATH "server");
 #endif
 #if HAS_PORT(JABBER_PORT, JABBER_PATH)
@@ -262,7 +268,7 @@ object connect(int uid, int port, string service) {
     case IRCS_PORT:
 	t = tls_init_connection(this_object());
 	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			     query_mud_port(), tls_error(t) ));
+			     port, tls_error(t) ));
 	return clone_object(IRC_PATH "server");
 #endif
 #if HAS_PORT(IRC_PORT, IRC_PATH)
@@ -285,7 +291,7 @@ object connect(int uid, int port, string service) {
     case TELNETS_PORT:
 	t = tls_init_connection(this_object());
 	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			     query_mud_port(), tls_error(t) ));
+			     port, tls_error(t) ));
 	// we could do the UID2NICK thing here, too, but why should we?
 	// what do you need tls for on a localhost tcp link?
         return clone_object(TELNET_PATH "server");
@@ -300,12 +306,15 @@ object connect(int uid, int port, string service) {
 	return t;
 #endif
 
+#if HAS_PORT(HTTP_PORT, HTTP_PATH) && AUTODETECT
+    case HTTP_PORT: // AUTODETECT on the HTTP port
+#endif
 #if HAS_PORT(HTTPS_PORT, HTTP_PATH)
     case HTTPS_PORT:
 	t = tls_init_connection(this_object());
 	if (t < 0) {
 		D1( if (t != ERR_TLS_NOT_DETECTED) PP(( "TLS(%O) on %O: %O\n",
-					t, query_mud_port(), tls_error(t) )); )
+					t, port, tls_error(t) )); )
 #if !HAS_PORT(HTTP_PORT, HTTP_PATH)
 		// if we have no http port, it may be intentional
                 return (object)0;
@@ -316,8 +325,8 @@ object connect(int uid, int port, string service) {
 	return clone_object(HTTP_PATH "server");
 #endif
 	/* don't fall thru. allow for https: to be available without http: */
-#if HAS_PORT(HTTP_PORT, HTTP_PATH)
-    case HTTP_PORT: // AUTODETECT on the HTTP port? we could do that too
+#if HAS_PORT(HTTP_PORT, HTTP_PATH) &&! AUTODETECT
+    case HTTP_PORT:
 	return clone_object(HTTP_PATH "server");
 #endif
 
@@ -325,7 +334,7 @@ object connect(int uid, int port, string service) {
     case MUDS_PORT:
 	t = tls_init_connection(this_object());
 	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			     query_mud_port(), tls_error(t) ));
+			     port, tls_error(t) ));
 	return clone_object(MUD_PATH "login");
 #endif
 #if HAS_PORT(MUD_PORT, MUD_PATH)
@@ -337,7 +346,7 @@ object connect(int uid, int port, string service) {
     }
     
     PP(("Received connection on port %O which isn't configured.\n",
-	query_mud_port()));
+	port));
     return (object)0;
 }
 
@@ -345,10 +354,10 @@ object connect(int uid, int port, string service) {
 #ifdef DRIVER_HAS_RENAMED_CLONES
 // named clones		-lynx
 object compile_object(string file) {
-	P3((">> compile_object(%O)\n", file))
 	string path, name;
 	object rob;
 
+	P3((">> compile_object(%O)\n", file))
 # ifdef PSYC_PATH
 	if (abbrev("S:psyc:", file)) {
 		rob = clone_object(PSYC_PATH "server");
