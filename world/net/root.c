@@ -139,17 +139,18 @@ msg(source, mc, data, vars, showingLog, target) {
 	case "_failure_unsuccessful_delivery":
 	case "_failure_unsuccessful_delivery_resolve":
 	case "_failure_unsupported_function_root":
-		t = "Root got "+ (vars["_method_relay"] || mc);
-		if (vars["_target_relay"]) t += " to "+ to_string(vars["_target_relay"]);
-		if (vars["_source_relay"]) t += " from "+ to_string(vars["_source_relay"]);
-		if (source) t += " via "+ to_string(source);
-		//monitor_report("_notice_forward"+ mc, psyctext(data ?
-		//		 t+": "+data : t, vars, "", source));
-		monitor_report("_notice_forward"+ (vars["_method_relay"]
-					   || mc || "_method_missing"), t);
-		return 1;
+		unless (abbrev("_notice_forward", vars["_method_relay"])) {
+			t = "Root got "+ (vars["_method_relay"] || mc || "missing method");
+			if (vars["_target_relay"]) t += " to "+ to_string(vars["_target_relay"]);
+			if (vars["_source_relay"]) t += " from "+ to_string(vars["_source_relay"]);
+			if (source) t += " via "+ to_string(source);
+			monitor_report("_notice_forward"+ (vars["_method_relay"]
+					   || mc || "_failure_missing_method"), t);
+			return 1;
+		}
+		// fall thru
 	case "_notice_forward":
-		P1(("%O got a %O.. eh!???\n", ME, mc))
+		P1(("%O got a %O back on his place.. eh? ... %O\n", ME, mc, vars))
 		return 1;
 	case "_request_legacy_CTCP":
 //		sendmsg(source, "_status_legacy_CTCP", 0,
