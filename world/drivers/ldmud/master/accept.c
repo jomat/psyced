@@ -75,25 +75,47 @@ object connect(int uid, int port, string service) {
         return clone_object(NET_PATH "utility/onhold");
     }
 
+#define TLS_INIT \
+    if (tls_available()) { \
+	t = tls_init_connection(ME); \
+	if (t < 0 && t != ERR_TLS_NOT_DETECTED) { \
+	    P2(( "TLS(%O) on port %O: %O\n", t, port, tls_error(t) )); \
+	} \
+    }
+
+#if __EFUN_DEFINED__(tls_want_peer_certificate)
+// Specify that a subsequent call to tls_init_connection
+// should request a peer certificate.
+# define TLS_INIT_GET_CERT \
+    if (tls_available()) { \
+	tls_want_peer_certificate(ME); \
+	t = tls_init_connection(ME); \
+	if (t < 0 && t != ERR_TLS_NOT_DETECTED) { \
+	    P2(( "TLS(%O) on port %O: %O\n", t, port, tls_error(t) )); \
+	} \
+    }
+#else
+# define TLS_INIT_GET_CERT TLS_INIT
+#endif
+
+#if AUTODETECT
+# define TLS_INIT_AUTODETECT TLS_INIT
+#else
+# define TLS_INIT_AUTODETECT // do nothing
+#endif
+
     // we dont want the telnet machine most of the time
     // but disabling and re-enabling it for telnet doesn't work
     switch(port) {
 #if HAS_PORT(PSYC_PORT, PSYC_PATH) && AUTODETECT
     case PSYC_PORT:
+	// make TLS available even on the default psyc port using the autodetection feature
 #endif
 #if HAS_PORT(PSYCS_PORT, PSYC_PATH)
     case PSYCS_PORT:	// inofficial & temporary
-	// make TLS available even on the default psyc port using the autodetection feature
-	if (tls_available()) {
-# if __EFUN_DEFINED__(tls_want_peer_certificate)
-		tls_want_peer_certificate(ME);
-# endif
-		t = tls_init_connection(this_object());
-		if (t < 0 && t != ERR_TLS_NOT_DETECTED) {
-			PP(( "TLS on %O: %O\n", port, tls_error(t) ));
-		}
-	}
-#endif // fall thru
+#endif
+	TLS_INIT_GET_CERT
+	// fall thru
 #if HAS_PORT(PSYC_PORT, PSYC_PATH) &&! AUTODETECT
     case PSYC_PORT:
 #endif
@@ -129,9 +151,7 @@ object connect(int uid, int port, string service) {
 # if __EFUN_DEFINED__(tls_want_peer_certificate)
         tls_want_peer_certificate(ME);
 # endif
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			   port, tls_error(t) ));
+	TLS_INIT
 #endif // fall thru
 #if HAS_PORT(SPYC_PORT, SPYC_PATH)
     case SPYC_PORT:
@@ -166,9 +186,7 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(POP3S_PORT, POP3_PATH)
     case POP3S_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			   port, tls_error(t) ));
+	TLS_INIT
 	return clone_object(POP3_PATH "server");
 #endif
 #if HAS_PORT(POP3_PORT, POP3_PATH)
@@ -178,9 +196,7 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(SMTPS_PORT, NNTP_PATH)
     case SMTPS_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			   port, tls_error(t) ));
+	TLS_INIT
 	return clone_object(SMTP_PATH "server");
 #endif
 #if HAS_PORT(SMTP_PORT, SMTP_PATH)
@@ -196,9 +212,7 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(NNTPS_PORT, NNTP_PATH)
     case NNTPS_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			   port, tls_error(t) ));
+	TLS_INIT
 	return clone_object(NNTP_PATH "server");
 #endif
 #if HAS_PORT(NNTP_PORT, NNTP_PATH)
@@ -208,9 +222,7 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(JABBERS_PORT, JABBER_PATH)
     case JABBERS_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			     port, tls_error(t) ));
+	TLS_INIT
 	return clone_object(JABBER_PATH "server");
 #endif
 #if HAS_PORT(JABBER_PORT, JABBER_PATH)
@@ -253,6 +265,7 @@ object connect(int uid, int port, string service) {
 	P3(("%O -> load(%O, %O)\n", t, query_ip_number(), -peerport))
 	return t -> load(query_ip_number(), -peerport);
 #endif
+
 #if 0 //__EFUN_DEFINED__(enable_binary)
     // work in progress
     case 8888:
@@ -264,18 +277,15 @@ object connect(int uid, int port, string service) {
         enable_telnet(0);
         return clone_object(NET_PATH "rtmp/protocol");
 #endif
+
 #if HAS_PORT(IRCS_PORT, IRC_PATH)
     case IRCS_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			     port, tls_error(t) ));
+	TLS_INIT
 	return clone_object(IRC_PATH "server");
 #endif
 #if HAS_PORT(IRC_PORT, IRC_PATH)
-    case IRC_PORT: // we could enable AUTODETECT for this..
-# if 0 // __EFUN_DEFINED__(enable_telnet)
-	enable_telnet(0);	// shouldn't harm.. but it does!!!
-# endif
+    case IRC_PORT:
+	TLS_INIT_AUTODETECT
 	return clone_object(IRC_PATH "server");
 #endif
 
@@ -289,16 +299,14 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(TELNETS_PORT, TELNET_PATH)
     case TELNETS_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			     port, tls_error(t) ));
+	TLS_INIT
 	// we could do the UID2NICK thing here, too, but why should we?
 	// what do you need tls for on a localhost tcp link?
         return clone_object(TELNET_PATH "server");
 #endif
 #if HAS_PORT(TELNET_PORT, TELNET_PATH)
-    case TELNET_PORT: // we could enable AUTODETECT for this.. (wait 4s)
-//	set_prompt("> ");
+    case TELNET_PORT:
+	TLS_INIT_AUTODETECT
         t = clone_object(TELNET_PATH "server");
 # ifdef UID2NICK
         if (uid && (arg = UID2NICK(uid))) { t -> sName(arg); }
@@ -306,9 +314,6 @@ object connect(int uid, int port, string service) {
 	return t;
 #endif
 
-#if HAS_PORT(HTTP_PORT, HTTP_PATH) && AUTODETECT
-    case HTTP_PORT: // AUTODETECT on the HTTP port
-#endif
 #if HAS_PORT(HTTPS_PORT, HTTP_PATH)
     case HTTPS_PORT:
 	t = tls_init_connection(this_object());
@@ -327,19 +332,19 @@ object connect(int uid, int port, string service) {
 	/* don't fall thru. allow for https: to be available without http: */
 #if HAS_PORT(HTTP_PORT, HTTP_PATH) &&! AUTODETECT
     case HTTP_PORT:
+	TLS_INIT_AUTODETECT
 	return clone_object(HTTP_PATH "server");
 #endif
 
 #if HAS_PORT(MUDS_PORT, MUD_PATH)
     case MUDS_PORT:
-	t = tls_init_connection(this_object());
-	if (t < 0 && t != ERR_TLS_NOT_DETECTED) PP(( "TLS on %O: %O\n",
-			     port, tls_error(t) ));
+	TLS_INIT
 	return clone_object(MUD_PATH "login");
 #endif
 #if HAS_PORT(MUD_PORT, MUD_PATH)
     default:
 	// if you want to multiplex psyced with an LPMUD game
+	TLS_INIT_AUTODETECT
 //	set_prompt("> ");
 	return clone_object(MUD_PATH "login");
 #endif
