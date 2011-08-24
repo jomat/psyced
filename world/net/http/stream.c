@@ -14,6 +14,7 @@ int buffer_content(string data) {
 	return 1;
 }
 
+#if 0
 disconnected(string data) {
 	P2(("%O got disconnected:\n%O\n", ME, data))
 	headers["_fetchtime"] = isotime(ctime(time()), 1);
@@ -42,3 +43,5 @@ disconnected(string data) {
 	fetching = 0;
 	return 1;       // presume this disc was expected
 }
+#endif
+

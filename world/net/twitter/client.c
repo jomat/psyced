@@ -15,7 +15,7 @@
  *   - add this to local/config.c:
 # ifdef USE_TWITTER_STREAM
 	D(" " NET_PATH "twitter/client\n");
-	load_object(NET_PATH "twitter/client")->home_stream();
+	load_object(NET_PATH "twitter/client")->connect();
 # endif
  */
 #include <net.h>
@@ -196,7 +196,8 @@ home_timeline(mixed *next) {
     return ua;
 }
 
-home_stream() {
+connect() {
+    // we currently use a home_stream here
     home_timeline(#'user_stream);
 }
 
@@ -222,7 +223,7 @@ user_stream_data(string data, string headers, int http_status, int fetching) {
     switch (http_status) {
 	case 401: // unauthorized
 	    oauth();
-	    home_stream();
+	    connect();
 	case 403: // forbidden
 	case 404: // unknown
 	case 406: // not acceptable
@@ -241,14 +242,14 @@ user_stream_data(string data, string headers, int http_status, int fetching) {
     if (wait > 240) wait = 240;
 
     P1(("%O reconnecting in %d seconds.\n", ME, wait))
-    call_out(#'home_stream, wait); //');
+    call_out(#'connect, wait); //');
 }
 
 user_stream() {
     P3(("twitter/client:user_stream()\n"))
     if (!authorized) return enqueue(ME, ({ #'user_stream })); //'}));
     friends = 0;
-    object user_ua = clone_object(NET_PATH "http/fetch_stream");
+    object user_ua = clone_object(NET_PATH "http/stream");
     user_ua->content(#'user_stream_data, 1, 1); //');
     fetch(user_ua, userstream_url + "/user.json");
 }

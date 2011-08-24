@@ -226,7 +226,7 @@ varargs string content(closure cb, int force, int willbehave) {
 	    if (fetched) {
 		if (force) {
 		    funcall(cb, fetched, willbehave ? fheaders : copy(fheaders));
-		}
+	}
 	    } else {
 		enqueue(ME, ({ cb, willbehave }));
 	    }
