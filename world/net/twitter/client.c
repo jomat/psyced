@@ -250,9 +250,9 @@ user_stream() {
     P3(("twitter/client:user_stream()\n"))
     if (!authorized) return enqueue(ME, ({ #'user_stream })); //'}));
     friends = 0;
-    object user_ua = clone_object(NET_PATH "http/fetch_stream");
+    object user_ua = clone_object(NET_PATH "http/fetch");
     user_ua->content(#'user_stream_data, 1, 1); //');
-    fetch(user_ua, userstream_url + "/user.json");
+    fetch(user_ua, userstream_url + "/user.json", "GET", 0, 0, 1);
 }
 
 oauth_success() {

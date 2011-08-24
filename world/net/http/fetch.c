@@ -30,6 +30,7 @@ volatile string http_message;
 volatile int http_status, port, fetching, ssl;
 volatile string buffer, thehost, url, fetched, host, resource, method;
 volatile mixed rbody;
+volatile int stream;
 
 int parse_status(string all);
 int parse_header(string all);
@@ -37,9 +38,10 @@ int buffer_content(string all);
 
 string qHost() { return thehost; }
 
-varargs void fetch(string murl, string meth, mixed body, mapping hdrs) {
+varargs void fetch(string murl, string meth, mixed body, mapping hdrs, int strm) {
 	method = meth || "GET";
 	rbody = body;
+	stream = strm;
 	if (hdrs) rheaders += hdrs;
 	if (url != murl) {
 		// accept.c does this for us:
@@ -183,9 +185,16 @@ int parse_header(string all) {
 	return 1;
 }
 
-int buffer_content(string all) {
-	P2(("%O body %O\n", ME, all))
-	buffer += all + "\n"; 
+int buffer_content(string data) {
+	P2(("%O body %O\n", ME, data))
+	if (stream) {
+		mixed *waiter;
+		foreach (waiter : qToArray(ME)) {
+			funcall(waiter[0], data, waiter[1] ? fheaders : copy(fheaders), http_status, 1);
+		}
+	} else {
+		buffer += data + "\n";
+	}
 	next_input_to(#'buffer_content);
 	return 1;
 }
@@ -198,8 +207,12 @@ disconnected(remainder) {
 	//if (headers["etag"])
 	//    rheaders["if-none-match"] = headers["etag"]; // heise does not work with etag
 
-	fetched = buffer;
-	if (remainder) fetched += remainder;
+	if (stream) {
+		fetched = remainder;
+	} else {
+		fetched = buffer;
+		if (remainder) fetched += remainder;
+	}
 	fheaders = headers;
 	buffer = headers = 0;
 	switch (http_status) {

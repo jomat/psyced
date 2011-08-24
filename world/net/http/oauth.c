@@ -25,7 +25,7 @@ volatile int authorized = 0;
 oauth_success() {}
 oauth_error() {}
 
-varargs void fetch(object ua, string url, string method, mapping post, mapping oauth) {
+varargs void fetch(object ua, string url, string method, mapping post, mapping oauth, int stream) {
     P3((">> oauth:fetch(%O, %O, %O)\n", url, method, oauth))
     unless (method) method = "GET";
     unless (post) post = ([]);
@@ -53,7 +53,7 @@ varargs void fetch(object ua, string url, string method, mapping post, mapping o
     foreach (string key, string value : oauth)
 	p += (strlen(p) ? "," : "") + key + "=\"" + urlencode(to_string(value)) + "\"";
 
-    ua->fetch(url, method, post, (["authorization": "OAuth " + p]));
+    ua->fetch(url, method, post, (["authorization": "OAuth " + p]), stream);
 }
 
 void parse_request_token(string body, mapping headers, int http_status) {
