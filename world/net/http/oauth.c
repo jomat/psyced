@@ -11,15 +11,19 @@
 #include <tls.h>
 #include <ht/http.h>
 
-string consumer_key;
-string consumer_secret;
-string request_token_url;
-mapping request_params = ([ ]);
-mapping access_params = ([ ]);
-string access_token_url;
-string authorize_url;
-string callback_url = HTTPS_OR_HTTP_URL + "/oauth";
-object user;
+volatile string consumer_key;
+volatile string consumer_secret;
+volatile string request_token_url;
+persistent mapping request_params = ([ ]);
+persistent mapping access_params = ([ ]);
+volatile string access_token_url;
+volatile string authorize_url;
+volatile string callback_url = HTTPS_OR_HTTP_URL + "/oauth";
+volatile object user;
+volatile int authorized = 0;
+
+oauth_success() {}
+oauth_error() {}
 
 varargs void fetch(object ua, string url, string method, mapping post, mapping oauth) {
     P3((">> oauth:fetch(%O, %O, %O)\n", url, method, oauth))
@@ -60,12 +64,16 @@ void parse_request_token(string body, mapping headers, int http_status) {
 	if (strlen(request_params["oauth_token"]) && strlen(request_params["oauth_token_secret"])) {
 	    shared_memory("oauth_request_tokens")[request_params["oauth_token"]] = ME;
 	    //P3((">>> adding token: %O to shm: %O\n", request_params["oauth_token"], shared_memory("oauth_request_tokens")))
-	    sendmsg(user, "_notice_oauth_authorize_url", "Open [_url] to perform authorization.",
-		    (["_url": authorize_url + "?oauth_token=" + request_params["oauth_token"]]));
+	    if (user) sendmsg(user, "_notice_oauth_authorize_url", "Open [_url] to perform authorization.",
+			      (["_url": authorize_url + "?oauth_token=" + request_params["oauth_token"]]));
+	    P1(("OAuth: open %s to perform authorization.\n", authorize_url + "?oauth_token=" + request_params["oauth_token"]));
 	    return;
 	}
     }
-    sendmsg(user, "_error_oauth_token_request", "OAuth failed: could not get a request token.");
+    if (user) sendmsg(user, "_error_oauth_token_request", "OAuth failed: could not get a request token.");
+    P1(("OAuth failed: could not get a request token.\n"));
+    authorized = -1;
+    oauth_error();
 }
 
 void parse_access_token(string body, mapping headers, int http_status) {
@@ -74,11 +82,17 @@ void parse_access_token(string body, mapping headers, int http_status) {
 	access_params = ([]);
 	url_parse_query(access_params, body);
 	if (strlen(access_params["oauth_token"]) && strlen(access_params["oauth_token_secret"])) {
-	    sendmsg(user, "_notice_oauth_success", "OAuth successful.");
+	    if (user) sendmsg(user, "_notice_oauth_success", "OAuth successful.");
+	    P1(("OAuth successful.\n"));
+	    authorized = 1;
+	    oauth_success();
 	    return;
 	}
     }
-    sendmsg(user, "_error_oauth_token_access", "OAuth failed: could not get an access token.");
+    if (user) sendmsg(user, "_error_oauth_token_access", "OAuth failed: could not get an access token.");
+    P1(("OAuth failed: could not get an access token.\n"));
+    authorized = -1;
+    oauth_error();
 }
 
 void verified(string verifier) {
@@ -88,18 +102,30 @@ void verified(string verifier) {
     fetch(ua, access_token_url, "POST", 0, (["oauth_verifier": verifier]));
 }
 
-object load(object usr, string key, string secret, string request, string access, string authorize) {
-    if (usr) user = usr;
-    if (key) consumer_key = key;
-    if (secret) consumer_secret = secret;
-    if (request) request_token_url = request;
-    if (access) access_token_url = access;
-    if (authorize) authorize_url = authorize;
+void oauth() {
+    if (!request_token_url) return;
 
-    if (request_token_url && user) {
-	object ua = clone_object(NET_PATH "http/fetch");
-	ua->content(#'parse_request_token, 1, 1); //');
-	fetch(ua, request_token_url, "POST", 0, (["oauth_callback": callback_url]));
-    }
+    request_params = ([ ]);
+    access_params = ([ ]);
+    authorized = 0;
+
+    object ua = clone_object(NET_PATH "http/fetch");
+    ua->content(#'parse_request_token, 1, 1); //');
+    fetch(ua, request_token_url, "POST", 0, (["oauth_callback": callback_url]));
+}
+
+object load(object usr, mapping opts) {
+    if (usr) user = usr;
+    unless (mappingp(opts)) opts = ([]);
+    if (opts["consumer_key"]) consumer_key = opts["consumer_key"];
+    if (opts["consumer_secret"]) consumer_secret = opts["consumer_secret"];
+    if (opts["request_token_url"]) request_token_url = opts["request_token_url"];
+    if (opts["access_token_url"]) access_token_url = opts["access_token_url"];
+    if (opts["authorize_url"]) authorize_url = opts["authorize_url"];
+
+    if (access_params["oauth_token"])
+	authorized = 1;
+    else
+	oauth();
     return ME;
 }
