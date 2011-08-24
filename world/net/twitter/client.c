@@ -28,6 +28,8 @@ persistent mixed lastid;
 
 volatile string api_url = "https://api.twitter.com/1";
 volatile string userstream_url = "https://userstream.twitter.com/2";
+volatile string name = "twitter";
+volatile string display_name = "twitter";
 
 volatile int status_max_len = 140;
 volatile int send_to_user = 0;
@@ -72,7 +74,7 @@ object load(object usr, mapping opts) {
 void check_status_update(string body, string headers, int http_status) {
     P3(("twitter/client:parse_status_update(%O, %O, %O)\n", body, headers, http_status))
     if (http_status != R_OK)
-	sendmsg(user, "_failure_update_twitter", "Unable to post status update on twitter.");
+	sendmsg(user, "_failure_update_"+ name, "Unable to post status update on [_name].", (["_name": display_name]));
 }
 
 void status_update(string text) {
@@ -249,9 +251,9 @@ user_stream() {
     P3(("twitter/client:user_stream()\n"))
     if (!authorized) return enqueue(ME, ({ #'user_stream })); //'}));
     friends = 0;
-    object user_ua = clone_object(NET_PATH "http/stream");
+    object user_ua = clone_object(NET_PATH "http/fetch");
     user_ua->content(#'user_stream_data, 1, 1); //');
-    fetch(user_ua, userstream_url + "/user.json");
+    fetch(user_ua, userstream_url + "/user.json", "GET", 0, 0, 1);
 }
 
 oauth_success() {

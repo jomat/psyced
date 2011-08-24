@@ -763,7 +763,12 @@ checkPassword(try, method, salt, args, cb, varargs cbargs) {
 	if (IS_NEWBIE) ARETURN(1) // could auto-register here..
 # endif
 #endif
-	if (!try || try == "" || (method != "hmac-sha1-shared") && v("password") == "") ARETURN(0)
+	if (!try || try == "" || (
+#ifdef AUTH_HMAC_SECRET
+				  // tg's website integration use case
+				  method != "hmac-sha1-shared" &&
+#endif
+				  v("password") == "")) ARETURN(0)
 
 	switch(method) {
 #if __EFUN_DEFINED__(sha1)
