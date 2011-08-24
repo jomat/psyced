@@ -1053,7 +1053,7 @@ int bignum_cmp(string a, string b) {
 	// allocating a local variable to "cache" it
 	if (strlen(a) > strlen(b)) return 1;
 	if (strlen(a) < strlen(b)) return -1;
-	for (i=0; i<strlen(a); i++) if (a[i] == b[i]) continue;
+	for (i=0; i<strlen(a); i++) if (a[i] == b[i]) break;
 	if (a[i] > b[i]) return 1;
 	return -1;
 }
