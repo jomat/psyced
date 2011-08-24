@@ -795,14 +795,6 @@ _PAGES_help_settings
 |<DT><P><B> /set miniphotofile http://&lt;Web-Adresse&gt; </B></p><dd>
 |A thumbnail size photo of yours, to be used for lists of friends.
 |
-|<a name="keyfile"></a>
-|<DT><P><B> /set keyfile http://&lt;Web-Adresse&gt; </B></p><dd>
-|Für die Freunde der verschlüsselten Kommunikation, hier kann die
-|Adresse der eigenen public-key Datei abgelegt werden wonach
-|Freunde verschlüsselte Email austauschen oder, mit einem
-|geeigneten <a target=psyc href="http://www.psyc.eu">PSYC</a>
-|client, direkt verschlüsselt chatten können.
-|
 |<a name="startpage"></a>
 |<DT><P><B> /set startpage http://&lt;Web-Adresse&gt; </B></p><dd>
 |Hiermit kann eine Startseite eingestellt werden, welche sofort nach

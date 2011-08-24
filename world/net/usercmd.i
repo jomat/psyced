@@ -2455,9 +2455,15 @@ friend(rm, entity, ni, trustee) {
 		// normally auto-acknowledge this request
 		sendmsg(entity, "_request_friendship_implied",
 			0, ([ "_nick": MYNICK, "_degree_availability": availability ]) );
-		sendmsg(entity, "_request_status_person",
-			0, ([ "_nick": MYNICK ]) );
-		// did i just say something about symmetry?
+		// don't know how this hack got here but it drives some
+		// jabber servers nuts as you are not supposed to probe
+		// people that you aren't subscribed to, yet
+		//sendmsg(entity, "_request_status_person",
+		//	0, ([ "_nick": MYNICK ]) );
+		// we should instead ensure we are always sending our presence
+		// status once a subscription is completed.. FIXME
+		// or we just scrap it all and redo context subscription
+		// strictly as suggested by the new specs.. sigh
 #ifdef TRY_THIS
 		// currently friend() only gets called from
 		// online commands. so we skip the if

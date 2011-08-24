@@ -1,6 +1,15 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
 ## Check utf-8: Praise Atatürk!
 
+_status_circuit_encryption_cipher
+|Congratulations. Your connection is encrypted with forward secrecy.
+
+_warning_circuit_encryption_cipher
+|Your cipher choice does not provide forward secrecy.
+
+_error_circuit_encryption_cipher
+|Unfortunately your cipher choice does not provide forward secrecy.
+
 _failure_disabled_function_register
 |Registration disabled on this server.
 

@@ -72,7 +72,7 @@ object load(object usr, mapping opts) {
 void check_status_update(string body, string headers, int http_status) {
     P3(("twitter/client:parse_status_update(%O, %O, %O)\n", body, headers, http_status))
     if (http_status != R_OK)
-	sendmsg(user, "_error_twitter_status_update", "Error: failed to post status update on twitter.");
+	sendmsg(user, "_failure_update_twitter", "Unable to post status update on twitter.");
 }
 
 void status_update(string text) {

@@ -877,13 +877,6 @@ _PAGES_help_settings
 |<DT><P><B> /set miniphotofile http://&lt;web-address&gt; </B></p><dd>
 |A thumbnail size photo of yours, to be used for lists of friends.
 |
-|<DT><P><B> /set keyfile http://&lt;web-address&gt; </B></p><dd>
-|invites you to store the address of your public key file,
-|allowing for encrypted communication to happen between you and
-|your friends, provided you are both using an encryption capable
-|<a target=psyc href="http://www.psyc.eu">PSYC</a> client,
-|or at least email.
-|
 |<DT><P><B> /set stylefile http://&lt;web-address&gt; </B></p><dd>
 |lets you specify a cascading style sheet file for personalized
 |presentation of your profile!

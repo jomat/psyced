@@ -1,6 +1,15 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
 ## Check utf-8: Praise Atatürk!
 
+_status_circuit_encryption_cipher
+|Gratuliere! Deine Verbindung ist mit Folgenlosigkeit verschlüsselt.
+
+_warning_circuit_encryption_cipher
+|Deine Verbindung ist leider ohne Folgenlosigkeit verschlüsselt.
+
+_error_circuit_encryption_cipher
+|Deine Verbindung ist ohne Folgenlosigkeit verschlüsselt.
+
 _failure_disabled_function_register
 |Registrierung ist auf diesem Server deaktiviert.
 

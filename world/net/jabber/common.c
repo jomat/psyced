@@ -393,7 +393,9 @@ xmpp_error(node, xmpperror) {
     return 0;
 }
 
-// deprecated - use certificate_check_name from library/tls.c instead
+// deprecated - use tls_check_service_identity from library/tls.c instead
+// is this being used at all? -- no longer, but keep it around a little
+// for backward compat
 #ifdef WANT_S2S_TLS
 certificate_check_jabbername(name, cert) {
     mixed t;

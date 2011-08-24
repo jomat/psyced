@@ -209,48 +209,41 @@ int logon(int neverfails) {
 
 #ifdef __TLS__
 	sAuthHosts(([ ])); // reset authhosts 
-	if (tls_available() && tls_query_connection_state(ME) == 1 && mappingp(cert = tls_certificate(ME, 0))) {
-	    if (cert[0] != 0) {
-		// log error 17 or 18 + cert here
-		P0(("%O encountered a cert verify error %O in %O\n", ME,
-		    cert[0], cert))
-		// and goodbye.
+	if (tls_available() && tls_query_connection_state(ME) == 1) {
+	    unless (tls_check_cipher(ME, "psyc")) {
+		croak("_error_circuit_encryption_cipher",
+		  "Your cipher choice does not provide forward secrecy.");
+		QUIT
+	    }
+	    if (mappingp(cert = tls_certificate(ME, 0))) {
+		if (cert[0] != 0) {
+		    // log error 17 or 18 + cert here
+		    P0(("%O encountered a cert verify error %O in %O\n", ME,
+			cert[0], cert))
+		    // and goodbye.
 # ifdef _flag_enable_certificate_any
-		remove_interactive(ME);
-		return 0;
+		    remove_interactive(ME);
+		    return 0;
 # endif
-	    }
-	    if (m = cert["2.5.29.17:dNSName"]) {
-		// FIXME: this does not yet handle wildcard DNS names
-		P1(("%O believing dNSName %O\n", ME, m))
-		// probably also: register_target?
-		// but be careful never to register_target wildcards
-		if (stringp(m)) sAuthenticated(m);
-		else foreach(t : m) sAuthenticated(t);
-	    }
-//#ifdef _flag_allow_certificate_name_common	// to be switched this year
-# ifndef _flag_disallow_certificate_name_common
-	    // assume that CN is a host
-	    // as this is an assumption only, we may NEVER register_target it
-	    // note: CN is deprecated for good reasons.
-	    else if (t = cert["2.5.4.3"]) {
-		P1(("%O believing CN %O\n", ME, t))
-		sAuthenticated(t);
-	    }
-# endif
-	    if (m = tls_query_connection_info(ME)) {
-		P2(("%O is using the %O cipher.\n", ME, m[TLS_CIPHER]))
-		// shouldn't our negotiation have ensured we have PFS?
-		if (stringp(t = m[TLS_CIPHER]) &&! abbrev("DHE", t)) {
-//			croak("_warning_circuit_encryption_cipher",
-//			"Your cipher choice does not provide forward secrecy.");
-			monitor_report(
-			    "_warning_circuit_encryption_cipher_details",
-			    object_name(ME) +" · using "+ t +" cipher");
-			//debug_message(sprintf(
-			//  "TLS connection info for %O is %O\n", ME, m));
-			//QUIT	// are we ready for *this* !???
 		}
+		if (m = cert["2.5.29.17:dNSName"]) {
+		    // FIXME: this does not yet handle wildcard DNS names
+		    P1(("%O believing dNSName %O\n", ME, m))
+		    // probably also: register_target?
+		    // but be careful never to register_target wildcards
+		    if (stringp(m)) sAuthenticated(m);
+		    else foreach(t : m) sAuthenticated(t);
+		}
+    //#ifdef _flag_allow_certificate_name_common	// to be switched this year
+# ifndef _flag_disallow_certificate_name_common
+		// assume that CN is a host
+		// as this is an assumption only, we may NEVER register_target it
+		// note: CN is deprecated for good reasons.
+		else if (t = cert["2.5.4.3"]) {
+		    P1(("%O believing CN %O\n", ME, t))
+		    sAuthenticated(t);
+		}
+# endif
 	    }
 	}
 #endif
