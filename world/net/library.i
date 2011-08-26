@@ -666,7 +666,7 @@ int xmpp_sendmsg(mixed target, string mc, mixed data, mapping vars,
 	// need to have a different domain name
 	} else if (is_localhost(u[UHost])) {
 	    unless (u[UUser]) {
-		P0(("Intercepted %O to %O from %O\n", mc, target, source))
+		P1(("Intercepted %O to %O from %O\n", mc, target, source))
 		// 0 makes sendmsg try to relay via xmpp.scheme.psyced.org
 		// but fippo doesn't like that
 		return -4;
@@ -1053,7 +1053,8 @@ int bignum_cmp(string a, string b) {
 	// allocating a local variable to "cache" it
 	if (strlen(a) > strlen(b)) return 1;
 	if (strlen(a) < strlen(b)) return -1;
-	for (i=0; i<strlen(a); i++) if (a[i] == b[i]) break;
+	for (i=0; i<strlen(a); i++) if (a[i] != b[i]) break;
+	P4(("bignum_cmp\n%O vs\n%O at %O is %c vs %c\n", a, b, i, a[i], b[i]))
 	if (a[i] > b[i]) return 1;
 	return -1;
 }

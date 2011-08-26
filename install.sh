@@ -1130,7 +1130,8 @@ echo "Extracting psyced data..."
 
 if test -d .git
 then
-    if ! test `realpath .` = $BASE_DIR
+    # eh? what was 'realpath' supposed to be?
+    if ! test `pwd` = $BASE_DIR
     then
         if git clone . $BASE_DIR && cp -a .git/config $BASE_DIR/.git
 	then

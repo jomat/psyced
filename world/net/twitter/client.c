@@ -138,6 +138,9 @@ parse_statuses(string data) {
 
 		o = send_to_user ? user : find_place(nick);
 
+		// show tweets on driver console..
+		P1(("<%O> %O\n", o || nick, d["text"]))
+
 		// _message_twitter ? not so convincing.. a lot of the
 		// things are converted rss newsfeeds, and when private
 		// people are "chatting" over twitter, they are still

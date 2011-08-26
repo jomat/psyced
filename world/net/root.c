@@ -139,7 +139,8 @@ msg(source, mc, data, vars, showingLog, target) {
 	case "_failure_unsuccessful_delivery":
 	case "_failure_unsuccessful_delivery_resolve":
 	case "_failure_unsupported_function_root":
-		unless (abbrev("_notice_forward", vars["_method_relay"])) {
+		unless (stringp(vars["_method_relay"])
+		     && abbrev("_notice_forward", vars["_method_relay"])) {
 			t = "Root got "+ (vars["_method_relay"] || mc || "missing method");
 			if (vars["_target_relay"]) t += " to "+ to_string(vars["_target_relay"]);
 			if (vars["_source_relay"]) t += " from "+ to_string(vars["_source_relay"]);

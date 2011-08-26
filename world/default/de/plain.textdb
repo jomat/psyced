@@ -1,6 +1,9 @@
 <PSYC:TEXTDB> ## vim:syntax=mail
 ## Check utf-8: Praise Atatürk!
 
+_warning_server_shutdown_temporary
+|Serverneustart: [_reason]
+
 _status_circuit_encryption_cipher
 |Gratuliere! Deine Verbindung ist mit Folgenlosigkeit verschlüsselt.
 
