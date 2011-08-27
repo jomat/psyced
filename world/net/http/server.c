@@ -9,7 +9,8 @@
 
 #include "header.i"
 
-volatile string url, file, qs, version, method, body = "";
+volatile string url, qs, prot, method, body = "";
+volatile mixed item;
 volatile mapping headers;
 volatile int length;
 
@@ -69,7 +70,7 @@ parse_wait(null) { // waiting to send my error message here
 
 parse_url(input) {
     P3(("=== SmallHTTP got: %O\n", input))
-    unless (sscanf(input, "%s%t%s%tHTTP/%s", method, url, version)) quit();
+    unless (sscanf(input, "%s%t%s%tHTTP/%s", method, url, prot)) quit();
     switch (method) {
 	case "CONNECT":
 	    next_input_to(#'parse_wait);
@@ -82,7 +83,7 @@ parse_url(input) {
 	    return;
     }
 
-    version = "HTTP/" + version;
+    prot = "HTTP/" + prot;
 
     P2(("=== SmallHTTP user requested url: %O\n", url))
     next_input_to(#'parse_header);
@@ -152,25 +153,25 @@ process() {
 	headers["cookie"] = cook;
     }
 #endif
-    if (sscanf(url, "%s?%s", file, qs)) {
+    if (sscanf(url, "%s?%s", item, qs)) {
 	P3(("got query: %O\n", qs))
 	query = url_parse_query(query, qs);
     } else {
-	file = url;
+	item = url;
     }
     if (method == "POST" && headers["content-type"] == "application/x-www-form-urlencoded") {
 	query = url_parse_query(query, body);
     }
     P4(("parsed query: %O\n", query))
-    switch (file) {
+    switch (item) {
 case "/favicon.ico":
 #if 0
-	htredirect(version, "http://www.psyced.org/favicon.ico",
+	htredirect(prot, "http://www.psyced.org/favicon.ico",
 	    "This one looks neat", 1);
 	quit();
 	return 1;
 #else
-	file = "/static/favicon.ico";
+	item = "/static/favicon.ico";
 	break;
 #endif
 case "/":
@@ -178,7 +179,7 @@ case "":
 	// should we look for text/wml in the accept: and go directly
 	// to /net/wap/index ?
 	//
-	http_ok(version);
+	http_ok(prot);
 	sTextPath(0, query["lang"], "html");
 	write(  //T("_HTML_head", "<title>" CHATNAME "</title><body>\n"
 		//		"<center><table width=404><tr><td>") +
@@ -192,15 +193,15 @@ case "":
 case "/static": // really don't like to do this, but the IE stores directories
 		// (history) without trailing slash, even if the url originaly
 		// has one, at least IIRC.
-	htredirect(version, "/static/", "use the trailing slash", 1);
+	htredirect(prot, "/static/", "use the trailing slash", 1);
 	quit();
 	return 1;
 case "/static/":
-	file = "/static/index.html";
+	item = "/static/index.html";
 	break;
 case "/oauth":
 	object oauth;
-	http_ok(version);
+	http_ok(prot);
 	//PT((">>> looking up token %O in shm: %O\n", query["oauth_token"], shared_memory("oauth_request_tokens")))
 	if (oauth = shared_memory("oauth_request_tokens")[query["oauth_token"]]) {
 	    //PT((">>> oauth: %O\n", oauth))
@@ -214,34 +215,34 @@ case "/oauth":
 	return 1;
     }
     string name;
-    switch (file[1]) {
+    switch (item[1]) {
     case '~':
-	    string channel, nick = file[2..];
-	    if (sscanf(file, "/~%s/%s", nick, channel)) {
+	    string channel, nick = item[2..];
+	    if (sscanf(item, "/~%s/%s", nick, channel)) {
 		name = "~" + nick + "#" + channel;
 	    } else if (o = summon_person(nick, NET_PATH "user")) {
-		o->htinfo(version, query, headers, qs, channel);
+		o->htinfo(prot, query, headers, qs, channel);
 		quit();
 		return 1;
 	    }
 	    //fall thru
     case '@':
-	    unless(name) name = file[2..];
+	    unless(name) name = item[2..];
 	    o = find_place(name);
 	    break;
     default:
-	    if (abbrev("/static/", file)) {
-		if (file_size(file) > 0) {
-		    if (sscanf(file, "%!s.%s", ext)) {
+	    if (abbrev("/static/", item)) {
+		if (file_size(item) > 0) {
+		    if (sscanf(item, "%!s.%s", ext)) {
 			while (sscanf(ext, "%!s.%s", ext)) ;
 		    }
-		    http_ok(version, content_type(ext), 0);
-		    binary_message(read_file(file));
+		    http_ok(prot, content_type(ext), 0);
+		    binary_message(read_file(item));
 		    quit();
 		    return 1;
 		}
-	    } else if (sscanf(file, "/%s/%s.page", ext, t) == 2) {
-		http_ok(version);
+	    } else if (sscanf(item, "/%s/%s.page", ext, t) == 2) {
+		http_ok(prot);
 		sTextPath(0, query["lang"] || ext, "html");
 		t = replace(t, "/", "_");
 		write(T("_HTML_head", "<title>" CHATNAME "</title><body>\n"
@@ -253,16 +254,16 @@ case "/oauth":
 	    }
     }
 
-    if (index(file, ':') != -1) {
-	http_error(version, 501, "Not Implemented. Whatever you are trying "
+    if (index(item, ':') != -1) {
+	http_error(prot, 501, "Not Implemented. Whatever you are trying "
 		   "there, this server won't help you.");
 	quit();
 	return;
     }
 
-    unless (o) o = file -> load();
-    if (objectp(o) || o = find_object(file))
-	done = o->htget(version, query, headers, qs) != HTMORE;
+    unless (o) o = item -> load();
+    if (objectp(o) || o = find_object(item))
+	done = o->htget(prot, query, headers, qs) != HTMORE;
 
     if (done)
 	quit();

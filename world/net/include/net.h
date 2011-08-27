@@ -166,11 +166,11 @@
 # define htmlhead		this_interactive()->http_head
 # define htmlpage		this_interactive()->http_page
 # define htmltail		this_interactive()->http_tail
-
-# define HTERROR	 1  // return mc if necessary?
-# define HTDONE		 0
-# define HTMORE		-1
 #endif
+
+#define HTERROR		 1  // return mc if necessary?
+#define HTDONE		 0
+#define HTMORE		-1
 
 // even more specific to the way we parse commands
 // combine the rest of the arguments back into one string
