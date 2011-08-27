@@ -8,20 +8,10 @@
 
 #include "header.i"
 
-volatile string url, qs, prot, method, body = "";
+volatile string url, qs, prot, method, body;
 volatile mixed item;
 volatile mapping headers;
 volatile int length;
-
-// we're using #'closures to point to the functions we're giving the
-// next_input_to(). as i don't want to restructure the whole file, i need
-// to predefine some functions.
-//
-// quite stupid indeed, as they don't got any modifiers or whatever :)
-parse_request(input);
-parse_header(input);
-parse_body(input);
-devNull();
 
 qScheme() { return "html"; }
 
@@ -29,52 +19,111 @@ quit() {
     D2(D("««« HTTP done.\n");)
     destruct(ME);
 }
-
-timeout() {
-	if (method == "post" && stringp(body) && strlen(body))
-	  body(); // try using incomplete post
-	else quit();
-}
-
-logon() {
-    D2(D("»»» HTTP request:\n");)
-
-    // bigger buffer (for psyc logo)
-    set_buffer_size(32768);
-    // unfortunately limited to a compilation limit
-    // so we would have to push large files in chunks
-    // using heart_beat() or something like that	TODO
-    
-    next_input_to(#'parse_request);
-    call_out(#'timeout, 23);
-}
-
-disconnected(remainder) {
-        // TODO: shouldn't ignore remainder
-        D2(D("««« HTTP got disconnected.\n");)
-        destruct(ME);
-        return 1;   // expected death of socket
-}
-
 // gets called from async apps
 done() { quit(); }
 
-parse_wait(null) { // waiting to send my error message here
-    if (null == "") {
-	http_error("HTTP/1.0", 405, "Invalid Request (Welcome Proxyscanner)");
+// this could be improved to implement HTTP/1.1
+parse_nothing(input) {
+	P2(("=== HTTP ignored %O from %s\n", input, query_ip_name(ME)))
+	next_input_to(#'parse_nothing);
+}
+parse_body_length(input) {
+    //P4(("parse_body_length(%O)\n", input))
+    body += input;
+    if (strlen(body) >= length) {
+	    process();
+	    next_input_to(#'parse_nothing);
+    } else
+	input_to(#'parse_body_length, INPUT_IGNORE_BANG
+				     | INPUT_CHARMODE | INPUT_NO_TELNET);
+}
+parse_body_url(input) {
+	qs = input;
+	if (method == "post") method = "get"; // call htget() anyway
+	process();
+	next_input_to(#'parse_nothing);
+}
+parse_body_raw(input) {
+	body += input;
+	next_input_to(#'parse_body_raw);
+	// this loop terminates with TCP disconnected()
+}
+disconnected(remainder) {
+        D2(D("««« HTTP got disconnected.\n");)
+	if (stringp(remainder)) {
+		body += remainder;
+		process();
+		call_out(#'quit, 333);
+	} else quit();
+        return 1;   // expected death of socket
+}
+timeout() {
+       	// try using incomplete post
+	if (stringp(body) && strlen(body)) process();
 	quit();
-    }
-    next_input_to(#'parse_wait);
+}
+
+parse_wait(null) { // waiting to send my error message here
+	if (null == "") {
+		http_error("HTTP/1.0", 405,
+			   "Invalid Request (Hello Proxyscanner)");
+		quit();
+	}
+	// why wait? we can throw the message on the socket and kill it
+	next_input_to(#'parse_wait);
+}
+
+parse_header(input) {
+	if (input != "") {
+		string name, contents;
+
+		// %.0t = catch zero to endless whitespace characters
+		sscanf(input, "%s:%1.0t%s", name, contents);
+		if (contents) {
+			P3(("headers[%O] = %O\n",name,contents))
+			headers[lower_case(name)] = contents;
+		} else {
+	//              http_error(prot, R_BADREQUEST,
+	//                      "invalid header '"+ input +"'");
+	//              QUIT; return 1;
+			P1(("Invalid HTTP header %O from %s\n",
+			    input, query_ip_name(ME)))
+
+		}
+		next_input_to(#'parse_header);
+		return;
+	}
+#if 0
+	if (method == "post" && (length = to_int(headers["content-length"])) &&
+	    headers["content-type"] == "application/x-www-form-urlencoded")
+#else
+	if (length = to_int(headers["content-length"]))
+#endif
+	{
+		input_to(#'parse_body_length,
+		  INPUT_IGNORE_BANG | INPUT_CHARMODE | INPUT_NO_TELNET);
+	} else if (headers["content-type"] ==
+		   "application/x-www-form-urlencoded") {
+		next_input_to(#'parse_body_url);
+	} else if (method == "post" || method == "put") {
+		next_input_to(#'parse_body_raw);
+	} else {
+		process();
+	}
 }
 
 parse_request(input) {
-	// reset state. in case we support HTTP/1.1. do we?
-        method = item = url = prot = body = qs = 0;
-        headers = ([]);
 	P2(("=== HTTP got: %O from %s\n", input, query_ip_name(ME)))
+
+	// reset state. in case we support HTTP/1.1. do we?
+        method = item = url = prot = qs = 0;
+        headers = ([]);
+	body = "";
+
         if (!input || input=="") {
                 // should return error?
-                input_to(#'parse_request);    // lets just ignore the empty line
+                input_to(#'parse_request);
+	    	// lets just ignore the empty line
                 return 1;
         }
 	input = explode(input, " ");
@@ -99,37 +148,6 @@ parse_request(input) {
 	if (method == "connect") next_input_to(#'parse_wait);
 	else if (!prot) body();	// HTTP/0.9 has no headers
 	else next_input_to(#'parse_header);
-}
-
-parse_header(input) {
-    string key, val;
-
-    P4(("parse_header(%O)\n", input))
-    
-    unless (input == "") {
-	if (sscanf(input, "%s:%1.0t%s", key, val)) {
-	    headers[lower_case(key)] = val;
-	}
-
-	next_input_to(#'parse_header);
-    } else {
-	if (method == "POST" && (length = to_int(headers["content-length"])) &&
-	    headers["content-type"] == "application/x-www-form-urlencoded") {
-	    input_to(#'parse_body, INPUT_IGNORE_BANG | INPUT_CHARMODE | INPUT_NO_TELNET);
-	} else {
-	    process();
-	    next_input_to(#'devNull);
-	}
-    }
-}
-
-parse_body(input) {
-    //P4(("parse_body(%O)\n", input))
-    body += input;
-    if (strlen(body) == length)
-	process();
-    else
-	input_to(#'parse_body, INPUT_IGNORE_BANG | INPUT_CHARMODE | INPUT_NO_TELNET);
 }
 
 process() {
@@ -169,7 +187,7 @@ process() {
 	P3(("got query: %O\n", qs))
 	query = url_parse_query(query, qs);
     }
-    if (method == "POST" && headers["content-type"] == "application/x-www-form-urlencoded") {
+    if (method == "post" && headers["content-type"] == "application/x-www-form-urlencoded") {
 	query = url_parse_query(query, body);
     }
     P4(("parsed query: %O\n", query))
@@ -282,11 +300,18 @@ case "/oauth":
     return 1;
 }
 
-// wozu binary_message nochmal durch eine funktion jagen? lieber so nennen:
 emit(a) { return binary_message(a); }
 
-devNull() {
-    next_input_to(#'devNull);
+logon() {
+    D2(D("»»» HTTP request:\n");)
 
-    D2(D("=== HTTP just ignored some input\n");)
+    // bigger buffer (for psyc logo)
+    set_buffer_size(32768);
+    // unfortunately limited to a compilation limit
+    // so we would have to push large files in chunks
+    // using heart_beat() or something like that	TODO
+    
+    next_input_to(#'parse_request);
+    call_out(#'timeout, 23);
 }
+
