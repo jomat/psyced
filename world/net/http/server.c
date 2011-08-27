@@ -18,7 +18,7 @@ volatile int length;
 // to predefine some functions.
 //
 // quite stupid indeed, as they don't got any modifiers or whatever :)
-parse_url(input);
+parse_request(input);
 parse_header(input);
 parse_body(input);
 devNull();
@@ -45,7 +45,7 @@ logon() {
     // so we would have to push large files in chunks
     // using heart_beat() or something like that	TODO
     
-    next_input_to(#'parse_url);
+    next_input_to(#'parse_request);
     call_out(#'timeout, 23);
 }
 
@@ -59,10 +59,6 @@ disconnected(remainder) {
 // gets called from async apps
 done() { quit(); }
 
-void create() {
-    if (clonep(ME)) headers = ([ ]);
-}
-
 parse_wait(null) { // waiting to send my error message here
     if (null == "") {
 	http_error("HTTP/1.0", 405, "Invalid Request (Welcome Proxyscanner)");
@@ -71,25 +67,38 @@ parse_wait(null) { // waiting to send my error message here
     next_input_to(#'parse_wait);
 }
 
-parse_url(input) {
-    P3(("=== HTTP got: %O\n", input))
-    unless (sscanf(input, "%s%t%s%tHTTP/%s", method, url, prot)) quit();
-    switch (method) {
-	case "CONNECT":
-	    next_input_to(#'parse_wait);
-	    return;
-	case "GET":
-	case "POST":
-	    break;
+parse_request(input) {
+	// reset state. in case we support HTTP/1.1. do we?
+        method = item = url = prot = body = qs = 0;
+        headers = ([]);
+	P2(("=== HTTP got: %O from %s\n", input, query_ip_name(ME)))
+        if (!input || input=="") {
+                // should return error?
+                input_to(#'parse_request);    // lets just ignore the empty line
+                return 1;
+        }
+	input = explode(input, " ");
+	switch(sizeof(input)) {
 	default:
-	    quit();
-	    return;
-    }
-
-    prot = "HTTP/" + prot;
-
-    P2(("=== HTTP user requested url: %O\n", url))
-    next_input_to(#'parse_header);
+		prot = input[2];
+		next_input_to(#'parse_header);
+	case 2:
+		// earlier HTTP versions have no headers
+		// ok, it's excentric to support HTTP/0.9 but
+		// it is practical for debugging and doesn't
+		// cost us a lot extra effort
+		url = input[1];
+		unless (sscanf(url, "%s?%s", item, qs)) item = url;
+		method = lower_case(input[0]);
+		break;
+	case 1:
+                // should return error!
+		quit();
+	}
+	P4(("=== HTTP user requested url: %O\n", url))
+	if (method == "connect") next_input_to(#'parse_wait);
+	else if (!prot) body();	// HTTP/0.9 has no headers
+	else next_input_to(#'parse_header);
 }
 
 parse_header(input) {
@@ -156,11 +165,9 @@ process() {
 	headers["cookie"] = cook;
     }
 #endif
-    if (sscanf(url, "%s?%s", item, qs)) {
+    if (qs) {
 	P3(("got query: %O\n", qs))
 	query = url_parse_query(query, qs);
-    } else {
-	item = url;
     }
     if (method == "POST" && headers["content-type"] == "application/x-www-form-urlencoded") {
 	query = url_parse_query(query, body);
