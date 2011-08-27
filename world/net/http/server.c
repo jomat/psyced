@@ -4,7 +4,6 @@
 //
 #include <ht/http.h>
 #include <net.h>
-#include <server.h>
 #include <text.h>
 
 #include "header.i"
@@ -26,6 +25,11 @@ devNull();
 
 qScheme() { return "html"; }
 
+quit() {
+    D2(D("««« SmallHTTP user done.\n");)
+    destruct(ME);
+}
+
 logon() {
     D2(D("»»» New SmallHTTP user\n");)
 
@@ -36,7 +40,7 @@ logon() {
     // using heart_beat() or something like that	TODO
     
     next_input_to(#'parse_url);
-    call_out(#'quit, TIME_LOGIN_IDLE);
+    call_out(#'quit, 23);
 }
 
 disconnected(remainder) {
@@ -48,13 +52,6 @@ disconnected(remainder) {
 
 // gets called from async apps
 done() { quit(); }
-
-#if DEBUG > 1
-quit() {
-    D2(D("««« SmallHTTP user done.\n");)
-    ::quit();
-}
-#endif
 
 void create() {
     if (clonep(ME)) headers = ([ ]);
