@@ -26,12 +26,18 @@ devNull();
 qScheme() { return "html"; }
 
 quit() {
-    D2(D("««« SmallHTTP user done.\n");)
+    D2(D("««« HTTP done.\n");)
     destruct(ME);
 }
 
+timeout() {
+	if (method == "post" && stringp(body) && strlen(body))
+	  body(); // try using incomplete post
+	else quit();
+}
+
 logon() {
-    D2(D("»»» New SmallHTTP user\n");)
+    D2(D("»»» HTTP request:\n");)
 
     // bigger buffer (for psyc logo)
     set_buffer_size(32768);
@@ -40,12 +46,12 @@ logon() {
     // using heart_beat() or something like that	TODO
     
     next_input_to(#'parse_url);
-    call_out(#'quit, 23);
+    call_out(#'timeout, 23);
 }
 
 disconnected(remainder) {
         // TODO: shouldn't ignore remainder
-        D2(D("««« SmallHTTP got disconnected.\n");)
+        D2(D("««« HTTP got disconnected.\n");)
         destruct(ME);
         return 1;   // expected death of socket
 }
@@ -66,7 +72,7 @@ parse_wait(null) { // waiting to send my error message here
 }
 
 parse_url(input) {
-    P3(("=== SmallHTTP got: %O\n", input))
+    P3(("=== HTTP got: %O\n", input))
     unless (sscanf(input, "%s%t%s%tHTTP/%s", method, url, prot)) quit();
     switch (method) {
 	case "CONNECT":
@@ -82,7 +88,7 @@ parse_url(input) {
 
     prot = "HTTP/" + prot;
 
-    P2(("=== SmallHTTP user requested url: %O\n", url))
+    P2(("=== HTTP user requested url: %O\n", url))
     next_input_to(#'parse_header);
 }
 
@@ -265,7 +271,7 @@ case "/oauth":
     if (done)
 	quit();
     else
-	remove_call_out(#'quit);
+	remove_call_out(#'timeout);
     return 1;
 }
 
@@ -275,5 +281,5 @@ emit(a) { return binary_message(a); }
 devNull() {
     next_input_to(#'devNull);
 
-    D2(D("=== SmallHTTP just ignored some input\n");)
+    D2(D("=== HTTP just ignored some input\n");)
 }
