@@ -22,9 +22,8 @@ quit() {
 // gets called from async apps
 done() { quit(); }
 
-// this could be improved to implement HTTP/1.1
 parse_nothing(input) {
-	P2(("=== HTTP ignored %O from %s\n", input, query_ip_name(ME)))
+	P2(("=== HTTP ignored %O from %O\n", input, query_ip_name(ME)))
 	next_input_to(#'parse_nothing);
 }
 parse_body_length(input) {
@@ -74,25 +73,26 @@ parse_wait(null) { // waiting to send my error message here
 }
 
 parse_header(input) {
-	if (input != "") {
-		string name, contents;
+	string name, contents;
 
-		// %.0t = catch zero to endless whitespace characters
-		sscanf(input, "%s:%1.0t%s", name, contents);
-		if (contents) {
-			P3(("headers[%O] = %O\n",name,contents))
-			headers[lower_case(name)] = contents;
-		} else {
-	//              http_error(prot, R_BADREQUEST,
-	//                      "invalid header '"+ input +"'");
-	//              QUIT; return 1;
-			P1(("Invalid HTTP header %O from %s\n",
-			    input, query_ip_name(ME)))
+	if (input == "") return process_header();
+	// %.0t = catch zero to endless whitespace characters
+	sscanf(input, "%s:%1.0t%s", name, contents);
+	if (contents) {
+		P3(("headers[%O] = %O\n",name,contents))
+		headers[lower_case(name)] = contents;
+	} else {
+//              http_error(prot, R_BADREQUEST,
+//                      "invalid header '"+ input +"'");
+//              QUIT; return 1;
+		P1(("Invalid HTTP header %O from %O\n",
+		    input, query_ip_name(ME)))
 
-		}
-		next_input_to(#'parse_header);
-		return;
 	}
+	next_input_to(#'parse_header);
+}
+
+process_header() {
 #if 0
 	if (method == "post" && (length = to_int(headers["content-length"])) &&
 	    headers["content-type"] == "application/x-www-form-urlencoded")
@@ -113,7 +113,7 @@ parse_header(input) {
 }
 
 parse_request(input) {
-	P2(("=== HTTP got: %O from %s\n", input, query_ip_name(ME)))
+	P2(("=== HTTP got: %O from %O\n", input, query_ip_name(ME)))
 
 	// reset state. in case we support HTTP/1.1. do we?
         method = item = url = prot = qs = 0;
