@@ -653,7 +653,10 @@ else
     echo ""
     echo "PSYC intentionally uses a dedicated TLS port not just for"
     echo "simplicity, but also because it reduces interserver latency"
-    echo "as we can leave out negotiation."
+    echo "as we can leave out negotiation. Newer versions of psyclpc when"
+    echo "compiled with libpsyc support automatic detection of immediate"
+    echo "TLS on the same ports as the unencrypted protocols, so in that"
+    echo "case you don't need to define dedicated TLS ports."
 
     get PSYCS_YN "y"
     ask "Enable PSYC over TLS" PSYCS_YN
