@@ -46,16 +46,22 @@ void notify_shutdown_first(int progress) {
  * input_to() can't be called from here.
  *
  * uid is only passed if USE_AUTHLOCAL is built into the driver.
+ *
+ * strange how int port and string service came into existence here
+ * since the driver isn't passing such arguments and there is no
+ * reason to call this from anywhere else. i presume they are a
+ * mistake!
  */
 object connect(int uid, int port, string service) {
     int peerport;
     mixed arg, t;
 
+    unless (port) port = query_mud_port();
     // now that's a bit of preprocessor magic you don't need to understand..  ;)
-    D2( if (uid) D("master:connected on port "+ query_mud_port() +" by uid "
-		   + uid +"\n");
+    D2( if (uid) D("master:connected on port "+ port +" by uid "
+		   + uid +"("+ service + ")\n");
 	else) {
-	    D3(D("master:connected on port "+query_mud_port()
+	    D3(D("master:connected on port "+port
 		   +" by "+query_ip_name()+"\n");)
     }
 #ifndef H_DEFAULT_PROMPT
@@ -69,17 +75,111 @@ object connect(int uid, int port, string service) {
         return clone_object(NET_PATH "utility/onhold");
     }
 
-    // we dont want the telnet machine most of the time
-    // but disabling and re-enabling it for telnet doesn't work
-    switch(port || query_mud_port()) {
-#if HAS_PORT(PSYCS_PORT, PSYC_PATH)
-    case PSYCS_PORT:
-        if ((t = tls_init_connection()) < 0) {
-            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
-            return 0;
-        }
+#define TLS_INIT \
+    if (tls_available()) { \
+	t = tls_init_connection(ME); \
+	if (t < 0 && t != ERR_TLS_NOT_DETECTED) { \
+	    P2(( "TLS(%O) on port %O: %O\n", t, port, tls_error(t) )); \
+	} \
+    }
+
+// doesn't work. at this point autodetect hasn't completed.. so to
+// make sure TLS is enabled we need to check again later in the
+// server object.. FIXME  :(
+#define TLS_ENFORCE \
+    if (tls_query_connection_state(ME) == 0) \
+	return (object) 0;
+
+#if __EFUN_DEFINED__(tls_want_peer_certificate)
+// Specify that a subsequent call to tls_init_connection
+// should request a peer certificate.
+# define TLS_INIT_GET_CERT \
+    if (tls_available()) { \
+	tls_want_peer_certificate(ME); \
+	t = tls_init_connection(ME); \
+	if (t < 0 && t != ERR_TLS_NOT_DETECTED) { \
+	    P2(( "TLS(%O) on port %O: %O\n", t, port, tls_error(t) )); \
+	} \
+    }
+#else
+# define TLS_INIT_GET_CERT TLS_INIT
+#endif
+
+    // in the first switch we handle ports that MUST not support
+    // immediate TLS (currently that's just 5269) or that want a
+    // peer certificate from the other side (PSYC). for all other
+    // ports the default is to attempt a TLS autodetection.
+    switch(port) {
+#if HAS_PORT(JABBER_S2S_PORT, JABBER_PATH)
+    case JABBER_S2S_PORT:
+# ifdef DRIVER_HAS_CALL_BY_REFERENCE
+	arg = ME;
+	query_ip_number(&arg);
+	// this assumes network byte order provided by driver
+	peerport = pointerp(arg) ? (arg[2]*256 + arg[3]) : 0;
+	if (peerport < 0) peerport = 65536 + peerport;
+	if (peerport == JABBER_S2S_SERVICE) peerport = 0;
+# else
+	// as long as the object names don't collide, this is okay too
+	peerport = 65536 + random(9999999);
+# endif
+# if __EFUN_DEFINED__(enable_telnet)
+	enable_telnet(0);
+# endif
+	t = "S:xmpp:"+query_ip_number();
+	// it's just an object name, but let's be consequent minus peerport
+	if (peerport) t += ":-"+peerport;
+# ifdef _flag_log_sockets_XMPP
+	SIMUL_EFUN_FILE -> log_file("RAW_XMPP", "\n\n%O: %O -> load(%O, %O)",
+				ME, t,
+#  ifdef _flag_log_hosts
+                                query_ip_number(),
+#  else
+                                "?",
+#  endif
+                                -peerport);
+# endif
+	P3(("%O -> load(%O, %O)\n", t, query_ip_number(), -peerport))
+	return t -> load(query_ip_number(), -peerport);
 #endif
 #if HAS_PORT(PSYCS_PORT, PSYC_PATH)
+    case PSYCS_PORT:	// inofficial & temporary
+	TLS_INIT_GET_CERT
+	break;
+#endif
+#if HAS_PORT(PSYC_PORT, PSYC_PATH) && AUTODETECT
+    case PSYC_PORT:
+	// make TLS available on the default PSYC port
+	// using the autodetection feature (official approach)
+	TLS_INIT_GET_CERT
+	break;
+#endif
+#if HAS_PORT(SPYCS_PORT, SPYC_PATH)
+    case SPYCS_PORT:	// even more inofficial
+	TLS_INIT_GET_CERT
+	break;
+#endif
+#if HAS_PORT(SPYC_PORT, SPYC_PATH) && AUTODETECT
+    case SPYC_PORT:	// even more inofficial
+	TLS_INIT_GET_CERT
+	break;
+#endif
+    default:
+#if AUTODETECT
+	// if autodetect is available, let's check if this connection
+	// has TLS enabled and activate it, no matter which protocol.
+	TLS_INIT
+#endif
+	break;
+    }
+
+    // if we got here, we may have initialized TLS successfully
+    switch(port) {
+#if HAS_PORT(PSYCS_PORT, PSYC_PATH)
+    case PSYCS_PORT:	// inofficial & temporary
+	TLS_ENFORCE
+#endif
+#if HAS_PORT(PSYC_PORT, PSYC_PATH)
     case PSYC_PORT:
 #endif
 #if HAS_PORT(PSYC_PORT, PSYC_PATH) || HAS_PORT(PSYCS_PORT, PSYC_PATH)
@@ -108,16 +208,10 @@ object connect(int uid, int port, string service) {
 	return t -> load(query_ip_number(), -peerport);
 #endif
 
-// dedicated SPYC port.. should not be used, we have AUTODETECT
+// dedicated SPYC port.. should not be used
 #if HAS_PORT(SPYCS_PORT, SPYC_PATH)
     case SPYCS_PORT:	// interim name for PSYC 1.0 according to SPEC
-# if __EFUN_DEFINED__(tls_want_peer_certificate)
-        tls_want_peer_certificate(ME);
-# endif
-        if ((t = tls_init_connection()) < 0) {
-            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
-            return 0;
-        }
+	TLS_ENFORCE
 #endif // fall thru
 #if HAS_PORT(SPYC_PORT, SPYC_PATH)
     case SPYC_PORT:
@@ -152,10 +246,7 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(POP3S_PORT, POP3_PATH)
     case POP3S_PORT:
-        if ((t = tls_init_connection()) < 0) {
-            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
-            return 0;
-        }
+	TLS_ENFORCE
 	return clone_object(POP3_PATH "server");
 #endif
 #if HAS_PORT(POP3_PORT, POP3_PATH)
@@ -165,10 +256,7 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(SMTPS_PORT, NNTP_PATH)
     case SMTPS_PORT:
-        if ((t = tls_init_connection()) < 0) {
-            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
-            return 0;
-        }
+	TLS_ENFORCE
 	return clone_object(SMTP_PATH "server");
 #endif
 #if HAS_PORT(SMTP_PORT, SMTP_PATH)
@@ -190,10 +278,7 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(NNTPS_PORT, NNTP_PATH)
     case NNTPS_PORT:
-        if ((t = tls_init_connection()) < 0) {
-            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
-            return 0;
-        }
+	TLS_ENFORCE
 	return clone_object(NNTP_PATH "server");
 #endif
 #if HAS_PORT(NNTP_PORT, NNTP_PATH)
@@ -203,52 +288,19 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(JABBERS_PORT, JABBER_PATH)
     case JABBERS_PORT:
-        if ((t = tls_init_connection()) < 0) {
-            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
-            return 0;
-        }
+	TLS_ENFORCE
 	return clone_object(JABBER_PATH "server");
 #endif
 #if HAS_PORT(JABBER_PORT, JABBER_PATH)
     case JABBER_PORT:
 # if __EFUN_DEFINED__(enable_telnet)
+    // we dont want the telnet machine most of the time
+    // but disabling and re-enabling it for telnet doesn't work
 	enable_telnet(0);   // are you sure!???
 # endif
 	return clone_object(JABBER_PATH "server");
 #endif
 
-#if HAS_PORT(JABBER_S2S_PORT, JABBER_PATH)
-    case JABBER_S2S_PORT:
-# ifdef DRIVER_HAS_CALL_BY_REFERENCE
-	arg = ME;
-	query_ip_number(&arg);
-	// this assumes network byte order provided by driver
-	peerport = pointerp(arg) ? (arg[2]*256 + arg[3]) : 0;
-	if (peerport < 0) peerport = 65536 + peerport;
-	if (peerport == JABBER_S2S_SERVICE) peerport = 0;
-# else
-	// as long as the object names don't collide, this is okay too
-	peerport = 65536 + random(9999999);
-# endif
-# if __EFUN_DEFINED__(enable_telnet)
-	enable_telnet(0);
-# endif
-	t = "S:xmpp:"+query_ip_number();
-	// it's just an object name, but let's be consequent minus peerport
-	if (peerport) t += ":-"+peerport;
-# ifdef _flag_log_sockets_XMPP
-	SIMUL_EFUN_FILE -> log_file("RAW_XMPP", "\n\n%O: %O -> load(%O, %O)",
-				ME, t,
-#  ifdef _flag_log_hosts
-                                query_ip_number(),
-#  else
-                                "?",
-#  endif
-                                -peerport);
-# endif
-	P3(("%O -> load(%O, %O)\n", t, query_ip_number(), -peerport))
-	return t -> load(query_ip_number(), -peerport);
-#endif
 #if 0 //__EFUN_DEFINED__(enable_binary)
     // work in progress
     case 8888:
@@ -260,19 +312,14 @@ object connect(int uid, int port, string service) {
         enable_telnet(0);
         return clone_object(NET_PATH "rtmp/protocol");
 #endif
+
 #if HAS_PORT(IRCS_PORT, IRC_PATH)
     case IRCS_PORT:
-        if ((t = tls_init_connection()) < 0) {
-            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
-            return 0;
-        }
+	TLS_ENFORCE
 	return clone_object(IRC_PATH "server");
 #endif
 #if HAS_PORT(IRC_PORT, IRC_PATH)
-    case IRC_PORT: // we could enable AUTODETECT for this..
-# if 0 // __EFUN_DEFINED__(enable_telnet)
-	enable_telnet(0);	// shouldn't harm.. but it does!!!
-# endif
+    case IRC_PORT:
 	return clone_object(IRC_PATH "server");
 #endif
 
@@ -286,17 +333,13 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(TELNETS_PORT, TELNET_PATH)
     case TELNETS_PORT:
-        if ((t = tls_init_connection()) < 0) {
-            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
-            return 0;
-        }
+	TLS_ENFORCE
 	// we could do the UID2NICK thing here, too, but why should we?
 	// what do you need tls for on a localhost tcp link?
         return clone_object(TELNET_PATH "server");
 #endif
 #if HAS_PORT(TELNET_PORT, TELNET_PATH)
-    case TELNET_PORT: // we could enable AUTODETECT for this.. (wait 4s)
-//	set_prompt("> ");
+    case TELNET_PORT:
         t = clone_object(TELNET_PATH "server");
 # ifdef UID2NICK
         if (uid && (arg = UID2NICK(uid))) { t -> sName(arg); }
@@ -306,24 +349,18 @@ object connect(int uid, int port, string service) {
 
 #if HAS_PORT(HTTPS_PORT, HTTP_PATH)
     case HTTPS_PORT:
-        if ((t = tls_init_connection()) < 0) {
-            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
-            return 0;
-        }
+	TLS_ENFORCE
 	return clone_object(HTTP_PATH "server");
 #endif
-	/* don't fall thru. allow for https: to be available without http: */
+	// don't fall thru. allow for https: to be available without http:
 #if HAS_PORT(HTTP_PORT, HTTP_PATH)
-    case HTTP_PORT: // AUTODETECT on the HTTP port? we could do that too
+    case HTTP_PORT:
 	return clone_object(HTTP_PATH "server");
 #endif
 
 #if HAS_PORT(MUDS_PORT, MUD_PATH)
     case MUDS_PORT:
-        if ((t = tls_init_connection()) < 0) {
-            PP(( "TLS error ob %O: %O\n",query_mud_port() ,tls_error(t) ));
-            return 0;
-        }
+	TLS_ENFORCE
 	return clone_object(MUD_PATH "login");
 #endif
 #if HAS_PORT(MUD_PORT, MUD_PATH)
@@ -333,9 +370,8 @@ object connect(int uid, int port, string service) {
 	return clone_object(MUD_PATH "login");
 #endif
     }
-    
-    PP(("Received connection on port %O which isn't configured.\n",
-	query_mud_port()));
+
+    P0(("Received connection on port %O which isn't configured.\n", port));
     return (object)0;
 }
 
@@ -343,10 +379,10 @@ object connect(int uid, int port, string service) {
 #ifdef DRIVER_HAS_RENAMED_CLONES
 // named clones		-lynx
 object compile_object(string file) {
-	P3((">> compile_object(%O)\n", file))
 	string path, name;
 	object rob;
 
+	P3((">> compile_object(%O)\n", file))
 # ifdef PSYC_PATH
 	if (abbrev("S:psyc:", file)) {
 		rob = clone_object(PSYC_PATH "server");

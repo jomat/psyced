@@ -1,4 +1,7 @@
 #include <net.h> // vim syntax=lpc
+#include <proto.h>
+#include <sys/tls.h>
+
 mapping tls_certificate(object who, int longnames) {
     mixed *extra, extensions, insecure;
     mapping cert;
@@ -82,3 +85,102 @@ mapping tls_certificate(object who, int longnames) {
     P2(("cert is %O\n", cert))
     return cert;
 }
+
+// generalized variant of the old certificate_check_jabbername
+// RFC 6125 describes the process in more detail
+int tls_check_service_identity(string name, mixed cert, string scheme) {
+    mixed t;
+    string idn;
+    // FIXME: should probably be more careful about internationalized
+    // domain names - need testcases
+#define WILDCARD_MATCH(thing) (strlen(thing) > 2 && thing[0] == '*' && thing[1] == '.' && trail(thing[2..], name))
+    /* this does not support wildcards if there is more than one
+     * id-on-xmppAddr/CN
+     * API Note: name MUST be an utf8 string
+     */
+    unless(name && cert && mappingp(cert)) return 0;
+
+    name = NAMEPREP(name);
+
+    // subjectAlternativeName - dNSName
+    if ((t = cert["2.5.29.17:dNSName"])) { 
+	if (stringp(t)) t = ({ t });
+	foreach(string t2 : t) {
+	    t2 = NAMEPREP(t2);
+	    if (name == t2 || WILDCARD_MATCH(t2))
+		return 1;
+	}
+    } 
+
+    // subjectAlternativeName - SRV ID - FIXME
+    // unfortunately, the only ones I have encountered so far were ... unusable
+    // what they should like is "_psyc.name" - i.e. "_" + scheme + "." + name
+    // no wildcards probably
+    if ((t = cert["2.5.29.17:1.3.6.1.5.5.7.8.7"])) {
+	    P2(("encountered SRVName, please tell fippo: %O\n", t))
+    }
+
+    // URI ID  - FIXME
+    // not seen yet
+    
+#if 0
+    // id-on-xmppAddr - have not seen them issued by anyone but 
+    // startcom and those usually include dnsname, too
+    // utf8-encoded
+    if ((t = cert["2.5.29.17:1.3.6.1.5.5.7.8.5"])) { 
+	if (pointerp(t)) {
+	    if (member(t, name) != -1) return 1;
+	    foreach(string cn : t) {
+		if (NAMEPREP(cn) == name) return 1;
+	    }
+	} 
+	else if (name == NAMEPREP(t))
+	    return 1;
+    } 
+#endif
+
+    // commonName - deprecated to put the host here but...
+    // this is only to be checked if no subjectAlternativeName is present
+    if (!cert["2.5.29.17"] && (t = cert["2.5.4.3"])) { // common name
+	if (pointerp(t)) { // does that happen?! I don't think so...
+	    // fast way - works for traditional hostnames
+	    if (member(t, name) != -1) return 1;
+
+	    // look for idn encoded stuff
+	    foreach(string cn : t) {
+#ifdef __IDNA__
+		idn = NAMEPREP(idna_to_unicode(cn));
+#else
+		idn = NAMEPREP(cn);
+#endif
+		if (idn == name) return 1;
+	    }
+	    return 0;
+	} 
+#ifdef __IDNA__
+	idn = NAMEPREP(idna_to_unicode(t));
+#else
+	idn = NAMEPREP(t);
+#endif
+	if (idn == name || WILDCARD_MATCH(idn))
+	    return 1;
+    }
+    return 0;
+}
+
+int tls_check_cipher(object sock, string scheme) {
+    string t;
+    mixed m = tls_query_connection_info(sock);
+
+    P3(("%O is using the %O cipher.\n", sock, m[TLS_CIPHER]))
+    // shouldn't our negotiation have ensured we have PFS?
+
+    if (stringp(t = m[TLS_CIPHER]) &&! abbrev("DHE", t)) {
+	monitor_report("_warning_circuit_encryption_cipher_details",
+	    object_name(sock) +" · using "+ t +" cipher");
+	// we can't expect that degree of privacy from jabber, for now
+	if (scheme != "xmpp") return 0;
+    }
+    return 1;
+}
+

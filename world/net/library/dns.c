@@ -614,6 +614,13 @@ void dns_srv_resolve(string hostname, string service, string proto, closure call
     // dumme bevormundung. wegen der musste ich jetzt ewig lang suchen:
     //unless (proto == "tcp" || proto == "udp") return;
     // da wir mit nem String arbeiten muessen
+
+#ifdef __IDNA__
+    if (catch(hostname = idna_to_ascii(TO_UTF8(hostname)); nolog)) {
+	    P0(("catch: punycode %O in %O\n", hostname, ME))
+	    return;
+    }
+#endif
     req = sprintf("_%s._%s.%s", service, proto, hostname);
     rc = send_erq(ERQ_LOOKUP_SRV, req, lambda(({ 'wu }),
 	    ({ (#',),

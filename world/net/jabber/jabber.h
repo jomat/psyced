@@ -86,6 +86,7 @@ virtual inherit JABBER_PATH "common";
 
 // net/jabber is not ready for regular is_localhost
 #define is_localhost(a) (lower_case(a)) == _host_XMPP
+// but.. what about NAMEPREP here?
 
 
 #define JABSOURCE "_INTERNAL_source_jabber"

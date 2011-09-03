@@ -1545,16 +1545,6 @@ logon() {
 	string t;
 
 	P2(("LOGON %O from %O\n", ME, query_ip_name() ))
-	unless (legal_host(query_ip_number(), 0, 0, 0)) {
-		// this happens when people reconnect during the shutdown
-		// procedure.. and also when they are banned, but huh..
-		// that hardly ever happens  :)
-		w("_error_rejected_address",
-		  "You are temporarily not permitted to connect here.");
-		  //"I'm afraid you are no longer welcome here.");
-		return remove_interactive(ME);
-		// and the object will deteriorate when user gives up..
-	}
 	// shouldn't this be qScheme() instead? little paranoid TODO
 	// but then we would have to move qScheme() from the server.c's
 	// into the common.c's .. well, we could do that some day
@@ -1564,7 +1554,32 @@ logon() {
 	     beQuiet = -1; // never turn off less interesting enter/leave echoes
 	// makeToken() isn't a good idea here, apparently
 	sTextPath(v("layout"), v("language"), t);
-	// cannot if (greeting) this since jabber:iq:auth depends on this
+	unless (legal_host(query_ip_number(), 0, 0, 0)) {
+		// this happens when people reconnect during the shutdown
+		// procedure.. and also when they are banned, but huh..
+		// that hardly ever happens  :)
+		//
+		// w() needs to be called *after* sTextPath
+		w("_error_rejected_address",
+		  "You are currently not permitted to connect here.");
+		return remove_interactive(ME);
+		// and the object will deteriorate when user gives up..
+		//
+		// with the #'quit call_out.. or was it meant to
+		// deteriorate differently?
+	}
+#ifdef __TLS__
+	if (tls_query_connection_state(ME) == 1) {
+	    if (tls_check_cipher(ME, t)) {
+                unless (beQuiet) w("_status_circuit_encryption_cipher");
+	    } else {
+		// i bet jabber users will love this
+                w("_warning_circuit_encryption_cipher");
+		//return remove_interactive(ME);
+	    }
+	}
+#endif
+	// cannot if (greeting) here this since jabber:iq:auth depends on this
 	// also greeting will only be defined after ::logon()
 	// (use another w() maybe?)
 	w("_notice_login", 0, ([ "_nick": MYNICK,

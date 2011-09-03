@@ -9,7 +9,7 @@
 
 inherit NET_PATH "twitter/client";
 
-object load(object usr, string key, string secret, string request, string access, string authorize) {
+object load(object usr, mapping opts) {
     name = "identica";
     display_name = "identi.ca";
     api_base_url = "http://identi.ca/api";
@@ -20,5 +20,5 @@ object load(object usr, string key, string secret, string request, string access
     access_token_url = api_base_url + "/oauth/access_token";
     authorize_url = api_base_url + "/oauth/authorize";
 
-    return ::load(usr, key, secret, request, access, authorize);
+    return ::load(usr, opts);
 }

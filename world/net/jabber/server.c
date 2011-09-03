@@ -485,9 +485,12 @@ open_stream(XMLNode node) {
 		    // sasl anonymous
 		      "<mechanism>ANONYMOUS</mechanism>";
 #endif
+		// here it makes sense to use check_jabbername 
+		// but that is currently unused anyway
 #if __EFUN_DEFINED__(tls_available)
 		if (tls_available() && tls_query_connection_state(ME) > 0
 			&& mappingp(certinfo) && certinfo[0] == 0
+			// why do we use the old one here?
 			&& certificate_check_jabbername(0, certinfo)) {
 		    features += "<mechanism>EXTERNAL</mechanism>";
 		}
@@ -510,5 +513,6 @@ certificate_check_jabbername(name, certinfo) {
     // plan: prefer subjectAltName:id-on-xmppAddr, 
     // 		but allow email (1.2.840.113549.1.9.1)
     // 		and subjectAltName:rfc822Name
+    // 	FIXME: do something useful here...
     return 0;
 }

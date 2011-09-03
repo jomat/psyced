@@ -184,6 +184,8 @@ problems that should disappear when we move away from _nick's:
 - IRC shows "*** k kindly asks for your friendship." for remote
   friendship requests. eh! where's the uniform!?
 - remote /topic shows wrong nick
++ allow newbies to use /nick and switch to a different newbie name?
+  (also, forbid +alias from being used by newbies?)
 
 > PRESENCE STATUS
 + all _status_person need to be upgraded to _status_presence with

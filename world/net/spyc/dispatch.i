@@ -161,14 +161,12 @@ void dispatch(mapping rvars, mapping evars, mixed method, mixed body) {
         unless (u = parse_uniform(t)) {
             DISPATCHERROR("logical source is not a uniform\n")
         }
-#ifdef USE_VERIFICATION
-# ifdef PSYC_TCP
-        unless (qAuthenticated(NAMEPREP(u[UHost]))) {
+#ifdef PSYC_TCP
+        unless (qAuthenticated(u[UHost])) {
             DISPATCHERROR("non-authenticated host\n")
         }
-# else
+#else
         // TODO?
-# endif
 #endif
     }
 

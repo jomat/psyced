@@ -653,7 +653,10 @@ else
     echo ""
     echo "PSYC intentionally uses a dedicated TLS port not just for"
     echo "simplicity, but also because it reduces interserver latency"
-    echo "as we can leave out negotiation."
+    echo "as we can leave out negotiation. Newer versions of psyclpc when"
+    echo "compiled with libpsyc support automatic detection of immediate"
+    echo "TLS on the same ports as the unencrypted protocols, so in that"
+    echo "case you don't need to define dedicated TLS ports."
 
     get PSYCS_YN "y"
     ask "Enable PSYC over TLS" PSYCS_YN
@@ -955,6 +958,7 @@ _path_configuration = $CONFIG_DIR
 ; (absolute or relative to _path_configuration)
 _path_PEM_key = key.pem
 _path_PEM_certificate = cert.pem
+; You can run 'make' in the 'utility/gencert' folder to create a pair
 
 ; Path to the TLS trust directory where certs are kept.
 ; If unset this will default to your system installation's defaults.
@@ -1129,7 +1133,8 @@ echo "Extracting psyced data..."
 
 if test -d .git
 then
-    if ! test `realpath .` = $BASE_DIR
+    # eh? what was 'realpath' supposed to be?
+    if ! test `pwd` = $BASE_DIR
     then
         if git clone . $BASE_DIR && cp -a .git/config $BASE_DIR/.git
 	then

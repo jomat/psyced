@@ -132,6 +132,8 @@ static varargs void ready_freddie(vamixed ip) {
 
 static void create() {
 	PROTECT("CREATE")
+	string t;
+
 #ifndef __PIKE__
         master = previous_object();
 	restore_object(DATA_PATH "library");
@@ -194,7 +196,7 @@ static void create() {
 #ifdef VOLATILE
 	D("VOLATILE flag set: Server will not save any data.\n");
 #endif
-	myLowerCaseHost = lower_case(SERVER_HOST);
+	myLowerCaseHost = NAMEPREP(SERVER_HOST);
 	register_localhost(myLowerCaseHost);
 #ifdef __PIKE__
         //debug_write("Creating psyced library in Pike.\n");
@@ -259,9 +261,10 @@ static void create() {
 #ifdef JABBER_PATH
 	register_target("xmpp:"+ myLowerCaseHost);
 # ifdef _host_XMPP
-        register_localhost(lower_case(_host_XMPP));
-	register_target(lower_case(_host_XMPP));
-	register_target("xmpp:"+ lower_case(_host_XMPP));
+	t = NAMEPREP(_host_XMPP);
+        register_localhost(t);
+	register_target(t);
+	register_target("xmpp:"+ t);
 # endif
 #endif
 	// base64decode("test2000");
@@ -665,7 +668,7 @@ int xmpp_sendmsg(mixed target, string mc, mixed data, mapping vars,
 	// need to have a different domain name
 	} else if (is_localhost(u[UHost])) {
 	    unless (u[UUser]) {
-		P0(("Intercepted %O to %O from %O\n", mc, target, source))
+		P1(("Intercepted %O to %O from %O\n", mc, target, source))
 		// 0 makes sendmsg try to relay via xmpp.scheme.psyced.org
 		// but fippo doesn't like that
 		return -4;
@@ -1052,7 +1055,8 @@ int bignum_cmp(string a, string b) {
 	// allocating a local variable to "cache" it
 	if (strlen(a) > strlen(b)) return 1;
 	if (strlen(a) < strlen(b)) return -1;
-	for (i=0; i<strlen(a); i++) if (a[i] == b[i]) continue;
+	for (i=0; i<strlen(a); i++) if (a[i] != b[i]) break;
+	P4(("bignum_cmp\n%O vs\n%O at %O is %c vs %c\n", a, b, i, a[i], b[i]))
 	if (a[i] > b[i]) return 1;
 	return -1;
 }

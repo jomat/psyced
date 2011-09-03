@@ -31,6 +31,7 @@ inherit NET_PATH "name";
 
 volatile mixed gateways;
 volatile mixed *dialback_queue;
+volatile mapping certinfo;
 
 volatile string streamid;
 volatile float streamversion;
@@ -312,39 +313,39 @@ tls_logon(result) {
 	//
 	// if the cert is ok, we can set authenticated to 1
 	// to skip dialback
-	mixed cert = tls_certificate(ME, 0);
-	P3(("active::certinfo %O\n", cert))
-	if (mappingp(cert)) {
-	    unless (certificate_check_jabbername(hostname, cert)) {
+	certinfo = tls_certificate(ME, 0);
+	P3(("active::certinfo %O\n", certinfo))
+	if (mappingp(certinfo)) {
+	    unless (tls_check_service_identity(hostname, certinfo, "xmpp-server")) {
 #ifdef _flag_report_bogus_certificates
 		monitor_report("_error_invalid_certificate_identity",
 			       sprintf("%O presented a certificate that "
 				       "contains %O/%O",
-				       hostname, cert["2.5.4.3"],
-				       cert["2.5.29.17:1.3.6.1.5.5.7.8.5"]));
+				       hostname, certinfo["2.5.4.3"],
+				       certinfo["2.5.29.17:1.3.6.1.5.5.7.8.5"]));
 #endif
 #ifdef _flag_log_bogus_certificates
-		log_file("CERTS", S("%O %O %O id?\n", ME, hostname, cert));
+		log_file("CERTS", S("%O %O %O id?\n", ME, hostname, certinfo));
 #else
 		P1(("TLS: %s presented a certificate with unexpected identity.\n", hostname))
-		P2(("%O\n", cert))
+		P2(("%O\n", certinfo))
 #endif
 #if 0 //def _flag_reject_bogus_certificates
 		QUIT
 		return 1;
 #endif
 	    } 
-	    else if (cert[0] != 0) {
+	    else if (certinfo[0] != 0) {
 #ifdef _flag_report_bogus_certificates
 		monitor_report("_error_untrusted_certificate",
 			       sprintf("%O certificate could not be verified",
 				       hostname));
 #endif
 #ifdef _flag_log_bogus_certificates
-		log_file("CERTS", S("%O %O %O\n", ME, hostname, cert));
+		log_file("CERTS", S("%O %O %O\n", ME, hostname, certinfo));
 #else
 		P1(("TLS: %s presented untrusted certificate.\n", hostname))
-		P2(("%O\n", cert))
+		P2(("%O\n", certinfo))
 #endif
 #if 0 //def _flag_reject_bogus_certificates
 		// QUIT is wrong...
