@@ -727,13 +727,13 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
 }
 
 int logon() {
-  if (server->tls && !tls_query_connection_state(this_object()))
-    tls_init_connection(this_object());
   if (!interactive()) {
     P3(("connection in background failed, will try to reconnect in 10 seconds\n"));  // TODO...
     call_out(#'connect,10);
     return 0;
   }
+  if (server->tls && !tls_query_connection_state(this_object()))
+    tls_init_connection(this_object());
   IDENT_MASTER->update_connection(server->port,server->owner);
   server->connected=-1;
   irc_nick(server->nick);
