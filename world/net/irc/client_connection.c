@@ -479,12 +479,12 @@ int parse_answer(string s) {
       if (where==server->nick)
         sendmsg(find_person(server->owner),"_message_private",msg,([ "_nick": "irc:~"+from_nick+"@"+server->id ]));
       else {
-        sendmsg(find_person(server->owner),"_message_public",msg
-          ,([ "_nick_place": SCHEME+where+"@"+server->id
-          ,"_nick":from_nick ]));
         //sendmsg(find_person(server->owner),"_message_public",msg
         //  ,([ "_nick_place": SCHEME+where+"@"+server->id
-        //  ,"_nick":SCHEME+"~"+from_nick+"@"+server->id ]));  // TODO: make it configurable
+        //  ,"_nick":from_nick ]));
+        sendmsg(find_person(server->owner),"_message_public",msg
+          ,([ "_nick_place": SCHEME+where+"@"+server->id
+          ,"_nick":SCHEME+"~"+from_nick+"@"+server->id ]));  // TODO: make it configurable
         //sendmsg(find_person(server->owner),"_message_public",msg,
         //  (["_nick_place":SCHEME+where+"@"+server->id
         //   ,"_nick":channels[where_o]->users[from_nick]->prefix
