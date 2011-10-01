@@ -55,7 +55,7 @@ struct user_s {
 
 int last_message_timestamp;
 struct server_s server;
-mapping channels=([]);  /* ([ "#foo":(<struct channel_s>) ]) */
+mapping channels_m=([]);  /* ([ "#foo":(<struct channel_s>) ]) */
 
 /*
 int emit(string m) {
@@ -63,6 +63,14 @@ int emit(string m) {
   return ::emit(m);
 }
 */
+
+struct channel_s channels(string s) {
+  return channels_m[lower_case(CHAN_STAR2HASH(s))];
+}
+
+void set_channel(string s,struct channel_s d) {
+  channels_m[lower_case(CHAN_STAR2HASH(s))]=d;
+}
 
 int is_letter(int c) {
   return ('A'<=c && 'Z'>=c) || ('a'<=c && 'z'>=c);
@@ -73,17 +81,17 @@ void update_nick(string nick, static string chan) {
   if (!chan||!nick)
     return;
   chan=CHAN_STAR2HASH(chan);
-  if (!structp(channels[chan]))
-    channels[chan]=(<channel_s>users:([]),topic:"No topic is set.",topic_set:0);
-  if (!mappingp(channels[chan]->users))
-    channels[chan]->users=([]);
+  if (!structp(channels(chan)))
+    set_channel(chan,(<channel_s>users:([]),topic:"No topic is set.",topic_set:0));
+  if (!mappingp(channels(chan)->users))
+    channels(chan)->users=([]);
   if ('@'==nick[0]||'+'==nick[0]) {   // TODO: get the usermodes from 005 RPL_ISUPPORT http://www.irc.org/tech_docs/005.html
-    if (!channels[chan]->users[nick[1..]])
-      channels[chan]->users[nick[1..]]=(<user_s>chanop:nick[0],);
+    if (!channels(chan)->users[nick[1..]])
+      channels(chan)->users[nick[1..]]=(<user_s>chanop:nick[0],);
     nick=nick[1..];
   } else {
-    if (!channels[chan]->users[nick])
-      channels[chan]->users[nick]=(<user_s>);
+    if (!channels(chan)->users[nick])
+      channels(chan)->users[nick]=(<user_s>);
   }
 }
 
@@ -149,10 +157,11 @@ varargs int irc_join(string channel, string tag, string key) {
     emit(sprintf("JOIN %s %s\n",channel,key));
   else
     emit(sprintf("JOIN %s\n",channel));
-  if (structp(channels[channel]))
-    channels[channel]->tag=tag;
+  if (structp(channels(channel)))
+    channels(channel)->tag=tag;
   else
-    channels[channel]=(<channel_s> tag:tag,users:([]),topic:"No topic is set.",topic_set:0);
+    set_channel(channel,(<channel_s> tag:tag,users:([]),topic:"No topic is set.",topic_set:0));
+
   return 0;
 } 
 
@@ -222,16 +231,16 @@ varargs void show_members(mixed whom,string room,mixed vars) {
   string starchan=CHAN_HASH2STAR(room);
 
   P2(("showing members in %O for %O with vars %O\n",whom,room,vars));
-  if (!structp(channels[hashchan])) {
+  if (!structp(channels(hashchan))) {
     // no data available for the channel
     // TODO: think if this can happen and if it'd be useful to ask for the names
     // TODO: and to notify about the fact that there are no members
     return;
   }
 
-  P4(( "users to show: "+implode(m_indices(channels[hashchan]->users),", ")+"\n"));
+  P4(( "users to show: "+implode(m_indices(channels(hashchan)->users),", ")+"\n"));
   if (vars&&"W"==vars["_tag"]) {
-    map(channels[hashchan]->users,function void(string nick,struct user_s user) {
+    map(channels(hashchan)->users,function void(string nick,struct user_s user) {
       sendmsg(whom,"_status_place_members_each",0,([ "_nick_place" : SCHEME+starchan+"@"+server->id
         ,"_IRC_identified":user->prefix?sprintf("%c",user->prefix):""
         ,"_nick_login":user->login
@@ -248,7 +257,7 @@ varargs void show_members(mixed whom,string room,mixed vars) {
 
   } else {
   
-    string *nicklist=make_nicklist(channels[hashchan]->users);
+    string *nicklist=make_nicklist(channels(hashchan)->users);
     sendmsg
       (whom
       ,"_status_place_members"
@@ -266,10 +275,10 @@ void show_topic_author(string where) {
   // see TODO for show_topic()
   string wherehash=CHAN_STAR2HASH(where);
   string wherestar=CHAN_HASH2STAR(where);
-  if (!channels[wherehash])
+  if (!channels(wherehash))
     return;
 
-  if (!channels[wherehash]->topic_time&&!channels[wherehash]->topic_author) {
+  if (!channels(wherehash)->topic_time&&!channels(wherehash)->topic_author) {
     return;
   }
 
@@ -277,8 +286,8 @@ void show_topic_author(string where) {
     (find_person(server->owner)
      ,"_status_place_topic_author"
      ,0
-     ,(["_INTERNAL_time_topic":channels[wherehash]->topic_time
-       ,"_nick":channels[wherehash]->topic_author
+     ,(["_INTERNAL_time_topic":channels(wherehash)->topic_time
+       ,"_nick":channels(wherehash)->topic_author
        ,"_nick_place":SCHEME+wherestar+"@"+server->id
      ]));
 }
@@ -289,17 +298,17 @@ void show_topic(string where) {
   //       for psyc rooms
   string wherehash=CHAN_STAR2HASH(where);
   string wherestar=CHAN_HASH2STAR(where);
-  if (!channels[wherehash]) {
+  if (!channels(wherehash)) {
     emit("TOPIC "+wherehash+"\n");
     return;
   }
   P2(("showing topic for "+where+"\n"));
-  if (channels[wherehash]->topic_set)
+  if (channels(wherehash)->topic_set)
     sendmsg
       (find_person(server->owner)
       ,"_status_place_topic_only"
       ,0
-      ,(["_topic":channels[wherehash]->topic
+      ,(["_topic":channels(wherehash)->topic
         ,"_nick_place":SCHEME+wherestar+"@"+server->id
       ]));
   else
@@ -308,7 +317,7 @@ void show_topic(string where) {
       ,"_status_place_topic_none"
       ,0
       ,(["_nick_place":SCHEME+wherestar+"@"+server->id
-        ,"_info":channels[wherehash]->topic
+        ,"_info":channels(wherehash)->topic
       ]));
 }
 
@@ -318,19 +327,19 @@ void enter_room(string where, string tag) {
   string wherehash=CHAN_STAR2HASH(where);
   string wherestar=CHAN_HASH2STAR(where);
 
-  P2(("entering room "+wherehash+" with "+sizeof(channels[wherehash]->users)+" members and tag "+tag+"\n"));
+  P2(("entering room "+wherehash+" with "+sizeof(channels(wherehash)->users)+" members and tag "+tag+"\n"));
 
-  if (!sizeof(channels[wherehash]->users)) {
+  if (!sizeof(channels(wherehash)->users)) {
     call_out(#'enter_room,1,where,tag);
     P3(("waiting to join the room because of !sizeof(channels[CHAN_STAR2HASH(where)]->users)\n"));
     return;
   }
-  if (!channels[wherehash]->users[m_indices(channels[wherehash]->users)[0]]->here) {
+  if (!channels(wherehash)->users[m_indices(channels(wherehash)->users)[0]]->here) {
     // here is not set if the user structure hasn't been filled by a whoreply
     // TODO: send WHO request perhaps?
     //       → don't hammer server forever on occasionally happening fnords
     call_out(function void() {
-      if (!channels[wherehash]->users[m_indices(channels[wherehash]->users)[0]]->here)
+      if (!channels(wherehash)->users[m_indices(channels(wherehash)->users)[0]]->here)
         emit("WHO "+wherehash+"\n"); },2);
     call_out(#'enter_room,2,where,tag);
     P3(("waiting to join the room because of !channels[CHAN_STAR2HASH(where)]->users"
@@ -338,7 +347,7 @@ void enter_room(string where, string tag) {
     return;
   }
 
-  string *nicklist=make_nicklist(channels[wherehash]->users);
+  string *nicklist=make_nicklist(channels(wherehash)->users);
   P4((sprintf("nicklist to %O(%O) in %O: %O\n"
     ,find_person(server->owner),server->owner
     ,SCHEME+where+"@"+server->id,implode(nicklist,", "))));
@@ -381,7 +390,7 @@ int parse_answer(string s) {
       sscanf(origin,"%s!%~s",origin);
       if ('~'==origin[0])
         origin=origin[1..];
-      map(channels,function void(string k,struct channel_s c) {
+      map(channels_m,function void(string k,struct channel_s c) {
         m_delete(c->users,origin);
       });
       return 0;
@@ -395,8 +404,8 @@ int parse_answer(string s) {
       if ('~'==nick[0])
         nick=nick[1..];
 
-      if (channels[chanhash] && channels[chanhash]->users)
-        m_delete(channels[chanhash]->users,nick);
+      if (channels(chanhash) && channels(chanhash)->users)
+        m_delete(channels(chanhash)->users,nick);
       else
         P2((sprintf("%O couldn't PART %O from %O\n",this_object(),nick,chanhash)));
       sendmsg
@@ -413,7 +422,7 @@ int parse_answer(string s) {
         ,"_notice_switch_identity"
         ,0
         ,(["_INTERNAL_nick_me":origin,"_nick_next":nick_next,"_nick":origin]));
-      map(channels,function void(string k,struct channel_s c) {
+      map(channels_m,function void(string k,struct channel_s c) {
         if (c->users[nick_prev]) {
           c->users[nick_next]=c->users[nick_prev];
           m_delete(c->users,nick_prev);
@@ -436,11 +445,11 @@ int parse_answer(string s) {
         // someone joined the room
         update_nick(from_nick,where);
         if ('~'!=loginandpref[0]) {
-          channels[where]->users[from_nick]->prefix=0;
-          channels[where]->users[from_nick]->login=loginandpref;
+          channels(where)->users[from_nick]->prefix=0;
+          channels(where)->users[from_nick]->login=loginandpref;
         } else {
-          channels[where]->users[from_nick]->prefix=loginandpref[0];
-          channels[where]->users[from_nick]->login=loginandpref[1..];
+          channels(where)->users[from_nick]->prefix=loginandpref[0];
+          channels(where)->users[from_nick]->login=loginandpref[1..];
         }
         string wherestar=CHAN_HASH2STAR(where);
         sendmsg
@@ -456,7 +465,7 @@ int parse_answer(string s) {
 
       P2(("irc server wants us "+from_nick+" to join a room: "+where+"\n"));
 
-      string tag=structp(channels[where])?channels[where]->tag:"";;
+      string tag=structp(channels(where))?channels(where)->tag:"";;
 
       emit("WHO "+where+"\n");
 
@@ -503,12 +512,12 @@ int parse_answer(string s) {
           ,"_topic":topic
           ,"_INTERNAL_source_irc_client":who
       ]));
-      if (!channels[chanhash])
-        channels[chanhash]=(<channel_s>topic:topic,topic_set:1,topic_author:who);
+      if (!channels(chanhash))
+        set_channel(chanhash,(<channel_s>topic:topic,topic_set:1,topic_author:who));
       else {
-        channels[chanhash]->topic=topic;
-        channels[chanhash]->topic_set=1;
-        channels[chanhash]->topic_author=who;
+        channels(chanhash)->topic=topic;
+        channels(chanhash)->topic_set=1;
+        channels(chanhash)->topic_author=who;
       }
       break;
     case "001":
@@ -522,7 +531,7 @@ int parse_answer(string s) {
       });
       server->connected=1;
       // channel tag key
-      map(channels,function void(string id, struct channel_s channel) {
+      map(channels_m,function void(string id, struct channel_s channel) {
         irc_join(id,channel->tag,channel->key);
       });
       return 0;
@@ -532,11 +541,11 @@ int parse_answer(string s) {
     case "332":   //:ray.blafasel.de 332 j #schwester :Now playing "Love Shelter" by Sundial Aeon on psybient Tag Radio.
       string chanhash,topic;
       sscanf(s,":%~s %~s %~s %s :%s",chanhash,topic);
-      if (!channels[chanhash])
-        channels[chanhash]=(<channel_s>topic:topic,topic_set:'2'==command[2]);
+      if (!channels(chanhash))
+        set_channel(chanhash,(<channel_s>topic:topic,topic_set:'2'==command[2]));
        else {
-         channels[chanhash]->topic_set='2'==command[2];
-         channels[chanhash]->topic=topic;
+         channels(chanhash)->topic_set='2'==command[2];
+         channels(chanhash)->topic=topic;
        }
        call_out(#'show_topic,0,chanhash);
        break;
@@ -544,11 +553,11 @@ int parse_answer(string s) {
       string chanhash,author;
       int timestamp;
       sscanf(s,":%~s %~s %~s %s %s %d",chanhash,author,timestamp);
-      if (!channels[chanhash])
-        channels[chanhash]=(<channel_s>topic_time:timestamp,topic_author:author);
+      if (!channels(chanhash))
+        set_channel(chanhash,(<channel_s>topic_time:timestamp,topic_author:author));
        else {
-         channels[chanhash]->topic_time=timestamp;
-         channels[chanhash]->topic_author=author;
+         channels(chanhash)->topic_time=timestamp;
+         channels(chanhash)->topic_author=author;
        }
        call_out(#'show_topic_author,0,chanhash);
        break;
@@ -566,33 +575,33 @@ int parse_answer(string s) {
       // :ray.blafasel.de 352 episkevis #schwester jomat episkevis.jmt.gr ray.blafasel.de episkevis H :0 episkevis
       sscanf(s,":%~s %~s %~s %s %s %s %s %s %s :%d %s",chan,loginandpref,uhost,server,nick,flags,hops,username);
       update_nick(&nick,chan);
-      ((struct user_s)(channels[chan]->users[nick]))->host=uhost;
-      channels[chan]->users[nick]->username=username;
-      channels[chan]->users[nick]->ircserver=server;
-      channels[chan]->users[nick]->hops=hops;
+      ((struct user_s)(channels(chan)->users[nick]))->host=uhost;
+      channels(chan)->users[nick]->username=username;
+      channels(chan)->users[nick]->ircserver=server;
+      channels(chan)->users[nick]->hops=hops;
       if ('~'!=loginandpref[0]) {
-        channels[chan]->users[nick]->prefix=0;
-        channels[chan]->users[nick]->login=loginandpref;
+        channels(chan)->users[nick]->prefix=0;
+        channels(chan)->users[nick]->login=loginandpref;
       } else {
-        channels[chan]->users[nick]->prefix=loginandpref[0];
-        channels[chan]->users[nick]->login=loginandpref[1..];
+        channels(chan)->users[nick]->prefix=loginandpref[0];
+        channels(chan)->users[nick]->login=loginandpref[1..];
       }
-      channels[chan]->users[nick]->here=flags[0];
+      channels(chan)->users[nick]->here=flags[0];
       switch (strlen(flags)) {
         case 3:
-          channels[chan]->users[nick]->ircop=flags[1];
-          channels[chan]->users[nick]->chanop=flags[2];
+          channels(chan)->users[nick]->ircop=flags[1];
+          channels(chan)->users[nick]->chanop=flags[2];
           break;
         case 2:
-          channels[chan]->users[nick]->ircop=0;
+          channels(chan)->users[nick]->ircop=0;
           if ('*'==flags[1])
-            channels[chan]->users[nick]->ircop=flags[1];
+            channels(chan)->users[nick]->ircop=flags[1];
           else
-            channels[chan]->users[nick]->chanop=flags[1];
+            channels(chan)->users[nick]->chanop=flags[1];
           break;
         default:
       }
-      P2(( sprintf("user made of WHOREPLY channel[%s] user[%s]: %O\n",chan,nick,channels[chan]->users[nick]) ));
+      P2(( sprintf("user made of WHOREPLY channel[%s] user[%s]: %O\n",chan,nick,channels(chan)->users[nick]) ));
 
       return 0;
     case "353":
@@ -691,14 +700,14 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
     case "_request_enter_automatic_subscription":
       TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
       string hashchan=CHAN_STAR2HASH(chan);
-      if (channels[hashchan])
-        channels[hashchan]->subscribed=1;
+      if (channels(hashchan))
+        channels(hashchan)->subscribed=1;
       else
-        channels[hashchan]=(<channel_s>subscribed:1);
+        set_channel(hashchan,(<channel_s>subscribed:1));
     case "_request_enter":
     case "_request_enter_join":
       TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
-      if (channels[CHAN_STAR2HASH(chan)])
+      if (channels(chan))
         enter_room(chan,vars["_tag"]);
       irc_join(chan,vars["_tag"],0 /* TODO: add key foo */);
     break;
@@ -711,7 +720,7 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
     case "_request_leave_disconnect": // close connection
       TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
       string hashchan=CHAN_STAR2HASH(chan);
-      if (channels[hashchan]&&!channels[hashchan]->subscribed)
+      if (channels(hashchan)&&!channels(hashchan)->subscribed)
         irc_part(chan);
 
     break;
