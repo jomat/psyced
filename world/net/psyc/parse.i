@@ -712,11 +712,13 @@ protected int deliver(mixed ip, string host, string mc, string buffer, mapping c
                     " trying to relay for "+ host +" ("+ ip +")"+"\n"+
                     " in parse:deliver(%O, %O, %O, %O, %O)\n",
                         ip, host, mc, buffer, cvars))
+#ifdef REJECT_IP_NOT_HOST
                 croak("_error_rejected_relay_incoming",
                     "Your address [_host_IP] is not permitted to send as [_host].",
                         ([ "_host": host, "_host_IP": peerip ]));
                 QUIT
                 return 1;
+#endif
             }
 //# endif
         }
