@@ -1190,7 +1190,7 @@ vamixed startParse(string a) {
 	else {
 		PT(("PSYC startParse got %O from %O\n", a, query_ip_number()))
 		croak("_error_syntax_initialization",
-		    "The old protocol begins with a dot on a line by itself.");
+		    sprintf("Received unknown protocol initialisation %O. The old protocol begins with a dot in a line by itself.",a));
 		// experiencing a loop here, because some implementations
 		// try immediate reconnect. idea: in most places where we
 		// QUIT we should put the tcp link on hold instead, and
