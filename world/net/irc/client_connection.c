@@ -493,7 +493,7 @@ int parse_answer(string s) {
         else
           from_nick+=sprintf("%c",c);
       };
-      CHAN_HASH2STAR(where);
+      where=CHAN_HASH2STAR(where);
 
       if (where==server->nick)
         sendmsg(find_person(server->owner),"_message_private"+annotate,msg,([ "_nick": SCHEME+"~"+from_nick+"@"+server->id ]));
