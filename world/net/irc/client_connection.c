@@ -380,13 +380,14 @@ int parse_answer(string s) {
     case 0:
       return 0;
     case "QUIT": // :foo!bar@abc.example.net QUIT :Ping timeout: 360 seconds
-      string info;
-      sscanf(s,":%~s %~s :%s",info);
+      string info,nick,loginandpref;
+      sscanf(s,":%s!%s %~s :%s",nick,loginandpref,info);
       sendmsg
         (find_person(server->owner)
         ,"_notice_place_leave_disconnect"
         ,0
-        ,(["_INTERNAL_source_irc_client":origin,"_info":info]));
+        ,(["_INTERNAL_source_irc_client":SCHEME+"~"+nick+"@"+server->id+"!"+loginandpref
+          ,"_info":info]));
       sscanf(origin,"%s!%~s",origin);
       if ('~'==origin[0])
         origin=origin[1..];
@@ -396,8 +397,8 @@ int parse_answer(string s) {
       return 0;
     case "PART": // TODO: PART more than one channel at once
                  // TODO: check what happens if we (are) PART(ed)
-      string nick,chanhash;
-      sscanf(s,":%s!%~s %~s %s ",nick,chanhash);
+      string nick,chanhash,loginandpref;
+      sscanf(s,":%s!%s %~s %s ",nick,loginandpref,chanhash);
       if (!chanhash)
         sscanf(s,":%~s!%~s %~s %s",chanhash);
 
@@ -412,7 +413,9 @@ int parse_answer(string s) {
         (find_person(server->owner)
         ,"_notice_place_leave"
         ,0
-        ,(["_INTERNAL_source_irc_client":origin,"_nick_place": SCHEME+CHAN_HASH2STAR(chanhash)+"@"+server->id ]));
+        ,(["_INTERNAL_source_irc_client":SCHEME+"~"+nick+"@"+server->id+"!"+loginandpref
+          ,"_nick_place": SCHEME+CHAN_HASH2STAR(chanhash)+"@"+server->id ])
+        );
      return 0;
     case "NICK":
       string nick_prev,nick_next;
@@ -444,7 +447,7 @@ int parse_answer(string s) {
       if (from_nick!=server->nick) {
         // someone joined the room
         update_nick(from_nick,where);
-        if ('~'!=loginandpref[0]) {
+        if ('~'!=loginandpref[0]) {   // TODO: check for possible prefixes offered by the server
           channels(where)->users[from_nick]->prefix=0;
           channels(where)->users[from_nick]->login=loginandpref;
         } else {
@@ -458,7 +461,7 @@ int parse_answer(string s) {
         ,0
         ,(["_nick_place": SCHEME+wherestar+"@"+server->id
           ,"_context": SCHEME+wherestar+"@"+server->id
-          ,"_INTERNAL_source_irc_client":from_nick+"!"+loginandpref
+          ,"_INTERNAL_source_irc_client":SCHEME+"~"+from_nick+"@"+server->id+"!"+loginandpref
          ]));
         return 0;
       }
@@ -482,7 +485,7 @@ int parse_answer(string s) {
 
       // :jomat!~jomat@lethe.jmt.gr PRIVMSG #jomat :alarmowitsch
       // :irc:*maeh@foo.bar!*@* PRIVMSG #irc:~oha@foo.bar :#jomat :aaaaaaaaaaaaaa
-      string where,where_o,msg,from_nick="";
+      string where,msg,from_nick="";
       sscanf(s,":%~s %~s %s :%s",where,msg);
       foreach(int c:origin) {
         if('!'==c||'@'==c)
@@ -490,9 +493,7 @@ int parse_answer(string s) {
         else
           from_nick+=sprintf("%c",c);
       };
-
-      if ('#'==(where_o=where)[0])
-        where[0]='*';
+      CHAN_HASH2STAR(where);
 
       if (where==server->nick)
         sendmsg(find_person(server->owner),"_message_private"+annotate,msg,([ "_nick": SCHEME+"~"+from_nick+"@"+server->id ]));
