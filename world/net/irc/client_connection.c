@@ -374,7 +374,7 @@ int parse_answer(string s) {
     return 0;
   }
 
-  string origin, command;
+  string origin,command,annotate="";
   sscanf(s,":%s %s %~s",origin,command);
   switch (command&&upper_case(command)) {
     case 0:
@@ -473,6 +473,8 @@ int parse_answer(string s) {
       // sendmsg(target, mc, data, vars, source, showingLog, callback)
       call_out(#'enter_room,0,where,tag);
       return 0;
+    case "NOTICE":
+      annotate="_annotate";
     case "PRIVMSG":
       //varargs mixed sendmsg(mixed target, string mc, mixed data, mapping vars,
       //          mixed source, int showingLog, closure callback, varargs array(mixed) extra);
@@ -480,18 +482,25 @@ int parse_answer(string s) {
 
       // :jomat!~jomat@lethe.jmt.gr PRIVMSG #jomat :alarmowitsch
       // :irc:*maeh@foo.bar!*@* PRIVMSG #irc:~oha@foo.bar :#jomat :aaaaaaaaaaaaaa
-      string where,where_o,msg,from_nick;
-      sscanf(s,":%s!%~s %~s %s :%s",from_nick,where,msg);
+      string where,where_o,msg,from_nick="";
+      sscanf(s,":%~s %~s %s :%s",where,msg);
+      foreach(int c:origin) {
+        if('!'==c||'@'==c)
+          break;
+        else
+          from_nick+=sprintf("%c",c);
+      };
+
       if ('#'==(where_o=where)[0])
         where[0]='*';
 
       if (where==server->nick)
-        sendmsg(find_person(server->owner),"_message_private",msg,([ "_nick": SCHEME+"~"+from_nick+"@"+server->id ]));
+        sendmsg(find_person(server->owner),"_message_private"+annotate,msg,([ "_nick": SCHEME+"~"+from_nick+"@"+server->id ]));
       else {
         //sendmsg(find_person(server->owner),"_message_public",msg
         //  ,([ "_nick_place": SCHEME+where+"@"+server->id
         //  ,"_nick":from_nick ]));
-        sendmsg(find_person(server->owner),"_message_public",msg
+        sendmsg(find_person(server->owner),"_message_public"+annotate,msg
           ,([ "_nick_place": SCHEME+where+"@"+server->id
           ,"_nick":SCHEME+"~"+from_nick+"@"+server->id ]));  // TODO: make it configurable
         //sendmsg(find_person(server->owner),"_message_public",msg,

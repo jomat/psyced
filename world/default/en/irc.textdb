@@ -146,6 +146,9 @@ _message_private
 _message_public
 |:[_INTERNAL_source_IRC] PRIVMSG #[_nick_place] :[_data]
 
+_message_public_annotate
+|:[_INTERNAL_source_IRC] NOTICE #[_nick_place] :[_data]
+
 _message_echo_private
 |## let's see how clients deal with messages to a remote target echoed back
 |## it will probably not look good, but the clients need to fix that really
