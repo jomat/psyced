@@ -703,6 +703,8 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
     case "_message_public_question":
     case "_message_public":
       TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
+      if (!data)
+        data="\001ACTION "+vars["_action"]+"\001";
       if (""==chan) // msg to the server
         emit(data+"\n");
       else
