@@ -336,57 +336,51 @@ emit(string output) {
 		}
 		foreach(line : outlines) if (strlen(line)) {
 			while (strlen(line) > cut) {
-#if 0 //{{{
 		// this is supposed to be the more elegant
 		// message continuation strategy but it
 		// breaks OTR over IRC!  thx alice
+    //   -> so use old irc linesplitting code
 		//
-	// we shall look for last whitespace instead
-			    t = rindex(line, ' ', cut);
-			    if (t > 9) {
-				// msa's CTCP character
-				if (line[0] == 0x01) { // can only be true in
-						       // the very first cycle.
-						       // any realistic ideas
-						       // how to do do this
-						       // just once?
-					P4(("splitting an msa line %O\n", line[.. t]))
-					EMIT(split_prefix + line[..t]
-					       + line[0..0] + "\r\n");
-					line = line[t+1 ..];
-				} else {
-					P4(("time for %O\n", line[.. t]))
-					EMIT(split_prefix + line[.. t]+ "\r\n");
-					line = line[t+1 ..];
-				}
-			    } else {
-				P1(("%O encountered data w/out ' ' to "
-				    "allow for a decent IRC 512 split:"
-				    "\n%O\n", ME, line))
-				// ignore this junk
-				return;
-				// we might aswell use the old
-				// backslash splitting code below here
-			    }
-#else //}}}
-				t = line[cut] == '\r' ? cut-1 : cut;
+    // we shall look for last whitespace instead
 
-				// msa's CTCP character
-				if (line[0] == 0x01) { // can only be true in
-						       // the very first cycle.
-						       // any realistic ideas
-						       // how to do do this
-						       // only once?
-					// inserting stargazer-style backslashes
-					EMIT(split_prefix + line[..t-1]
-					       + "\\" + line[0..0] + "\r\n");
-					line = line[cut..];
-				} else {
-					EMIT(split_prefix + line[..t]
-					       + "\\\r\n");
-					line = line[cut+1..];
-				}
-#endif
+        t = rindex(line, ' ', cut);
+        if (t > 9) {
+          // msa's CTCP character
+          if (line[0] == 0x01) { // can only be true in
+                                 // the very first cycle.
+                                 // any realistic ideas
+                                 // how to do do this
+                                 // just once?
+            P4(("splitting an msa line %O\n", line[.. t]))
+            EMIT(split_prefix + line[..t] + line[0..0] + "\r\n");
+            line = line[t+1 ..];
+          } else {
+            P4(("time for %O\n", line[.. t]))
+            EMIT(split_prefix + line[.. t]+ "\r\n");
+            line = line[t+1 ..];
+          }
+        } else {
+          // this is the old code for OTR
+          P2(("%O encountered data w/out ' ' to "
+              "allow for a decent IRC 512 split:"
+              "\n%O\n", ME, line))
+          t = line[cut] == '\r' ? cut-1 : cut;
+
+          // msa's CTCP character
+          if (line[0] == 0x01) { // can only be true in
+                                 // the very first cycle.
+                                 // any realistic ideas
+                                 // how to do do this
+                                 // only once?
+            // inserting stargazer-style backslashes
+            EMIT(split_prefix + line[..t-1]
+              + "\\" + line[0..0] + "\r\n");
+            line = line[cut..];
+          } else {
+            EMIT(split_prefix + line[..t] + "\\\r\n");
+            line = line[cut+1..];
+          }
+        }
 			}
 			P4(("irc:emit each %O\n", line))
 			EMIT(split_prefix + line +"\r\n");
