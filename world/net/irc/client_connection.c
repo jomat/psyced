@@ -222,6 +222,7 @@ string *make_nicklist(mapping users) {
     // show your psyc nick instead of your irc nick:
     //if (nick==server->nick)
     //  nick=server->owner;
+    nick=SCHEME+"~"+nick+"@"+server->id;
     return user->chanop?sprintf("%c%s",user->chanop,nick):nick;
   }));
 }
@@ -251,7 +252,7 @@ varargs void show_members(mixed whom,string room,mixed vars) {
         ,"_IRC_hops":user->hops
         ,"_identification":""
         ,"_name":user->username
-        ,"_nick":nick
+        ,"_nick":SCHEME+"~"+nick+"@"+server->id
         ]));
     });
 
@@ -282,12 +283,14 @@ void show_topic_author(string where) {
     return;
   }
 
+  string ta_n,ta_h;
+  sscanf(channels(wherehash)->topic_author,"%s!%s",ta_n,ta_h);
   sendmsg
     (find_person(server->owner)
      ,"_status_place_topic_author"
      ,0
      ,(["_INTERNAL_time_topic":channels(wherehash)->topic_time
-       ,"_nick":channels(wherehash)->topic_author
+       ,"_nick":SCHEME+"~"+ta_n+"@"+server->id+"!"+ta_h
        ,"_nick_place":SCHEME+wherestar+"@"+server->id
      ]));
 }
