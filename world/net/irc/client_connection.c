@@ -486,7 +486,7 @@ int parse_answer(string s) {
         where[0]='*';
 
       if (where==server->nick)
-        sendmsg(find_person(server->owner),"_message_private",msg,([ "_nick": "irc:~"+from_nick+"@"+server->id ]));
+        sendmsg(find_person(server->owner),"_message_private",msg,([ "_nick": SCHEME+"~"+from_nick+"@"+server->id ]));
       else {
         //sendmsg(find_person(server->owner),"_message_public",msg
         //  ,([ "_nick_place": SCHEME+where+"@"+server->id
@@ -639,7 +639,7 @@ int parse_answer(string s) {
       irc_nick(server->nick);
       return 0;
     default:
-      sendmsg(find_person(server->owner),"_message_private",s,([ "_nick": "irc:@"+server->id ]));
+      sendmsg(find_person(server->owner),"_message_private",s,([ "_nick": SCHEME+"@"+server->id ]));
   }
   return 1;
 }
