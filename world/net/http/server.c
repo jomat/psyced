@@ -15,35 +15,6 @@ volatile int length;
 
 qScheme() { return "html"; }
 
-logon() {
-    D2(D("»»» New SmallHTTP user\n");)
-    if(query_mud_port() == HTTPS_PORT && !tls_query_connection_info(this_object()))
-    {   
-        emit(
-          "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">"
-          "<html><head>"
-          "<title>400 Bad Request</title>"
-          "</head><body>"
-          "<h1>Bad Request</h1>"
-          "<p>Your browser sent a request that this server could not understand.<br />"
-          "Reason: You're speaking plain HTTP to an SSL-enabled server port.<br />"
-          "Instead use the HTTPS scheme to access this URL, please.<br />"
-          "</body></html>"
-        );
-        QUIT
-        return;
-    }
-
-    // bigger buffer (for psyc logo)
-    set_buffer_size(32768);
-    // unfortunately limited to a compilation limit
-    // so we would have to push large files in chunks
-    // using heart_beat() or something like that	TODO
-    
-    next_input_to(#'parse_url);
-    call_out(#'quit, TIME_LOGIN_IDLE);
-}
-
 quit() {
     D2(D("««« HTTP done.\n");)
     destruct(ME);
@@ -332,7 +303,22 @@ case "/oauth":
 emit(a) { return binary_message(a); }
 
 logon() {
-    D2(D("»»» HTTP request:\n");)
+    D2(D("»»» New SmallHTTP user\n");)
+    if(query_mud_port() == HTTPS_PORT && !tls_query_connection_info(this_object()))
+    {   
+        emit(
+          "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">"
+          "<html><head>"
+          "<title>400 Bad Request</title>"
+          "</head><body>"
+          "<h1>Bad Request</h1>"
+          "<p>Your browser sent a request that this server could not understand.<br />"
+          "Reason: You're speaking plain HTTP to an SSL-enabled server port.<br />"
+          "Instead use the HTTPS scheme to access this URL, please.<br />"
+          "</body></html>"
+        );
+        return;
+    }
 
     // bigger buffer (for psyc logo)
     set_buffer_size(32768);
@@ -343,4 +329,3 @@ logon() {
     next_input_to(#'parse_request);
     call_out(#'timeout, 23);
 }
-

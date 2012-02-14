@@ -717,6 +717,7 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
       TARGET2CHAN(vars["_target"]?vars["_target"]:target,chan);
       show_members(source,chan,vars);
       return 0;
+    case "_message_private_question":
     case "_message_private":
     case "_message_public_question":
     case "_message_public":
