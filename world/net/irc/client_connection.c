@@ -57,10 +57,28 @@ int last_message_timestamp;
 struct server_s server;
 mapping channels_m=([]);  /* ([ "#foo":(<struct channel_s>) ]) */
 
+string *emit_buffer=({});
+
+// TODO: make amount of simultaneous emitted messages configurable
+void emit_co() {
+  if (!sizeof(emit_buffer))
+    return;
+  call_out(#'emit_co,1);
+  emit(emit_buffer[0]);
+  emit_buffer=emit_buffer[1..];
+}
+
+// TODO: change signature or body
+int emit_delayed(string m) {
+  emit_buffer+=({m});
+  if (-1==find_call_out("emit_co"))
+    call_out(#'emit_co,0);
+}
+
 /*
-int emit(string m) {
+int emit_delayed(string m) {
   P2(("IRC emitting to %s: %s\n",server->host,m));
-  return ::emit(m);
+  return ::emit_delayed(m);
 }
 */
 
@@ -115,7 +133,7 @@ void set_parameters(mapping m) {
 
 void irc_part(string chan) {
   chan=CHAN_STAR2HASH(chan);
-  emit("PART "+chan+"\n");
+  emit_delayed("PART "+chan+"\n");
 }
 
 int irc_privmsg(string msgtarget, string message) {
@@ -128,7 +146,7 @@ int irc_privmsg(string msgtarget, string message) {
     msgtarget=msgtarget[1..];
   else
     msgtarget=CHAN_STAR2HASH(msgtarget);
-  emit("PRIVMSG "+msgtarget+" :"+message+"\n");
+  emit_delayed("PRIVMSG "+msgtarget+" :"+message+"\n");
   return 0;
 }
 
@@ -154,9 +172,9 @@ varargs int irc_join(string channel, string tag, string key) {
   channel=CHAN_STAR2HASH(channel);
 
   if (key)
-    emit(sprintf("JOIN %s %s\n",channel,key));
+    emit_delayed(sprintf("JOIN %s %s\n",channel,key));
   else
-    emit(sprintf("JOIN %s\n",channel));
+    emit_delayed(sprintf("JOIN %s\n",channel));
   if (structp(channels(channel)))
     channels(channel)->tag=tag;
   else
@@ -181,7 +199,7 @@ int irc_nick(string nick) {
     return 1;
   }
 
-  emit(sprintf("NICK %s\n",nick));
+  emit_delayed(sprintf("NICK %s\n",nick));
 }
 
 int irc_user(string user, string mode, string realname) {
@@ -202,7 +220,7 @@ int irc_user(string user, string mode, string realname) {
     return 1;
   }
 
-  emit(sprintf("USER %s %s 0 :%s\n",user,mode,realname));
+  emit_delayed(sprintf("USER %s %s 0 :%s\n",user,mode,realname));
 }
 
 int connect() {
@@ -302,7 +320,7 @@ void show_topic(string where) {
   string wherehash=CHAN_STAR2HASH(where);
   string wherestar=CHAN_HASH2STAR(where);
   if (!channels(wherehash)) {
-    emit("TOPIC "+wherehash+"\n");
+    emit_delayed("TOPIC "+wherehash+"\n");
     return;
   }
   P2(("showing topic for "+where+"\n"));
@@ -343,7 +361,7 @@ void enter_room(string where, string tag) {
     //       → don't hammer server forever on occasionally happening fnords
     call_out(function void() {
       if (!channels(wherehash)->users[m_indices(channels(wherehash)->users)[0]]->here)
-        emit("WHO "+wherehash+"\n"); },2);
+        emit_delayed("WHO "+wherehash+"\n"); },2);
     call_out(#'enter_room,2,where,tag);
     P3(("waiting to join the room because of !channels[CHAN_STAR2HASH(where)]->users"
         "[m_indices(channels[CHAN_STAR2HASH(where)]->users)[0]]->here\n"));
@@ -373,7 +391,7 @@ void enter_room(string where, string tag) {
 int parse_answer(string s) {
   P2(("Parsing: %O\n",s));
   if ("PING "==s[0..4]) {
-    emit("PONG "+s[5..]+"\n");
+    emit_delayed("PONG "+s[5..]+"\n");
     return 0;
   }
 
@@ -473,7 +491,7 @@ int parse_answer(string s) {
 
       string tag=structp(channels(where))?channels(where)->tag:"";;
 
-      emit("WHO "+where+"\n");
+      emit_delayed("WHO "+where+"\n");
 
       P2(("trying to enter %s\n", SCHEME+where+"@"+server->id));
       // sendmsg(target, mc, data, vars, source, showingLog, callback)
@@ -538,9 +556,9 @@ int parse_answer(string s) {
       // :Welcome to the Internet Relay Network <nick>!<user>@<host>
       // The first message sent after client registration. The text used varies widely 
       if ('s'==server->type)
-        emit("SERVER "+server->host+" "+server->port+"\n");
+        emit_delayed("SERVER "+server->host+" "+server->port+"\n");
       server->autocmds&&map(server->autocmds,function void(int t,string cmd) {
-        call_out(function void(){emit(cmd+"\n");},t);
+        call_out(function void(){emit_delayed(cmd+"\n");},t);
       });
       server->connected=1;
       // channel tag key
@@ -706,7 +724,7 @@ varargs int msg(string source, string mc, string data, mapping vars, int showing
       if (!data)
         data="\001ACTION "+vars["_action"]+"\001";
       if (""==chan) // msg to the server
-        emit(data+"\n");
+        emit_delayed(data+"\n");
       else
         irc_privmsg(chan,data);
       source->msg(this_object(),regreplace(mc,"(_message_)(.*)","\\1echo_\\2",0),data,vars);
@@ -767,7 +785,7 @@ int logon() {
 }
 
 void irc_quote(string id,string what) {
-  emit(what);
+  emit_delayed(what);
 }
 
 int query_connected() {
